@@ -126,18 +126,19 @@
 
         window.state = {
             currentView: 'landing',
-            userId: null, // 用作儲存當前登入的 username
+            userId: null,
+            applicationId: null,
+            unsubscribeListener: null,
+            emailOtp: null, // 暫存信箱 6 位數驗證碼
+            emailOtpSent: false, // 是否已發送驗證碼
             userData: {
-                username: '', password: '',
                 nickname: '', birthYear: '', birthMonth: '', birthDay: '',
-                height: '', weight: '', length: '', girth: '', kinks: [], otherKink: '', email: ''
+                height: '', weight: '', length: '', girth: '', kinks: [], otherKink: '', email: '',
+                emailVerified: false // 標記信箱是否已驗證
             },
-            // 以男同志為出發點列出 10 種主題生活品味偏好
             kinksOptions: [
-                "熊族/Daddy大叔", "肌肉狼犬/運動風", "陽光小鮮肉", 
-                "白襪/球鞋控", "西裝正裝/制服控", "皮革膠衣/個性風", 
-                "繩縛/BDSM調教", "藝術攝影/體態展現", "精緻美食/生活日常",
-                "純愛伴侶/心靈交流"
+                "生活日常", "健身運動", "時尚穿搭", "攝影影像", "戶外旅遊", 
+                "美食烹飪", "心靈交流", "熟男/Daddy", "純愛分享"
             ]
         };
 
@@ -359,77 +360,72 @@
                 <div class="flex flex-col h-full fade-enter fade-enter-active bg-slate-900">
                     <div class="p-4 border-b border-slate-800 flex items-center bg-slate-900/80 backdrop-blur-md sticky top-0 z-20">
                         <button onclick="navigate('landing')" class="text-slate-400 hover:text-white transition w-10 flex justify-start"><i class="fa-solid fa-chevron-left text-lg"></i></button>
-                        <h2 class="flex-1 text-center font-semibold text-lg tracking-wide">申請加入社群</h2>
+                        <h2 class="flex-1 text-center font-semibold text-lg tracking-wide">基本資料填寫</h2>
                         <div class="w-10"></div>
                     </div>
                     <div class="flex-1 overflow-y-auto p-5 scroll-smooth">
                         <form id="registerForm" class="space-y-7 pb-10">
                             
-                            <!-- 區塊一：帳號與安全密碼 -->
+                            <!-- 區塊一：帳號密碼設定 -->
                             <div class="bg-indigo-950/20 p-5 rounded-3xl border border-indigo-500/20 space-y-4">
                                 <h3 class="text-sm font-semibold text-indigo-400 flex items-center gap-2">
                                     <i class="fa-solid fa-key"></i> 帳號密碼設定 (之後登入使用)
                                 </h3>
                                 <div class="space-y-1.5">
                                     <label class="block text-xs font-medium text-slate-300 ml-1">使用者帳號 <span class="text-red-400">*</span></label>
-                                    <input type="text" id="reg-username" required value="${window.state.userData.username||''}" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-400 transition" placeholder="建議用英文字母或數字">
+                                    <input type="text" id="reg-username" required class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-400 transition" placeholder="建議用英文字母或數字">
                                 </div>
                                 <div class="space-y-1.5">
-                                    <label class="block text-xs font-medium text-slate-300 ml-1">再次輸入使用者帳號 <span class="text-red-400">*</span></label>
-                                    <input type="text" id="reg-username-confirm" required value="${window.state.userData.username||''}" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-400 transition" placeholder="請再次確認帳號">
+                                    <label class="block text-xs font-medium text-slate-300 ml-1">再次確認使用者帳號 <span class="text-red-400">*</span></label>
+                                    <input type="text" id="reg-username-confirm" required class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-400 transition" placeholder="請再次輸入帳號">
                                 </div>
                                 <div class="space-y-1.5">
                                     <label class="block text-xs font-medium text-slate-300 ml-1">安全密碼 <span class="text-red-400">*</span></label>
-                                    <input type="password" id="reg-password" required value="${window.state.userData.password||''}" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-400 transition" placeholder="建議設定6位元以上安全密碼">
+                                    <input type="password" id="reg-password" required class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-400 transition" placeholder="建議設定6位數以上安全密碼">
                                 </div>
                                 <div class="space-y-1.5">
                                     <label class="block text-xs font-medium text-slate-300 ml-1">再次輸入安全密碼 <span class="text-red-400">*</span></label>
-                                    <input type="password" id="reg-password-confirm" required value="${window.state.userData.password||''}" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-400 transition" placeholder="請再次輸入安全密碼">
+                                    <input type="password" id="reg-password-confirm" required class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-400 transition" placeholder="請再次輸入密碼">
                                 </div>
                             </div>
 
-                            <!-- 區塊二：基本資料 -->
-                            <div class="space-y-4 pt-2">
-                                <h3 class="text-sm font-semibold text-slate-300 ml-1 flex items-center gap-2">
-                                    <i class="fa-solid fa-user"></i> 個人公開基本資料
-                                </h3>
-                                <div class="space-y-1.5">
-                                    <label class="block text-xs font-medium text-slate-300 ml-1">暱稱 <span class="text-red-400">*</span></label>
-                                    <input type="text" id="reg-nickname" required value="${window.state.userData.nickname||''}" class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:border-slate-400 transition placeholder-slate-500" placeholder="你在平台上的稱呼">
-                                </div>
+                            <!-- 暱稱 -->
+                            <div class="space-y-1.5">
+                                <label class="block text-sm font-medium text-slate-300 ml-1">暱稱 <span class="text-red-400">*</span></label>
+                                <input type="text" id="reg-nickname" required value="${window.state.userData.nickname||''}" class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition placeholder-slate-500" placeholder="你在平台上的稱呼">
+                            </div>
 
-                                <!-- 生日選擇器 -->
-                                <div class="space-y-1.5">
-                                    <label class="block text-xs font-medium text-slate-300 ml-1">出生年月日 (防呆：需滿18歲) <span class="text-red-400">*</span></label>
-                                    <div class="grid grid-cols-3 gap-3">
-                                        <div class="relative">
-                                            <select id="reg-year" required class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl pl-4 pr-10 py-3.5 text-white focus:outline-none focus:border-slate-400 transition appearance-none text-center">
-                                                <option value="">年</option>
-                                            </select>
-                                        </div>
-                                        <div class="relative">
-                                            <select id="reg-month" required class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl pl-4 pr-10 py-3.5 text-white focus:outline-none focus:border-slate-400 transition appearance-none text-center">
-                                                <option value="">月</option>
-                                            </select>
-                                        </div>
-                                        <div class="relative">
-                                            <select id="reg-day" required class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl pl-4 pr-10 py-3.5 text-white focus:outline-none focus:border-slate-400 transition appearance-none text-center">
-                                                <option value="">日</option>
-                                            </select>
-                                        </div>
+                            <!-- 生日選擇器 -->
+                            <div class="space-y-1.5">
+                                <label class="block text-sm font-medium text-slate-300 ml-1">出生年月日 (需滿18歲) <span class="text-red-400">*</span></label>
+                                <div class="grid grid-cols-3 gap-3">
+                                    <div class="relative">
+                                        <select id="reg-year" required class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl pl-4 pr-10 py-3.5 text-white focus:outline-none focus:border-slate-400 transition appearance-none text-center">
+                                            <option value="">年</option>
+                                        </select>
+                                    </div>
+                                    <div class="relative">
+                                        <select id="reg-month" required class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl pl-4 pr-10 py-3.5 text-white focus:outline-none focus:border-slate-400 transition appearance-none text-center">
+                                            <option value="">月</option>
+                                        </select>
+                                    </div>
+                                    <div class="relative">
+                                        <select id="reg-day" required class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl pl-4 pr-10 py-3.5 text-white focus:outline-none focus:border-slate-400 transition appearance-none text-center">
+                                            <option value="">日</option>
+                                        </select>
                                     </div>
                                 </div>
+                            </div>
 
-                                <!-- 身高體重 -->
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="space-y-1.5">
-                                        <label class="block text-xs font-medium text-slate-300 ml-1">身高 (cm) <span class="text-red-400">*</span></label>
-                                        <input type="number" id="reg-height" required min="100" max="250" value="${window.state.userData.height||''}" class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:border-slate-400 transition text-center">
-                                    </div>
-                                    <div class="space-y-1.5">
-                                        <label class="block text-xs font-medium text-slate-300 ml-1">體重 (kg) <span class="text-red-400">*</span></label>
-                                        <input type="number" id="reg-weight" required min="30" max="200" value="${window.state.userData.weight||''}" class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:border-slate-400 transition text-center">
-                                    </div>
+                            <!-- 身高體重 -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-1.5">
+                                    <label class="block text-sm font-medium text-slate-300 ml-1">身高 (cm) <span class="text-red-400">*</span></label>
+                                    <input type="number" id="reg-height" required min="100" max="250" value="${window.state.userData.height||''}" class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:border-slate-400 transition text-center">
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="block text-sm font-medium text-slate-300 ml-1">體重 (kg) <span class="text-red-400">*</span></label>
+                                    <input type="number" id="reg-weight" required min="30" max="200" value="${window.state.userData.weight||''}" class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:border-slate-400 transition text-center">
                                 </div>
                             </div>
 
@@ -451,7 +447,7 @@
 
                             <!-- 興趣標籤 -->
                             <div class="space-y-2">
-                                <label class="block text-sm font-medium text-slate-300 ml-1">感興趣的生活與社交主題 (可多選)</label>
+                                <label class="block text-sm font-medium text-slate-300 ml-1">感興趣的生活主題 (可多選)</label>
                                 <div class="grid grid-cols-2 gap-2">
                                     ${kinksHtml}
                                 </div>
@@ -466,11 +462,31 @@
                                 </div>
                             </div>
 
-                            <!-- Email -->
-                            <div class="space-y-1.5 pt-2 border-t border-slate-800">
+                            <!-- Email 欄位加上驗證機制 -->
+                            <div class="space-y-1.5 pt-2 border-t border-slate-800" id="email-verification-section">
                                 <label class="block text-sm font-medium text-slate-300 ml-1">通知信箱 <span class="text-red-400">*</span></label>
-                                <p class="text-xs text-slate-500 ml-1 mb-2">審核結果將寄送至此，絕不外流。</p>
-                                <input type="email" id="reg-email" required value="${window.state.userData.email||''}" class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:border-slate-400 transition placeholder-slate-500" placeholder="your@email.com">
+                                <p class="text-xs text-slate-500 ml-1 mb-2">審核結果與驗證碼將寄送至此，絕不外流。</p>
+                                <div class="flex gap-2">
+                                    <input type="email" id="reg-email" required value="${window.state.userData.email||''}" ${window.state.userData.emailVerified ? 'disabled' : ''} class="flex-1 bg-slate-800/50 border border-slate-700 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-slate-400 transition placeholder-slate-500 text-sm" placeholder="your@email.com">
+                                    <button type="button" id="send-otp-btn" onclick="sendVerificationOtp()" ${window.state.userData.emailVerified ? 'disabled' : ''} class="px-4 py-3 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-500 rounded-2xl text-xs font-semibold text-white transition shrink-0">
+                                        ${window.state.userData.emailVerified ? '已驗證' : '發送驗證碼'}
+                                    </button>
+                                </div>
+                                
+                                <!-- 驗證碼輸入欄位 (發送後顯示) -->
+                                <div id="otp-input-container" class="mt-3 ${window.state.emailOtpSent && !window.state.userData.emailVerified ? '' : 'hidden'}">
+                                    <label class="block text-xs font-medium text-slate-400 ml-1 mb-1.5">請輸入 6 位數信箱驗證碼</label>
+                                    <div class="flex gap-2">
+                                        <input type="text" id="reg-otp" maxlength="6" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white text-center tracking-widest font-mono text-sm focus:outline-none focus:border-indigo-400 transition" placeholder="CCCCCC">
+                                        <button type="button" onclick="verifyEmailOtp()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-xs font-semibold text-white transition shrink-0">
+                                            確認驗證
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- 已驗證標記 -->
+                                <div id="email-verified-badge" class="mt-2 ${window.state.userData.emailVerified ? '' : 'hidden'} text-xs text-emerald-400 flex items-center gap-1.5 font-semibold">
+                                    <i class="fa-solid fa-circle-check"></i> 信箱驗證成功！
+                                </div>
                             </div>
 
                             <button type="submit" class="w-full mt-6 bg-white hover:bg-slate-200 text-slate-900 font-bold py-4 px-4 rounded-2xl transition duration-300 shadow-lg text-lg sticky bottom-4 z-10">
@@ -481,6 +497,86 @@
                 </div>
             `;
         }
+
+        // 發送信箱驗證碼 OTP
+        window.sendVerificationOtp = async function() {
+            const emailInput = document.getElementById('reg-email');
+            const nicknameInput = document.getElementById('reg-nickname');
+            const email = emailInput.value.trim();
+            const nickname = nicknameInput.value.trim() || '新成員';
+
+            // 簡易信箱格式驗證
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!email || !emailRegex.test(email)) {
+                showToast('請先輸入正確的電子信箱格式！', 'error');
+                return;
+            }
+
+            const sendBtn = document.getElementById('send-otp-btn');
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin"></i> 發送中...';
+
+            // 產生 6 位數驗證碼
+            const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+            window.state.emailOtp = otpCode;
+
+            // 完美重複使用原本的 template_25proud
+            const statusText = "信箱認證驗證碼";
+            const messageText = `您好！歡迎申請加入 SecretRoom。您的註冊電子信箱驗證碼為：【${otpCode}】。\n\n請在註冊頁面中輸入此驗證碼以完成信箱驗證。此驗證碼十分鐘內有效。`;
+
+            try {
+                // 如果是模擬模式，則在 Console 顯示並彈窗提示
+                if (!emailjsConfig.publicKey || emailjsConfig.publicKey === "YOUR_EMAILJS_PUBLIC_KEY") {
+                    console.info(`[Email 模擬] 驗證信寄送至 ${email}，驗證碼為: ${otpCode}`);
+                    showToast(`[模擬信箱] 驗證碼為: ${otpCode} (請在下方輸入驗證)`, 'info');
+                } else {
+                    await emailjs.send(emailjsConfig.serviceId, emailjsConfig.templateId, {
+                        to_email: email,
+                        to_name: nickname,
+                        status_text: statusText,
+                        message: messageText
+                    });
+                    showToast('驗證碼已成功寄送至您的信箱！', 'success');
+                }
+
+                // 更新狀態並顯示輸入框
+                window.state.emailOtpSent = true;
+                document.getElementById('otp-input-container').classList.remove('hidden');
+                sendBtn.innerHTML = '重新發送';
+                sendBtn.disabled = false;
+            } catch (err) {
+                console.error("發送驗證信失敗:", err);
+                showToast('驗證信發送失敗，請確認 EmailJS 設定', 'error');
+                sendBtn.innerHTML = '重新發送';
+                sendBtn.disabled = false;
+            }
+        };
+
+        // 驗證輸入的 OTP 驗證碼
+        window.verifyEmailOtp = function() {
+            const otpInput = document.getElementById('reg-otp');
+            const enteredOtp = otpInput.value.trim();
+
+            if (!window.state.emailOtp) {
+                showToast('請先點選發送驗證碼！', 'error');
+                return;
+            }
+
+            if (enteredOtp === window.state.emailOtp) {
+                showToast('信箱驗證成功！', 'success');
+                window.state.userData.emailVerified = true;
+                window.state.userData.email = document.getElementById('reg-email').value.trim();
+
+                // 鎖定信箱輸入並更新 UI
+                document.getElementById('reg-email').disabled = true;
+                document.getElementById('send-otp-btn').disabled = true;
+                document.getElementById('send-otp-btn').innerText = '已驗證';
+                document.getElementById('otp-input-container').classList.add('hidden');
+                document.getElementById('email-verified-badge').classList.remove('hidden');
+            } else {
+                showToast('驗證碼錯誤，請重新確認！', 'error');
+            }
+        };
 
         function initRegisterForm() {
             const yearSelect = document.getElementById('reg-year');
@@ -562,6 +658,14 @@
                     return;
                 }
 
+                // 檢查信箱是否已經過驗證
+                if (!window.state.userData.emailVerified) {
+                    showToast('請先完成「通知信箱」的驗證流程！', 'error');
+                    // 滾動到信箱驗證區
+                    document.getElementById('email-verification-section').scrollIntoView({ behavior: 'smooth' });
+                    return;
+                }
+
                 if(db) {
                     try {
                         const docRef = doc(db, 'secretg_apps', appId, 'applications', username);
@@ -579,6 +683,7 @@
                 const otherValue = otherCheckbox.checked ? document.getElementById('reg-kink-other').value.trim() : '';
 
                 window.state.userData = {
+                    ...window.state.userData,
                     username: username,
                     password: password,
                     nickname: document.getElementById('reg-nickname').value,
@@ -591,7 +696,6 @@
                     girth: document.getElementById('reg-girth').value || '未填',
                     kinks: selectedKinks,
                     otherKink: otherValue,
-                    email: document.getElementById('reg-email').value,
                     status: 'pending'
                 };
 
