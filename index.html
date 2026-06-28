@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SecretG | 專屬男性的私密生活分享社群</title>
+    <title>SecretRoom | 專屬男性的私密生活分享社群</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -239,7 +239,7 @@
                         <div class="w-24 h-24 bg-gradient-to-tr from-indigo-900 to-indigo-700 rounded-3xl flex items-center justify-center mb-6 shadow-2xl border border-indigo-500/30 transform rotate-3">
                             <i class="fa-solid fa-camera-retro text-4xl text-slate-100 transform -rotate-3"></i>
                         </div>
-                        <h1 class="text-4xl font-bold mb-3 tracking-wider text-white">SecretG</h1>
+                        <h1 class="text-4xl font-bold mb-3 tracking-wider text-white">SecretRoom</h1>
                         <p class="text-slate-300 mb-10 text-sm font-light tracking-wide leading-relaxed">
                             專屬男性的私密生活分享社群<br>分享生活近況，看見最真實的彼此
                         </p>
@@ -502,7 +502,7 @@
                     to_email: email,
                     to_name: "新申請用戶",
                     status_text: "信箱綁定驗證碼",
-                    message: `您好！您目前正在註冊 SecretG 私密社群。\n\n您的信箱驗證代碼為：[ ${otp} ]\n\n請於網頁中輸入此驗證碼以完成信箱綁定認證。`
+                    message: `您好！您目前正在註冊 SecretRoom 私密社群。\n\n您的信箱驗證代碼為：[ ${otp} ]\n\n請於網頁中輸入此驗證碼以完成信箱綁定認證。`
                 });
 
                 showToast('驗證郵件寄送成功，請查收信箱', 'success');
@@ -763,7 +763,7 @@
                             <p class="text-slate-400">💡 提示：您可以現在關閉這個頁面。當收到審核通過信時，重新打開此網頁登入，就能立刻綁定 Telegram。</p>
                         </div>
                         <p class="text-slate-400 mb-8 text-sm leading-relaxed">
-                            為維護 SecretG 的私密安全與真實性，管理員正在檢視您的資料。<br><br>
+                            為維護 SecretRoom 的私密安全與真實性，管理員正在檢視您的資料。<br><br>
                             通過後，此畫面將<strong class="text-indigo-400">自動即時跳轉</strong>，亦將同步發信通知至您的信箱：<br>
                             <span class="text-slate-300 mt-2 block break-all font-semibold underline">${window.state.userData.email}</span>
                         </p>
@@ -811,7 +811,7 @@
                         <div class="bg-slate-900/60 p-5 rounded-2xl border border-slate-800 mb-6">
                             <h3 class="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2"><div class="w-1.5 h-4 bg-blue-500 rounded-full"></div> 綁定與驗證規則</h3>
                             <p class="text-xs text-slate-400 leading-relaxed font-light">
-                                <strong>⚠️ 重要：為維護社群品質，每個 Telegram 帳號只能綁定一個 SecretG 成員，經綁定後即無法重複綁定給其他使用者。</strong><br><br>
+                                <strong>⚠️ 重要：為維護社群品質，每個 Telegram 帳號只能綁定一個 SecretRoom 成員，經綁定後即無法重複綁定給其他使用者。</strong><br><br>
                                 我們使用 Telegram 官方登入元件進行安全驗證。這將安全無虞地確保您的帳戶真實存在。<br><br>
                                 我們只會取得您的 Telegram ID、頭像、姓名與帳號名稱，絕不會讀取您的聊天內容、電話。
                             </p>
@@ -920,7 +920,7 @@
             }
 
             setTimeout(() => {
-                showToast('歡迎進入 SecretG 私密空間！', 'success');
+                showToast('歡迎進入 SecretRoom 私密空間！', 'success');
                 window.state.userData.status = 'active';
                 window.state.userData.telegramInfo = tgData;
                 navigate('dashboard');
@@ -1048,7 +1048,7 @@
                     <!-- 搜尋列與標頭 -->
                     <div class="p-4 bg-slate-900/95 backdrop-blur-xl border-b border-slate-850 sticky top-0 z-30 space-y-3 shadow-lg">
                         <div class="flex justify-between items-center">
-                            <h1 class="text-2xl font-black tracking-widest text-white" style="font-family: serif; font-style: italic;">SecretG</h1>
+                            <h1 class="text-2xl font-black tracking-widest text-white" style="font-family: serif; font-style: italic;">SecretRoom</h1>
                             <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow">
                                 ${myData.nickname ? myData.nickname.charAt(0).toUpperCase() : 'U'}
                             </div>
