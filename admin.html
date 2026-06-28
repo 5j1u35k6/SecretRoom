@@ -102,7 +102,7 @@
     <div id="toast-container" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col gap-2 w-full max-w-xs px-4"></div>
 
     <script type="module">
-        let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc, deleteDoc;
+        let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc, deleteDoc, query, where, getDocs;
 
         // --- 👇 替換開始：將您的 Firebase 配置貼在這裡 👇 ---
         const appId = 'secretg-demo-app';
@@ -139,6 +139,9 @@
                 updateDoc = firestoreMod.updateDoc;
                 getDoc = firestoreMod.getDoc;
                 deleteDoc = firestoreMod.deleteDoc; 
+                query = firestoreMod.query;
+                where = firestoreMod.where;
+                getDocs = firestoreMod.getDocs;
 
                 return true;
             } catch (e) {
@@ -491,9 +494,25 @@
             }
 
             try {
+                // 1. 查詢並刪除該用戶發布的所有歷史貼文，避免產生孤兒資料
+                const postsRef = collection(db, 'secretg_apps', appId, 'posts');
+                const q = query(postsRef, where('userId', '==', userId));
+                const querySnapshot = await getDocs(q);
+                
+                const deletePromises = [];
+                querySnapshot.forEach((postDoc) => {
+                    const postDocRef = doc(db, 'secretg_apps', appId, 'posts', postDoc.id);
+                    deletePromises.push(deleteDoc(postDocRef));
+                });
+                
+                // 等待所有貼文自資料庫完成刪除
+                await Promise.all(deletePromises);
+
+                // 2. 刪除用戶註冊資訊與帳號密碼等個人資料
                 const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
                 await deleteDoc(docRef);
-                showToast(`帳號 @${userId} 已成功永久刪除`, "success");
+                
+                showToast(`帳號 @${userId} 及其 ${deletePromises.length} 則分享貼文已安全且徹底永久銷毀`, "success");
             } catch (err) {
                 console.error("刪除失敗:", err);
                 showToast("刪除失敗: " + err.message, "error");
