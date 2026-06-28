@@ -7,14 +7,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- 引入 EmailJS SDK -->
+    <!-- 引入 EmailJS SDK 用於發送審核通知與驗證碼郵件 -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #090d16;
             color: #f8fafc;
-            overflow-x: hidden;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
         }
         .glass-panel {
             background: rgba(15, 23, 42, 0.95);
@@ -27,7 +29,7 @@
         ::-webkit-scrollbar-thumb:hover { background: #334155; }
         
         .fade-enter { opacity: 0; transform: translateY(10px); }
-        .fade-enter-active { opacity: 1; transform: translateY(0); transition: opacity 400ms ease-out, transform 400ms ease-out; }
+        .fade-enter-active { opacity: 1; transform: translateY(0); transition: opacity 300ms ease-out, transform 300ms ease-out; }
         
         /* 自訂下拉選單樣式 */
         select {
@@ -47,10 +49,10 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-0 md:p-4">
+<body class="min-h-screen flex flex-col items-center justify-center p-0 md:p-4 bg-[#090d16]">
 
-    <!-- 主應用程式容器 -->
-    <div id="app" class="w-full max-w-md h-[100dvh] md:h-auto md:min-h-[780px] md:rounded-3xl shadow-2xl overflow-hidden relative flex flex-col bg-[#090d16] md:glass-panel border-0 md:border md:border-slate-800">
+    <!-- 主應用程式容器 (強制維持美學尺寸，在任何螢幕上均不塌陷) -->
+    <div id="app" class="w-full max-w-md h-[100dvh] md:h-[800px] md:rounded-3xl shadow-2xl overflow-hidden relative flex flex-col bg-[#090d16] md:glass-panel border-0 md:border md:border-slate-800">
         <!-- 動態內容將渲染於此 -->
         <div id="loading-screen" class="absolute inset-0 z-50 bg-[#090d16] flex flex-col items-center justify-center">
             <div class="w-16 h-16 border-4 border-slate-800 border-t-indigo-500 rounded-full animate-spin mb-4"></div>
@@ -140,6 +142,7 @@
             searchTerm: '',
             currentTab: 'feed', // 'feed' | 'profile'
             showCreateModal: false,
+            dashboardInitialized: false, // 關鍵：防重複載入鎖
             kinksOptions: [
                 "熊族/Daddy大叔", "肌肉狼犬/運動風", "陽光小鮮肉", 
                 "白襪/球鞋控", "西裝正裝/制服控", "皮革膠衣/個性風", 
@@ -233,13 +236,13 @@
 
         function viewLanding() {
             return `
-                <div class="flex-1 flex flex-col items-center justify-center p-8 text-center fade-enter fade-enter-active bg-[url('https://images.unsplash.com/photo-1574170685715-db104eb0058b?q=80&w=600&auto=format&fit=crop')] bg-cover bg-center relative">
+                <div class="flex-1 flex flex-col items-center justify-center p-8 text-center fade-enter fade-enter-active bg-[url('https://images.unsplash.com/photo-1574170685715-db104eb0058b?q=80&w=600&auto=format&fit=crop')] bg-cover bg-center relative h-full">
                     <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-sm z-0"></div>
                     <div class="z-10 w-full flex flex-col items-center">
                         <div class="w-24 h-24 bg-gradient-to-tr from-indigo-900 to-indigo-700 rounded-3xl flex items-center justify-center mb-6 shadow-2xl border border-indigo-500/30 transform rotate-3">
                             <i class="fa-solid fa-camera-retro text-4xl text-slate-100 transform -rotate-3"></i>
                         </div>
-                        <h1 class="text-4xl font-bold mb-3 tracking-wider text-white">SecretRoom</h1>
+                        <h1 class="text-4xl font-bold mb-3 tracking-wider text-white">SecretG</h1>
                         <p class="text-slate-300 mb-10 text-sm font-light tracking-wide leading-relaxed">
                             專屬男性的私密生活分享社群<br>分享生活近況，看見最真實的彼此
                         </p>
@@ -260,7 +263,7 @@
 
         function viewLogin() {
             return `
-                <div class="flex flex-col h-full fade-enter fade-enter-active bg-[#090d16]">
+                <div class="flex-1 flex flex-col h-full fade-enter fade-enter-active bg-[#090d16]">
                     <div class="p-4 border-b border-slate-900 flex items-center bg-[#090d16]/80 backdrop-blur-md sticky top-0 z-20">
                         <button onclick="navigate('landing')" class="text-slate-400 hover:text-white transition w-10 flex justify-start"><i class="fa-solid fa-chevron-left text-lg"></i></button>
                         <h2 class="flex-1 text-center font-semibold text-lg tracking-wide text-white">身分登入</h2>
@@ -335,7 +338,7 @@
             `).join('');
 
             return `
-                <div class="flex flex-col h-full fade-enter fade-enter-active bg-[#090d16]">
+                <div class="flex-1 flex flex-col h-full fade-enter fade-enter-active bg-[#090d16]">
                     <div class="p-4 border-b border-slate-900 flex items-center bg-[#090d16]/80 backdrop-blur-md sticky top-0 z-20">
                         <button onclick="navigate('landing')" class="text-slate-400 hover:text-white transition w-10 flex justify-start"><i class="fa-solid fa-chevron-left text-lg"></i></button>
                         <h2 class="flex-1 text-center font-semibold text-lg tracking-wide text-white">建立私密帳號</h2>
@@ -502,7 +505,7 @@
                     to_email: email,
                     to_name: "新申請用戶",
                     status_text: "信箱綁定驗證碼",
-                    message: `您好！您目前正在註冊 SecretRoom 私密社群。\n\n您的信箱驗證代碼為：[ ${otp} ]\n\n請於網頁中輸入此驗證碼以完成信箱綁定認證。`
+                    message: `您好！您目前正在註冊 SecretG 私密社群。\n\n您的信箱驗證代碼為：[ ${otp} ]\n\n請於網頁中輸入此驗證碼以完成信箱綁定認證。`
                 });
 
                 showToast('驗證郵件寄送成功，請查收信箱', 'success');
@@ -659,7 +662,7 @@
             if(u.otherKink) displayKinks.push(`其他: ${u.otherKink}`);
 
             return `
-                <div class="flex flex-col h-full fade-enter fade-enter-active bg-[#090d16]">
+                <div class="flex-1 flex flex-col h-full fade-enter fade-enter-active bg-[#090d16]">
                     <div class="p-4 border-b border-slate-900 flex items-center bg-[#090d16]/80 backdrop-blur-md sticky top-0 z-20">
                         <button onclick="navigate('register')" class="text-slate-400 hover:text-white transition w-16 flex justify-start items-center gap-1"><i class="fa-solid fa-pen text-xs"></i> 修改</button>
                         <h2 class="flex-1 text-center font-semibold text-lg tracking-wide text-white">確認您填寫的資料</h2>
@@ -746,7 +749,7 @@
 
         function viewPending() {
             return `
-                <div class="flex-1 flex flex-col items-center justify-center p-8 text-center fade-enter fade-enter-active bg-[#090d16] relative overflow-hidden">
+                <div class="flex-1 flex flex-col items-center justify-center p-8 text-center fade-enter fade-enter-active bg-[#090d16] relative overflow-hidden h-full">
                     <div class="absolute w-96 h-96 bg-indigo-600/5 rounded-full blur-3xl -top-20 -left-20 animate-pulse"></div>
                     
                     <div class="z-10 flex flex-col items-center w-full">
@@ -763,7 +766,7 @@
                             <p class="text-slate-400">💡 提示：您可以現在關閉這個頁面。當收到審核通過信時，重新打開此網頁登入，就能立刻綁定 Telegram。</p>
                         </div>
                         <p class="text-slate-400 mb-8 text-sm leading-relaxed">
-                            為維護 SecretRoom 的私密安全與真實性，管理員正在檢視您的資料。<br><br>
+                            為維護 SecretG 的私密安全與真實性，管理員正在檢視您的資料。<br><br>
                             通過後，此畫面將<strong class="text-indigo-400">自動即時跳轉</strong>，亦將同步發信通知至您的信箱：<br>
                             <span class="text-slate-300 mt-2 block break-all font-semibold underline">${window.state.userData.email}</span>
                         </p>
@@ -798,7 +801,7 @@
 
         function viewTelegram() {
             return `
-                <div class="flex flex-col h-full fade-enter fade-enter-active bg-[#090d16]">
+                <div class="flex-1 flex flex-col h-full fade-enter fade-enter-active bg-[#090d16]">
                     <div class="p-6 pb-2 text-center mt-6">
                         <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-500/20 transform rotate-3">
                             <i class="fa-brands fa-telegram text-4xl text-white transform -rotate-3"></i>
@@ -811,7 +814,7 @@
                         <div class="bg-slate-900/60 p-5 rounded-2xl border border-slate-800 mb-6">
                             <h3 class="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2"><div class="w-1.5 h-4 bg-blue-500 rounded-full"></div> 綁定與驗證規則</h3>
                             <p class="text-xs text-slate-400 leading-relaxed font-light">
-                                <strong>⚠️ 重要：為維護社群品質，每個 Telegram 帳號只能綁定一個 SecretRoom 成員，經綁定後即無法重複綁定給其他使用者。</strong><br><br>
+                                <strong>⚠️ 重要：為維護社群品質，每個 Telegram 帳號只能綁定一個 SecretG 成員，經綁定後即無法重複綁定給其他使用者。</strong><br><br>
                                 我們使用 Telegram 官方登入元件進行安全驗證。這將安全無虞地確保您的帳戶真實存在。<br><br>
                                 我們只會取得您的 Telegram ID、頭像、姓名與帳號名稱，絕不會讀取您的聊天內容、電話。
                             </p>
@@ -920,7 +923,7 @@
             }
 
             setTimeout(() => {
-                showToast('歡迎進入 SecretRoom 私密空間！', 'success');
+                showToast('歡迎進入 SecretG 私密空間！', 'success');
                 window.state.userData.status = 'active';
                 window.state.userData.telegramInfo = tgData;
                 navigate('dashboard');
@@ -965,7 +968,7 @@
                 let starsHtml = '';
                 for (let i = 1; i <= 5; i++) {
                     const activeClass = i <= myRating ? 'text-yellow-400 star-glow' : 'text-slate-600';
-                    starsHtml += `<button onclick="ratePost('${p.id}', ${i})" class="transition duration-150 hover:scale-125 focus:outline-none"><i class="fa-solid fa-star ${activeClass}"></i></button>`;
+                    starsHtml += `<button onclick="ratePost('${p.id}', ${i})" class="transition duration-150 hover:scale-125 focus:outline-none text-base"><i class="fa-solid fa-star ${activeClass}"></i></button>`;
                 }
 
                 return `
@@ -1043,10 +1046,12 @@
                 <span class="px-2 py-1 bg-indigo-950/40 border border-indigo-900/30 text-indigo-400 text-[10px] font-semibold rounded-lg">${k}</span>
             `).join('') : '';
 
+            // 使用全新 flex-col 滿高架構，導航欄以 flex-none 鎖死在最下方，中間 flex-1 overflow-y-auto 可自然拉伸
             return `
-                <div class="flex flex-col h-full bg-[#030712] fade-enter fade-enter-active">
-                    <!-- 搜尋列與標頭 -->
-                    <div class="p-4 bg-slate-900/95 backdrop-blur-xl border-b border-slate-850 sticky top-0 z-30 space-y-3 shadow-lg">
+                <div class="flex-1 flex flex-col h-full min-h-0 bg-[#030712] relative overflow-hidden fade-enter fade-enter-active">
+                    
+                    <!-- Header (flex-none 固定在頂部) -->
+                    <div class="flex-none p-4 bg-slate-900/95 backdrop-blur-xl border-b border-slate-850 space-y-3 shadow-lg z-30">
                         <div class="flex justify-between items-center">
                             <h1 class="text-2xl font-black tracking-widest text-white" style="font-family: serif; font-style: italic;">SecretRoom</h1>
                             <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow">
@@ -1054,84 +1059,88 @@
                             </div>
                         </div>
                         
-                        <!-- 搜尋輸入框 -->
+                        <!-- 搜尋輸入框 (僅在 Feed 頁面顯示) -->
                         <div class="relative ${window.state.currentTab === 'feed' ? '' : 'hidden'}" id="search-bar-container">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
                                 <i class="fa-solid fa-magnifying-glass text-xs"></i>
                             </span>
-                            <input type="text" id="dashboard-search" oninput="handleSearch(this)" value="${window.state.searchTerm}" class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 pl-9 pr-4 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition" placeholder="搜尋貼文、標籤、作者或帳號...">
+                            <input type="text" id="dashboard-search" oninput="handleSearch(this)" value="${window.state.searchTerm}" class="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 pl-9 pr-4 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 transition animate-fade-in" placeholder="搜尋貼文、標籤、作者或帳號...">
                         </div>
                     </div>
 
-                    <!-- 首頁 Feed 內容 -->
-                    <div id="tab-feed-view" class="flex-1 overflow-y-auto bg-[#030712] p-4 pb-24 scroll-smooth ${window.state.currentTab === 'feed' ? '' : 'hidden'}">
-                        <div class="max-w-lg mx-auto">
-                            ${feedHtml ? feedHtml : `
-                                <div class="text-center py-20 text-slate-600 text-sm">
-                                    <i class="fa-regular fa-folder-open text-3xl mb-3 block"></i>
-                                    無符合的精選近況貼文
-                                </div>
-                            `}
-                        </div>
-                    </div>
-
-                    <!-- 個人資料主頁內容 -->
-                    <div id="tab-profile-view" class="flex-1 overflow-y-auto bg-[#030712] p-5 pb-24 scroll-smooth ${window.state.currentTab === 'profile' ? '' : 'hidden'}">
-                        <div class="max-w-md mx-auto space-y-6">
-                            <!-- 個人卡片 -->
-                            <div class="bg-slate-900 border border-slate-850 p-6 rounded-3xl shadow-xl space-y-5">
-                                <div class="flex items-center gap-4">
-                                    <div class="w-16 h-16 bg-indigo-600 text-white rounded-full flex items-center justify-center text-3xl font-black border-2 border-slate-700">
-                                        ${myData.nickname ? myData.nickname.charAt(0).toUpperCase() : 'U'}
+                    <!-- 滾動內容容器 (flex-1 撐滿且獨立滾動) -->
+                    <div class="flex-1 overflow-y-auto min-h-0 relative z-10 pb-20 scroll-smooth">
+                        
+                        <!-- 首頁 Feed 內容 -->
+                        <div id="tab-feed-view" class="p-4 ${window.state.currentTab === 'feed' ? '' : 'hidden'}">
+                            <div class="max-w-lg mx-auto">
+                                ${feedHtml ? feedHtml : `
+                                    <div class="text-center py-20 text-slate-600 text-sm">
+                                        <i class="fa-regular fa-folder-open text-3xl mb-3 block"></i>
+                                        無符合的精選近況貼文
                                     </div>
+                                `}
+                            </div>
+                        </div>
+
+                        <!-- 個人資料主頁內容 -->
+                        <div id="tab-profile-view" class="p-5 ${window.state.currentTab === 'profile' ? '' : 'hidden'}">
+                            <div class="max-w-md mx-auto space-y-6">
+                                <!-- 個人卡片 -->
+                                <div class="bg-slate-900 border border-slate-850 p-6 rounded-3xl shadow-xl space-y-5">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-16 h-16 bg-indigo-600 text-white rounded-full flex items-center justify-center text-3xl font-black border-2 border-slate-700">
+                                            ${myData.nickname ? myData.nickname.charAt(0).toUpperCase() : 'U'}
+                                        </div>
+                                        <div>
+                                            <h3 class="text-xl font-bold text-white">${myData.nickname || '未填'}</h3>
+                                            <p class="text-xs text-slate-500">@${myData.username || '無帳號'} · 滿 18 歲驗證</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-3 text-center">
+                                        <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
+                                            <span class="text-[10px] text-slate-500 block">身高/體重</span>
+                                            <span class="text-xs font-bold text-slate-200">${myData.height}cm / ${myData.weight}kg</span>
+                                        </div>
+                                        <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
+                                            <span class="text-[10px] text-slate-500 block">私密尺碼</span>
+                                            <span class="text-xs font-bold text-slate-200">長 ${myData.length} / 粗 ${myData.girth}</span>
+                                        </div>
+                                    </div>
+
                                     <div>
-                                        <h3 class="text-xl font-bold text-white">${myData.nickname || '未填'}</h3>
-                                        <p class="text-xs text-slate-500">@${myData.username || '無帳號'} · 滿 18 歲驗證</p>
+                                        <span class="text-[10px] text-slate-500 block mb-1">感興趣的主題</span>
+                                        <div class="flex flex-wrap gap-1.5">
+                                            ${kinkBadges ? kinkBadges : '<span class="text-slate-600 text-xs">無</span>'}
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="grid grid-cols-2 gap-3 text-center">
-                                    <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
-                                        <span class="text-[10px] text-slate-500 block">身高/體重</span>
-                                        <span class="text-xs font-bold text-slate-200">${myData.height}cm / ${myData.weight}kg</span>
-                                    </div>
-                                    <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
-                                        <span class="text-[10px] text-slate-500 block">私密尺碼</span>
-                                        <span class="text-xs font-bold text-slate-200">長 ${myData.length} / 粗 ${myData.girth}</span>
-                                    </div>
-                                </div>
-
+                                <!-- 我的貼文歷史 Grid -->
                                 <div>
-                                    <span class="text-[10px] text-slate-500 block mb-1">感興趣的主題</span>
-                                    <div class="flex flex-wrap gap-1.5">
-                                        ${kinkBadges ? kinkBadges : '<span class="text-slate-600 text-xs">無</span>'}
+                                    <h4 class="text-sm font-bold text-slate-300 mb-3 flex items-center gap-1.5"><i class="fa-regular fa-image"></i> 我的分享動態</h4>
+                                    <div class="grid grid-cols-3 gap-2">
+                                        ${myPostsGrid}
                                     </div>
-                                </div>
-                            </div>
-
-                            <!-- 我的貼文歷史 Grid -->
-                            <div>
-                                <h4 class="text-sm font-bold text-slate-300 mb-3 flex items-center gap-1.5"><i class="fa-regular fa-image"></i> 我的分享動態</h4>
-                                <div class="grid grid-cols-3 gap-2">
-                                    ${myPostsGrid}
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 底部選單 -->
-                    <div class="absolute bottom-0 w-full bg-slate-900/95 backdrop-blur-lg border-t border-slate-850 flex justify-around p-2 pb-safe md:pb-2 z-40">
+                    <!-- Footer Bottom Bar (flex-none, 永不塌陷，極致貼附於最底部) -->
+                    <div class="flex-none bg-slate-900/95 backdrop-blur-lg border-t border-slate-850 flex justify-around p-3 pb-safe z-40 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
                         <button onclick="switchTab('feed')" class="flex flex-col items-center p-2 transition ${window.state.currentTab === 'feed' ? 'text-indigo-500' : 'text-slate-500 hover:text-white'}">
                             <i class="fa-solid fa-house text-xl"></i>
                         </button>
                         
-                        <button onclick="openCreatePostModal()" class="flex flex-col items-center p-2 text-slate-500 hover:text-white transition transform -translate-y-2">
-                            <div class="w-12 h-12 bg-white text-black rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition active:scale-95">
-                                <i class="fa-solid fa-plus text-2xl"></i>
+                        <button onclick="openCreatePostModal()" class="flex flex-col items-center p-2 text-slate-500 hover:text-white transition transform -translate-y-3">
+                            <div class="w-12 h-12 bg-white text-black rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition active:scale-95 border-4 border-[#030712]">
+                                <i class="fa-solid fa-plus text-xl"></i>
                             </div>
                         </button>
                         
-                        <button onclick="switchTab('profile')" class="flex flex-col items-center p-2 transition ${window.state.currentTab === 'profile' ? 'text-indigo-500' : 'text-slate-500 hover:text-white'}">
+                        <button onclick="switchTab('profile')" class="flex flex-col items-center p-2 transition ${window.state.currentTab === 'profile' ? 'text-indigo-500 border-indigo-500' : 'text-slate-500 hover:text-white'}">
                             <div class="w-7 h-7 rounded-full border border-slate-500 overflow-hidden flex items-center justify-center bg-slate-800 text-xs font-bold text-slate-300">
                                 ${myData.nickname ? myData.nickname.charAt(0).toUpperCase() : 'U'}
                             </div>
@@ -1146,7 +1155,7 @@
                             <form onsubmit="handleCreatePost(event)" class="space-y-4">
                                 <div class="space-y-1">
                                     <label class="block text-xs font-medium text-slate-400">寫點什麼...</label>
-                                    <textarea id="post-text" required rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 text-xs focus:outline-none focus:border-indigo-500" placeholder="分享今天的訓練、身材展現、或只是日常牢騷..."></textarea>
+                                    <textarea id="post-text" required rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-slate-200 text-xs focus:outline-none focus:border-indigo-500" placeholder="分享今天的訓練、身材展現、或只是日常生活..."></textarea>
                                 </div>
                                 
                                 <div class="space-y-1">
@@ -1180,6 +1189,10 @@
         }
 
         function initDashboardFeatures() {
+            // 關鍵安全防護：防禦無窮監聽註冊迴圈
+            if (window.state.dashboardInitialized) return;
+            window.state.dashboardInitialized = true;
+
             // 即時自 Firebase 監聽貼文
             if (db) {
                 const postsQuery = query(collection(db, 'secretg_apps', appId, 'posts'));
@@ -1193,10 +1206,17 @@
                     loadedPosts.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
                     window.state.posts = loadedPosts;
                     
-                    // 在這重新渲染 Feed 的貼文部分 (避免完全打亂 UI)
+                    // 如果目前在 dashboard 畫面，且沒有打開 modal、也沒有聚焦在搜尋框，才重繪視圖以防打擾輸入
                     if (window.state.currentView === 'dashboard') {
-                        renderView();
+                        const isModalOpen = !document.getElementById('create-post-modal')?.classList.contains('hidden');
+                        const isSearching = document.activeElement === document.getElementById('dashboard-search');
+                        
+                        if (!isModalOpen && !isSearching) {
+                            renderView();
+                        }
                     }
+                }, (error) => {
+                    console.error("Posts snapshot listener error:", error);
                 });
             }
         }
@@ -1208,41 +1228,44 @@
 
         window.handleSearch = function(input) {
             window.state.searchTerm = input.value;
-            // 控制不重新整理 DOM 來打斷輸入
-            const myId = window.state.userId;
-            const term = window.state.searchTerm.toLowerCase();
-            const feedView = document.getElementById('tab-feed-view');
-            if (feedView) {
-                // 延遲輕量重繪
-                const debounceTimer = setTimeout(() => {
-                    renderView();
-                    const searchInput = document.getElementById('dashboard-search');
-                    if(searchInput) {
-                        searchInput.focus();
-                        searchInput.selectionStart = searchInput.selectionEnd = searchInput.value.length;
-                    }
-                }, 400);
-                window.state.searchDebounce = debounceTimer;
+            
+            if (window.state.searchDebounce) {
+                clearTimeout(window.state.searchDebounce);
             }
+            
+            // 延遲輕量重繪
+            const debounceTimer = setTimeout(() => {
+                renderView();
+                const searchInput = document.getElementById('dashboard-search');
+                if(searchInput) {
+                    searchInput.focus();
+                    searchInput.selectionStart = searchInput.selectionEnd = searchInput.value.length;
+                }
+            }, 300);
+            window.state.searchDebounce = debounceTimer;
         }
 
         window.openCreatePostModal = function() {
             const modal = document.getElementById('create-post-modal');
+            if (!modal) return;
             modal.classList.remove('hidden');
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
-                modal.querySelector('.transform').classList.remove('scale-95');
+                const formTransform = modal.querySelector('.transform');
+                if (formTransform) formTransform.classList.remove('scale-95');
             }, 50);
         }
 
         window.closeCreatePostModal = function() {
             const modal = document.getElementById('create-post-modal');
+            if (!modal) return;
             modal.classList.add('opacity-0');
-            modal.querySelector('.transform').classList.add('scale-95');
+            const formTransform = modal.querySelector('.transform');
+            if (formTransform) formTransform.classList.add('scale-95');
             setTimeout(() => modal.classList.add('hidden'), 300);
         }
 
-        // 圖片預覽與智慧等比壓縮轉換
+        // 圖片預覽
         window.previewSelectedImage = function(input) {
             const file = input.files[0];
             if (!file) return;
@@ -1380,11 +1403,10 @@
             }
         }
 
-        initApp();
+        // 頁面加載時執行初始化
+        window.onload = function () {
+            initApp();
+        }
     </script>
 </body>
 </html>
-```
-eof
-
-```html:SecretG 管理員後台:admin.html
