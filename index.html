@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SecretRoom | 專屬男性的私密生活分享社群</title>
-    <!-- 引入自訂分頁小圖示 (Favicon) -->
-    <link rel="icon" type="image/jpeg" href="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg">
+    <!-- 引入自訂分頁小圖示 (Favicon) - 採用強大相容性 Fallback 與快取破壞參數 ?v=2 -->
+    <link rel="shortcut icon" href="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" type="image/x-icon">
+    <link rel="icon" href="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" type="image/jpeg">
+    <link rel="apple-touch-icon" href="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -253,9 +256,9 @@
                 <div class="flex-1 flex flex-col items-center justify-center p-8 text-center fade-enter fade-enter-active bg-[url('https://images.unsplash.com/photo-1574170685715-db104eb0058b?q=80&w=600&auto=format&fit=crop')] bg-cover bg-center relative h-full">
                     <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-sm z-0"></div>
                     <div class="z-10 w-full flex flex-col items-center">
-                        <!-- 將原本相機圖示框替換為全新的 SR 專屬圓形圖章 -->
-                        <div class="w-24 h-24 mb-6 shadow-[0_0_25px_rgba(139,92,246,0.4)] rounded-full border border-violet-500/20 overflow-hidden transform hover:scale-105 transition duration-300">
-                            <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg" class="w-full h-full object-cover" alt="SecretRoom Logo">
+                        <!-- 將原圖示框替換為全新的 SR 專屬圓形圖章 (已放大，帶有快取破壞參數) -->
+                        <div class="w-36 h-36 md:w-40 md:h-40 mb-8 shadow-[0_0_35px_rgba(139,92,246,0.45)] rounded-full border border-violet-500/25 overflow-hidden transform hover:scale-105 transition duration-300">
+                            <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-full h-full object-cover" alt="SecretRoom Logo">
                         </div>
                         <h1 class="text-4xl font-bold mb-3 tracking-wider text-white">SecretRoom</h1>
                         <p class="text-slate-300 mb-10 text-sm font-light tracking-wide leading-relaxed">
@@ -1184,9 +1187,9 @@
                     <!-- Header (flex-none 固定在頂部) -->
                     <div class="flex-none p-4 bg-slate-900/95 backdrop-blur-xl border-b border-slate-850 space-y-3 shadow-lg z-30">
                         <div class="flex justify-between items-center">
-                            <!-- 在斜體 SecretRoom 前加入精緻的圓形小 Logo 圖示 -->
+                            <!-- 加上精緻的圓形 Logo 圖示 (帶有快取破壞參數) -->
                             <div class="flex items-center gap-2 cursor-pointer" onclick="closeUserProfile()">
-                                <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg" class="w-8 h-8 rounded-full object-cover shadow-[0_0_12px_rgba(139,92,246,0.5)] border border-violet-500/30" alt="SecretRoom Icon">
+                                <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-8 h-8 rounded-full object-cover shadow-[0_0_12px_rgba(139,92,246,0.5)] border border-violet-500/30" alt="SecretRoom Icon">
                                 <h1 class="text-2xl font-black tracking-widest text-white" style="font-family: serif; font-style: italic;">SecretRoom</h1>
                             </div>
                             <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow cursor-pointer" onclick="switchTab('profile')">
@@ -1194,7 +1197,7 @@
                             </div>
                         </div>
                         
-                        <!-- 搜尋輸入框 (僅在 Feed 頁面顯示且無瀏覽他人專區時) -->
+                        <!-- 搜尋輸入框 -->
                         <div class="relative ${window.state.currentTab === 'feed' && !window.state.selectedProfileUserId ? '' : 'hidden'}" id="search-bar-container">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
                                 <i class="fa-solid fa-magnifying-glass text-xs"></i>
@@ -1661,4 +1664,3 @@
     </script>
 </body>
 </html>
-```html:SecretRoom 管理員後台:admin.html
