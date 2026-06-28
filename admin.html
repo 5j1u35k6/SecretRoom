@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecretRoom | 專屬管理員審核後台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 引入 EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-950 p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto">
+        <!-- 頂部標頭 -->
+        <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8 pb-6 border-b border-slate-800">
+            <div>
+                <h1 class="text-3xl font-bold tracking-wider text-white flex items-center gap-3">
+                    <i class="fa-solid fa-user-shield text-indigo-500"></i> SecretRoom 後台管理系統
+                </h1>
+                <p class="text-slate-400 text-sm mt-1">專屬男性的私密生活分享社群 · 人工審核通道</p>
+            </div>
+            <div id="connection-status" class="self-start px-4 py-2 rounded-full bg-slate-900 border border-slate-800 text-xs text-slate-500 flex items-center gap-2">
+                <i class="fa-solid fa-circle-notch animate-spin"></i> 正在連線至資料庫...
+            </div>
+        </header>
+
+        <!-- 統計數據卡片 -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            <div class="bg-slate-900/50 border border-slate-800/80 p-5 rounded-2xl">
+                <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider">待審核申請</div>
+                <div id="count-pending" class="text-3xl font-bold text-amber-500 mt-1">-</div>
+            </div>
+            <div class="bg-slate-900/50 border border-slate-800/80 p-5 rounded-2xl">
+                <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider">已核准用戶</div>
+                <div id="count-approved" class="text-3xl font-bold text-emerald-500 mt-1">-</div>
+            </div>
+            <div class="bg-slate-900/50 border border-slate-800/80 p-5 rounded-2xl">
+                <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider">總申請人數</div>
+                <div id="count-total" class="text-3xl font-bold text-indigo-400 mt-1">-</div>
+            </div>
+        </div>
+
+        <!-- 申請名單區塊 -->
+        <div class="bg-slate-900/40 border border-slate-800/60 rounded-3xl p-6 glass-panel">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                    <div class="w-1.5 h-5 bg-indigo-500 rounded-full"></div> 申請審核名單
+                </h2>
+                <div class="flex gap-2">
+                    <select id="filter-status" onchange="filterApplications()" class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none">
+                        <option value="all">顯示全部</option>
+                        <option value="pending" selected>只顯示待審核</option>
+                        <option value="approved">只顯示已核准</option>
+                        <option value="active">只顯示已啟用</option>
+                        <option value="rejected">只顯示已拒絕</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 名單容器 -->
+            <div id="admin-list" class="space-y-4">
+                <div class="flex flex-col items-center justify-center py-12 text-slate-500 gap-3">
+                    <i class="fa-solid fa-circle-notch animate-spin text-2xl text-indigo-500"></i>
+                    <span>正在載入申請資料...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 浮動提示訊息容器 (Toast) -->
+    <div id="toast-container" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col gap-2 w-full max-w-xs px-4"></div>
+
+    <script type="module">
+        // 宣告 Firebase 變數，後續動態載入
+        let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc;
+
+        // --- 👇 替換開始：將您的 Firebase 配置貼在這裡 👇 ---
+        const appId = 'secretg-demo-app';
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyCNgJxYjC90DjtvTSaze5CREJf1Vt32aYQ",
+            authDomain: "secretroom-ef728.firebaseapp.com",
+            projectId: "secretroom-ef728",
+            storageBucket: "secretroom-ef728.firebasestorage.app",
+            messagingSenderId: "22006617218",
+            appId: "1:22006617218:web:9e9af5c6558ea57dcb109b"
+        };
+        // --- 👆 替換結束 👆 ---
+
+        // --- 👇 替換開始：將您的 EmailJS 配置貼在這裡 👇 ---
+        const emailjsConfig = {
+            publicKey: "YOUR_EMAILJS_PUBLIC_KEY", // 您的 EmailJS Public Key
+            serviceId: "YOUR_EMAILJS_SERVICE_ID", // 您的 EmailJS Service ID
+            templateId: "YOUR_EMAILJS_TEMPLATE_ID" // 您的 EmailJS Template ID
+        };
+        // --- 👆 替換結束 👆 ---
+
+        // 動態載入 Firebase SDK
+        async function loadFirebaseSDKs() {
+            try {
+                const [appMod, firestoreMod] = await Promise.all([
+                    import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"),
+                    import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js")
+                ]);
+
+                initializeApp = appMod.initializeApp;
+                getFirestore = firestoreMod.getFirestore;
+                doc = firestoreMod.doc;
+                collection = firestoreMod.collection;
+                onSnapshot = firestoreMod.onSnapshot;
+                updateDoc = firestoreMod.updateDoc;
+                getDoc = firestoreMod.getDoc;
+
+                return true;
+            } catch (e) {
+                console.error("無法載入 Firebase SDK:", e);
+                return false;
+            }
+        }
+
+        let db;
+        let allApplications = [];
+
+        // 初始化後台
+        async function initAdmin() {
+            // 初始化 EmailJS
+            if (emailjsConfig.publicKey && emailjsConfig.publicKey !== "YOUR_EMAILJS_PUBLIC_KEY") {
+                emailjs.init(emailjsConfig.publicKey);
+            }
+
+            const firebaseLoaded = await loadFirebaseSDKs();
+            const statusEl = document.getElementById('connection-status');
+
+            if (firebaseLoaded) {
+                try {
+                    const app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    statusEl.className = "self-start px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 flex items-center gap-2";
+                    statusEl.innerHTML = '<i class="fa-solid fa-circle text-[8px] animate-pulse"></i> 資料庫連線正常';
+                    
+                    listenToApplications();
+                } catch (error) {
+                    console.error("Firebase 連線錯誤:", error);
+                    statusEl.className = "self-start px-4 py-2 rounded-full bg-red-500/10 border border-red-500/20 text-xs text-red-400 flex items-center gap-2";
+                    statusEl.innerHTML = '<i class="fa-solid fa-circle text-[8px]"></i> 連線失敗，請檢查 Config';
+                    showMockDataInfo();
+                }
+            } else {
+                statusEl.className = "self-start px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 flex items-center gap-2";
+                statusEl.innerHTML = '<i class="fa-solid fa-circle text-[8px]"></i> 離線模擬模式';
+                showMockDataInfo();
+            }
+        }
+
+        // 監聽資料庫申請名單
+        function listenToApplications() {
+            const q = collection(db, 'secretg_apps', appId, 'applications');
+            onSnapshot(q, (querySnapshot) => {
+                allApplications = [];
+                let pendingCount = 0;
+                let approvedCount = 0;
+
+                querySnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    allApplications.push({ id: docSnap.id, ...data });
+
+                    if (data.status === 'pending') pendingCount++;
+                    if (data.status === 'approved' || data.status === 'active') approvedCount++;
+                });
+
+                // 更新統計數字
+                document.getElementById('count-pending').textContent = pendingCount;
+                document.getElementById('count-approved').textContent = approvedCount;
+                document.getElementById('count-total').textContent = allApplications.length;
+
+                renderApplications();
+            }, (error) => {
+                console.error("監聽名單出錯:", error);
+                showToast("載入資料失敗，請檢查資料庫 Rules 權限", "error");
+            });
+        }
+
+        // 模擬模式顯示
+        function showMockDataInfo() {
+            const listContainer = document.getElementById('admin-list');
+            listContainer.innerHTML = `
+                <div class="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 text-center flex flex-col items-center justify-center gap-4">
+                    <div class="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-500 text-xl">
+                        <i class="fa-solid fa-circle-info"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-200">目前為模擬測試模式</h4>
+                        <p class="text-xs text-slate-500 mt-1">您需要在本檔案的程式碼中貼上真實的 Firebase Config 與 EmailJS 金鑰，才能對真實的資料庫進行審核與發信。</p>
+                    </div>
+                </div>
+            `;
+            document.getElementById('count-pending').textContent = '0';
+            document.getElementById('count-approved').textContent = '0';
+            document.getElementById('count-total').textContent = '0';
+        }
+
+        // 渲染申請名單
+        window.renderApplications = function() {
+            const listContainer = document.getElementById('admin-list');
+            const filterValue = document.getElementById('filter-status').value;
+
+            // 根據篩選條件過濾
+            const filteredApps = allApplications.filter(app => {
+                if (filterValue === 'all') return true;
+                return app.status === filterValue;
+            });
+
+            listContainer.innerHTML = '';
+
+            if (filteredApps.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="text-center py-12 text-slate-500 flex flex-col items-center gap-2">
+                        <i class="fa-solid fa-folder-open text-2xl"></i>
+                        <span>無符合條件的申請資料</span>
+                    </div>
+                `;
+                return;
+            }
+
+            filteredApps.forEach((appData) => {
+                const card = document.createElement('div');
+                card.className = 'bg-slate-900/60 p-5 rounded-2xl border border-slate-800/80 hover:border-slate-700/60 transition flex flex-col md:flex-row md:items-center justify-between gap-4';
+                
+                let kinksStr = appData.kinks && appData.kinks.length > 0 ? appData.kinks.join(', ') : '無';
+                if (appData.otherKink) kinksStr += ` (其他: ${appData.otherKink})`;
+
+                const statusColors = {
+                    pending: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+                    approved: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+                    active: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+                    rejected: 'bg-red-500/10 text-red-400 border-red-500/20'
+                };
+                const currentStatusColor = statusColors[appData.status] || 'bg-slate-800 text-slate-400 border-slate-700';
+
+                let tgInfoHtml = '';
+                if (appData.telegramInfo) {
+                    tgInfoHtml = `
+                        <div class="mt-2 pt-2 border-t border-slate-800/60 text-xs text-blue-400 flex items-center gap-1.5">
+                            <i class="fa-brands fa-telegram text-sm"></i>
+                            <span>已綁定：@${appData.telegramInfo.username || appData.telegramInfo.first_name} (ID: ${appData.telegramInfo.id})</span>
+                        </div>
+                    `;
+                }
+
+                // 只有待審核時顯示核准/拒絕按鈕
+                let actionButtons = '';
+                if (appData.status === 'pending') {
+                    actionButtons = `
+                        <div class="flex gap-2 shrink-0">
+                            <button onclick="updateStatus('${appData.id}', 'approved')" class="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-xs px-4 py-2.5 rounded-xl transition font-semibold shadow-lg shadow-emerald-950/20">
+                                <i class="fa-solid fa-check mr-1"></i> 核准加入
+                            </button>
+                            <button onclick="updateStatus('${appData.id}', 'rejected')" class="bg-red-600/20 hover:bg-red-600/30 active:scale-95 text-red-400 border border-red-500/20 text-xs px-4 py-2.5 rounded-xl transition font-semibold">
+                                <i class="fa-solid fa-xmark mr-1"></i> 拒絕
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    actionButtons = `
+                        <div class="text-xs text-slate-500 font-medium shrink-0 bg-slate-950/40 px-3 py-2 rounded-xl border border-slate-900">
+                            已於 ${appData.createdAt ? new Date(appData.createdAt.seconds * 1000).toLocaleDateString() : '未知時間'} 處理
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="space-y-1.5">
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <h4 class="font-bold text-base text-slate-200">${appData.nickname || '未填'}</h4>
+                            <span class="px-2.5 py-0.5 text-xs font-medium rounded-full border ${currentStatusColor}">
+                                ${appData.status === 'pending' ? '待審核' : appData.status === 'approved' ? '已核准' : appData.status === 'active' ? '已啟用' : '已拒絕'}
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-400 flex items-center gap-1"><i class="fa-regular fa-envelope"></i> 通知信箱：<span class="text-slate-300">${appData.email}</span></p>
+                        <div class="grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-slate-400 mt-2">
+                            <div><span class="text-slate-500">身高體重：</span>${appData.height} cm / ${appData.weight} kg</div>
+                            <div><span class="text-slate-500">身體密碼：</span>長 ${appData.length} cm / 粗 ${appData.girth} cm</div>
+                            <div class="col-span-2 mt-1"><span class="text-slate-500">感興趣主題：</span><span class="text-slate-300">${kinksStr}</span></div>
+                        </div>
+                        ${tgInfoHtml}
+                    </div>
+                    ${actionButtons}
+                `;
+                listContainer.appendChild(card);
+            });
+        }
+
+        window.filterApplications = function() {
+            renderApplications();
+        }
+
+        // 發送電子郵件通知
+        async function sendEmailNotification(userData, status) {
+            if (!emailjsConfig.publicKey || emailjsConfig.publicKey === "YOUR_EMAILJS_PUBLIC_KEY") {
+                console.info(`[Email 模擬] 發送郵件給 ${userData.email}：您的申請狀態已更新為 [${status}]。`);
+                showToast(`[模擬信件] 已寄送審核通知至 ${userData.email} (請配置真實金鑰以寄送真實信件)`, "info");
+                return;
+            }
+
+            const statusText = status === 'approved' ? '已通過審核' : '未通過審核';
+            const messageText = status === 'approved' 
+                ? `恭喜您！您的加入申請已通過審核。請點擊下方連結進入平台綁定您的 Telegram 帳號：\nhttps://${window.location.host || 'localhost'}`
+                : `很抱歉，您的加入申請未通過審核。感謝您的關注。`;
+
+            try {
+                await emailjs.send(emailjsConfig.serviceId, emailjsConfig.templateId, {
+                    to_email: userData.email,
+                    to_name: userData.nickname,
+                    status_text: statusText,
+                    message: messageText
+                });
+                console.log(`Email 成功發送至 ${userData.email}`);
+                showToast(`真實審核通知信已寄送至 ${userData.email}`, "success");
+            } catch (error) {
+                console.error("Email 發送失敗:", error);
+                showToast("Email 通知信發送失敗，請檢查 EmailJS 配置", "error");
+            }
+        }
+
+        // 更新審核狀態
+        window.updateStatus = async function(userId, status) {
+            if (!db) {
+                showToast("目前處於模擬模式，無法更新資料庫狀態", "error");
+                return;
+            }
+
+            try {
+                // 獲取該用戶資料以取得 email 和 nickname
+                const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+                const docSnap = await getDoc(docRef);
+                
+                if (!docSnap.exists()) {
+                    showToast("找不到該筆申請資料", "error");
+                    return;
+                }
+                
+                const userData = docSnap.data();
+
+                // 更新資料庫
+                await updateDoc(docRef, { status: status });
+                showToast('已更新狀態為 ' + (status === 'approved' ? '已核准' : '已拒絕'), 'success');
+                
+                // 發送郵件通知
+                sendEmailNotification(userData, status);
+            } catch (e) {
+                console.error("更新狀態失敗:", e);
+                showToast('更新失敗: ' + e.message, 'error');
+            }
+        }
+
+        window.showToast = function(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bgColors = {
+                error: 'bg-red-500/95 border-red-400',
+                success: 'bg-emerald-500/95 border-emerald-400',
+                info: 'bg-blue-600/95 border-blue-400'
+            };
+            toast.className = `${bgColors[type]} text-white px-5 py-3.5 rounded-xl shadow-lg border text-sm font-medium transition-all duration-300 opacity-0 transform -translate-y-4 backdrop-blur-xl flex items-center gap-3`;
+            
+            const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+            toast.innerHTML = `<i class="fa-solid ${icon} text-lg"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => toast.classList.remove('opacity-0', '-translate-y-4'));
+            setTimeout(() => {
+                toast.classList.add('opacity-0', '-translate-y-4');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // 啟動後台
+        initAdmin();
+    </script>
+</body>
+</html>
