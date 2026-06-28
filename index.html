@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecretRoom | 專屬男性的私密生活分享社群</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 引入 EmailJS SDK 用於發送審核通知郵件 -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        
+        .fade-enter { opacity: 0; transform: translateY(10px); }
+        .fade-enter-active { opacity: 1; transform: translateY(0); transition: opacity 400ms ease-out, transform 400ms ease-out; }
+        
+        /* 自訂下拉選單樣式 */
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+        }
+        
+        /* 隱藏預設滾動條以自訂水平滾動 */
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-0 md:p-4">
+
+    <!-- 主應用程式容器 -->
+    <div id="app" class="w-full max-w-md h-[100dvh] md:h-auto md:min-h-[750px] md:rounded-3xl shadow-2xl overflow-hidden relative flex flex-col bg-[#0f172a] md:glass-panel border-0 md:border md:border-slate-800">
+        <!-- 動態內容將渲染於此 -->
+        <div id="loading-screen" class="absolute inset-0 z-50 bg-[#0f172a] flex flex-col items-center justify-center">
+            <div class="w-16 h-16 border-4 border-slate-700 border-t-purple-500 rounded-full animate-spin mb-4"></div>
+            <p class="text-slate-400 font-medium tracking-widest text-sm">連線至伺服器...</p>
+        </div>
+    </div>
+
+    <!-- 浮動提示訊息容器 (Toast) -->
+    <div id="toast-container" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col gap-2 w-full max-w-xs px-4"></div>
+
+    <!-- 管理員入口按鈕 (開發測試用) -->
+    <button onclick="navigate('admin')" class="fixed bottom-4 right-4 bg-slate-800 hover:bg-slate-700 text-slate-400 p-3 rounded-full shadow-lg border border-slate-700 transition z-50 text-xs flex items-center gap-2">
+        <i class="fa-solid fa-lock"></i> 測試後台
+    </button>
+
+    <script type="module">
+        // 宣告 Firebase 變數，後續動態載入
+        let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
+        let getFirestore, doc, setDoc, getDoc, collection, query, onSnapshot, updateDoc, getDocs, serverTimestamp;
+
+        // --- 👇 替換開始：將 Firebase Config 貼在這裡 👇 ---
+        const appId = 'secretg-demo-app'; // 這是我們存在資料庫的集合名稱
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyCNgJxYjC90DjtvTSaze5CREJf1Vt32aYQ",
+            authDomain: "secretroom-ef728.firebaseapp.com",
+            projectId: "secretroom-ef728",
+            storageBucket: "secretroom-ef728.firebasestorage.app",
+            messagingSenderId: "22006617218",
+            appId: "1:22006617218:web:9e9af5c6558ea57dcb109b"
+        };
+        // --- 👆 替換結束 👆 ---
+
+        // --- 👇 替換開始：將您的 EmailJS 與 Telegram 配置貼在這裡 👇 ---
+        const emailjsConfig = {
+            publicKey: "ZEp9d-hAeYdFujDZy", // 您的 EmailJS Public Key
+            serviceId: "service_1ou10mi", // 您的 EmailJS Service ID
+            templateId: "template_25proud" // 您的 EmailJS Template ID
+        };
+
+        const telegramBotName = "YOUR_TELEGRAM_BOT_USERNAME"; // 您的 Telegram Bot 帳號名稱（不含 @），例如 SecretG_Bot
+        // --- 👆 替換結束 👆 ---
+
+        // 動態載入 Firebase SDK 以防離線或 CDN 異常時阻斷整個網頁執行
+        async function loadFirebaseSDKs() {
+            try {
+                // 平行載入所有 Firebase 模組
+                const [appMod, authMod, firestoreMod] = await Promise.all([
+                    import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"),
+                    import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"),
+                    import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js")
+                ]);
+
+                // 賦值給全域變數
+                initializeApp = appMod.initializeApp;
+                getAuth = authMod.getAuth;
+                signInAnonymously = authMod.signInAnonymously;
+                onAuthStateChanged = authMod.onAuthStateChanged;
+
+                getFirestore = firestoreMod.getFirestore;
+                doc = firestoreMod.doc;
+                setDoc = firestoreMod.setDoc;
+                getDoc = firestoreMod.getDoc;
+                collection = firestoreMod.collection;
+                query = firestoreMod.query;
+                onSnapshot = firestoreMod.onSnapshot;
+                updateDoc = firestoreMod.updateDoc;
+                getDocs = firestoreMod.getDocs;
+                serverTimestamp = firestoreMod.serverTimestamp;
+
+                return true;
+            } catch (e) {
+                console.warn("無法從 CDN 載入 Firebase SDK，將自動啟用本地模擬模式（Mock Mode）。", e);
+                return false;
+            }
+        }
+
+        let app, db, auth;
+
+        window.state = {
+            currentView: 'landing',
+            userId: null,
+            applicationId: null,
+            unsubscribeListener: null,
+            userData: {
+                nickname: '', birthYear: '', birthMonth: '', birthDay: '',
+                height: '', weight: '', length: '', girth: '', kinks: [], otherKink: '', email: ''
+            },
+            kinksOptions: [
+                "生活日常", "健身運動", "時尚穿搭", "攝影影像", "戶外旅遊", 
+                "美食烹飪", "心靈交流", "熟男/Daddy", "純愛分享"
+            ]
+        };
+
+        const appContainer = document.getElementById('app');
+
+        // 初始化應用與登入
+        async function initApp() {
+            // 初始化 EmailJS（若已填入 Key）
+            if (emailjsConfig.publicKey && emailjsConfig.publicKey !== "YOUR_EMAILJS_PUBLIC_KEY") {
+                emailjs.init(emailjsConfig.publicKey);
+            }
+
+            const firebaseLoaded = await loadFirebaseSDKs();
+            
+            if (firebaseLoaded) {
+                try {
+                    app = initializeApp(firebaseConfig || {});
+                    db = getFirestore(app);
+                    auth = getAuth(app);
+
+                    await signInAnonymously(auth);
+                    onAuthStateChanged(auth, (user) => {
+                        if (user) {
+                            window.state.userId = user.uid;
+                            checkExistingApplication();
+                        }
+                    });
+                } catch (error) {
+                    console.error("Firebase 初始化或驗證錯誤，切換至模擬模式:", error);
+                    enableMockMode();
+                }
+            } else {
+                enableMockMode();
+            }
+        }
+
+        // 啟用模擬模式
+        function enableMockMode() {
+            db = null;
+            auth = null;
+            window.state.userId = 'mock-user-' + Math.floor(Math.random() * 1000);
+            showToast('已啟用本地模擬模式（無資料庫連線）', 'info');
+            setTimeout(() => {
+                hideLoading();
+                navigate('landing');
+            }, 800);
+        }
+
+        // 檢查是否有已存在的申請
+        async function checkExistingApplication() {
+            if(!db) { hideLoading(); navigate('landing'); return; }
+            try {
+                const appRef = doc(db, 'secretg_apps', appId, 'applications', window.state.userId);
+                const docSnap = await getDoc(appRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    window.state.userData = data;
+                    if (data.status === 'pending') {
+                        navigate('pending');
+                    } else if (data.status === 'approved') {
+                        navigate('telegram');
+                    } else if (data.status === 'active') {
+                        navigate('dashboard');
+                    } else {
+                        navigate('landing');
+                    }
+                } else {
+                    navigate('landing');
+                }
+            } catch (e) {
+                console.error("檢查申請時發生錯誤:", e);
+                if (e.code === 'permission-denied') {
+                    showToast('讀取失敗：Firebase 權限不足，請至後台修改 Rules', 'error');
+                }
+                navigate('landing');
+            }
+            hideLoading();
+        }
+
+        function hideLoading() {
+            const loader = document.getElementById('loading-screen');
+            if(loader) loader.style.display = 'none';
+        }
+
+        window.showToast = function(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bgColors = {
+                error: 'bg-red-500/95 border-red-400',
+                success: 'bg-emerald-500/95 border-emerald-400',
+                info: 'bg-blue-600/95 border-blue-400'
+            };
+            toast.className = `${bgColors[type]} text-white px-5 py-3.5 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] border text-sm font-medium transition-all duration-300 opacity-0 transform -translate-y-4 backdrop-blur-xl flex items-center gap-3`;
+            
+            const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+            toast.innerHTML = `<i class="fa-solid ${icon} text-lg"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => toast.classList.remove('opacity-0', '-translate-y-4'));
+            setTimeout(() => {
+                toast.classList.add('opacity-0', '-translate-y-4');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        window.navigate = function(view) {
+            window.state.currentView = view;
+            renderView();
+        }
+
+        function renderView() {
+            appContainer.innerHTML = '';
+            let content = '';
+
+            switch(window.state.currentView) {
+                case 'landing': content = viewLanding(); break;
+                case 'register': content = viewRegister(); break;
+                case 'confirm': content = viewConfirm(); break;
+                case 'pending': content = viewPending(); break;
+                case 'telegram': content = viewTelegram(); break;
+                case 'dashboard': content = viewDashboard(); break;
+                case 'admin': content = viewAdmin(); break;
+            }
+
+            appContainer.innerHTML = content;
+            
+            // 執行視圖掛載後邏輯
+            if (window.state.currentView === 'register') initRegisterForm();
+            if (window.state.currentView === 'pending') listenToApplicationStatus();
+            if (window.state.currentView === 'telegram') loadTelegramWidget();
+            if (window.state.currentView === 'admin') loadAdminData();
+        }
+
+        function viewLanding() {
+            return `
+                <div class="flex-1 flex flex-col items-center justify-center p-8 text-center fade-enter fade-enter-active bg-[url('https://images.unsplash.com/photo-1574170685715-db104eb0058b?q=80&w=600&auto=format&fit=crop')] bg-cover bg-center relative">
+                    <div class="absolute inset-0 bg-slate-900/85 backdrop-blur-sm z-0"></div>
+                    <div class="z-10 w-full flex flex-col items-center">
+                        <div class="w-24 h-24 bg-gradient-to-tr from-slate-800 to-slate-700 rounded-3xl flex items-center justify-center mb-6 shadow-2xl border border-slate-600/50 transform rotate-3">
+                            <i class="fa-solid fa-camera-retro text-4xl text-slate-200 transform -rotate-3"></i>
+                        </div>
+                        <h1 class="text-4xl font-bold mb-3 tracking-wider text-white">SecretG</h1>
+                        <p class="text-slate-300 mb-10 text-sm font-light tracking-wide leading-relaxed">
+                            專屬男性的私密生活分享社群<br>分享生活近況，看見最真實的彼此
+                        </p>
+                        
+                        <button onclick="navigate('register')" class="w-full bg-white text-slate-900 hover:bg-slate-200 font-bold py-4 px-4 rounded-2xl transition duration-300 shadow-[0_0_30px_rgba(255,255,255,0.2)] text-lg">
+                            申請加入社群
+                        </button>
+                        <p class="text-xs text-slate-400 mt-6 bg-slate-900/50 py-2 px-4 rounded-full border border-slate-700/50"><i class="fa-solid fa-shield-halved mr-1 text-emerald-400"></i> 人工審核 · 滿18歲限定</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function viewRegister() {
+            let kinksHtml = window.state.kinksOptions.map((kink) => `
+                <label class="flex items-center space-x-3 p-3 bg-slate-800/40 rounded-xl border border-slate-700/60 cursor-pointer hover:bg-slate-700/50 transition">
+                    <input type="checkbox" name="kinks" value="${kink}" class="form-checkbox h-5 w-5 text-slate-100 rounded border-slate-500 bg-slate-900 focus:ring-slate-400 focus:ring-offset-slate-900" ${window.state.userData.kinks && window.state.userData.kinks.includes(kink) ? 'checked' : ''}>
+                    <span class="text-sm text-slate-200">${kink}</span>
+                </label>
+            `).join('');
+
+            return `
+                <div class="flex flex-col h-full fade-enter fade-enter-active bg-slate-900">
+                    <div class="p-4 border-b border-slate-800 flex items-center bg-slate-900/80 backdrop-blur-md sticky top-0 z-20">
+                        <button onclick="navigate('landing')" class="text-slate-400 hover:text-white transition w-10 flex justify-start"><i class="fa-solid fa-chevron-left text-lg"></i></button>
+                        <h2 class="flex-1 text-center font-semibold text-lg tracking-wide">基本資料填寫</h2>
+                        <div class="w-10"></div>
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-5 scroll-smooth">
+                        <form id="registerForm" class="space-y-7 pb-10">
+                            
+                            <!-- 暱稱 -->
+                            <div class="space-y-1.5">
+                                <label class="block text-sm font-medium text-slate-300 ml-1">暱稱 <span class="text-red-400">*</span></label>
+                                <input type="text" id="reg-nickname" required value="${window.state.userData.nickname||''}" class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition placeholder-slate-500" placeholder="你在平台上的稱呼">
+                            </div>
+
+                            <!-- 生日選擇器 -->
+                            <div class="space-y-1.5">
+                                <label class="block text-sm font-medium text-slate-300 ml-1">出生年月日 (需滿18歲) <span class="text-red-400">*</span></label>
+                                <div class="grid grid-cols-3 gap-3">
+                                    <div class="relative">
+                                        <select id="reg-year" required class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl pl-4 pr-10 py-3.5 text-white focus:outline-none focus:border-slate-400 transition appearance-none text-center">
+                                            <option value="">年</option>
+                                        </select>
+                                    </div>
+                                    <div class="relative">
+                                        <select id="reg-month" required class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl pl-4 pr-10 py-3.5 text-white focus:outline-none focus:border-slate-400 transition appearance-none text-center">
+                                            <option value="">月</option>
+                                        </select>
+                                    </div>
+                                    <div class="relative">
+                                        <select id="reg-day" required class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl pl-4 pr-10 py-3.5 text-white focus:outline-none focus:border-slate-400 transition appearance-none text-center">
+                                            <option value="">日</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 身高體重 -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-1.5">
+                                    <label class="block text-sm font-medium text-slate-300 ml-1">身高 (cm) <span class="text-red-400">*</span></label>
+                                    <input type="number" id="reg-height" required min="100" max="250" value="${window.state.userData.height||''}" class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:border-slate-400 transition text-center">
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="block text-sm font-medium text-slate-300 ml-1">體重 (kg) <span class="text-red-400">*</span></label>
+                                    <input type="number" id="reg-weight" required min="30" max="200" value="${window.state.userData.weight||''}" class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:border-slate-400 transition text-center">
+                                </div>
+                            </div>
+
+                            <!-- 生殖器尺寸 -->
+                            <div class="bg-slate-800/30 p-5 rounded-3xl border border-slate-700/50 relative overflow-hidden">
+                                <div class="absolute top-0 right-0 p-3 opacity-10"><i class="fa-solid fa-ruler-combined text-4xl"></i></div>
+                                <h3 class="text-sm font-medium text-slate-200 mb-4 relative z-10 flex items-center gap-2"><div class="w-1.5 h-4 bg-emerald-500 rounded-full"></div> 身體密碼 (選填，供展示參考)</h3>
+                                <div class="grid grid-cols-2 gap-4 relative z-10">
+                                    <div class="space-y-1">
+                                        <label class="block text-xs text-slate-400 ml-1">長度 (cm)</label>
+                                        <input type="number" id="reg-length" step="0.1" value="${window.state.userData.length&&window.state.userData.length!=='未填'?window.state.userData.length:''}" class="w-full bg-slate-900/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-slate-400 transition text-center placeholder-slate-600" placeholder="例如: 15.5">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="block text-xs text-slate-400 ml-1">粗度圓周 (cm)</label>
+                                        <input type="number" id="reg-girth" step="0.1" value="${window.state.userData.girth&&window.state.userData.girth!=='未填'?window.state.userData.girth:''}" class="w-full bg-slate-900/50 border border-slate-600 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-slate-400 transition text-center placeholder-slate-600" placeholder="例如: 12">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 興趣標籤 -->
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-slate-300 ml-1">感興趣的生活主題 (可多選)</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    ${kinksHtml}
+                                </div>
+                                <div class="mt-3 bg-slate-800/40 p-3 rounded-xl border border-slate-700/60">
+                                    <label class="flex items-center space-x-3 cursor-pointer">
+                                        <input type="checkbox" id="kink-other-checkbox" class="form-checkbox h-5 w-5 text-slate-100 rounded border-slate-500 bg-slate-900 focus:ring-slate-400">
+                                        <span class="text-sm text-slate-200">其他補充</span>
+                                    </label>
+                                    <div id="kink-other-container" class="mt-3 hidden">
+                                        <input type="text" id="reg-kink-other" value="${window.state.userData.otherKink||''}" placeholder="請簡述您的其他偏好" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-slate-400 text-sm">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="space-y-1.5 pt-2 border-t border-slate-800">
+                                <label class="block text-sm font-medium text-slate-300 ml-1">通知信箱 <span class="text-red-400">*</span></label>
+                                <p class="text-xs text-slate-500 ml-1 mb-2">審核結果將寄送至此，絕不外流。</p>
+                                <input type="email" id="reg-email" required value="${window.state.userData.email||''}" class="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-4 py-3.5 text-white focus:outline-none focus:border-slate-400 transition placeholder-slate-500" placeholder="your@email.com">
+                            </div>
+
+                            <button type="submit" class="w-full mt-6 bg-white hover:bg-slate-200 text-slate-900 font-bold py-4 px-4 rounded-2xl transition duration-300 shadow-lg text-lg sticky bottom-4 z-10">
+                                預覽並確認資料
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            `;
+        }
+
+        function initRegisterForm() {
+            const yearSelect = document.getElementById('reg-year');
+            const monthSelect = document.getElementById('reg-month');
+            const daySelect = document.getElementById('reg-day');
+            
+            const currentYear = new Date().getFullYear();
+            const maxYear = currentYear - 18;
+            const minYear = currentYear - 80;
+
+            // 產生年份
+            for (let y = maxYear; y >= minYear; y--) {
+                const opt = document.createElement('option');
+                opt.value = y; opt.textContent = y;
+                if(window.state.userData.birthYear == y) opt.selected = true;
+                yearSelect.appendChild(opt);
+            }
+
+            // 產生月份
+            for (let m = 1; m <= 12; m++) {
+                const opt = document.createElement('option');
+                opt.value = m; opt.textContent = m;
+                if(window.state.userData.birthMonth == m) opt.selected = true;
+                monthSelect.appendChild(opt);
+            }
+
+            // 更新日期的函數
+            const updateDays = () => {
+                const y = parseInt(yearSelect.value);
+                const m = parseInt(monthSelect.value);
+                daySelect.innerHTML = '<option value="">日</option>';
+                if (!y || !m) return;
+                
+                const daysInMonth = new Date(y, m, 0).getDate();
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const opt = document.createElement('option');
+                    opt.value = d; opt.textContent = d;
+                    if(window.state.userData.birthDay == d) opt.selected = true;
+                    daySelect.appendChild(opt);
+                }
+            };
+
+            yearSelect.addEventListener('change', updateDays);
+            monthSelect.addEventListener('change', updateDays);
+            if(window.state.userData.birthYear && window.state.userData.birthMonth) updateDays();
+
+            // 其他選項邏輯
+            const form = document.getElementById('registerForm');
+            const otherCheckbox = document.getElementById('kink-other-checkbox');
+            const otherContainer = document.getElementById('kink-other-container');
+
+            if(window.state.userData.otherKink) {
+                otherCheckbox.checked = true;
+                otherContainer.classList.remove('hidden');
+                document.getElementById('reg-kink-other').setAttribute('required', 'true');
+            }
+
+            otherCheckbox.addEventListener('change', (e) => {
+                if(e.target.checked) {
+                    otherContainer.classList.remove('hidden');
+                    document.getElementById('reg-kink-other').setAttribute('required', 'true');
+                } else {
+                    otherContainer.classList.add('hidden');
+                    document.getElementById('reg-kink-other').removeAttribute('required');
+                    document.getElementById('reg-kink-other').value = '';
+                }
+            });
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const selectedKinks = Array.from(document.querySelectorAll('input[name="kinks"]:checked')).map(el => el.value);
+                const otherValue = otherCheckbox.checked ? document.getElementById('reg-kink-other').value.trim() : '';
+
+                window.state.userData = {
+                    nickname: document.getElementById('reg-nickname').value,
+                    birthYear: document.getElementById('reg-year').value,
+                    birthMonth: document.getElementById('reg-month').value,
+                    birthDay: document.getElementById('reg-day').value,
+                    height: document.getElementById('reg-height').value,
+                    weight: document.getElementById('reg-weight').value,
+                    length: document.getElementById('reg-length').value || '未填',
+                    girth: document.getElementById('reg-girth').value || '未填',
+                    kinks: selectedKinks,
+                    otherKink: otherValue,
+                    email: document.getElementById('reg-email').value,
+                    status: 'pending' // 預設狀態為待審核
+                };
+
+                navigate('confirm');
+            });
+        }
+
+        function viewConfirm() {
+            const u = window.state.userData;
+            const age = new Date().getFullYear() - parseInt(u.birthYear);
+            let displayKinks = [...u.kinks];
+            if(u.otherKink) displayKinks.push(`其他: ${u.otherKink}`);
+
+            return `
+                <div class="flex flex-col h-full fade-enter fade-enter-active bg-slate-900">
+                    <div class="p-4 border-b border-slate-800 flex items-center bg-slate-900/80 backdrop-blur-md sticky top-0 z-20">
+                        <button onclick="navigate('register')" class="text-slate-400 hover:text-white transition w-16 flex justify-start items-center gap-1"><i class="fa-solid fa-pen text-xs"></i> 修改</button>
+                        <h2 class="flex-1 text-center font-semibold text-lg tracking-wide">資料確認</h2>
+                        <div class="w-16"></div>
+                    </div>
+                    <div class="flex-1 p-5 overflow-y-auto">
+                        <div class="bg-slate-800/60 rounded-3xl p-6 border border-slate-700/80 shadow-xl space-y-5">
+                            
+                            <div class="flex items-center gap-4 border-b border-slate-700/50 pb-5">
+                                <div class="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center text-2xl font-bold text-slate-300 border-2 border-slate-600">
+                                    ${u.nickname.charAt(0).toUpperCase()}
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-white">${u.nickname}</h3>
+                                    <p class="text-slate-400 text-sm">${age} 歲 · ${u.birthYear}/${u.birthMonth}/${u.birthDay}</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-slate-900/50 p-3 rounded-xl text-center border border-slate-800">
+                                    <div class="text-xs text-slate-500 mb-1">身高/體重</div>
+                                    <div class="font-semibold text-slate-200">${u.height}<span class="text-xs font-normal">cm</span> / ${u.weight}<span class="text-xs font-normal">kg</span></div>
+                                </div>
+                                <div class="bg-slate-900/50 p-3 rounded-xl text-center border border-slate-800">
+                                    <div class="text-xs text-slate-500 mb-1">私密密碼 (長/粗)</div>
+                                    <div class="font-semibold text-slate-200">${u.length} / ${u.girth}</div>
+                                </div>
+                            </div>
+
+                            <div class="pt-2">
+                                <span class="text-xs text-slate-500 block mb-2 font-medium">偏好主題</span>
+                                <div class="flex flex-wrap gap-2">
+                                    ${displayKinks.length > 0 
+                                        ? displayKinks.map(k => `<span class="px-3 py-1 bg-slate-700/50 border border-slate-600 text-slate-300 rounded-lg text-xs font-medium">${k}</span>`).join('')
+                                        : '<span class="text-slate-600 text-sm">無填寫</span>'}
+                                </div>
+                            </div>
+
+                            <div class="pt-4 border-t border-slate-700/50">
+                                <span class="text-xs text-slate-500 block mb-1 font-medium">通知信箱</span>
+                                <span class="font-medium text-sm text-slate-300">${u.email}</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 p-4 bg-blue-900/20 border border-blue-800/50 rounded-2xl flex items-start gap-3">
+                            <i class="fa-solid fa-shield-check text-blue-400 mt-0.5"></i>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                送出後將由管理員進行人工審核。審核通過後將發送 Email 通知，並需綁定您的 Telegram 帳號以驗證身分並保護社群隱私。
+                            </p>
+                        </div>
+
+                        <button onclick="submitApplication()" class="w-full mt-8 bg-white hover:bg-slate-200 text-slate-900 font-bold py-4 px-4 rounded-2xl transition duration-300 shadow-lg text-lg">
+                            確認並送出審核
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.submitApplication = async function() {
+            if(!db || !window.state.userId) {
+                showToast('已在本地提交審核（模擬模式）', 'success');
+                window.state.userData.status = 'pending';
+                setTimeout(() => navigate('pending'), 500);
+                return;
+            }
+
+            try {
+                const u = window.state.userData;
+                const docRef = doc(db, 'secretg_apps', appId, 'applications', window.state.userId);
+                await setDoc(docRef, {
+                    ...u,
+                    createdAt: serverTimestamp ? serverTimestamp() : new Date(),
+                    userId: window.state.userId
+                });
+                navigate('pending');
+            } catch(e) {
+                console.error("提交錯誤", e);
+                if (e.code === 'permission-denied') {
+                    showToast('寫入失敗：Firebase 權限不足，請至後台修改 Rules', 'error');
+                } else {
+                    showToast('提交失敗，請重試', 'error');
+                }
+            }
+        }
+
+        function viewPending() {
+            return `
+                <div class="flex-1 flex flex-col items-center justify-center p-8 text-center fade-enter fade-enter-active bg-slate-900 relative overflow-hidden">
+                    <!-- 背景動畫 -->
+                    <div class="absolute w-96 h-96 bg-blue-600/10 rounded-full blur-3xl -top-20 -left-20 animate-pulse"></div>
+                    
+                    <div class="z-10 flex flex-col items-center">
+                        <div class="w-24 h-24 relative mb-8">
+                            <div class="absolute inset-0 border-4 border-slate-700 rounded-full"></div>
+                            <div class="absolute inset-0 border-4 border-blue-500 rounded-full border-t-transparent animate-spin"></div>
+                            <div class="absolute inset-0 flex items-center justify-center text-2xl text-blue-400">
+                                <i class="fa-solid fa-user-shield"></i>
+                            </div>
+                        </div>
+                        <h2 class="text-2xl font-bold mb-3 tracking-wide text-white">人工審核進行中</h2>
+                        <p class="text-slate-400 mb-8 text-sm leading-relaxed max-w-[280px]">
+                            為維護 SecretG 的私密與真實性，管理員正在檢視您的資料。<br><br>
+                            通過後此畫面將<strong class="text-blue-400">自動跳轉</strong>，並寄送通知至：<br>
+                            <span class="text-slate-300 mt-2 block break-all">${window.state.userData.email}</span>
+                        </p>
+                        
+                        <div class="bg-slate-800/80 rounded-xl p-4 border border-slate-700 text-xs text-slate-500 flex items-center gap-2">
+                            <i class="fa-solid fa-circle-notch animate-spin"></i> 正在監聽資料庫狀態...
+                        </div>
+                        
+                        <!-- 提示說明 -->
+                        <p class="mt-12 text-xs text-slate-600 max-w-xs leading-relaxed">
+                            💡 測試提示：請點擊右下角的「測試後台」，將您的狀態改為核准，此頁面就會即時跳轉。
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function listenToApplicationStatus() {
+            if(!db || !window.state.userId) return;
+            
+            // 清除之前的監聽器
+            if(window.state.unsubscribeListener) window.state.unsubscribeListener();
+
+            const docRef = doc(db, 'secretg_apps', appId, 'applications', window.state.userId);
+            window.state.unsubscribeListener = onSnapshot(docRef, (docSnap) => {
+                if(docSnap.exists()) {
+                    const data = docSnap.data();
+                    if(data.status === 'approved' && window.state.currentView === 'pending') {
+                        showToast('🎉 審核已通過！', 'success');
+                        setTimeout(() => navigate('telegram'), 1000);
+                    }
+                }
+            }, (error) => {
+                console.error("監聽錯誤:", error);
+            });
+        }
+
+        function viewTelegram() {
+            return `
+                <div class="flex flex-col h-full fade-enter fade-enter-active bg-slate-900">
+                    <div class="p-6 pb-2 text-center mt-6">
+                        <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-500/20 transform rotate-3">
+                            <i class="fa-brands fa-telegram text-4xl text-white transform -rotate-3"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold mb-2 text-white">驗證 Telegram 帳號</h2>
+                        <p class="text-slate-400 text-sm mb-6">這是確保您是真人並保護社群私密性的最後一步</p>
+                    </div>
+
+                    <div class="flex-1 px-6 pb-6 overflow-y-auto flex flex-col justify-between">
+                        <div class="bg-slate-800/60 p-5 rounded-2xl border border-slate-700 mb-6">
+                            <h3 class="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2"><div class="w-1.5 h-4 bg-blue-500 rounded-full"></div> 驗證說明</h3>
+                            <p class="text-xs text-slate-400 leading-relaxed font-light">
+                                我們使用 Telegram 官方登入元件進行安全驗證。這將確認您的帳號真實性，並安全地綁定您的帳號。<br><br>
+                                <strong>我們只會獲取您的 Telegram ID、暱稱與帳號名稱，絕不會存取您的聊天訊息或電話號碼。</strong>
+                            </p>
+                        </div>
+
+                        <!-- Telegram 官方登入按鈕容器 -->
+                        <div class="flex flex-col items-center justify-center py-8 bg-slate-950/40 rounded-2xl border border-slate-800/80 mb-6 min-h-[120px]">
+                            <div id="telegram-login-container" class="flex flex-col items-center justify-center">
+                                <div class="text-slate-500 text-xs flex flex-col items-center gap-2">
+                                    <i class="fa-solid fa-circle-notch animate-spin text-lg"></i>
+                                    <span>載入 Telegram 官方登入元件...</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 模擬驗證按鈕 -->
+                        <button onclick="mockTelegramAuth()" class="w-full bg-slate-800/60 hover:bg-slate-700/60 text-slate-400 py-3.5 rounded-2xl text-xs transition border border-slate-800 font-medium">
+                            💡 測試提示：點此模擬 Telegram 官方驗證成功
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 動態加載 Telegram Login Widget
+        function loadTelegramWidget() {
+            const container = document.getElementById('telegram-login-container');
+            if (!container) return;
+
+            container.innerHTML = '';
+
+            // 檢查是否配置了 Telegram Bot
+            if (!telegramBotName || telegramBotName === "YOUR_TELEGRAM_BOT_USERNAME") {
+                container.innerHTML = `
+                    <div class="text-center p-2">
+                        <p class="text-amber-400 text-xs font-semibold flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-triangle-exclamation"></i> 未配置 Telegram Bot
+                        </p>
+                        <p class="text-[10px] text-slate-500 mt-1">請在程式碼中配置您的 Bot 名稱，或點擊下方按鈕進行模擬測試。</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // 建立 Script 標籤載入官方 Widget
+            const script = document.createElement('script');
+            script.async = true;
+            script.src = "https://telegram.org/js/telegram-widget.js?22";
+            script.setAttribute('data-telegram-login', telegramBotName);
+            script.setAttribute('data-size', 'large');
+            script.setAttribute('data-onauth', 'onTelegramAuth(user)');
+            script.setAttribute('data-request-access', 'write');
+
+            container.appendChild(script);
+        }
+
+        // Telegram 官方驗證成功後的回呼函數
+        window.onTelegramAuth = function(user) {
+            // user 物件包含：id, first_name, last_name, username, photo_url, auth_date, hash
+            showToast('Telegram 驗證成功！', 'success');
+            saveTelegramAuthData(user);
+        };
+
+        // 儲存 Telegram 資訊與防偽 Token 到 Firestore
+        async function saveTelegramAuthData(user) {
+            const container = document.getElementById('telegram-login-container');
+            if (container) {
+                container.innerHTML = `
+                    <div class="text-emerald-400 text-xs flex items-center gap-2 font-semibold bg-emerald-500/10 px-4 py-2.5 rounded-xl border border-emerald-500/20">
+                        <i class="fa-solid fa-circle-check text-lg"></i>
+                        <span>已成功綁定 @${user.username || user.first_name}</span>
+                    </div>
+                `;
+            }
+
+            setTimeout(async () => {
+                const tgData = {
+                    id: user.id,
+                    username: user.username || '',
+                    first_name: user.first_name || '',
+                    photo_url: user.photo_url || '',
+                    auth_date: user.auth_date,
+                    hash: user.hash // 這是 Telegram 官方簽署的安全 Token
+                };
+
+                if (db && window.state.userId) {
+                    try {
+                        const docRef = doc(db, 'secretg_apps', appId, 'applications', window.state.userId);
+                        await updateDoc(docRef, { 
+                            status: 'active',
+                            tgLinked: true,
+                            telegramInfo: tgData
+                        });
+                    } catch(e) {
+                        console.error("更新 Telegram 資料至 Firestore 失敗:", e);
+                    }
+                } else {
+                    // 模擬模式
+                    window.state.userData.status = 'active';
+                    window.state.userData.telegramInfo = tgData;
+                }
+                showToast('歡迎來到 SecretG！', 'success');
+                window.state.userData.status = 'active';
+                navigate('dashboard');
+            }, 1000);
+        }
+
+        // 模擬 Telegram 驗證
+        window.mockTelegramAuth = function() {
+            const mockUser = {
+                id: 123456789,
+                first_name: "測試用戶",
+                username: "mock_tg_user",
+                auth_date: Math.floor(Date.now() / 1000),
+                hash: "mock_secure_hash_token_123456789abcde"
+            };
+            window.onTelegramAuth(mockUser);
+        };
+
+        window.handleTgSubmit = async function(e) {
+            e.preventDefault();
+        }
+
+        function viewDashboard() {
+            const feeds = [
+                { 
+                    user: "Alex", age: 26, avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=150&auto=format&fit=crop", 
+                    photo: "https://images.unsplash.com/photo-1583416750470-965b2707b355?q=80&w=600&auto=format&fit=crop", 
+                    text: "週末早晨的陽光特別好。最近在練肩膀，感覺線條慢慢出來了。💪✨", 
+                    tags: ["健身", "日常"], time: "2 小時前", likes: 124 
+                },
+                { 
+                    user: "Kenji", age: 34, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150&auto=format&fit=crop", 
+                    photo: "https://images.unsplash.com/photo-1495555687398-3f50fc843cb6?q=80&w=600&auto=format&fit=crop", 
+                    text: "新入手的皮革配件，質感真不錯。有人也喜歡這種風格嗎？", 
+                    tags: ["皮革", "穿搭", "生活"], time: "5 小時前", likes: 89 
+                },
+                { 
+                    user: "Ryan", age: 22, avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=150&auto=format&fit=crop", 
+                    photo: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?q=80&w=600&auto=format&fit=crop", 
+                    text: "今天去海邊走走，風好大。放空的一天。🌊", 
+                    tags: ["生活", "海邊"], time: "8 小時前", likes: 210 
+                }
+            ];
+
+            const feedHtml = feeds.map(f => `
+                <div class="bg-slate-900 border border-slate-800 rounded-3xl mb-6 overflow-hidden shadow-lg">
+                    <!-- 發文者資訊 -->
+                    <div class="p-4 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <img src="${f.avatar}" class="w-10 h-10 rounded-full object-cover border border-slate-700">
+                            <div>
+                                <h4 class="font-bold text-sm text-slate-100 flex items-center gap-2">
+                                    ${f.user} <span class="text-xs text-slate-500 font-normal bg-slate-800 px-1.5 py-0.5 rounded">${f.age}</span>
+                                </h4>
+                                <p class="text-xs text-slate-500">${f.time}</p>
+                            </div>
+                        </div>
+                        <button class="text-slate-500 hover:text-slate-300"><i class="fa-solid fa-ellipsis"></i></button>
+                    </div>
+                    
+                    <!-- 照片 -->
+                    <div class="w-full aspect-[4/5] bg-slate-800">
+                        <img src="${f.photo}" class="w-full h-full object-cover">
+                    </div>
+
+                    <!-- 互動按鈕 -->
+                    <div class="p-4 pb-2 flex justify-between items-center text-xl">
+                        <div class="flex gap-4">
+                            <button class="text-slate-300 hover:text-red-500 transition transform hover:scale-110 active:scale-95"><i class="fa-regular fa-heart"></i></button>
+                            <button class="text-slate-300 hover:text-blue-400 transition"><i class="fa-regular fa-comment"></i></button>
+                            <button class="text-slate-300 hover:text-green-400 transition" onclick="showToast('已轉發至私密書籤', 'success')"><i class="fa-regular fa-paper-plane"></i></button>
+                        </div>
+                        <button class="text-slate-400 hover:text-white"><i class="fa-regular fa-bookmark"></i></button>
+                    </div>
+                    
+                    <!-- 內文 -->
+                    <div class="px-4 pb-5">
+                        <p class="text-sm font-semibold text-slate-200 mb-1">${f.likes} 個讚</p>
+                        <p class="text-sm text-slate-300 leading-relaxed"><span class="font-bold mr-2 text-slate-100">${f.user}</span>${f.text}</p>
+                        <div class="flex flex-wrap gap-2 mt-3">
+                            ${f.tags.map(t => `<span class="text-blue-400 text-xs cursor-pointer hover:underline">#${t}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            return `
+                <div class="flex flex-col h-full bg-black fade-enter fade-enter-active">
+                    <!-- Dashboard Header -->
+                    <div class="p-4 bg-slate-900/90 backdrop-blur-xl border-b border-slate-800 sticky top-0 z-30 flex justify-between items-center">
+                        <h1 class="text-2xl font-bold tracking-wider text-white" style="font-family: serif; font-style: italic;">SecretG</h1>
+                        <div class="flex items-center gap-4 text-xl">
+                            <button class="text-slate-300 hover:text-white relative">
+                                <i class="fa-regular fa-bell"></i>
+                                <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-slate-900"></span>
+                            </button>
+                            <div class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-sm font-bold border border-slate-600 overflow-hidden">
+                                ${window.state.userData.nickname ? window.state.userData.nickname.charAt(0).toUpperCase() : 'U'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 內容區 -->
+                    <div class="flex-1 overflow-y-auto bg-[#0a0a0a] p-0 md:p-4 scroll-smooth pb-20">
+                        <!-- 動態分類 -->
+                        <div class="px-4 py-3 flex gap-3 overflow-x-auto scrollbar-hide border-b border-slate-800/50 mb-4 sticky top-0 z-20 bg-[#0a0a0a]/90 backdrop-blur-sm">
+                            <button class="whitespace-nowrap px-4 py-1.5 bg-white text-black rounded-full text-sm font-bold">精選近況</button>
+                            <button class="whitespace-nowrap px-4 py-1.5 bg-slate-900 text-slate-400 rounded-full text-sm font-medium border border-slate-800">最新生活</button>
+                            <button class="whitespace-nowrap px-4 py-1.5 bg-slate-900 text-slate-400 rounded-full text-sm font-medium border border-slate-800">只看關注</button>
+                        </div>
+                        
+                        <div class="max-w-lg mx-auto">
+                            ${feedHtml}
+                        </div>
+                    </div>
+
+                    <!-- 底部導航 -->
+                    <div class="absolute bottom-0 w-full bg-slate-900/95 backdrop-blur-lg border-t border-slate-800 flex justify-around p-2 pb-safe md:pb-2 z-40">
+                        <button class="flex flex-col items-center p-2 text-white">
+                            <i class="fa-solid fa-house text-xl"></i>
+                        </button>
+                        <button class="flex flex-col items-center p-2 text-slate-500 hover:text-white transition">
+                            <i class="fa-solid fa-magnifying-glass text-xl"></i>
+                        </button>
+                        <button onclick="showToast('發布功能準備中', 'info')" class="flex flex-col items-center p-2 text-slate-500 hover:text-white transition transform -translate-y-2">
+                            <div class="w-12 h-12 bg-white text-black rounded-full flex items-center justify-center shadow-lg">
+                                <i class="fa-solid fa-plus text-2xl"></i>
+                            </div>
+                        </button>
+                        <button class="flex flex-col items-center p-2 text-slate-500 hover:text-white transition">
+                            <i class="fa-regular fa-comment-dots text-xl"></i>
+                        </button>
+                        <button class="flex flex-col items-center p-2 text-slate-500 hover:text-white transition">
+                            <div class="w-7 h-7 rounded-full border-2 border-slate-500 overflow-hidden flex items-center justify-center bg-slate-800 text-xs font-bold">
+                                ${window.state.userData.nickname ? window.state.userData.nickname.charAt(0).toUpperCase() : 'U'}
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function viewAdmin() {
+            return `
+                <div class="flex flex-col h-full bg-slate-100 text-slate-900 fade-enter fade-enter-active relative z-[60]">
+                    <div class="bg-indigo-600 p-4 text-white flex justify-between items-center shadow-md">
+                        <h2 class="font-bold text-lg"><i class="fa-solid fa-lock mr-2"></i> 管理員審核後台</h2>
+                        <button onclick="navigate('landing')" class="bg-indigo-500 hover:bg-indigo-400 px-3 py-1 rounded text-sm transition">退出</button>
+                    </div>
+                    
+                    <div class="p-4 bg-indigo-50 text-indigo-800 text-sm border-b border-indigo-100">
+                        您可以在此看見送出的申請表單。點擊「核准」或「拒絕」將會觸發電子郵件通知，且申請者的網頁會即時跳轉。
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto p-4" id="admin-list">
+                        <div class="flex justify-center mt-10"><i class="fa-solid fa-circle-notch animate-spin text-2xl text-indigo-400"></i></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadAdminData() {
+            const listContainer = document.getElementById('admin-list');
+            
+            // 處理模擬模式
+            if (!db) {
+                listContainer.innerHTML = `
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center flex flex-col items-center justify-center gap-4">
+                        <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 text-xl">
+                            <i class="fa-solid fa-circle-info"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-800">目前處於模擬模式</h4>
+                            <p class="text-xs text-slate-500 mt-1">您可以點擊下方按鈕模擬管理員核准，並觸發模擬發信與頁面跳轉。</p>
+                        </div>
+                        <button onclick="mockApprove()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-3 px-4 rounded-xl transition shadow-sm">
+                            模擬核准當前申請
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const q = collection(db, 'secretg_apps', appId, 'applications');
+                onSnapshot(q, (querySnapshot) => {
+                    listContainer.innerHTML = '';
+                    if (querySnapshot.empty) {
+                        listContainer.innerHTML = '<div class="text-center text-slate-500 py-8">目前無任何申請資料</div>';
+                        return;
+                    }
+                    querySnapshot.forEach((docSnap) => {
+                        const data = docSnap.data();
+                        const card = document.createElement('div');
+                        card.className = 'bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-4 flex flex-col gap-3';
+                        
+                        let kinksStr = data.kinks && data.kinks.length > 0 ? data.kinks.join(', ') : '無';
+                        if (data.otherKink) kinksStr += ` (其他: ${data.otherKink})`;
+
+                        const statusColors = {
+                            pending: 'bg-amber-100 text-amber-800 border-amber-200',
+                            approved: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+                            active: 'bg-blue-100 text-blue-800 border-blue-200',
+                            rejected: 'bg-red-100 text-red-800 border-red-200'
+                        };
+                        const currentStatusColor = statusColors[data.status] || 'bg-slate-100 text-slate-800';
+
+                        // 檢查是否有綁定 Telegram 資訊
+                        let tgInfoHtml = '';
+                        if (data.telegramInfo) {
+                            tgInfoHtml = `
+                                <div class="mt-2 pt-2 border-t border-slate-100 text-xs text-blue-600 flex items-center gap-1">
+                                    <i class="fa-brands fa-telegram text-sm"></i>
+                                    <span>已綁定：@${data.telegramInfo.username || data.telegramInfo.first_name} (ID: ${data.telegramInfo.id})</span>
+                                </div>
+                            `;
+                        }
+
+                        card.innerHTML = `
+                            <div class="flex justify-between items-start">
+                                <div class="space-y-1">
+                                    <h4 class="font-bold text-slate-800 flex items-center gap-2">
+                                        ${data.nickname || '未填'} 
+                                        <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full border ${currentStatusColor}">
+                                            ${data.status === 'pending' ? '待審核' : data.status === 'approved' ? '已核准' : data.status === 'active' ? '已啟用' : '已拒絕'}
+                                        </span>
+                                    </h4>
+                                    <p class="text-xs text-slate-500">信箱：${data.email}</p>
+                                    <p class="text-xs text-slate-600">身高/體重：${data.height} cm / ${data.weight} kg</p>
+                                    <p class="text-xs text-slate-600">身體尺寸：長 ${data.length} cm / 粗 ${data.girth} cm</p>
+                                    <p class="text-xs text-slate-600">主題偏好：${kinksStr}</p>
+                                    ${tgInfoHtml}
+                                </div>
+                                <div class="flex flex-col gap-2">
+                                    <button onclick="updateStatus('${docSnap.id}', 'approved')" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-2 rounded-xl transition font-medium">核准</button>
+                                    <button onclick="updateStatus('${docSnap.id}', 'rejected')" class="bg-red-600 hover:bg-red-500 text-white text-xs px-3 py-2 rounded-xl transition font-medium">拒絕</button>
+                                </div>
+                            </div>
+                        `;
+                        listContainer.appendChild(card);
+                    });
+                });
+            } catch (e) {
+                console.error("載入後台資料失敗:", e);
+                listContainer.innerHTML = `<div class="text-center text-red-500 py-8">載入失敗: ${e.message}</div>`;
+            }
+        }
+
+        // 發送電子郵件通知
+        async function sendEmailNotification(userData, status) {
+            if (!emailjsConfig.publicKey || emailjsConfig.publicKey === "YOUR_EMAILJS_PUBLIC_KEY") {
+                console.info(`[Email 模擬] 發送郵件給 ${userData.email}：您的申請狀態已更新為 [${status}]。`);
+                showToast(`[模擬信件] 已寄送審核通知至 ${userData.email}`, "info");
+                return;
+            }
+
+            const statusText = status === 'approved' ? '已通過審核' : '未通過審核';
+            const messageText = status === 'approved' 
+                ? `恭喜您！您的加入申請已通過審核。請點擊下方連結進入平台綁定您的 Telegram 帳號：\nhttps://${window.location.host || 'localhost'}`
+                : `很抱歉，您的加入申請未通過審核。感謝您的關注。`;
+
+            try {
+                await emailjs.send(emailjsConfig.serviceId, emailjsConfig.templateId, {
+                    to_email: userData.email,
+                    to_name: userData.nickname,
+                    status_text: statusText,
+                    message: messageText
+                });
+                console.log(`Email 成功發送至 ${userData.email}`);
+                showToast(`審核通知信已寄送至 ${userData.email}`, "success");
+            } catch (error) {
+                console.error("Email 發送失敗:", error);
+                showToast("Email 通知信發送失敗，請檢查 EmailJS 配置", "error");
+            }
+        }
+
+        window.updateStatus = async function(userId, status) {
+            let userData = null;
+            if (db) {
+                try {
+                    const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        userData = docSnap.data();
+                    }
+                } catch (e) {
+                    console.error("讀取用戶資料失敗:", e);
+                }
+            } else {
+                userData = window.state.userData;
+            }
+
+            if (!db) {
+                showToast('模擬模式：更新狀態為 ' + status, 'info');
+                if (userData) {
+                    userData.status = status;
+                    sendEmailNotification(userData, status);
+                }
+                return;
+            }
+
+            try {
+                const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+                await updateDoc(docRef, { status: status });
+                showToast('已更新狀態為 ' + (status === 'approved' ? '已核准' : '已拒絕'), 'success');
+                
+                if (userData) {
+                    sendEmailNotification(userData, status);
+                }
+            } catch (e) {
+                console.error(e);
+                showToast('更新狀態失敗: ' + e.message, 'error');
+            }
+        }
+
+        window.mockApprove = function() {
+            window.state.userData.status = 'approved';
+            showToast('🎉 模擬核准成功！', 'success');
+            sendEmailNotification(window.state.userData, 'approved');
+            if (window.state.currentView === 'pending') {
+                setTimeout(() => navigate('telegram'), 1200);
+            } else {
+                setTimeout(() => navigate('telegram'), 600);
+            }
+        }
+
+        // 啟動應用
+        initApp();
+    </script>
+</body>
+</html>
