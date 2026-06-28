@@ -132,7 +132,7 @@
                 serverTimestamp = firestoreMod.serverTimestamp;
                 arrayUnion = firestoreMod.arrayUnion;
                 arrayRemove = firestoreMod.arrayRemove;
-                deleteDoc = firestoreMod.deleteDoc; // 註冊刪除方法
+                deleteDoc = firestoreMod.deleteDoc;
 
                 return true;
             } catch (e) {
@@ -149,18 +149,21 @@
             userData: {
                 username: '', password: '',
                 nickname: '', birthYear: '', birthMonth: '', birthDay: '',
-                height: '', weight: '', length: '', girth: '', kinks: [], otherKink: '', email: ''
+                height: '', weight: '', length: '', girth: '', kinks: [], otherKink: '', email: '',
+                avatar: '', avatarPending: '', avatarStatus: 'none' // 頭像欄位
             },
+            isEditingProfile: false, // 編輯個人資料狀態開關
+            tempEditAvatar: null,    // 暫存要修改的頭像資料
             emailVerified: false,
             sentOTP: null,
             posts: [],
             searchTerm: '',
             currentTab: 'feed', // 'feed' | 'profile'
             showCreateModal: false,
-            dashboardInitialized: false, // 防重複載入鎖
-            selectedProfileUserId: null, // 用於點擊瀏覽他人專區的 ID
-            selectedProfileData: null,   // 用於儲存點擊瀏覽的他人資料
-            postToDeleteId: null,        // 暫存即將刪除的貼文ID
+            dashboardInitialized: false,
+            selectedProfileUserId: null, 
+            selectedProfileData: null,   
+            postToDeleteId: null,        
             kinksOptions: [
                 "熊族/Daddy大叔", "肌肉狼犬/運動風", "陽光小鮮肉", 
                 "白襪/球鞋控", "西裝正裝/制服控", "皮革膠衣/個性風", 
@@ -184,7 +187,6 @@
                     db = getFirestore(app);
                     auth = getAuth(app);
                     
-                    // 啟用匿名連線
                     await signInAnonymously(auth);
                     hideLoading();
                     navigate('landing');
@@ -256,7 +258,6 @@
                 <div class="flex-1 flex flex-col items-center justify-center p-8 text-center fade-enter fade-enter-active bg-[url('https://images.unsplash.com/photo-1574170685715-db104eb0058b?q=80&w=600&auto=format&fit=crop')] bg-cover bg-center relative h-full">
                     <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-sm z-0"></div>
                     <div class="z-10 w-full flex flex-col items-center">
-                        <!-- 將原圖示框替換為全新的 SR 專屬圓形圖章 (已放大，帶有快取破壞參數) -->
                         <div class="w-36 h-36 md:w-40 md:h-40 mb-8 shadow-[0_0_35px_rgba(139,92,246,0.45)] rounded-full border border-violet-500/25 overflow-hidden transform hover:scale-105 transition duration-300">
                             <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-full h-full object-cover" alt="SecretRoom Logo">
                         </div>
@@ -365,6 +366,19 @@
                     <div class="flex-1 overflow-y-auto p-5 scroll-smooth">
                         <form id="registerForm" class="space-y-7 pb-10">
                             
+                            <!-- 頭像上傳區塊 (必填) -->
+                            <div class="flex flex-col items-center space-y-3 pb-2">
+                                <div class="relative w-28 h-28 rounded-full border-2 border-dashed border-indigo-500/40 hover:border-indigo-500 transition cursor-pointer flex items-center justify-center bg-slate-900/40 overflow-hidden" onclick="document.getElementById('reg-avatar-file').click()">
+                                    <input type="file" id="reg-avatar-file" accept="image/*" class="hidden" onchange="previewRegisterAvatar(this)">
+                                    <div id="avatar-placeholder" class="text-center text-slate-500 space-y-1">
+                                        <i class="fa-solid fa-user-plus text-2xl text-indigo-400"></i>
+                                        <p class="text-[10px] text-slate-400 font-semibold">上傳個人照 *</p>
+                                    </div>
+                                    <img id="avatar-preview-img" src="${window.state.userData.avatar || ''}" class="${window.state.userData.avatar ? '' : 'hidden'} w-full h-full object-cover">
+                                </div>
+                                <p class="text-xs text-slate-400 font-medium">請上傳真實大頭照，這將一併交由管理員審核</p>
+                            </div>
+
                             <!-- 帳號安全 -->
                             <div class="bg-indigo-950/20 p-5 rounded-3xl border border-indigo-500/10 space-y-4">
                                 <h3 class="text-sm font-semibold text-indigo-400 flex items-center gap-2">
@@ -372,7 +386,7 @@
                                 </h3>
                                 <div class="space-y-1.5">
                                     <label class="block text-xs font-medium text-slate-400 ml-1">使用者帳號 <span class="text-red-400">*</span></label>
-                                    <input type="text" id="reg-username" required value="${window.state.userData.username||''}" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-500 transition" placeholder="建議填寫英數組合">
+                                    <input type="text" id="reg-username" required value="${window.state.userData.username||''}" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-indigo-500 transition" placeholder="請設定您的登入帳號">
                                 </div>
                                 <div class="space-y-1.5">
                                     <label class="block text-xs font-medium text-slate-400 ml-1">再次確認使用者帳號 <span class="text-red-400">*</span></label>
@@ -433,25 +447,25 @@
                                 </div>
                             </div>
 
-                            <!-- 尺寸 (選填) -->
+                            <!-- 尺寸 (全必填) -->
                             <div class="bg-slate-900/30 p-5 rounded-3xl border border-slate-850 relative overflow-hidden">
                                 <div class="absolute top-0 right-0 p-3 opacity-5"><i class="fa-solid fa-ruler-combined text-4xl"></i></div>
-                                <h3 class="text-sm font-medium text-slate-200 mb-4 relative z-10 flex items-center gap-2"><div class="w-1.5 h-4 bg-indigo-500 rounded-full"></div> 身體密碼 (選填，供展示參考)</h3>
+                                <h3 class="text-sm font-medium text-slate-200 mb-4 relative z-10 flex items-center gap-2"><div class="w-1.5 h-4 bg-indigo-500 rounded-full"></div> 身體密碼 <span class="text-red-400">*</span></h3>
                                 <div class="grid grid-cols-2 gap-4 relative z-10">
                                     <div class="space-y-1">
-                                        <label class="block text-xs text-slate-500 ml-1">長度 (cm)</label>
-                                        <input type="number" id="reg-length" step="0.1" value="${window.state.userData.length&&window.state.userData.length!=='未填'?window.state.userData.length:''}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition text-center placeholder-slate-700" placeholder="例: 15.5">
+                                        <label class="block text-xs text-slate-500 ml-1">長度 (cm) <span class="text-red-400">*</span></label>
+                                        <input type="number" id="reg-length" required step="0.1" value="${window.state.userData.length&&window.state.userData.length!=='未填'?window.state.userData.length:''}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition text-center placeholder-slate-700" placeholder="例: 15.5">
                                     </div>
                                     <div class="space-y-1">
-                                        <label class="block text-xs text-slate-500 ml-1">粗度圓周 (cm)</label>
-                                        <input type="number" id="reg-girth" step="0.1" value="${window.state.userData.girth&&window.state.userData.girth!=='未填'?window.state.userData.girth:''}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition text-center placeholder-slate-700" placeholder="例: 12">
+                                        <label class="block text-xs text-slate-500 ml-1">粗度圓周 (cm) <span class="text-red-400">*</span></label>
+                                        <input type="number" id="reg-girth" required step="0.1" value="${window.state.userData.girth&&window.state.userData.girth!=='未填'?window.state.userData.girth:''}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition text-center placeholder-slate-700" placeholder="例: 12">
                                     </div>
                                 </div>
                             </div>
 
                             <!-- 性癖好社交主題 -->
                             <div class="space-y-2">
-                                <label class="block text-sm font-medium text-slate-300 ml-1">感興趣的生活與社交主題 (可多選)</label>
+                                <label class="block text-sm font-medium text-slate-300 ml-1">感興趣的生活與社交主題 <span class="text-indigo-400">(最少選一項) *</span></label>
                                 <div class="grid grid-cols-2 gap-2">
                                     ${kinksHtml}
                                 </div>
@@ -502,7 +516,19 @@
             `;
         }
 
-        // OTP 發送與驗證處理
+        window.previewRegisterAvatar = function(input) {
+            const file = input.files[0];
+            if (!file) return;
+            compressAndSetImage(file, (base64) => {
+                window.state.userData.avatar = base64;
+                const img = document.getElementById('avatar-preview-img');
+                const ph = document.getElementById('avatar-placeholder');
+                img.src = base64;
+                img.classList.remove('hidden');
+                ph.classList.add('hidden');
+            });
+        }
+
         window.handleSendOTP = async function() {
             const emailInput = document.getElementById('reg-email');
             const email = emailInput.value.trim();
@@ -521,9 +547,9 @@
             try {
                 await emailjs.send(emailjsConfig.serviceId, emailjsConfig.templateId, {
                     to_email: email,
-                    to_name: "新申請用戶",
-                    status_text: "信箱綁定驗證碼",
-                    message: `您好！您目前正在註冊 SecretRoom 私密社群。\n\n您的信箱驗證代碼為：[ ${otp} ]\n\n請於網頁中輸入此驗證碼以完成信箱綁定認證。`
+                    to_name: "新註冊用戶",
+                    status_text: "信箱驗證代碼",
+                    message: `您目前正在註冊 SecretRoom。\n\n您的信箱驗證代碼為：[ ${otp} ]\n\n請於網頁中輸入此驗證碼以完成信箱綁定認證。`
                 });
 
                 showToast('驗證郵件寄送成功，請查收信箱', 'success');
@@ -616,6 +642,11 @@
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
+                if (!window.state.userData.avatar) {
+                    showToast('請務必上傳您的個人大頭照！', 'error');
+                    return;
+                }
+
                 if (!window.state.emailVerified) {
                     showToast('請先完成信箱驗證綁定！', 'error');
                     return;
@@ -635,6 +666,14 @@
                     return;
                 }
 
+                const selectedKinks = Array.from(document.querySelectorAll('input[name="kinks"]:checked')).map(el => el.value);
+                const otherValue = otherCheckbox.checked ? document.getElementById('reg-kink-other').value.trim() : '';
+
+                if (selectedKinks.length === 0 && !otherValue) {
+                    showToast('請至少勾選一個感興趣的生活主題！', 'error');
+                    return;
+                }
+
                 if(db) {
                     try {
                         const docRef = doc(db, 'secretg_apps', appId, 'applications', username);
@@ -648,9 +687,6 @@
                     }
                 }
 
-                const selectedKinks = Array.from(document.querySelectorAll('input[name="kinks"]:checked')).map(el => el.value);
-                const otherValue = otherCheckbox.checked ? document.getElementById('reg-kink-other').value.trim() : '';
-
                 window.state.userData = {
                     username: username,
                     password: password,
@@ -660,11 +696,14 @@
                     birthDay: document.getElementById('reg-day').value,
                     height: document.getElementById('reg-height').value,
                     weight: document.getElementById('reg-weight').value,
-                    length: document.getElementById('reg-length').value || '未填',
-                    girth: document.getElementById('reg-girth').value || '未填',
+                    length: document.getElementById('reg-length').value,
+                    girth: document.getElementById('reg-girth').value,
                     kinks: selectedKinks,
                     otherKink: otherValue,
                     email: document.getElementById('reg-email').value,
+                    avatar: window.state.userData.avatar,
+                    avatarStatus: 'approved', // 初次註冊由管理員隨整體申請一同審核
+                    avatarPending: '',
                     status: 'pending'
                 };
 
@@ -695,12 +734,10 @@
                             </div>
 
                             <div class="flex items-center gap-4 border-b border-slate-900 pb-5">
-                                <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center text-2xl font-bold text-slate-300 border-2 border-slate-700">
-                                    ${u.nickname.charAt(0).toUpperCase()}
-                                </div>
+                                <img src="${u.avatar}" class="w-16 h-16 rounded-full object-cover border-2 border-indigo-500/60 shadow-lg">
                                 <div>
                                     <h3 class="text-xl font-bold text-white">${u.nickname}</h3>
-                                    <p class="text-slate-500 text-sm">${age} 歲 · ${u.birthYear}/${u.birthMonth}/${u.birthDay}</p>
+                                    <p class="text-slate-500 text-sm">${u.birthYear}/${u.birthMonth}/${u.birthDay} (${age} 歲)</p>
                                 </div>
                             </div>
 
@@ -711,7 +748,7 @@
                                 </div>
                                 <div class="bg-slate-950/80 p-3 rounded-xl text-center border border-slate-900">
                                     <div class="text-xs text-slate-500 mb-1">身體密碼 (長/粗)</div>
-                                    <div class="font-semibold text-slate-200">${u.length} / ${u.girth}</div>
+                                    <div class="font-semibold text-slate-200">${u.length}cm / ${u.girth}cm</div>
                                 </div>
                             </div>
 
@@ -738,7 +775,7 @@
                         </div>
 
                         <button onclick="submitApplication()" class="w-full mt-8 bg-white hover:bg-slate-200 text-slate-900 font-bold py-4 px-4 rounded-2xl transition duration-300 shadow-lg text-lg">
-                            確定帳號密碼並送出
+                            確定並送出審核
                         </button>
                     </div>
                 </div>
@@ -747,7 +784,6 @@
 
         window.submitApplication = async function() {
             const u = window.state.userData;
-            
             try {
                 const docRef = doc(db, 'secretg_apps', appId, 'applications', u.username);
                 await setDoc(docRef, {
@@ -755,7 +791,6 @@
                     createdAt: serverTimestamp ? serverTimestamp() : new Date(),
                     userId: u.username
                 });
-                
                 window.state.userId = u.username;
                 navigate('pending');
             } catch(e) {
@@ -783,7 +818,7 @@
                             <p class="text-slate-400">💡 提示：您可以現在關閉這個頁面。當收到審核通過信時，重新打開此網頁登入，就能立刻綁定 Telegram。</p>
                         </div>
                         <p class="text-slate-400 mb-8 text-sm leading-relaxed">
-                            為維護 SecretRoom 的私密安全與真實性，管理員正在檢視您的資料。<br><br>
+                            為維護 SecretRoom 的私密安全與真實性，管理員正在檢視您的資料與頭像。<br><br>
                             通過後，此畫面將<strong class="text-indigo-400">自動即時跳轉</strong>，亦將同步發信通知至您的信箱：<br>
                             <span class="text-slate-300 mt-2 block break-all font-semibold underline">${window.state.userData.email}</span>
                         </p>
@@ -798,7 +833,6 @@
 
         function listenToApplicationStatus() {
             if(!db || !window.state.userId) return;
-            
             if(window.state.unsubscribeListener) window.state.unsubscribeListener();
 
             const docRef = doc(db, 'secretg_apps', appId, 'applications', window.state.userId);
@@ -831,13 +865,11 @@
                         <div class="bg-slate-900/60 p-5 rounded-2xl border border-slate-800 mb-6">
                             <h3 class="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2"><div class="w-1.5 h-4 bg-blue-500 rounded-full"></div> 綁定與驗證規則</h3>
                             <p class="text-xs text-slate-400 leading-relaxed font-light">
-                                <strong>⚠️ 重要：為維護社群品質，每個 Telegram 帳號只能綁定一個 SecretRoom 成員，經綁定後即無法重複綁定給其他使用者。</strong><br><br>
-                                我們使用 Telegram 官方登入元件進行安全驗證。這將安全無虞地確保您的帳戶真實存在。<br><br>
-                                我們只會取得您的 Telegram ID、頭像、姓名與帳號名稱，絕不會讀取您的聊天內容、電話。
+                                <strong>⚠️ 重要：每個 Telegram 帳號只能綁定一個 SecretRoom 成員，經綁定後即無法重複綁定。</strong><br><br>
+                                我們使用 Telegram 官方登入元件進行安全驗證。我們只會取得您的 Telegram ID、頭像、姓名與帳號名稱，絕不會讀取您的聊天與電話。
                             </p>
                         </div>
 
-                        <!-- Telegram 官方登入元件 -->
                         <div class="flex flex-col items-center justify-center py-8 bg-slate-950/40 rounded-2xl border border-slate-900 mb-6 min-h-[120px]">
                             <div id="telegram-login-container" class="flex flex-col items-center justify-center">
                                 <div class="text-slate-500 text-xs flex flex-col items-center gap-2">
@@ -854,7 +886,6 @@
         function loadTelegramWidget() {
             const container = document.getElementById('telegram-login-container');
             if (!container) return;
-
             container.innerHTML = '';
 
             if (!telegramBotName) {
@@ -875,12 +906,10 @@
             script.setAttribute('data-size', 'large');
             script.setAttribute('data-onauth', 'onTelegramAuth(user)');
             script.setAttribute('data-request-access', 'write');
-
             container.appendChild(script);
         }
 
         window.onTelegramAuth = async function(user) {
-            // 進行 Telegram 唯一性檢索
             try {
                 const q = query(collection(db, 'secretg_apps', appId, 'applications'));
                 const querySnapshot = await getDocs(q);
@@ -949,76 +978,60 @@
 
         function getRecommendationScore(post, myKinks) {
             let score = 0;
-            
-            // 1. 主題契合度 (Kinks tags match) - 最重加分
             if (post.tags && Array.isArray(post.tags)) {
                 post.tags.forEach(tag => {
                     if (myKinks && myKinks.some(k => k.includes(tag) || tag.includes(k))) {
-                        score += 150; // 主題高度吻合加分
+                        score += 150; 
                     }
                 });
             }
-            
-            // 2. 按讚熱門度
             const likesCount = post.likes ? post.likes.length : 0;
             score += likesCount * 15;
             
-            // 3. 評分高度與廣度
             const ratingsMap = post.ratings || {};
             const ratingsArray = Object.values(ratingsMap);
             if (ratingsArray.length > 0) {
                 const avgRating = ratingsArray.reduce((a, b) => a + b, 0) / ratingsArray.length;
-                score += avgRating * 25; // 依照平均星等加分
-                score += ratingsArray.length * 5; // 評分人氣度加分
+                score += avgRating * 25; 
+                score += ratingsArray.length * 5; 
             }
-            
-            // 4. 新舊平準 (貼文新鮮度)
             const postTime = post.createdAt ? (post.createdAt.seconds || (new Date(post.createdAt).getTime() / 1000)) : (Date.now() / 1000);
             const hoursAgo = (Date.now() / 1000 - postTime) / 3600;
             if (hoursAgo > 0) {
-                score -= Math.min(hoursAgo * 2, 100); // 每過一小時扣 2 分，最多扣 100 分
+                score -= Math.min(hoursAgo * 2, 100); 
             } else {
-                score += 50; // 新貼文暴發分
+                score += 50; 
             }
-            
             return score;
         }
 
         function viewDashboard() {
             const myData = window.state.userData || {};
             const myId = window.state.userId;
+            const isEditing = window.state.isEditingProfile;
 
             // 1. 搜尋過濾
             let filteredPosts = window.state.posts.filter(p => {
                 const term = window.state.searchTerm.toLowerCase();
                 if (!term) return true;
-                
-                const matchesContent = p.text && p.text.toLowerCase().includes(term);
-                const matchesUser = p.authorName && p.authorName.toLowerCase().includes(term);
-                const matchesAccount = p.userId && p.userId.toLowerCase().includes(term);
-                const matchesTags = p.tags && p.tags.some(t => t.toLowerCase().includes(term));
-                
-                return matchesContent || matchesUser || matchesAccount || matchesTags;
+                return (p.text && p.text.toLowerCase().includes(term)) ||
+                       (p.authorName && p.authorName.toLowerCase().includes(term)) ||
+                       (p.userId && p.userId.toLowerCase().includes(term)) ||
+                       (p.tags && p.tags.some(t => t.toLowerCase().includes(term)));
             });
 
-            // 2. 演算法推薦排序 (在 Feed 分頁時套用)
+            // 2. 演算法推薦排序
             if (window.state.currentTab === 'feed') {
-                filteredPosts.sort((a, b) => {
-                    const scoreA = getRecommendationScore(a, myData.kinks);
-                    const scoreB = getRecommendationScore(b, myData.kinks);
-                    return scoreB - scoreA; // 分數由高到低
-                });
+                filteredPosts.sort((a, b) => getRecommendationScore(b, myData.kinks) - getRecommendationScore(a, myData.kinks));
             }
 
-            // 3. 貼文動態生成 (首頁列表)
+            // 3. 貼文動態牆
             const feedHtml = filteredPosts.map(p => {
                 const likedList = p.likes || [];
                 const hasLiked = likedList.includes(myId);
                 const likeIcon = hasLiked ? 'fa-solid fa-heart text-red-500 scale-110' : 'fa-regular fa-heart text-slate-300';
-                
                 const ratingsMap = p.ratings || {};
                 const myRating = ratingsMap[myId] || 0;
-                
                 const ratingsArray = Object.values(ratingsMap);
                 const totalRatings = ratingsArray.length;
                 const averageRating = totalRatings > 0 ? (ratingsArray.reduce((a, b) => a + b, 0) / totalRatings) : 0;
@@ -1029,14 +1042,14 @@
                     starsHtml += `<button onclick="ratePost('${p.id}', ${i})" class="transition duration-150 hover:scale-125 focus:outline-none text-base"><i class="fa-solid fa-star ${activeClass}"></i></button>`;
                 }
 
+                // 獲取作者頭像，如果不存在就顯示預設 SR 大頭照
+                const authorAvatar = p.authorAvatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2';
+
                 return `
                     <div class="bg-slate-900 border border-slate-850 rounded-3xl mb-6 overflow-hidden shadow-xl">
-                        <!-- 作者資訊 (點擊頭像或姓名進入他人個人檔案) -->
                         <div class="p-4 flex items-center justify-between">
                             <div class="flex items-center gap-3 cursor-pointer" onclick="viewUserProfile('${p.userId}')">
-                                <div class="w-10 h-10 rounded-full bg-indigo-600/30 text-indigo-300 flex items-center justify-center font-bold border border-indigo-500/20">
-                                    ${p.authorName ? p.authorName.charAt(0).toUpperCase() : 'G'}
-                                </div>
+                                <img src="${authorAvatar}" class="w-10 h-10 rounded-full object-cover border border-indigo-500/20 shadow-inner">
                                 <div>
                                     <h4 class="font-bold text-sm text-slate-100 flex items-center gap-2 hover:text-indigo-400 transition">
                                         ${p.authorName} <span class="text-xs text-slate-500 font-normal bg-slate-950 px-1.5 py-0.5 rounded">@${p.userId}</span>
@@ -1046,14 +1059,12 @@
                             </div>
                         </div>
                         
-                        <!-- 圖片 自適應尺寸 -->
                         ${p.image ? `
                         <div class="w-full bg-[#030712] flex items-center justify-center">
                             <img src="${p.image}" class="w-full h-auto object-contain max-h-[520px] shadow-inner" alt="Post photo">
                         </div>
                         ` : ''}
 
-                        <!-- 按讚及星級系統 -->
                         <div class="p-4 pb-2 border-b border-slate-950">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2">
@@ -1062,18 +1073,13 @@
                                     </button>
                                     <span class="text-xs font-semibold text-slate-400">${likedList.length} 人覺得很帥</span>
                                 </div>
-                                
                                 <div class="flex items-center gap-1.5 text-xs">
-                                    <span class="text-slate-400">評分:</span>
-                                    <div class="flex items-center gap-1">
-                                        ${starsHtml}
-                                    </div>
+                                    <div class="flex items-center gap-1">${starsHtml}</div>
                                     <span class="text-yellow-400 font-bold ml-1">⭐ ${averageRating.toFixed(1)} <span class="text-slate-500 font-normal text-[10px]">(${totalRatings})</span></span>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- 內文 & 標籤 -->
                         <div class="p-4 pt-3">
                             <p class="text-sm text-slate-300 leading-relaxed font-light">
                                 <span class="font-bold mr-2 text-slate-100" onclick="viewUserProfile('${p.userId}')">@${p.userId}</span>${p.text}
@@ -1087,16 +1093,12 @@
                 `;
             }).join('');
 
-            // 4. 個人檔案貼文 (長按刪除功能)
-            const myPosts = window.state.posts.filter(p => p.userId === window.state.userId);
+            // 4. 我的貼文 Grid (長按刪除)
+            const myPosts = window.state.posts.filter(p => p.userId === myId);
             const myPostsGrid = myPosts.length > 0 ? myPosts.map(p => `
                 <div class="aspect-square bg-slate-900 border border-slate-850 rounded-xl overflow-hidden shadow cursor-pointer select-none post-thumbnail-press relative"
-                     onmousedown="startPostPress('${p.id}')" 
-                     onmouseup="cancelPostPress()" 
-                     onmouseleave="cancelPostPress()" 
-                     ontouchstart="startPostPress('${p.id}')" 
-                     ontouchend="cancelPostPress()" 
-                     ontouchcancel="cancelPostPress()">
+                     onmousedown="startPostPress('${p.id}')" onmouseup="cancelPostPress()" onmouseleave="cancelPostPress()" 
+                     ontouchstart="startPostPress('${p.id}')" ontouchend="cancelPostPress()" ontouchcancel="cancelPostPress()">
                     <img src="${p.image || 'https://placehold.co/400x400/1e293b/94a3b8?text=Text+Post'}" class="w-full h-full object-cover">
                     <div class="absolute bottom-1 right-1 bg-black/70 text-slate-400 text-[9px] px-1.5 py-0.5 rounded">
                         <i class="fa-regular fa-trash-can mr-0.5"></i>長按刪除
@@ -1105,7 +1107,7 @@
             `).join('') : `
                 <div class="col-span-3 text-center py-12 text-slate-600 text-xs">
                     <i class="fa-solid fa-image-portrait text-3xl mb-2 block"></i>
-                    尚未發布任何私密貼文
+                    尚未發布任何貼文
                 </div>
             `;
 
@@ -1113,19 +1115,17 @@
                 <span class="px-2 py-1 bg-indigo-950/40 border border-indigo-900/30 text-indigo-400 text-[10px] font-semibold rounded-lg">${k}</span>
             `).join('') : '';
 
+            // 他人專區
             let otherUserProfileHtml = '';
             if (window.state.selectedProfileUserId && window.state.selectedProfileData) {
                 const otherUser = window.state.selectedProfileData;
                 const otherUserPosts = window.state.posts.filter(p => p.userId === window.state.selectedProfileUserId);
-                
                 const otherPostsGrid = otherUserPosts.length > 0 ? otherUserPosts.map(p => `
                     <div class="aspect-square bg-slate-900 border border-slate-850 rounded-xl overflow-hidden shadow">
                         <img src="${p.image || 'https://placehold.co/400x400/1e293b/94a3b8?text=Text+Post'}" class="w-full h-full object-cover">
                     </div>
                 `).join('') : `
-                    <div class="col-span-3 text-center py-12 text-slate-600 text-xs">
-                        目前沒有分享任何動態
-                    </div>
+                    <div class="col-span-3 text-center py-12 text-slate-600 text-xs">目前沒有分享任何動態</div>
                 `;
 
                 const otherKinksBadges = otherUser.kinks ? otherUser.kinks.map(k => `
@@ -1134,23 +1134,17 @@
 
                 otherUserProfileHtml = `
                     <div class="p-5 space-y-6 fade-enter fade-enter-active">
-                        <!-- 返回按鈕 -->
                         <button onclick="closeUserProfile()" class="bg-slate-900 hover:bg-slate-850 text-slate-300 font-semibold py-2 px-4 rounded-xl border border-slate-800 text-xs flex items-center gap-2">
                             <i class="fa-solid fa-chevron-left"></i> 返回動態牆
                         </button>
-
-                        <!-- 他人資訊卡 -->
                         <div class="bg-slate-900 border border-slate-850 p-6 rounded-3xl shadow-xl space-y-5">
                             <div class="flex items-center gap-4">
-                                <div class="w-16 h-16 bg-indigo-600 text-white rounded-full flex items-center justify-center text-3xl font-black border-2 border-slate-700">
-                                    ${otherUser.nickname ? otherUser.nickname.charAt(0).toUpperCase() : 'U'}
-                                </div>
+                                <img src="${otherUser.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-16 h-16 rounded-full object-cover border-2 border-slate-700 shadow-md">
                                 <div>
                                     <h3 class="text-xl font-bold text-white">${otherUser.nickname || '未填'}</h3>
                                     <p class="text-xs text-slate-500">@${otherUser.username || '未知'} · 滿 18 歲驗證</p>
                                 </div>
                             </div>
-
                             <div class="grid grid-cols-2 gap-3 text-center">
                                 <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
                                     <span class="text-[10px] text-slate-500 block">身高/體重</span>
@@ -1161,20 +1155,137 @@
                                     <span class="text-xs font-bold text-slate-200">長 ${otherUser.length} / 粗 ${otherUser.girth}</span>
                                 </div>
                             </div>
+                            <div>
+                                <span class="text-[10px] text-slate-500 block mb-1">感興趣的主題</span>
+                                <div class="flex flex-wrap gap-1.5">${otherKinksBadges ? otherKinksBadges : '<span class="text-slate-600 text-xs">未設定</span>'}</div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-300 mb-3 flex items-center gap-1.5"><i class="fa-regular fa-image"></i> @${otherUser.username} 的分享牆</h4>
+                            <div class="grid grid-cols-3 gap-2">${otherPostsGrid}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 編輯個人資料表單元件
+            let profileContent = '';
+            if (isEditing) {
+                const kinksEditCheckboxes = window.state.kinksOptions.map(kink => {
+                    const checked = myData.kinks && myData.kinks.includes(kink) ? 'checked' : '';
+                    return `
+                        <label class="flex items-center space-x-2 p-2 bg-slate-950 rounded-xl border border-slate-800 cursor-pointer">
+                            <input type="checkbox" name="edit-kinks" value="${kink}" ${checked} class="form-checkbox h-4 w-4 text-indigo-600 rounded border-slate-700 bg-slate-900 focus:ring-indigo-500">
+                            <span class="text-xs text-slate-300">${kink}</span>
+                        </label>
+                    `;
+                }).join('');
+
+                profileContent = `
+                    <form id="editProfileForm" onsubmit="handleProfileSave(event)" class="space-y-5 pb-10 max-w-md mx-auto">
+                        <div class="bg-slate-900 border border-slate-850 p-6 rounded-3xl shadow-xl space-y-5">
+                            <div class="flex flex-col items-center space-y-2">
+                                <div class="relative w-20 h-20 rounded-full border-2 border-indigo-500 overflow-hidden cursor-pointer" onclick="document.getElementById('edit-avatar-file').click()">
+                                    <img id="edit-avatar-preview" src="${window.state.tempEditAvatar || myData.avatar}" class="w-full h-full object-cover">
+                                    <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition">
+                                        <i class="fa-solid fa-camera text-white text-sm"></i>
+                                    </div>
+                                    <input type="file" id="edit-avatar-file" accept="image/*" class="hidden" onchange="previewEditAvatar(this)">
+                                </div>
+                                <span class="text-[10px] text-amber-400"><i class="fa-solid fa-circle-exclamation"></i> 變更頭像需經人工審核才能生效</span>
+                            </div>
+
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-xs text-slate-500 mb-1">暱稱 *</label>
+                                    <input type="text" id="edit-nickname" required value="${myData.nickname}" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3 py-2 text-white text-sm focus:outline-none">
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs text-slate-500 mb-1">身高 (cm) *</label>
+                                        <input type="number" id="edit-height" required value="${myData.height}" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3 py-2 text-white text-sm text-center focus:outline-none">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-slate-500 mb-1">體重 (kg) *</label>
+                                        <input type="number" id="edit-weight" required value="${myData.weight}" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3 py-2 text-white text-sm text-center focus:outline-none">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs text-slate-500 mb-1">長度 (cm) *</label>
+                                        <input type="number" step="0.1" id="edit-length" required value="${myData.length}" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3 py-2 text-white text-sm text-center focus:outline-none">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-slate-500 mb-1">粗度 (cm) *</label>
+                                        <input type="number" step="0.1" id="edit-girth" required value="${myData.girth}" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3 py-2 text-white text-sm text-center focus:outline-none">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-slate-500 mb-1">偏好主題 (最少選一項) *</label>
+                                    <div class="grid grid-cols-2 gap-2 mt-1">
+                                        ${kinksEditCheckboxes}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-slate-500 mb-1">其他主題補充</label>
+                                    <input type="text" id="edit-other-kink" value="${myData.otherKink || ''}" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3 py-2 text-white text-sm focus:outline-none">
+                                </div>
+                            </div>
+
+                            <div class="flex gap-3 pt-2">
+                                <button type="button" onclick="cancelProfileEdit()" class="flex-1 bg-slate-950 border border-slate-800 text-slate-400 py-2.5 rounded-xl text-xs font-semibold transition">取消</button>
+                                <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-xs font-semibold transition shadow-lg shadow-indigo-950/50">儲存修改</button>
+                            </div>
+                        </div>
+                    </form>
+                `;
+            } else {
+                profileContent = `
+                    <div class="max-w-md mx-auto space-y-6">
+                        <div class="bg-slate-900 border border-slate-850 p-6 rounded-3xl shadow-xl space-y-5 relative">
+                            <button onclick="startProfileEdit()" class="absolute top-4 right-4 text-xs bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white px-3 py-1.5 rounded-xl border border-indigo-500/20 transition flex items-center gap-1 font-semibold">
+                                <i class="fa-regular fa-pen-to-square"></i> 修改資料
+                            </button>
+
+                            <div class="flex items-center gap-4">
+                                <div class="relative">
+                                    <img src="${myData.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-16 h-16 rounded-full object-cover border-2 border-slate-700 shadow-md">
+                                    ${myData.avatarStatus === 'pending' ? `
+                                        <div class="absolute -bottom-1.5 -right-1.5 bg-amber-500 text-black text-[8px] font-black px-1 py-0.5 rounded-md border border-slate-950 shadow animate-pulse">
+                                            審核中
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-white">${myData.nickname || '未填'}</h3>
+                                    <p class="text-xs text-slate-500">@${myData.username || '無帳號'} · 滿 18 歲驗證</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3 text-center">
+                                <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
+                                    <span class="text-[10px] text-slate-500 block">身高/體重</span>
+                                    <span class="text-xs font-bold text-slate-200">${myData.height}cm / ${myData.weight}kg</span>
+                                </div>
+                                <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
+                                    <span class="text-[10px] text-slate-500 block">私密尺碼</span>
+                                    <span class="text-xs font-bold text-slate-200">長 ${myData.length}cm / 粗 ${myData.girth}cm</span>
+                                </div>
+                            </div>
 
                             <div>
                                 <span class="text-[10px] text-slate-500 block mb-1">感興趣的主題</span>
                                 <div class="flex flex-wrap gap-1.5">
-                                    ${otherKinksBadges ? otherKinksBadges : '<span class="text-slate-600 text-xs">未設定</span>'}
+                                    ${kinkBadges ? kinkBadges : '<span class="text-slate-600 text-xs">無</span>'}
+                                    ${myData.otherKink ? `<span class="px-2 py-1 bg-slate-950/60 border border-slate-800 text-slate-400 text-[10px] font-semibold rounded-lg">其他: ${myData.otherKink}</span>` : ''}
                                 </div>
                             </div>
                         </div>
 
-                        <!-- 他人的貼文牆 -->
                         <div>
-                            <h4 class="text-sm font-bold text-slate-300 mb-3 flex items-center gap-1.5"><i class="fa-regular fa-image"></i> @${otherUser.username} 的分享牆</h4>
+                            <h4 class="text-sm font-bold text-slate-300 mb-3 flex items-center gap-1.5"><i class="fa-regular fa-image"></i> 我的分享動態</h4>
                             <div class="grid grid-cols-3 gap-2">
-                                ${otherPostsGrid}
+                                ${myPostsGrid}
                             </div>
                         </div>
                     </div>
@@ -1184,20 +1295,19 @@
             return `
                 <div class="flex-1 flex flex-col h-full min-h-0 bg-[#030712] relative overflow-hidden fade-enter fade-enter-active">
                     
-                    <!-- Header (flex-none 固定在頂部) -->
+                    <!-- Header (固定頂部) -->
                     <div class="flex-none p-4 bg-slate-900/95 backdrop-blur-xl border-b border-slate-850 space-y-3 shadow-lg z-30">
                         <div class="flex justify-between items-center">
-                            <!-- 加上精緻的圓形 Logo 圖示 (帶有快取破壞參數) -->
                             <div class="flex items-center gap-2 cursor-pointer" onclick="closeUserProfile()">
                                 <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-8 h-8 rounded-full object-cover shadow-[0_0_12px_rgba(139,92,246,0.5)] border border-violet-500/30" alt="SecretRoom Icon">
                                 <h1 class="text-2xl font-black tracking-widest text-white" style="font-family: serif; font-style: italic;">SecretRoom</h1>
                             </div>
-                            <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow cursor-pointer" onclick="switchTab('profile')">
-                                ${myData.nickname ? myData.nickname.charAt(0).toUpperCase() : 'U'}
+                            <div class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 overflow-hidden shadow cursor-pointer flex items-center justify-center" onclick="switchTab('profile')">
+                                <img src="${myData.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-full h-full object-cover">
                             </div>
                         </div>
                         
-                        <!-- 搜尋輸入框 -->
+                        <!-- 搜尋 -->
                         <div class="relative ${window.state.currentTab === 'feed' && !window.state.selectedProfileUserId ? '' : 'hidden'}" id="search-bar-container">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
                                 <i class="fa-solid fa-magnifying-glass text-xs"></i>
@@ -1206,16 +1316,14 @@
                         </div>
                     </div>
 
-                    <!-- 滾動內容容器 (flex-1 撐滿且獨立滾動) -->
+                    <!-- 滾動內容容器 -->
                     <div class="flex-1 overflow-y-auto min-h-0 relative z-10 pb-24 scroll-smooth">
                         
-                        <!-- 如果正在瀏覽他人專區，直接覆蓋這裡的內容 -->
                         ${window.state.selectedProfileUserId ? otherUserProfileHtml : `
                         
-                            <!-- 首頁 Feed 內容 -->
+                            <!-- 首頁 Feed -->
                             <div id="tab-feed-view" class="p-4 ${window.state.currentTab === 'feed' ? '' : 'hidden'}">
                                 <div class="max-w-lg mx-auto">
-                                    <!-- 演算法排序與篩選通知 -->
                                     ${window.state.searchTerm ? '' : `
                                     <div class="mb-4 bg-indigo-950/20 border border-indigo-900/40 p-3 rounded-2xl text-xs text-slate-400 flex items-center gap-2">
                                         <i class="fa-solid fa-brain text-indigo-400 animate-pulse"></i>
@@ -1231,53 +1339,14 @@
                                 </div>
                             </div>
 
-                            <!-- 個人資料主頁內容 -->
+                            <!-- 個人資料頁 -->
                             <div id="tab-profile-view" class="p-5 ${window.state.currentTab === 'profile' ? '' : 'hidden'}">
-                                <div class="max-w-md mx-auto space-y-6">
-                                    <!-- 個人卡片 -->
-                                    <div class="bg-slate-900 border border-slate-850 p-6 rounded-3xl shadow-xl space-y-5">
-                                        <div class="flex items-center gap-4">
-                                            <div class="w-16 h-16 bg-indigo-600 text-white rounded-full flex items-center justify-center text-3xl font-black border-2 border-slate-700">
-                                                ${myData.nickname ? myData.nickname.charAt(0).toUpperCase() : 'U'}
-                                            </div>
-                                            <div>
-                                                <h3 class="text-xl font-bold text-white">${myData.nickname || '未填'}</h3>
-                                                <p class="text-xs text-slate-500">@${myData.username || '無帳號'} · 滿 18 歲驗證</p>
-                                            </div>
-                                        </div>
-
-                                        <div class="grid grid-cols-2 gap-3 text-center">
-                                            <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
-                                                <span class="text-[10px] text-slate-500 block">身高/體重</span>
-                                                <span class="text-xs font-bold text-slate-200">${myData.height}cm / ${myData.weight}kg</span>
-                                            </div>
-                                            <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
-                                                <span class="text-[10px] text-slate-500 block">私密尺碼</span>
-                                                <span class="text-xs font-bold text-slate-200">長 ${myData.length} / 粗 ${myData.girth}</span>
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <span class="text-[10px] text-slate-500 block mb-1">感興趣的主題</span>
-                                            <div class="flex flex-wrap gap-1.5">
-                                                ${kinkBadges ? kinkBadges : '<span class="text-slate-600 text-xs">無</span>'}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- 我的貼文歷史 Grid -->
-                                    <div>
-                                        <h4 class="text-sm font-bold text-slate-300 mb-3 flex items-center gap-1.5"><i class="fa-regular fa-image"></i> 我的分享動態</h4>
-                                        <div class="grid grid-cols-3 gap-2">
-                                            ${myPostsGrid}
-                                        </div>
-                                    </div>
-                                </div>
+                                ${profileContent}
                             </div>
                         `}
                     </div>
 
-                    <!-- Footer Bottom Bar (flex-none, 永不塌陷，極致貼附於最底部) -->
+                    <!-- Footer Bottom Bar -->
                     <div class="flex-none bg-slate-900/95 backdrop-blur-lg border-t border-slate-850 flex justify-around p-3 pb-safe z-40 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] absolute bottom-0 w-full">
                         <button onclick="switchTab('feed')" class="flex flex-col items-center p-2 transition ${window.state.currentTab === 'feed' ? 'text-indigo-500' : 'text-slate-500 hover:text-white'}">
                             <i class="fa-solid fa-house text-xl"></i>
@@ -1291,7 +1360,7 @@
                         
                         <button onclick="switchTab('profile')" class="flex flex-col items-center p-2 transition ${window.state.currentTab === 'profile' ? 'text-indigo-500' : 'text-slate-500 hover:text-white'}">
                             <div class="w-7 h-7 rounded-full border border-slate-500 overflow-hidden flex items-center justify-center bg-slate-800 text-xs font-bold text-slate-300">
-                                ${myData.nickname ? myData.nickname.charAt(0).toUpperCase() : 'U'}
+                                <img src="${myData.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-full h-full object-cover">
                             </div>
                         </button>
                     </div>
@@ -1353,9 +1422,70 @@
             `;
         }
 
+        window.startProfileEdit = function() {
+            window.state.isEditingProfile = true;
+            window.state.tempEditAvatar = null;
+            renderView();
+        }
+
+        window.cancelProfileEdit = function() {
+            window.state.isEditingProfile = false;
+            window.state.tempEditAvatar = null;
+            renderView();
+        }
+
+        window.previewEditAvatar = function(input) {
+            const file = input.files[0];
+            if (!file) return;
+            compressAndSetImage(file, (base64) => {
+                window.state.tempEditAvatar = base64;
+                const img = document.getElementById('edit-avatar-preview');
+                if (img) img.src = base64;
+            });
+        }
+
+        window.handleProfileSave = async function(e) {
+            e.preventDefault();
+            const nickname = document.getElementById('edit-nickname').value.trim();
+            const height = document.getElementById('edit-height').value;
+            const weight = document.getElementById('edit-weight').value;
+            const length = document.getElementById('edit-length').value;
+            const girth = document.getElementById('edit-girth').value;
+            const otherKink = document.getElementById('edit-other-kink').value.trim();
+            const selectedKinks = Array.from(document.querySelectorAll('input[name="edit-kinks"]:checked')).map(el => el.value);
+
+            if (selectedKinks.length === 0 && !otherKink) {
+                showToast('請至少選擇一個感興趣的生活主題！', 'error');
+                return;
+            }
+
+            const docRef = doc(db, 'secretg_apps', appId, 'applications', window.state.userId);
+            const updateFields = {
+                nickname, height, weight, length, girth, otherKink, kinks: selectedKinks
+            };
+
+            // 如果有變更頭像，寫入審核佇列 avatarPending，並把 avatarStatus 設為 pending
+            if (window.state.tempEditAvatar) {
+                updateFields.avatarPending = window.state.tempEditAvatar;
+                updateFields.avatarStatus = 'pending';
+            }
+
+            try {
+                await updateDoc(docRef, updateFields);
+                showToast('資料更新成功！' + (window.state.tempEditAvatar ? ' 新頭像已送審' : ''), 'success');
+                window.state.isEditingProfile = false;
+                window.state.tempEditAvatar = null;
+                // 更新本機狀態
+                window.state.userData = { ...window.state.userData, ...updateFields };
+                renderView();
+            } catch (err) {
+                console.error("更新個人資料失敗:", err);
+                showToast('更新失敗，請檢查資料庫連線', 'error');
+            }
+        }
+
         window.viewUserProfile = async function(profileUserId) {
             if (profileUserId === window.state.userId) {
-                // 如果是自己，直接切換到個人檔案分頁
                 switchTab('profile');
                 return;
             }
@@ -1396,7 +1526,7 @@
         window.startPostPress = function(postId) {
             longPressTimer = setTimeout(() => {
                 openDeletePostModal(postId);
-            }, 800); // 800毫秒視為長按
+            }, 800); 
         };
 
         window.cancelPostPress = function() {
@@ -1446,11 +1576,9 @@
         };
 
         function initDashboardFeatures() {
-            // 阻斷重複註冊監聽器
             if (window.state.dashboardInitialized) return;
             window.state.dashboardInitialized = true;
 
-            // 即時自 Firebase 監聽貼文
             if (db) {
                 const postsQuery = query(collection(db, 'secretg_apps', appId, 'posts'));
                 onSnapshot(postsQuery, (querySnapshot) => {
@@ -1461,13 +1589,12 @@
                     
                     window.state.posts = loadedPosts;
                     
-                    // 只要不在打開 Modal 或聚焦搜尋，就重繪
                     if (window.state.currentView === 'dashboard') {
                         const isModalOpen = !document.getElementById('create-post-modal')?.classList.contains('hidden');
                         const isDeleteOpen = !document.getElementById('delete-post-modal')?.classList.contains('hidden');
                         const isSearching = document.activeElement === document.getElementById('dashboard-search');
                         
-                        if (!isModalOpen && !isDeleteOpen && !isSearching) {
+                        if (!isModalOpen && !isDeleteOpen && !isSearching && !window.state.isEditingProfile) {
                             renderView();
                         }
                     }
@@ -1479,19 +1606,18 @@
 
         window.switchTab = function(tab) {
             window.state.currentTab = tab;
-            // 當點擊切換頁籤時，自動關閉正在瀏覽的他人的個人主頁
             window.state.selectedProfileUserId = null;
             window.state.selectedProfileData = null;
+            window.state.isEditingProfile = false;
+            window.state.tempEditAvatar = null;
             renderView();
         }
 
         window.handleSearch = function(input) {
             window.state.searchTerm = input.value;
-            
             if (window.state.searchDebounce) {
                 clearTimeout(window.state.searchDebounce);
             }
-            
             const debounceTimer = setTimeout(() => {
                 renderView();
                 const searchInput = document.getElementById('dashboard-search');
@@ -1569,7 +1695,7 @@
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7); // 壓縮品質 70%
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7); 
                     callback(dataUrl);
                 };
             };
@@ -1592,6 +1718,7 @@
                     const postData = {
                         userId: window.state.userId,
                         authorName: window.state.userData.nickname,
+                        authorAvatar: window.state.userData.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2', // 綁定發文時的頭像
                         text: text,
                         tags: tags,
                         image: imageUrl || '',
@@ -1657,7 +1784,6 @@
             }
         }
 
-        // 啟動應用
         window.onload = function () {
             initApp();
         }
