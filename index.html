@@ -163,7 +163,10 @@
                 "生活日常", "健身運動", "時尚穿搭", "攝影影像", "戶外旅遊", 
                 "美食烹飪", "心靈交流", "熟男/Daddy", "純愛分享"
             ],
-            posts: [] // 存放首頁的所有貼文
+            posts: [], // 存放首頁的所有貼文
+            activeUsers: [], // 存放所有已啟用的註冊用戶資料，便於極速搜尋
+            searchTerm: '',
+            searchTimeout: null
         };
 
         const appContainer = document.getElementById('app');
@@ -257,7 +260,11 @@
             if (window.state.currentView === 'register') initRegisterForm();
             if (window.state.currentView === 'pending') listenToApplicationStatus();
             if (window.state.currentView === 'telegram') loadTelegramWidget();
-            if (window.state.currentView === 'dashboard') initDashboardFeatures();
+            if (window.state.currentView === 'dashboard') {
+                initDashboardFeatures();
+                // 進入時立刻觸發一次非重構 DOM 的動態搜尋渲染，加載首頁初始貼文
+                setTimeout(() => { updateSearchAndFeedUI(); }, 50);
+            }
         }
 
         // 登入歡迎主頁
@@ -669,7 +676,7 @@
             sendBtn.innerHTML = '<i class="fa-solid fa-circle-notch animate-spin"></i> 發送中';
 
             // 產生 6 位數驗證碼
-            const otp = Math.floor(100000 + Math.random() * 90000).toString();
+            const otp = Math.floor(100000 + Math.random() * 900000).toString();
             window.state.generatedOTP = otp;
 
             if (!emailjsConfig.publicKey || emailjsConfig.publicKey === "YOUR_EMAILJS_PUBLIC_KEY") {
@@ -970,202 +977,34 @@
             }
         };
 
-        // 首頁動態牆主介面 (包含推薦排序、搜尋篩選、愛心與評分、長按刪除、個人主頁)
+        // 首頁動態牆主介面 (極速、不重構搜尋欄的純淨渲染框架)
         function viewDashboard() {
-            // 1. 篩選與排序邏輯
-            let filteredPosts = [...window.state.posts];
-            const term = (document.getElementById('search-input')?.value || '').toLowerCase();
-            
-            if (term) {
-                filteredPosts = filteredPosts.filter(p => 
-                    p.text.toLowerCase().includes(term) || 
-                    p.authorName.toLowerCase().includes(term) || 
-                    p.userId.toLowerCase().includes(term) ||
-                    (p.tags && p.tags.some(t => t.toLowerCase().includes(term)))
-                );
-            }
-
-            // 依演算法權重排序
-            filteredPosts.sort((a, b) => getRecommendationScore(b) - getRecommendationScore(a));
-
-            // 2. 無限滾動切片 (僅顯示當前加載限制的數量)
-            const visiblePosts = filteredPosts.slice(0, window.state.visiblePostsCount);
-
-            // 3. 渲染貼文
-            const feedHtml = visiblePosts.map(f => {
-                const isLiked = f.likes && f.likes.includes(window.state.userId);
-                const ratingCount = f.ratings ? Object.keys(f.ratings).length : 0;
-                const averageRating = ratingCount > 0 
-                    ? (Object.values(f.ratings).reduce((a, b) => a + b, 0) / ratingCount).toFixed(1)
-                    : '0.0';
-                
-                // 評論 HTML 渲染
-                const commentsListHtml = f.comments && f.comments.length > 0
-                    ? f.comments.map(c => `
-                        <div class="text-xs bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/50 mb-1.5 leading-relaxed">
-                            <span class="font-bold text-slate-300 mr-1.5">${c.authorName}</span>
-                            <span class="text-slate-400">${c.text}</span>
-                        </div>
-                    `).join('')
-                    : `<p class="text-[11px] text-slate-600 italic py-2 text-center">目前尚無評論，快來搶沙發！</p>`;
-
-                const isCommentsOpen = window.state.openComments[f.id];
-
-                return `
-                <div class="bg-slate-900 border border-slate-800 rounded-3xl mb-6 overflow-hidden shadow-lg transition-transform hover:scale-[1.01]">
-                    <!-- 發文者資訊 -->
-                    <div class="p-4 flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <img src="${f.authorAvatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" onclick="viewUserProfile('${f.userId}')" class="w-10 h-10 rounded-full object-cover border border-indigo-500/30 cursor-pointer hover:scale-105 transition">
-                            <div>
-                                <h4 onclick="viewUserProfile('${f.userId}')" class="font-bold text-sm text-slate-100 flex items-center gap-2 cursor-pointer hover:text-indigo-400 transition">
-                                    ${f.authorName} 
-                                    <span class="text-[10px] text-indigo-400 font-mono">@${f.userId}</span>
-                                </h4>
-                                <p class="text-[10px] text-slate-500">${f.createdAt ? new Date(f.createdAt.seconds * 1000).toLocaleString() : '剛剛'}</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <!-- 檢舉按鈕 -->
-                            <button onclick="openReportModal('${f.id}')" class="text-slate-500 hover:text-red-400 px-2 py-1 text-xs transition flex items-center gap-1">
-                                <i class="fa-regular fa-flag"></i> 檢舉
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- 照片 (加入動態浮水印與原比例) -->
-                    <div class="w-full bg-slate-950 relative group overflow-hidden select-none">
-                        <!-- 動態觀看者防偽浮水印疊加 -->
-                        <div class="absolute inset-0 pointer-events-none select-none overflow-hidden opacity-[0.12] z-10 flex flex-wrap justify-center items-center gap-12 p-4 rotate-[-25deg]">
-                            ${Array(20).fill(`<span class="text-[10px] text-white font-extrabold tracking-widest whitespace-nowrap">SecretRoom @${window.state.userData.nickname || window.state.userId}</span>`).join('')}
-                        </div>
-                        <img src="${f.image}" class="w-full h-auto object-contain max-h-[550px] mx-auto relative z-0">
-                    </div>
-
-                    <!-- 評分及互動數據 -->
-                    <div class="px-4 py-3 border-b border-slate-800/40 flex justify-between items-center bg-slate-950/30">
-                        <div class="flex items-center gap-1.5 text-xs text-amber-400 font-semibold">
-                            <i class="fa-solid fa-star"></i>
-                            <span>${averageRating}</span>
-                            <span class="text-slate-500 font-normal">(${ratingCount}人評分)</span>
-                        </div>
-                        <div class="text-[11px] text-slate-500">
-                            ${f.likes ? f.likes.length : 0} 個愛心
-                        </div>
-                    </div>
-
-                    <!-- 互動按鈕區 -->
-                    <div class="p-4 pb-2 flex justify-between items-center text-xl">
-                        <div class="flex gap-5">
-                            <!-- 愛心讚 -->
-                            <button onclick="toggleLike('${f.id}')" class="transition transform hover:scale-110 active:scale-95 ${isLiked ? 'text-red-500' : 'text-slate-400 hover:text-red-400'}">
-                                <i class="${isLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart'}"></i>
-                            </button>
-                            <!-- 評論展開切換 -->
-                            <button onclick="toggleCommentsSection('${f.id}')" class="text-slate-400 hover:text-indigo-400 transition relative">
-                                <i class="fa-regular fa-comment"></i>
-                                ${f.comments && f.comments.length > 0 ? `<span class="absolute -top-1.5 -right-1.5 bg-indigo-600 text-[9px] text-white rounded-full w-4 h-4 flex items-center justify-center font-bold font-mono">${f.comments.length}</span>` : ''}
-                            </button>
-                        </div>
-
-                        <!-- 1-5星評分條 -->
-                        <div class="flex items-center gap-1 bg-slate-950/50 px-3 py-1.5 rounded-full border border-slate-800">
-                            <span class="text-[10px] text-slate-500 mr-1 font-medium">評分:</span>
-                            ${[1,2,3,4,5].map(star => {
-                                const postRating = f.ratings && f.ratings[window.state.userId];
-                                const isSelected = postRating >= star;
-                                return `
-                                    <button onclick="ratePost('${f.id}', ${star})" class="text-xs transition transform hover:scale-125 ${isSelected ? 'text-amber-400' : 'text-slate-600 hover:text-amber-500'}">
-                                        <i class="fa-solid fa-star"></i>
-                                    </button>
-                                `;
-                            }).join('')}
-                        </div>
-                    </div>
-                    
-                    <!-- 內文 -->
-                    <div class="px-4 pb-3">
-                        <p class="text-sm text-slate-300 leading-relaxed"><span class="font-bold mr-2 text-slate-100">${f.authorName}</span>${f.text}</p>
-                        <div class="flex flex-wrap gap-1.5 mt-2.5">
-                            ${f.tags ? f.tags.map(t => `<span class="text-indigo-400 text-xs font-mono">#${t}</span>`).join('') : ''}
-                        </div>
-                    </div>
-
-                    <!-- 評論專專區 (展開式) -->
-                    <div class="px-4 pb-4 border-t border-slate-800/30 bg-slate-950/20 ${isCommentsOpen ? '' : 'hidden'}">
-                        <div class="py-3">
-                            <h5 class="text-xs font-semibold text-slate-400 mb-2 flex items-center gap-1"><i class="fa-regular fa-comments"></i> 社群評論 (${f.comments ? f.comments.length : 0})</h5>
-                            <div class="max-h-48 overflow-y-auto scrollbar-hide mb-3 pr-1">
-                                ${commentsListHtml}
-                            </div>
-                            <!-- 新增評論輸入框 -->
-                            <div class="flex gap-2">
-                                <input type="text" id="comment-input-${f.id}" placeholder="留點紳士溫暖的留言..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-600">
-                                <button onclick="submitComment('${f.id}')" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white px-4 py-2 rounded-xl text-xs font-bold transition">傳送</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                `;
-            }).join('');
-
-            // 4. 無限滾動的加載指示器
-            const loadMoreSpinner = filteredPosts.length > window.state.visiblePostsCount
-                ? `
-                    <div class="py-6 flex justify-center items-center gap-2 text-slate-500 text-xs">
-                        <i class="fa-solid fa-circle-notch animate-spin text-indigo-500"></i>
-                        <span>正在載入更多精彩生活...</span>
-                    </div>
-                `
-                : `<div class="py-6 text-center text-slate-600 text-[10px] tracking-widest uppercase">已經看完了所有的秘密動態 🔒</div>`;
-
-            // 搜尋關鍵字匹配頭像列表
-            let searchUsersHtml = '';
-            if (term) {
-                const matchedUsers = window.state.posts
-                    .filter(p => p.userId.toLowerCase().includes(term) || p.authorName.toLowerCase().includes(term))
-                    .reduce((acc, current) => {
-                        const x = acc.find(item => item.userId === current.userId);
-                        if (!x) acc.push({ userId: current.userId, authorName: current.authorName, avatar: current.authorAvatar });
-                        return acc;
-                    }, []);
-
-                if (matchedUsers.length > 0) {
-                    searchUsersHtml = `
-                        <div class="px-4 py-3 bg-slate-950/60 border-b border-slate-900 flex items-center gap-3 overflow-x-auto scrollbar-hide">
-                            <span class="text-[10px] text-slate-500 font-bold shrink-0">相關用戶:</span>
-                            ${matchedUsers.map(u => `
-                                <div onclick="viewUserProfile('${u.userId}')" class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full cursor-pointer shrink-0 hover:border-indigo-500 transition">
-                                    <img src="${u.avatar}" class="w-5 h-5 rounded-full object-cover">
-                                    <span class="text-[11px] text-slate-200 font-medium">${u.authorName}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                    `;
-                }
-            }
-
-            // 判斷當前切換的 Tab 分頁
             const activeTab = window.state.currentTab || 'feed';
             let tabContentHtml = '';
 
             if (activeTab === 'feed') {
                 tabContentHtml = `
-                    <!-- 搜尋列 -->
+                    <!-- 搜尋列：保持 DOM 架構，利用 handleSearchInput 即時篩選不重繪 Input 元素 -->
                     <div class="p-3 bg-[#05050a] border-b border-slate-900 sticky top-[65px] z-20">
                         <div class="relative">
-                            <input type="text" id="search-input" oninput="debounceSearch()" value="${window.state.searchTerm || ''}" placeholder="搜尋貼文、標籤、作者或帳號..." class="w-full bg-slate-900/80 border border-slate-800 rounded-2xl pl-11 pr-4 py-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition shadow-inner">
+                            <input type="text" id="search-input" oninput="handleSearchInput(this.value)" value="${window.state.searchTerm || ''}" placeholder="搜尋貼文、標籤、作者或帳號..." class="w-full bg-slate-900/80 border border-slate-800 rounded-2xl pl-11 pr-4 py-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition shadow-inner">
                             <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-500 text-xs"></i>
                         </div>
                     </div>
 
-                    ${searchUsersHtml}
+                    <!-- 相關用戶動態容器 (動態渲染，不重構 Input 避免注音切斷) -->
+                    <div id="search-users-container"></div>
 
-                    <!-- 貼文動態牆 -->
+                    <!-- 貼文動態牆與瀑布流 (採用局部動態刷新) -->
                     <div class="flex-1 overflow-y-auto bg-[#05050a] p-0 md:p-4 scroll-smooth pb-24" id="feed-scroll-container">
                         <div class="max-w-lg mx-auto p-4">
-                            ${feedHtml || `<div class="text-center py-16 text-slate-600 text-xs"><i class="fa-regular fa-folder-open text-2xl mb-2 block"></i> 目前尚無任何動態</div>`}
-                            ${feedHtml ? loadMoreSpinner : ''}
+                            <div id="feed-posts-list">
+                                <div class="py-12 text-center text-slate-500 text-xs">
+                                    <i class="fa-solid fa-circle-notch animate-spin text-indigo-500 text-lg mb-2 block"></i>
+                                    連線至 SecretRoom 資料庫牆...
+                                </div>
+                            </div>
+                            <div id="feed-load-more-container"></div>
                         </div>
                     </div>
                 `;
@@ -1192,7 +1031,7 @@
 
                     ${tabContentHtml}
 
-                    <!-- 底部導航 (全面改為 Flex-None 與自適應 Flex 版面) -->
+                    <!-- 底部導航 -->
                     <div class="absolute bottom-0 w-full bg-slate-900/95 backdrop-blur-lg border-t border-slate-800 flex justify-around p-2 pb-safe md:pb-2 z-40">
                         <button onclick="switchTab('feed')" class="flex flex-col items-center p-2 ${activeTab === 'feed' ? 'text-indigo-400' : 'text-slate-500'}">
                             <i class="fa-solid fa-house text-xl"></i>
@@ -1271,6 +1110,203 @@
                     </div>
                 </div>
             `;
+        }
+
+        // 搜尋欄鍵入處理：保存輸入狀態與組字，極速局部刷新 DOM，完美防抖 (IME 注音優化)
+        window.handleSearchInput = function(value) {
+            window.state.searchTerm = value;
+            clearTimeout(window.state.searchTimeout);
+            window.state.searchTimeout = setTimeout(() => {
+                updateSearchAndFeedUI();
+            }, 100); // 100ms 即時高流暢無感加載
+        }
+
+        // 局部更新搜尋用戶與貼文牆 UI（不重繪 input，完全不卡拼音/注音輸入法）
+        window.updateSearchAndFeedUI = function() {
+            if (window.state.currentView !== 'dashboard' || window.state.currentTab !== 'feed') return;
+
+            const usersContainer = document.getElementById('search-users-container');
+            const postsList = document.getElementById('feed-posts-list');
+            const loadMoreContainer = document.getElementById('feed-load-more-container');
+
+            if (!usersContainer || !postsList || !loadMoreContainer) return;
+
+            const term = (window.state.searchTerm || '').toLowerCase().trim();
+
+            // 1. 局部搜尋所有已註冊的 Active 用戶 (包含帳號 ID 匹配與暱稱匹配)
+            let matchedUsers = [];
+            if (term && window.state.activeUsers) {
+                matchedUsers = window.state.activeUsers.filter(u => 
+                    u.username.toLowerCase().includes(term) || 
+                    (u.nickname && u.nickname.toLowerCase().includes(term))
+                );
+            }
+
+            if (matchedUsers.length > 0) {
+                usersContainer.innerHTML = `
+                    <div class="px-4 py-3 bg-slate-950/60 border-b border-slate-900 flex items-center gap-3 overflow-x-auto scrollbar-hide">
+                        <span class="text-[10px] text-slate-500 font-bold shrink-0">相關用戶 (${matchedUsers.length}):</span>
+                        ${matchedUsers.map(u => `
+                            <div onclick="viewUserProfile('${u.username}')" class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full cursor-pointer shrink-0 hover:border-indigo-500 transition">
+                                <img src="${u.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-5 h-5 rounded-full object-cover border border-slate-800">
+                                <span class="text-[11px] text-slate-200 font-medium">${u.nickname} <span class="text-[9px] text-slate-500">@${u.username}</span></span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                usersContainer.innerHTML = '';
+            }
+
+            // 2. 局部搜尋篩選貼文
+            let filteredPosts = [...window.state.posts];
+            if (term) {
+                filteredPosts = filteredPosts.filter(p => 
+                    p.text.toLowerCase().includes(term) || 
+                    p.authorName.toLowerCase().includes(term) || 
+                    p.userId.toLowerCase().includes(term) ||
+                    (p.tags && p.tags.some(t => t.toLowerCase().includes(term)))
+                );
+            }
+
+            // 依演算法權重排序
+            filteredPosts.sort((a, b) => getRecommendationScore(b) - getRecommendationScore(a));
+
+            // 無限滾動切片 (僅顯示當前加載限制的數量)
+            const visiblePosts = filteredPosts.slice(0, window.state.visiblePostsCount);
+
+            if (visiblePosts.length > 0) {
+                postsList.innerHTML = visiblePosts.map(f => {
+                    const isLiked = f.likes && f.likes.includes(window.state.userId);
+                    const ratingCount = f.ratings ? Object.keys(f.ratings).length : 0;
+                    const averageRating = ratingCount > 0 
+                        ? (Object.values(f.ratings).reduce((a, b) => a + b, 0) / ratingCount).toFixed(1)
+                        : '0.0';
+                    
+                    // 評論 HTML 渲染
+                    const commentsListHtml = f.comments && f.comments.length > 0
+                        ? f.comments.map(c => `
+                            <div class="text-xs bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/50 mb-1.5 leading-relaxed">
+                                <span class="font-bold text-slate-300 mr-1.5">${c.authorName}</span>
+                                <span class="text-slate-400">${c.text}</span>
+                            </div>
+                        `).join('')
+                        : `<p class="text-[11px] text-slate-600 italic py-2 text-center">目前尚無評論，快來搶沙發！</p>`;
+
+                    const isCommentsOpen = window.state.openComments[f.id];
+
+                    return `
+                    <div class="bg-slate-900 border border-slate-800 rounded-3xl mb-6 overflow-hidden shadow-lg transition-transform hover:scale-[1.01]">
+                        <!-- 發文者資訊 -->
+                        <div class="p-4 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <img src="${f.authorAvatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" onclick="viewUserProfile('${f.userId}')" class="w-10 h-10 rounded-full object-cover border border-indigo-500/30 cursor-pointer hover:scale-105 transition">
+                                <div>
+                                    <h4 onclick="viewUserProfile('${f.userId}')" class="font-bold text-sm text-slate-100 flex items-center gap-2 cursor-pointer hover:text-indigo-400 transition">
+                                        ${f.authorName} 
+                                        <span class="text-[10px] text-indigo-400 font-mono">@${f.userId}</span>
+                                    </h4>
+                                    <p class="text-[10px] text-slate-500">${f.createdAt ? new Date(f.createdAt.seconds * 1000).toLocaleString() : '剛剛'}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <!-- 檢舉按鈕 -->
+                                <button onclick="openReportModal('${f.id}')" class="text-slate-500 hover:text-red-400 px-2 py-1 text-xs transition flex items-center gap-1">
+                                    <i class="fa-regular fa-flag"></i> 檢舉
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 照片 (加入動態浮水印與原比例) -->
+                        <div class="w-full bg-slate-950 relative group overflow-hidden select-none">
+                            <!-- 動態觀看者防偽浮水印疊加 -->
+                            <div class="absolute inset-0 pointer-events-none select-none overflow-hidden opacity-[0.12] z-10 flex flex-wrap justify-center items-center gap-12 p-4 rotate-[-25deg]">
+                                ${Array(20).fill(`<span class="text-[10px] text-white font-extrabold tracking-widest whitespace-nowrap">SecretRoom @${window.state.userData.nickname || window.state.userId}</span>`).join('')}
+                            </div>
+                            <img src="${f.image}" class="w-full h-auto object-contain max-h-[550px] mx-auto relative z-0">
+                        </div>
+
+                        <!-- 評分及互動數據 -->
+                        <div class="px-4 py-3 border-b border-slate-800/40 flex justify-between items-center bg-slate-950/30">
+                            <div class="flex items-center gap-1.5 text-xs text-amber-400 font-semibold">
+                                <i class="fa-solid fa-star"></i>
+                                <span>${averageRating}</span>
+                                <span class="text-slate-500 font-normal">(${ratingCount}人評分)</span>
+                            </div>
+                            <div class="text-[11px] text-slate-500">
+                                ${f.likes ? f.likes.length : 0} 個愛心
+                            </div>
+                        </div>
+
+                        <!-- 互動按鈕區 -->
+                        <div class="p-4 pb-2 flex justify-between items-center text-xl">
+                            <div class="flex gap-5">
+                                <!-- 愛心讚 -->
+                                <button onclick="toggleLike('${f.id}')" class="transition transform hover:scale-110 active:scale-95 ${isLiked ? 'text-red-500' : 'text-slate-400 hover:text-red-400'}">
+                                    <i class="${isLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart'}"></i>
+                                </button>
+                                <!-- 評論展開切換 -->
+                                <button onclick="toggleCommentsSection('${f.id}')" class="text-slate-400 hover:text-indigo-400 transition relative">
+                                    <i class="fa-regular fa-comment"></i>
+                                    ${f.comments && f.comments.length > 0 ? `<span class="absolute -top-1.5 -right-1.5 bg-indigo-600 text-[9px] text-white rounded-full w-4 h-4 flex items-center justify-center font-bold font-mono">${f.comments.length}</span>` : ''}
+                                </button>
+                            </div>
+
+                            <!-- 1-5星評分條 -->
+                            <div class="flex items-center gap-1 bg-slate-950/50 px-3 py-1.5 rounded-full border border-slate-800">
+                                <span class="text-[10px] text-slate-500 mr-1 font-medium">評分:</span>
+                                ${[1,2,3,4,5].map(star => {
+                                    const postRating = f.ratings && f.ratings[window.state.userId];
+                                    const isSelected = postRating >= star;
+                                    return `
+                                        <button onclick="ratePost('${f.id}', ${star})" class="text-xs transition transform hover:scale-125 ${isSelected ? 'text-amber-400' : 'text-slate-600 hover:text-amber-500'}">
+                                            <i class="fa-solid fa-star"></i>
+                                        </button>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                        
+                        <!-- 內文 -->
+                        <div class="px-4 pb-3">
+                            <p class="text-sm text-slate-300 leading-relaxed"><span class="font-bold mr-2 text-slate-100">${f.authorName}</span>${f.text}</p>
+                            <div class="flex flex-wrap gap-1.5 mt-2.5">
+                                ${f.tags ? f.tags.map(t => `<span class="text-indigo-400 text-xs font-mono">#${t}</span>`).join('') : ''}
+                            </div>
+                        </div>
+
+                        <!-- 評論專專區 (展開式) -->
+                        <div class="px-4 pb-4 border-t border-slate-800/30 bg-slate-950/20 ${isCommentsOpen ? '' : 'hidden'}">
+                            <div class="py-3">
+                                <h5 class="text-xs font-semibold text-slate-400 mb-2 flex items-center gap-1"><i class="fa-regular fa-comments"></i> 社群評論 (${f.comments ? f.comments.length : 0})</h5>
+                                <div class="max-h-48 overflow-y-auto scrollbar-hide mb-3 pr-1">
+                                    ${commentsListHtml}
+                                </div>
+                                <!-- 新增評論輸入框 -->
+                                <div class="flex gap-2">
+                                    <input type="text" id="comment-input-${f.id}" placeholder="留點紳士溫暖的留言..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-600">
+                                    <button onclick="submitComment('${f.id}')" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white px-4 py-2 rounded-xl text-xs font-bold transition">傳送</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+            } else {
+                postsList.innerHTML = `<div class="text-center py-16 text-slate-600 text-xs"><i class="fa-regular fa-folder-open text-2xl mb-2 block"></i> 目前尚無任何動態</div>`;
+            }
+
+            // 3. 無限滾動的載入指示器
+            if (filteredPosts.length > window.state.visiblePostsCount) {
+                loadMoreContainer.innerHTML = `
+                    <div class="py-6 flex justify-center items-center gap-2 text-slate-500 text-xs">
+                        <i class="fa-solid fa-circle-notch animate-spin text-indigo-500"></i>
+                        <span>正在載入更多精彩生活...</span>
+                    </div>
+                `;
+            } else {
+                loadMoreContainer.innerHTML = `<div class="py-6 text-center text-slate-600 text-[10px] tracking-widest uppercase">已經看完了所有的秘密動態 🔒</div>`;
+            }
         }
 
         // 個人資料分頁 (支援免審核修改資料，大頭照需審核)
@@ -1357,7 +1393,7 @@
                     </div>
                 </div>
 
-                <!-- 編輯個人資料彈窗 (不使用 confirm 彈出) -->
+                <!-- 編輯個人資料彈窗 -->
                 <div id="edit-profile-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
                     <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl max-w-sm w-full mx-4 shadow-2xl max-h-[85vh] overflow-y-auto space-y-5">
                         <div class="text-center pb-2 border-b border-slate-800">
@@ -1476,9 +1512,8 @@
             `;
         }
 
-        // Dashboard 各項核心功能監聽與操作綁定
+        // Dashboard 各項核心功能監聽與動態刷新
         function initDashboardFeatures() {
-            // 只在未註冊過全域監聽貼文時註冊，避免重複渲染卡死
             if (window.state.dashboardInitialized) {
                 initDashboardScroll();
                 return;
@@ -1486,29 +1521,35 @@
 
             if (!db) return;
 
+            // 1. 即時安全監聽全站貼文牆
             const q = collection(db, 'secretg_apps', appId, 'posts');
             onSnapshot(q, (querySnapshot) => {
                 window.state.posts = [];
                 querySnapshot.forEach((docSnap) => {
                     window.state.posts.push({ id: docSnap.id, ...docSnap.data() });
                 });
-                renderView();
+                updateSearchAndFeedUI();
             }, (error) => {
                 console.error("載入貼文錯誤:", error);
             });
 
+            // 2. 即時安全監聽全站活躍用戶名單 (用於完美搜尋 ID 跳轉)
+            const usersQ = collection(db, 'secretg_apps', appId, 'applications');
+            onSnapshot(usersQ, (snap) => {
+                window.state.activeUsers = [];
+                snap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if (data.status === 'active') {
+                        window.state.activeUsers.push({ username: docSnap.id, ...data });
+                    }
+                });
+                updateSearchAndFeedUI();
+            }, (error) => {
+                console.error("載入用戶資料錯誤:", error);
+            });
+
             window.state.dashboardInitialized = true;
             initDashboardScroll();
-        }
-
-        // 搜尋 debounce 機制
-        let searchTimeout = null;
-        window.debounceSearch = function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                window.state.searchTerm = document.getElementById('search-input').value;
-                renderView();
-            }, 300);
         }
 
         // 切換 Tab
@@ -1543,7 +1584,7 @@
                 ? (Date.now() - (post.createdAt.seconds * 1000)) / (1000 * 60 * 60)
                 : 0;
             if (ageInHours < 24) {
-                score += (24 - ageInHours) * 3; // 發布 24 小時內的貼文有隨時間遞減的暴光紅利
+                score += (24 - ageInHours) * 3; // 發布 24 小時內的貼文有隨時間遞減的曝光紅利
             }
 
             return score;
@@ -1590,7 +1631,7 @@
             }
         }
 
-        // 點擊頭像/暱稱跳轉至他人專區
+        // 點擊頭像/暱稱跳轉至他人專區 (真實載入)
         window.viewUserProfile = async function(targetUserId) {
             if (targetUserId === window.state.userData.username) {
                 // 如果是點擊自己，切換至個人 Profile 分頁
@@ -1728,7 +1769,7 @@
         // 展開或收合評論區
         window.toggleCommentsSection = function(postId) {
             window.state.openComments[postId] = !window.state.openComments[postId];
-            renderView();
+            updateSearchAndFeedUI();
         }
 
         // 提交評論
@@ -1738,7 +1779,7 @@
             if (!text) return;
 
             if (!db) {
-                showToast("模擬模式下無法真實發表評論", "info");
+                showToast("連線異常下無法發表評論", "error");
                 return;
             }
 
@@ -1841,7 +1882,7 @@
                         const totalPosts = window.state.posts.length;
                         if (totalPosts > window.state.visiblePostsCount) {
                             window.state.visiblePostsCount += 5; // 再載入 5 筆
-                            renderView();
+                            updateSearchAndFeedUI();
                         }
                     }
                 });
