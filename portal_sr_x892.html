@@ -45,7 +45,7 @@
                 <div id="count-pending" class="text-3xl font-bold text-amber-500 mt-1">-</div>
             </div>
             <div class="bg-slate-900/50 border border-slate-800/80 p-5 rounded-2xl">
-                <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider">待審核頭像變更</div>
+                <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider">待審核頭像/Spec</div>
                 <div id="count-avatar-pending" class="text-3xl font-bold text-purple-400 mt-1">-</div>
             </div>
             <div class="bg-slate-900/50 border border-slate-800/80 p-5 rounded-2xl">
@@ -69,6 +69,7 @@
                         <option value="all">顯示全部</option>
                         <option value="pending" selected>待審核帳號</option>
                         <option value="avatar_pending">待審核頭像</option>
+                        <option value="spec_pending">待審核 Spec 認證</option>
                         <option value="reported_posts">⚠️ 被檢舉貼文審查</option>
                         <option value="approved">已核准</option>
                         <option value="active">已啟用</option>
@@ -144,7 +145,6 @@
     <script type="module">
         let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc, deleteDoc, query, where, getDocs;
 
-        // --- 👇 替換開始：將您的 Firebase 配置貼在這裡 👇 ---
         const appId = 'secretg-demo-app';
         const firebaseConfig = {
             apiKey: "AIzaSyCNgJxYjC90DjtvTSaze5CREJf1Vt32aYQ",
@@ -154,15 +154,12 @@
             messagingSenderId: "22006617218",
             appId: "1:22006617218:web:9e9af5c6558ea57dcb109b"
         };
-        // --- 👆 替換結束 👆 ---
 
-        // --- 👇 替換開始：將您的 EmailJS 配置貼在這裡 👇 ---
         const emailjsConfig = {
             publicKey: "ZEp9d-hAeYdFujDZy", 
             serviceId: "service_1ou10mi", 
             templateId: "template_25proud" 
         };
-        // --- 👆 替換結束 👆 ---
 
         async function loadFirebaseSDKs() {
             try {
@@ -237,7 +234,7 @@
                     allApplications.push({ id: docSnap.id, ...data });
 
                     if (data.status === 'pending') pendingCount++;
-                    if (data.avatarStatus === 'pending') avatarPendingCount++;
+                    if (data.avatarStatus === 'pending' || data.specEliteStatus === 'pending') avatarPendingCount++;
                 });
 
                 document.getElementById('count-pending').textContent = pendingCount;
@@ -266,7 +263,7 @@
                 });
 
                 document.getElementById('count-reports').textContent = reportedCount;
-                renderApplications(); // 重整視圖
+                renderApplications(); 
             });
         }
 
@@ -328,7 +325,7 @@
                             <p class="text-xs text-slate-300 leading-relaxed font-light">${post.text}</p>
                             <img src="${post.image}" class="w-24 h-auto rounded-xl border border-slate-800 max-h-36 object-cover">
                             
-                            <!-- 檢舉紀錄清單 -->
+                            <!-- 檢舉紀錄紀錄 -->
                             <div class="mt-2">
                                 <div class="text-[10px] text-slate-500 font-bold mb-1.5 uppercase"><i class="fa-solid fa-flag text-rose-500"></i> 檢舉清單 (共 ${post.reportCount} 次檢舉)</div>
                                 ${reportReasonsHtml}
@@ -350,6 +347,7 @@
             const filteredApps = allApplications.filter(app => {
                 if (filterValue === 'all') return true;
                 if (filterValue === 'avatar_pending') return app.avatarStatus === 'pending';
+                if (filterValue === 'spec_pending') return app.specEliteStatus === 'pending';
                 return app.status === filterValue;
             });
 
@@ -390,7 +388,7 @@
                     `;
                 }
 
-                // 大頭照變更審核 UI 模塊
+                // 註冊頭像 or 頭像變更審核 UI 模塊
                 let avatarReviewHtml = '';
                 if (appData.avatarStatus === 'pending' && appData.avatarPending) {
                     avatarReviewHtml = `
@@ -422,6 +420,45 @@
                     `;
                 }
 
+                // 黃金 Spec 審核 UI 模組
+                let specReviewHtml = '';
+                if (appData.specEliteStatus === 'pending') {
+                    specReviewHtml = `
+                        <div class="mt-4 p-4 bg-amber-950/20 border border-amber-500/20 rounded-xl space-y-2 text-left">
+                            <span class="text-xs text-amber-400 font-bold block"><i class="fa-solid fa-lock"></i> 收到黃金 Spec Elite 徽章申請：</span>
+                            <p class="text-[11px] text-slate-400">規格：長度 <strong>${appData.length}cm</strong> / 粗度 <strong>${appData.girth}cm</strong></p>
+                            <div class="flex gap-2 mt-1">
+                                <button onclick="approveSpecElite('${appData.id}')" class="bg-amber-600 hover:bg-amber-500 text-slate-950 text-[10px] px-3 py-1.5 rounded-lg transition font-bold shadow-md">核發黃金 Spec 徽章</button>
+                                <button onclick="rejectSpecElite('${appData.id}')" class="bg-slate-800 hover:bg-slate-750 text-slate-400 text-[10px] px-3 py-1.5 rounded-lg border border-slate-700 transition font-semibold">拒絕</button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // 手動徽章管理控制欄
+                let badgeManagementHtml = `
+                    <div class="mt-4 pt-3 border-t border-slate-800/50 flex flex-wrap gap-4 items-center justify-between">
+                        <span class="text-[10px] text-slate-500 font-bold uppercase"><i class="fa-solid fa-ribbon"></i> 官方授權徽章發放：</span>
+                        <div class="flex items-center gap-4">
+                            <!-- 管理員皇冠 -->
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="checkbox" onchange="toggleManualBadge('${appData.id}', 'isAdmin', this.checked)" ${appData.role === 'admin' || appData.isAdmin ? 'checked' : ''} class="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500">
+                                <span class="text-[11px] text-slate-300">管理員 👑</span>
+                            </label>
+                            <!-- 創始元老 -->
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="checkbox" onchange="toggleManualBadge('${appData.id}', 'isPioneer', this.checked)" ${appData.isPioneer ? 'checked' : ''} class="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500">
+                                <span class="text-[11px] text-slate-300">創始元老 🛡️</span>
+                            </label>
+                            <!-- 黃金 Spec 直接發行 -->
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="checkbox" onchange="toggleManualBadge('${appData.id}', 'isSpecElite', this.checked)" ${appData.isSpecElite ? 'checked' : ''} class="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500">
+                                <span class="text-[11px] text-slate-300">Spec Elite 🔒</span>
+                            </label>
+                        </div>
+                    </div>
+                `;
+
                 // 註冊審核按鈕
                 let actionButtons = '';
                 if (appData.status === 'pending') {
@@ -452,7 +489,7 @@
                 }
 
                 card.innerHTML = `
-                    <div class="space-y-1.5 flex-1">
+                    <div class="space-y-1.5 flex-1 text-left">
                         <div class="flex items-center gap-3 flex-wrap">
                             <h4 class="font-bold text-base text-slate-200">${appData.nickname || '未填'} <span class="text-xs text-slate-500 font-normal">(@${appData.id})</span></h4>
                             <span class="px-2.5 py-0.5 text-xs font-medium rounded-full border ${currentStatusColor}">
@@ -466,6 +503,8 @@
                             <div class="col-span-2 mt-1"><span class="text-slate-500">主題偏好：</span><span class="text-slate-300">${kinksStr}</span></div>
                         </div>
                         ${avatarReviewHtml}
+                        ${specReviewHtml}
+                        ${badgeManagementHtml}
                         ${tgInfoHtml}
                     </div>
                     ${actionButtons}
@@ -476,6 +515,60 @@
 
         window.filterApplications = function() {
             renderApplications();
+        }
+
+        // 手動控制/撤回官方徽章
+        window.toggleManualBadge = async function(userId, badgeField, isChecked) {
+            if (!db) return;
+            try {
+                const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+                const updates = {};
+                updates[badgeField] = isChecked;
+                await updateDoc(docRef, updates);
+                showToast(`已成功${isChecked ? '發放' : '收回'}該項手動社群徽章！`, "success");
+            } catch (err) {
+                console.error("手動徽章異動失敗:", err);
+                showToast("變更失敗", "error");
+            }
+        }
+
+        // 核發 Spec Elite 徽章
+        window.approveSpecElite = async function(userId) {
+            if (!db) return;
+            try {
+                const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    await updateDoc(docRef, {
+                        isSpecElite: true,
+                        specEliteStatus: 'approved'
+                    });
+                    showToast("Spec Elite 徽章核准完成！", "success");
+                    sendEmailNotification(data, 'approved', "黃金 Spec 審核通過", "您的 SecretRoom 黃金 Spec Elite 勳章申請已正式核准，已即刻渲染在您的個人暱稱下方！");
+                }
+            } catch (err) {
+                console.error("核發失敗:", err);
+            }
+        }
+
+        // 拒絕 Spec Elite 徽章
+        window.rejectSpecElite = async function(userId) {
+            if (!db) return;
+            try {
+                const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    await updateDoc(docRef, {
+                        specEliteStatus: 'rejected'
+                    });
+                    showToast("Spec Elite 申請已被退回。", "info");
+                    sendEmailNotification(data, 'rejected', "黃金 Spec 審核退回", "您申請的 SecretRoom 黃金 Spec Elite 勳章經管理員檢視規格未通過核可。");
+                }
+            } catch (err) {
+                console.error("拒絕出錯:", err);
+            }
         }
 
         let userIdToReject = null;
@@ -709,7 +802,7 @@
             const bgColors = {
                 error: 'bg-red-500/95 border-red-400',
                 success: 'bg-emerald-500/95 border-emerald-400',
-                info: 'bg-blue-600/95 border-blue-400'
+                info: 'bg-indigo-600/95 border-indigo-500/40'
             };
             toast.className = `${bgColors[type]} text-white px-5 py-3.5 rounded-xl shadow-lg border text-sm font-medium transition-all duration-300 opacity-0 transform -translate-y-4 backdrop-blur-xl flex items-center gap-3`;
             const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
