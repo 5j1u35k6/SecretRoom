@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SecretRoom | 專屬管理員審核後台</title>
+    <title>SecretRoom | 專屬管理員審核與管理後台</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -39,7 +39,7 @@
         </header>
 
         <!-- 統計數據卡片 -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
             <div class="bg-slate-900/50 border border-slate-800/80 p-5 rounded-2xl">
                 <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider">待審核申請</div>
                 <div id="count-pending" class="text-3xl font-bold text-amber-500 mt-1">-</div>
@@ -47,6 +47,10 @@
             <div class="bg-slate-900/50 border border-slate-800/80 p-5 rounded-2xl">
                 <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider">待審核頭像變更</div>
                 <div id="count-avatar-pending" class="text-3xl font-bold text-purple-400 mt-1">-</div>
+            </div>
+            <div class="bg-slate-900/50 border border-slate-800/80 p-5 rounded-2xl">
+                <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider">被檢舉貼文</div>
+                <div id="count-reports" class="text-3xl font-bold text-rose-500 mt-1">-</div>
             </div>
             <div class="bg-slate-900/50 border border-slate-800/80 p-5 rounded-2xl">
                 <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider">總註冊人數</div>
@@ -58,13 +62,14 @@
         <div class="bg-slate-900/40 border border-slate-800/60 rounded-3xl p-6 glass-panel">
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                    <div class="w-1.5 h-5 bg-indigo-500 rounded-full"></div> 申請審核與帳號管理名單
+                    <div class="w-1.5 h-5 bg-indigo-500 rounded-full"></div> 申請審核與貼文管理系統
                 </h2>
                 <div class="flex gap-2">
                     <select id="filter-status" onchange="filterApplications()" class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none">
                         <option value="all">顯示全部</option>
                         <option value="pending" selected>待審核帳號</option>
                         <option value="avatar_pending">待審核頭像</option>
+                        <option value="reported_posts">⚠️ 被檢舉貼文審查</option>
                         <option value="approved">已核准</option>
                         <option value="active">已啟用</option>
                         <option value="rejected">已拒絕</option>
@@ -82,6 +87,41 @@
         </div>
     </div>
 
+    <!-- 客製高質感「拒絕原因」彈出選單 -->
+    <div id="reject-reason-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl max-w-sm w-full mx-4 shadow-2xl transform scale-95 transition-transform duration-300" id="reject-reason-content">
+            <h3 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
+                <i class="fa-solid fa-circle-question text-amber-500"></i> 選擇審核拒絕原因
+            </h3>
+            <p class="text-slate-400 text-xs mb-4">這項原因將會自動代入並發送給對方的通知信中。</p>
+            
+            <div class="space-y-2 mb-6">
+                <!-- 拒絕原因選項，點選後直接帶入 -->
+                <label class="flex items-center gap-3 p-2.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40 transition">
+                    <input type="radio" name="rejection-reason" value="註冊大頭照不清晰、未露出五官，或涉嫌冒用他人照片。" class="accent-indigo-500" required checked>
+                    <span class="text-xs text-slate-300 font-semibold">頭像不合規</span>
+                </label>
+                <label class="flex items-center gap-3 p-2.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40 transition">
+                    <input type="radio" name="rejection-reason" value="經審核填寫之年齡不符，本站僅限滿 18 歲之成年人加入。" class="accent-indigo-500" required>
+                    <span class="text-xs text-slate-300 font-semibold">年齡未滿 18 歲</span>
+                </label>
+                <label class="flex items-center gap-3 p-2.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40 transition">
+                    <input type="radio" name="rejection-reason" value="您的身體尺寸、身高體重或通知信箱等欄位資訊填寫不實。" class="accent-indigo-500" required>
+                    <span class="text-xs text-slate-300 font-semibold">資料填寫不實</span>
+                </label>
+                <label class="flex items-center gap-3 p-2.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40 transition">
+                    <input type="radio" name="rejection-reason" value="不符本站審核政策。如有任何疑問請連繫官方管理信箱。" class="accent-indigo-500" required>
+                    <span class="text-xs text-slate-300 font-semibold">其他未述原因</span>
+                </label>
+            </div>
+
+            <div class="flex gap-3 justify-end">
+                <button onclick="closeRejectReasonModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:bg-slate-800 transition text-xs font-semibold">取消</button>
+                <button id="confirm-reject-btn" class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-xl text-white transition text-xs font-semibold">確認拒絕</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 客製高質感防誤觸刪除帳號確認模態視窗 -->
     <div id="delete-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
         <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl max-w-sm w-full mx-4 shadow-2xl transform scale-95 transition-transform duration-300" id="delete-modal-content">
@@ -89,7 +129,7 @@
                 <i class="fa-solid fa-triangle-exclamation text-red-500"></i> 確定要刪除該用戶？
             </h3>
             <p class="text-slate-400 text-sm mb-6 leading-relaxed">
-                這將永久移除此申請人的所有註冊、驗證及帳號密碼資料。此操作無法復原，請務必確認！
+                這將永久移除此申請人的所有註冊、驗證、帳號密碼，以及他發布過的**所有動態貼文與照片**。此操作無法復原！
             </p>
             <div class="flex gap-3 justify-end">
                 <button onclick="closeDeleteModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:bg-slate-800 transition text-xs font-semibold">取消</button>
@@ -152,6 +192,7 @@
 
         let db;
         let allApplications = [];
+        let allPosts = [];
         let userIdToDelete = null; 
 
         async function initAdmin() {
@@ -170,15 +211,16 @@
                     statusEl.innerHTML = '<i class="fa-solid fa-circle text-[8px] animate-pulse"></i> 資料庫連線正常';
                     
                     listenToApplications();
+                    listenToPosts();
                 } catch (error) {
                     console.error("Firebase 連線錯誤:", error);
                     statusEl.className = "self-start px-4 py-2 rounded-full bg-red-500/10 border border-red-500/20 text-xs text-red-400 flex items-center gap-2";
-                    statusEl.innerHTML = '<i class="fa-solid fa-circle text-[8px]"></i> 連線失敗，請檢查 Config';
+                    statusEl.innerHTML = '<i class="fa-solid fa-circle text-[8px]"></i> 連線失敗';
                     showMockDataInfo();
                 }
             } else {
                 statusEl.className = "self-start px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 flex items-center gap-2";
-                statusEl.innerHTML = '<i class="fa-solid fa-circle text-[8px]"></i> 離線模擬模式';
+                statusEl.innerHTML = '<i class="fa-solid fa-circle text-[8px]"></i> 離線模式';
                 showMockDataInfo();
             }
         }
@@ -209,6 +251,25 @@
             });
         }
 
+        function listenToPosts() {
+            const q = collection(db, 'secretg_apps', appId, 'posts');
+            onSnapshot(q, (querySnapshot) => {
+                allPosts = [];
+                let reportedCount = 0;
+
+                querySnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    allPosts.push({ id: docSnap.id, ...data });
+                    if (data.reportCount && data.reportCount > 0) {
+                        reportedCount++;
+                    }
+                });
+
+                document.getElementById('count-reports').textContent = reportedCount;
+                renderApplications(); // 重整視圖
+            });
+        }
+
         function showMockDataInfo() {
             const listContainer = document.getElementById('admin-list');
             listContainer.innerHTML = `
@@ -231,6 +292,61 @@
             const listContainer = document.getElementById('admin-list');
             const filterValue = document.getElementById('filter-status').value;
 
+            if (filterValue === 'reported_posts') {
+                const reportedPosts = allPosts.filter(p => p.reportCount && p.reportCount > 0);
+                listContainer.innerHTML = '';
+
+                if (reportedPosts.length === 0) {
+                    listContainer.innerHTML = `
+                        <div class="text-center py-12 text-slate-500 flex flex-col items-center gap-2">
+                            <i class="fa-solid fa-circle-check text-2xl text-emerald-500"></i>
+                            <span>太棒了！目前社群中沒有任何被檢舉的貼文</span>
+                        </div>
+                    `;
+                    return;
+                }
+
+                reportedPosts.forEach(post => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-slate-900/60 p-5 rounded-2xl border border-rose-500/20 hover:border-rose-500/40 transition flex flex-col md:flex-row gap-5 items-start justify-between';
+                    
+                    const reportReasonsHtml = post.reports ? post.reports.map(r => `
+                        <div class="text-xs bg-rose-950/20 text-rose-400 p-2 rounded-lg border border-rose-500/10 mb-1 leading-relaxed">
+                            <span class="font-bold">檢舉原因:</span> ${r.reason}
+                        </div>
+                    `).join('') : '';
+
+                    card.innerHTML = `
+                        <div class="flex-1 space-y-3">
+                            <div class="flex items-center gap-3">
+                                <img src="${post.authorAvatar}" class="w-8 h-8 rounded-full object-cover">
+                                <div>
+                                    <h4 class="font-bold text-xs text-slate-200">${post.authorName} <span class="text-slate-500 font-mono">(@${post.userId})</span></h4>
+                                    <p class="text-[10px] text-slate-500">貼文 ID: ${post.id}</p>
+                                </div>
+                            </div>
+                            <p class="text-xs text-slate-300 leading-relaxed font-light">${post.text}</p>
+                            <img src="${post.image}" class="w-24 h-auto rounded-xl border border-slate-800 max-h-36 object-cover">
+                            
+                            <!-- 檢舉紀錄清單 -->
+                            <div class="mt-2">
+                                <div class="text-[10px] text-slate-500 font-bold mb-1.5 uppercase"><i class="fa-solid fa-flag text-rose-500"></i> 檢舉清單 (共 ${post.reportCount} 次檢舉)</div>
+                                ${reportReasonsHtml}
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2 shrink-0">
+                            <button onclick="deleteSinglePost('${post.id}')" class="bg-red-600 hover:bg-red-500 text-white text-xs px-4 py-2.5 rounded-xl transition font-semibold shadow-lg shadow-red-950/20 flex items-center gap-1.5">
+                                <i class="fa-solid fa-trash-can"></i> 下架並刪除貼文
+                            </button>
+                        </div>
+                    `;
+                    listContainer.appendChild(card);
+                });
+                return;
+            }
+
+            // 帳號名單過濾
             const filteredApps = allApplications.filter(app => {
                 if (filterValue === 'all') return true;
                 if (filterValue === 'avatar_pending') return app.avatarStatus === 'pending';
@@ -274,7 +390,7 @@
                     `;
                 }
 
-                // 註冊頭像 or 頭像變更審核 UI 模塊
+                // 大頭照變更審核 UI 模塊
                 let avatarReviewHtml = '';
                 if (appData.avatarStatus === 'pending' && appData.avatarPending) {
                     avatarReviewHtml = `
@@ -314,7 +430,7 @@
                             <button onclick="updateStatus('${appData.id}', 'approved')" class="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-xs px-4 py-2.5 rounded-xl transition font-semibold shadow-lg shadow-emerald-950/20">
                                 <i class="fa-solid fa-check mr-1"></i> 核准加入
                             </button>
-                            <button onclick="updateStatus('${appData.id}', 'rejected')" class="bg-red-600/20 hover:bg-red-600/30 active:scale-95 text-red-400 border border-red-500/20 text-xs px-4 py-2.5 rounded-xl transition font-semibold">
+                            <button onclick="openRejectReasonModal('${appData.id}')" class="bg-red-600/20 hover:bg-red-600/30 active:scale-95 text-red-400 border border-red-500/20 text-xs px-4 py-2.5 rounded-xl transition font-semibold">
                                 <i class="fa-solid fa-xmark mr-1"></i> 拒絕
                             </button>
                             <button onclick="openDeleteModal('${appData.id}')" class="bg-slate-800 hover:bg-red-950/40 text-slate-400 hover:text-red-400 border border-slate-700/80 hover:border-red-500/20 text-xs px-3 py-2.5 rounded-xl transition font-semibold">
@@ -360,6 +476,78 @@
 
         window.filterApplications = function() {
             renderApplications();
+        }
+
+        let userIdToReject = null;
+        window.openRejectReasonModal = function(userId) {
+            userIdToReject = userId;
+            const modal = document.getElementById('reject-reason-modal');
+            const content = document.getElementById('reject-reason-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 50);
+
+            document.getElementById('confirm-reject-btn').onclick = async function() {
+                const checkedRadio = document.querySelector('input[name="rejection-reason"]:checked');
+                if (!checkedRadio) {
+                    showToast("請選擇拒絕原因", "error");
+                    return;
+                }
+                const reason = checkedRadio.value;
+                await updateStatusWithReason(userIdToReject, 'rejected', reason);
+                closeRejectReasonModal();
+            };
+        }
+
+        window.closeRejectReasonModal = function() {
+            const modal = document.getElementById('reject-reason-modal');
+            const content = document.getElementById('reject-reason-content');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                userIdToReject = null;
+            }, 300);
+        }
+
+        async function updateStatusWithReason(userId, status, reason) {
+            if (!db) {
+                showToast("離線模擬下無法寫入資料", "error");
+                return;
+            }
+
+            try {
+                const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const userData = docSnap.data();
+                    await updateDoc(docRef, { 
+                        status: status,
+                        rejectionReason: reason 
+                    });
+                    showToast('已更新狀態為 [已拒絕]', 'success');
+                    
+                    const rejectMessage = `很抱歉，您的加入申請未通過審核。感謝您的關注。\n\n【拒絕原因說明】：\n${reason}\n\n若您已修正上述不符之內容，歡迎點擊以下連結重整並再次提交審核申請：\nhttps://5j1u35k6.github.io/SecretRoom/`;
+                    sendEmailNotification(userData, status, "申請審核退回通知", rejectMessage);
+                }
+            } catch (err) {
+                console.error("拒絕狀態更新出錯:", err);
+                showToast("操作失敗", "error");
+            }
+        }
+
+        window.deleteSinglePost = async function(postId) {
+            if (!db) return;
+            try {
+                const postDocRef = doc(db, 'secretg_apps', appId, 'posts', postId);
+                await deleteDoc(postDocRef);
+                showToast("違規貼文已成功從資料庫下架銷毀！", "success");
+            } catch (err) {
+                console.error("貼文刪除出錯:", err);
+                showToast("下架失敗", "error");
+            }
         }
 
         async function sendEmailNotification(userData, status, title = "審核通知", customMsg = null) {
@@ -413,7 +601,6 @@
             }
         }
 
-        // 審核大頭照：核准
         window.approveAvatarChange = async function(userId) {
             if (!db) return;
             try {
@@ -436,7 +623,6 @@
             }
         }
 
-        // 審核大頭照：拒絕
         window.rejectAvatarChange = async function(userId) {
             if (!db) return;
             try {
@@ -449,7 +635,7 @@
                         avatarStatus: 'rejected'
                     });
                     showToast("頭像變更申請已拒絕。", "info");
-                    sendEmailNotification(data, 'rejected', "頭像變更審核未通過", "您在 SecretRoom 申請更換的新大頭照，未通過管理員審核（請確保大頭照清晰、非冒用圖），已回復原頭像。");
+                    sendEmailNotification(data, 'rejected', "頭像變更審核未通過", "您在 SecretRoom 申請更換的新大頭照，未通過管理員審核，已回復原頭像。");
                 }
             } catch (err) {
                 console.error("拒絕頭像出錯:", err);
@@ -457,7 +643,6 @@
             }
         }
 
-        // 刪除帳號確認 Modal 控制
         window.openDeleteModal = function(userId) {
             userIdToDelete = userId;
             const modal = document.getElementById('delete-modal');
@@ -494,7 +679,7 @@
             }
 
             try {
-                // 1. 查詢並刪除該用戶發布的所有歷史貼文，避免產生孤兒資料
+                // 1. 級聯連帶徹底消滅：先清空該用戶上傳過的所有歷史貼文
                 const postsRef = collection(db, 'secretg_apps', appId, 'posts');
                 const q = query(postsRef, where('userId', '==', userId));
                 const querySnapshot = await getDocs(q);
@@ -505,10 +690,9 @@
                     deletePromises.push(deleteDoc(postDocRef));
                 });
                 
-                // 等待所有貼文自資料庫完成刪除
                 await Promise.all(deletePromises);
 
-                // 2. 刪除用戶註冊資訊與帳號密碼等個人資料
+                // 2. 刪除用戶的註冊資料
                 const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
                 await deleteDoc(docRef);
                 
