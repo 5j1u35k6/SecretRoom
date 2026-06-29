@@ -155,7 +155,7 @@
             },
             // 固定且永久鎖定的 10 個男同志主題標籤 (Gay Community Focused Theme Tags)
             kinksOptions: [
-                 "性愛偏好｜角色定位", "BDSM｜繩縛", "制服愛好｜皮革/膠衣", "心理角色｜Daddy/Boy", "自我管理｜健身/健美", 
+                "性愛偏好｜角色定位", "BDSM｜繩縛", "制服愛好｜皮革/膠衣", "心理角色｜Daddy/Boy", "自我管理｜健身/健美", 
                 "友善社交｜約會/派對", "體型美學｜壯碩/熊系", "特殊癖好｜穿戴玩物", "旅遊休閒｜友善旅遊", "數位社交｜交友軟體"
             ],
             posts: [], 
@@ -1829,8 +1829,18 @@
                     showToast('基本資料與主題標籤修改儲存成功！', 'success');
                 }
 
+                // 1. 寫入雲端資料庫
                 await updateDoc(docRef, updates);
+
+                // 2. 即時同步更新本機暫存，確保下次打開與顯示時都是最新的
+                window.state.userData = {
+                    ...window.state.userData,
+                    ...updates
+                };
+
+                // 3. 關閉視窗並重新整理渲染頁面
                 closeEditProfileModal();
+                renderView();
             } catch (err) {
                 console.error("更新資料錯誤:", err);
                 showToast('更新失敗，請檢查權限。', 'error');
