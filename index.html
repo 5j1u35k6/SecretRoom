@@ -1010,7 +1010,7 @@
             const myId = window.state.userId;
             const isEditing = window.state.isEditingProfile;
 
-            // 1. 搜尋過濾
+            // 1. 搜尋過濾 (過濾貼文)
             let filteredPosts = window.state.posts.filter(p => {
                 const term = window.state.searchTerm.toLowerCase();
                 if (!term) return true;
@@ -1020,12 +1020,56 @@
                        (p.tags && p.tags.some(t => t.toLowerCase().includes(term)));
             });
 
-            // 2. 演算法推薦排序
+            // 2. 搜尋時，提取匹配的使用者帳號或暱稱 (供點擊跳轉個人主頁)
+            let matchedUsersHtml = '';
+            if (window.state.searchTerm.trim() !== '') {
+                const searchLower = window.state.searchTerm.toLowerCase();
+                const matchedUsers = [];
+                const seenUserIds = new Set();
+                
+                // 優先精準匹配帳號 ID 或暱稱
+                window.state.posts.forEach(p => {
+                    if (!seenUserIds.has(p.userId)) {
+                        // 檢查帳號ID(完全/部分符合) 或 暱稱(部分符合)
+                        if (p.userId.toLowerCase().includes(searchLower) || p.authorName.toLowerCase().includes(searchLower)) {
+                            seenUserIds.add(p.userId);
+                            matchedUsers.push({
+                                userId: p.userId,
+                                authorName: p.authorName,
+                                authorAvatar: p.authorAvatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'
+                            });
+                        }
+                    }
+                });
+
+                if (matchedUsers.length > 0) {
+                    matchedUsersHtml = `
+                        <div class="mb-6 bg-slate-900/80 border border-slate-800 rounded-3xl p-4 shadow-[0_5px_20px_rgba(0,0,0,0.3)] fade-enter fade-enter-active">
+                            <span class="text-xs text-slate-400 font-semibold block mb-3 flex items-center gap-2">
+                                <i class="fa-solid fa-user-tag text-indigo-400"></i> 找到的相關社群成員 (${matchedUsers.length})
+                            </span>
+                            <div class="flex gap-4 overflow-x-auto scrollbar-hide py-1">
+                                ${matchedUsers.map(u => `
+                                    <div onclick="viewUserProfile('${u.userId}')" class="flex flex-col items-center shrink-0 cursor-pointer group active:scale-95 transition-transform">
+                                        <div class="relative w-14 h-14 rounded-full border-2 border-indigo-500/30 group-hover:border-indigo-400 overflow-hidden transition-all shadow-lg duration-200">
+                                            <img src="${u.authorAvatar}" class="w-full h-full object-cover">
+                                        </div>
+                                        <span class="text-[11px] text-slate-200 font-bold mt-2 group-hover:text-indigo-300 transition max-w-[70px] truncate">${u.authorName}</span>
+                                        <span class="text-[9px] text-slate-500">@${u.userId}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            // 3. 演算法推薦排序
             if (window.state.currentTab === 'feed') {
                 filteredPosts.sort((a, b) => getRecommendationScore(b, myData.kinks) - getRecommendationScore(a, myData.kinks));
             }
 
-            // 3. 貼文動態牆
+            // 4. 貼文動態牆
             const feedHtml = filteredPosts.map(p => {
                 const likedList = p.likes || [];
                 const hasLiked = likedList.includes(myId);
