@@ -257,7 +257,7 @@
             }
         }
 
-        // 智慧計算並渲染精緻的徽章樣式元件 (Badges Generator)
+        // 智慧計算並渲染純圖標（不出現徽章文字）的精緻圓形徽章樣式元件 (Icon-Only Circular Badges)
         window.renderUserBadgesHTML = function(user) {
             if (!user) return '';
             const badges = [];
@@ -266,8 +266,8 @@
             // 1. 管理員 👑
             if (user.role === 'admin' || user.isAdmin) {
                 badges.push(`
-                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wide bg-gradient-to-r from-purple-900 to-indigo-900 text-amber-300 border border-amber-500/30 shadow-[0_0_10px_rgba(251,191,36,0.35)]">
-                        <i class="fa-solid fa-crown text-[8px]"></i> 管理員
+                    <span title="管理員" class="inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] bg-gradient-to-r from-purple-900 to-indigo-900 text-amber-300 border border-amber-500/30 shadow-[0_0_10px_rgba(251,191,36,0.35)] hover:scale-110 transition cursor-help">
+                        <i class="fa-solid fa-crown"></i>
                     </span>
                 `);
             }
@@ -282,17 +282,17 @@
             }
             if (isNewcomer) {
                 badges.push(`
-                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wide bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-[0_0_8px_rgba(16,185,129,0.3)]">
-                        <i class="fa-solid fa-seedling text-[8px]"></i> 新人
+                    <span title="新人" class="inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-[0_0_8px_rgba(16,185,129,0.3)] hover:scale-110 transition cursor-help">
+                        <i class="fa-solid fa-seedling"></i>
                     </span>
                 `);
             }
 
-            // 3. 創始元老
+            // 3. 創始元老 🛡️
             if (user.isPioneer) {
                 badges.push(`
-                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wide bg-gradient-to-r from-amber-800 to-amber-950 text-amber-200 border border-amber-600/30 shadow-[0_0_8px_rgba(180,83,9,0.2)]">
-                        <i class="fa-solid fa-shield-halved text-[8px]"></i> 創始元老
+                    <span title="創始元老" class="inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] bg-gradient-to-r from-amber-800 to-amber-950 text-amber-200 border border-amber-600/30 shadow-[0_0_8px_rgba(180,83,9,0.2)] hover:scale-110 transition cursor-help">
+                        <i class="fa-solid fa-shield-halved"></i>
                     </span>
                 `);
             }
@@ -302,8 +302,8 @@
             myPosts.forEach(p => { if(p.likes) totalLikes += p.likes.length; });
             if (totalLikes > 1000) {
                 badges.push(`
-                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wide bg-gradient-to-r from-orange-600 to-red-600 text-white shadow-[0_0_10px_rgba(249,115,22,0.4)]">
-                        <i class="fa-solid fa-fire text-[8px] animate-pulse"></i> 人氣焦點
+                    <span title="人氣焦點" class="inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] bg-gradient-to-r from-orange-600 to-red-600 text-white shadow-[0_0_10px_rgba(249,115,22,0.4)] hover:scale-110 transition cursor-help">
+                        <i class="fa-solid fa-fire animate-pulse"></i>
                     </span>
                 `);
             }
@@ -326,8 +326,8 @@
             }
             if (isStarCreator) {
                 badges.push(`
-                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wide bg-gradient-to-r from-yellow-500 to-amber-600 text-white border border-yellow-300/30 shadow-[0_0_12px_rgba(245,158,11,0.5)]">
-                        <i class="fa-solid fa-star text-[8px]"></i> 星級天菜
+                    <span title="星級天菜" class="inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] bg-gradient-to-r from-yellow-500 to-amber-600 text-white border border-yellow-300/30 shadow-[0_0_12px_rgba(245,158,11,0.5)] hover:scale-110 transition cursor-help">
+                        <i class="fa-solid fa-star"></i>
                     </span>
                 `);
             }
@@ -335,8 +335,8 @@
             // 6. 生活分享家 📸 (累計發布貼文 >= 100)
             if (myPosts.length >= 100) {
                 badges.push(`
-                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wide bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white shadow-[0_0_8px_rgba(168,85,247,0.3)]">
-                        <i class="fa-solid fa-camera text-[8px]"></i> 生活分享家
+                    <span title="生活分享家" class="inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white shadow-[0_0_8px_rgba(168,85,247,0.3)] hover:scale-110 transition cursor-help">
+                        <i class="fa-solid fa-camera"></i>
                     </span>
                 `);
             }
@@ -352,8 +352,8 @@
             });
             if (gymPostsCount >= 50 && gymLikesCount > 5000) {
                 badges.push(`
-                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wide bg-gradient-to-r from-slate-600 to-slate-800 text-slate-100 border border-slate-500/30 shadow-[0_0_8px_rgba(100,116,139,0.3)]">
-                        <i class="fa-solid fa-dumbbell text-[8px]"></i> 健身天菜
+                    <span title="健身天菜" class="inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] bg-gradient-to-r from-slate-600 to-slate-800 text-slate-100 border border-slate-500/30 shadow-[0_0_8px_rgba(100,116,139,0.3)] hover:scale-110 transition cursor-help">
+                        <i class="fa-solid fa-dumbbell"></i>
                     </span>
                 `);
             }
@@ -371,8 +371,8 @@
             if (user.reportCount && user.reportCount > 0) isGentleman = false;
             if (isGentleman) {
                 badges.push(`
-                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wide bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-[0_0_8px_rgba(244,63,94,0.3)]">
-                        <i class="fa-solid fa-heart-pulse text-[8px]"></i> 暖男紳士
+                    <span title="暖男紳士" class="inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-[0_0_8px_rgba(244,63,94,0.3)] hover:scale-110 transition cursor-help">
+                        <i class="fa-solid fa-heart-pulse"></i>
                     </span>
                 `);
             }
@@ -380,14 +380,14 @@
             // 9. 黃金 Spec 認證 🔒 (長度大於 16cm 且粗度大於 5cm，需後台審核通過)
             if (user.isSpecElite) {
                 badges.push(`
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wide bg-gradient-to-r from-slate-900 via-slate-950 to-black text-slate-300 border border-slate-700 shadow-[0_0_10px_rgba(255,255,255,0.15)]">
-                        <i class="fa-solid fa-lock text-[8px]"></i> Spec Elite
+                    <span title="Spec Elite" class="inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] bg-gradient-to-r from-slate-900 via-slate-950 to-black text-slate-300 border border-slate-700 shadow-[0_0_10px_rgba(255,255,255,0.15)] hover:scale-110 transition cursor-help">
+                        <i class="fa-solid fa-lock"></i>
                     </span>
                 `);
             }
 
             if (badges.length === 0) return '';
-            return `<div class="flex flex-wrap gap-1.5 mt-2.5 w-full justify-center md:justify-start">${badges.join('')}</div>`;
+            return `<div class="flex flex-wrap gap-2 mt-2.5 w-full justify-center md:justify-start">${badges.join('')}</div>`;
         }
 
         function viewLanding() {
@@ -1159,6 +1159,32 @@
                     </div>
                 </div>
 
+                <!-- 認證上傳彈窗 (Spec Upload Modal) -->
+                <div id="spec-apply-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+                    <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl max-w-sm w-full mx-4 shadow-2xl space-y-4 text-left">
+                        <div class="text-center pb-2 border-b border-slate-800">
+                            <h3 class="font-bold text-white text-sm">申請黃金 Spec 認證</h3>
+                            <p class="text-[11px] text-slate-400 mt-2 leading-relaxed">
+                                請上傳生殖器長度大於 16cm 且粗度大於 5cm之照片，且照片內應有參考物(例如尺)作為依據。
+                            </p>
+                        </div>
+                        <div class="flex flex-col items-center justify-center py-4 bg-slate-950/50 rounded-2xl border border-slate-800">
+                            <div class="relative w-full h-40 rounded-xl border border-dashed border-slate-700 flex items-center justify-center overflow-hidden bg-slate-950 cursor-pointer" onclick="document.getElementById('spec-upload-input').click()">
+                                <img id="spec-upload-preview" class="w-full h-full object-contain hidden">
+                                <div id="spec-upload-placeholder" class="text-slate-500 text-center flex flex-col items-center text-xs">
+                                    <i class="fa-solid fa-cloud-arrow-up text-2xl mb-2 text-indigo-500 animate-pulse"></i>
+                                    <span>點擊上傳認證照片</span>
+                                </div>
+                            </div>
+                            <input type="file" id="spec-upload-input" accept="image/*" class="hidden">
+                        </div>
+                        <div class="flex gap-2 pt-2 border-t border-slate-800">
+                            <button onclick="closeSpecApplyModal()" class="flex-1 bg-slate-800 text-slate-400 py-2.5 rounded-xl text-xs font-semibold">取消</button>
+                            <button onclick="submitSpecApply()" class="flex-1 bg-white text-slate-950 py-2.5 rounded-xl text-xs font-bold shadow-lg">確認送出</button>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="report-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
                     <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl max-w-sm w-full mx-4 shadow-2xl transform scale-95 transition-transform duration-300" id="report-modal-content">
                         <h3 class="text-base font-bold text-white mb-4 flex items-center gap-2">
@@ -1411,7 +1437,7 @@
                     `;
                 } else {
                     specEliteBtnHtml = `
-                        <button onclick="applyForSpecElite()" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 text-xs py-3 rounded-xl hover:opacity-90 transition font-bold shadow-lg shadow-amber-500/10 flex items-center justify-center gap-1.5">
+                        <button onclick="openSpecApplyModal()" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 text-xs py-3 rounded-xl hover:opacity-90 transition font-bold shadow-lg shadow-amber-500/10 flex items-center justify-center gap-1.5">
                             <i class="fa-solid fa-certificate"></i> 申請黃金 Spec 認證勳章
                         </button>
                     `;
@@ -1477,7 +1503,7 @@
                     </div>
                 </div>
 
-                <!-- 編輯個人資料彈窗（優化升級：自定義精緻排版及標籤，不重建外層，局部刷新內文） -->
+                <!-- 編輯個人資料彈窗 -->
                 <div id="edit-profile-modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
                     <div id="edit-profile-modal-body" class="w-full flex items-center justify-center"></div>
                 </div>
@@ -1497,13 +1523,104 @@
             `;
         }
 
-        window.applyForSpecElite = async function() {
+        window.openSpecApplyModal = function() {
+            const modal = document.getElementById('spec-apply-modal');
+            const preview = document.getElementById('spec-upload-preview');
+            const placeholder = document.getElementById('spec-upload-placeholder');
+            const input = document.getElementById('spec-upload-input');
+
+            if (preview && placeholder && input) {
+                preview.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+                input.value = '';
+                window.state.newSpecImage = null;
+            }
+
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 50);
+
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 600; 
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > MAX_WIDTH) {
+                            height = Math.round((height * MAX_WIDTH) / width);
+                            width = MAX_WIDTH;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // 烘焙前端防漏浮水印 (Watermark Baking)
+                        ctx.save();
+                        ctx.font = 'bold 24px "Inter", sans-serif';
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+                        ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
+                        ctx.lineWidth = 1;
+                        ctx.textAlign = 'center';
+                        ctx.translate(width / 2, height / 2);
+                        ctx.rotate(-Math.PI / 6); 
+
+                        ctx.fillText('僅限SecretRoom黃金 Spec 認證使用', 0, 0);
+                        ctx.strokeText('僅限SecretRoom黃金 Spec 認證使用', 0, 0);
+
+                        ctx.font = '14px sans-serif';
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+                        ctx.fillText('SecretRoom Proof Only', 0, 45);
+
+                        ctx.restore();
+
+                        const watermarkedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+                        window.state.newSpecImage = watermarkedBase64;
+
+                        preview.src = watermarkedBase64;
+                        preview.classList.remove('hidden');
+                        placeholder.classList.add('hidden');
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            };
+        }
+
+        window.closeSpecApplyModal = function() {
+            const modal = document.getElementById('spec-apply-modal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                window.state.newSpecImage = null;
+            }, 300);
+        }
+
+        window.submitSpecApply = async function() {
+            if (!window.state.newSpecImage) {
+                showToast("請上傳您的長度與粗度驗證照片", "error");
+                return;
+            }
+
             if (!db || !window.state.applicationId) return;
+
             try {
                 const docRef = doc(db, 'secretg_apps', appId, 'applications', window.state.applicationId);
-                await updateDoc(docRef, { specEliteStatus: 'pending' });
-                showToast("🎉 黃金 Spec 勳章申請已送出！管理員會盡快完成規格審核。", "success");
+                await updateDoc(docRef, {
+                    specEliteStatus: 'pending',
+                    specImage: window.state.newSpecImage
+                });
+                showToast("🎉 黃金 Spec 認證照片已提交，管理員會盡快完成規格審核。", "success");
                 window.state.userData.specEliteStatus = 'pending';
+                window.state.userData.specImage = window.state.newSpecImage;
+                closeSpecApplyModal();
                 switchTab('profile');
             } catch (err) {
                 console.error("申請 Spec Elite 失敗:", err);
@@ -2228,6 +2345,877 @@
         const showToast = window.showToast;
 
         initApp();
+    </script>
+</body>
+</html>
+```
+eof
+```html:SecretRoom 管理員後台:secret_portal_x892.html
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecretRoom | 專屬管理員審核與管理後台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 引入 EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-950 p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto">
+        <!-- 頂部標頭 -->
+        <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8 pb-6 border-b border-slate-800">
+            <div>
+                <h1 class="text-3xl font-bold tracking-wider text-white flex items-center gap-3">
+                    <i class="fa-solid fa-user-shield text-indigo-500"></i> SecretRoom 後台管理系統
+                </h1>
+                <p class="text-slate-400 text-sm mt-1">專屬男性的私密生活分享社群 · 人工審核通道</p>
+            </div>
+            <div id="connection-status" class="self-start px-4 py-2 rounded-full bg-slate-900 border border-slate-800 text-xs text-slate-500 flex items-center gap-2">
+                <i class="fa-solid fa-circle-notch animate-spin"></i> 正在連線至資料庫...
+            </div>
+        </header>
+
+        <!-- 統計數據卡片 -->
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
+            <div class="bg-slate-900/50 border border-slate-800/80 p-5 rounded-2xl">
+                <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider">待審核申請</div>
+                <div id="count-pending" class="text-3xl font-bold text-amber-500 mt-1">-</div>
+            </div>
+            <div class="bg-slate-900/50 border border-slate-800/80 p-5 rounded-2xl">
+                <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider">待審核頭像/Spec</div>
+                <div id="count-avatar-pending" class="text-3xl font-bold text-purple-400 mt-1">-</div>
+            </div>
+            <div class="bg-slate-900/50 border border-slate-800/80 p-5 rounded-2xl">
+                <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider">被檢舉貼文</div>
+                <div id="count-reports" class="text-3xl font-bold text-rose-500 mt-1">-</div>
+            </div>
+            <div class="bg-slate-900/50 border border-slate-800/80 p-5 rounded-2xl">
+                <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider">總註冊人數</div>
+                <div id="count-total" class="text-3xl font-bold text-indigo-400 mt-1">-</div>
+            </div>
+        </div>
+
+        <!-- 申請名單區塊 -->
+        <div class="bg-slate-900/40 border border-slate-800/60 rounded-3xl p-6 glass-panel">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                    <div class="w-1.5 h-5 bg-indigo-500 rounded-full"></div> 申請審核與貼文管理系統
+                </h2>
+                <div class="flex gap-2">
+                    <select id="filter-status" onchange="filterApplications()" class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none">
+                        <option value="all">顯示全部</option>
+                        <option value="pending" selected>待審核帳號</option>
+                        <option value="avatar_pending">待審核頭像</option>
+                        <option value="spec_pending">待審核 Spec 認證</option>
+                        <option value="reported_posts">⚠️ 被檢舉貼文審查</option>
+                        <option value="approved">已核准</option>
+                        <option value="active">已啟用</option>
+                        <option value="rejected">已拒絕</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 名單容器 -->
+            <div id="admin-list" class="space-y-4">
+                <div class="flex flex-col items-center justify-center py-12 text-slate-500 gap-3">
+                    <i class="fa-solid fa-circle-notch animate-spin text-2xl text-indigo-500"></i>
+                    <span>正在載入申請資料...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 圖片高清燈箱放大模態視窗 (Zoom Image Lightbox) -->
+    <div id="zoom-modal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[100] flex items-center justify-center hidden opacity-0 transition-opacity duration-300" onclick="closeZoomModal()">
+        <div class="relative max-w-4xl max-h-[90vh] p-4 flex flex-col items-center justify-center" onclick="event.stopPropagation()">
+            <button onclick="closeZoomModal()" class="absolute top-4 right-4 text-white hover:text-slate-300 text-3xl transition z-10">&times;</button>
+            <img id="zoom-modal-img" class="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl border border-slate-850">
+        </div>
+    </div>
+
+    <!-- 客製高質感「拒絕原因」彈出選單 -->
+    <div id="reject-reason-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl max-w-sm w-full mx-4 shadow-2xl transform scale-95 transition-transform duration-300" id="reject-reason-content">
+            <h3 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
+                <i class="fa-solid fa-circle-question text-amber-500"></i> 選擇審核拒絕原因
+            </h3>
+            <p class="text-slate-400 text-xs mb-4">這項原因將會自動代入並發送給對方的通知信中。</p>
+            
+            <div class="space-y-2 mb-6">
+                <label class="flex items-center gap-3 p-2.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40 transition">
+                    <input type="radio" name="rejection-reason" value="註冊大頭照不清晰、未露出五官，或涉嫌冒用他人照片。" class="accent-indigo-500" required checked>
+                    <span class="text-xs text-slate-300 font-semibold">頭像不合規</span>
+                </label>
+                <label class="flex items-center gap-3 p-2.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40 transition">
+                    <input type="radio" name="rejection-reason" value="經審核填寫之年齡不符，本站僅限滿 18 歲之成年人加入。" class="accent-indigo-500" required>
+                    <span class="text-xs text-slate-300 font-semibold">年齡未滿 18 歲</span>
+                </label>
+                <label class="flex items-center gap-3 p-2.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40 transition">
+                    <input type="radio" name="rejection-reason" value="您的身體尺寸、身高體重或通知信箱等欄位資訊填寫不實。" class="accent-indigo-500" required>
+                    <span class="text-xs text-slate-300 font-semibold">資料填寫不實</span>
+                </label>
+                <label class="flex items-center gap-3 p-2.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40 transition">
+                    <input type="radio" name="rejection-reason" value="不符本站審核政策。如有任何疑問請連蹟官方管理信箱。" class="accent-indigo-500" required>
+                    <span class="text-xs text-slate-300 font-semibold">其他未述原因</span>
+                </label>
+            </div>
+
+            <div class="flex gap-3 justify-end">
+                <button onclick="closeRejectReasonModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:bg-slate-800 transition text-xs font-semibold">取消</button>
+                <button id="confirm-reject-btn" class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-xl text-white transition text-xs font-semibold">確認拒絕</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 客製高質感防誤觸刪除帳號確認模態視窗 -->
+    <div id="delete-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl max-w-sm w-full mx-4 shadow-2xl transform scale-95 transition-transform duration-300" id="delete-modal-content">
+            <h3 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
+                <i class="fa-solid fa-triangle-exclamation text-red-500"></i> 確定要刪除該用戶？
+            </h3>
+            <p class="text-slate-400 text-sm mb-6 leading-relaxed">
+                這將永久移除此申請人的所有註冊、驗證、帳號密碼，以及他發布過的**所有動態貼文與照片**。此操作無法復原！
+            </p>
+            <div class="flex gap-3 justify-end">
+                <button onclick="closeDeleteModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:bg-slate-800 transition text-xs font-semibold">取消</button>
+                <button id="confirm-delete-btn" class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-xl text-white transition text-xs font-semibold">確認刪除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 浮動提示訊息容器 (Toast) -->
+    <div id="toast-container" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col gap-2 w-full max-w-xs px-4"></div>
+
+    <script type="module">
+        let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc, deleteDoc, query, where, getDocs;
+
+        const appId = 'secretg-demo-app';
+        const firebaseConfig = {
+            apiKey: "AIzaSyCNgJxYjC90DjtvTSaze5CREJf1Vt32aYQ",
+            authDomain: "secretroom-ef728.firebaseapp.com",
+            projectId: "secretroom-ef728",
+            storageBucket: "secretroom-ef728.firebasestorage.app",
+            messagingSenderId: "22006617218",
+            appId: "1:22006617218:web:9e9af5c6558ea57dcb109b"
+        };
+
+        const emailjsConfig = {
+            publicKey: "ZEp9d-hAeYdFujDZy", 
+            serviceId: "service_1ou10mi", 
+            templateId: "template_25proud" 
+        };
+
+        async function loadFirebaseSDKs() {
+            try {
+                const [appMod, firestoreMod] = await Promise.all([
+                    import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"),
+                    import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js")
+                ]);
+
+                initializeApp = appMod.initializeApp;
+                getFirestore = firestoreMod.getFirestore;
+                doc = firestoreMod.doc;
+                collection = firestoreMod.collection;
+                onSnapshot = firestoreMod.onSnapshot;
+                updateDoc = firestoreMod.updateDoc;
+                getDoc = firestoreMod.getDoc;
+                deleteDoc = firestoreMod.deleteDoc; 
+                query = firestoreMod.query;
+                where = firestoreMod.where;
+                getDocs = firestoreMod.getDocs;
+
+                return true;
+            } catch (e) {
+                console.error("無法載入 Firebase SDK:", e);
+                return false;
+            }
+        }
+
+        let db;
+        let allApplications = [];
+        let allPosts = [];
+        let userIdToDelete = null; 
+
+        async function initAdmin() {
+            if (emailjsConfig.publicKey && emailjsConfig.publicKey !== "YOUR_EMAILJS_PUBLIC_KEY") {
+                emailjs.init({ publicKey: emailjsConfig.publicKey });
+            }
+
+            const firebaseLoaded = await loadFirebaseSDKs();
+            const statusEl = document.getElementById('connection-status');
+
+            if (firebaseLoaded) {
+                try {
+                    const app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    statusEl.className = "self-start px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 flex items-center gap-2";
+                    statusEl.innerHTML = '<i class="fa-solid fa-circle text-[8px] animate-pulse"></i> 資料庫連線正常';
+                    
+                    listenToApplications();
+                    listenToPosts();
+                } catch (error) {
+                    console.error("Firebase 連線錯誤:", error);
+                    statusEl.className = "self-start px-4 py-2 rounded-full bg-red-500/10 border border-red-500/20 text-xs text-red-400 flex items-center gap-2";
+                    statusEl.innerHTML = '<i class="fa-solid fa-circle text-[8px]"></i> 連線失敗';
+                    showMockDataInfo();
+                }
+            } else {
+                statusEl.className = "self-start px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 flex items-center gap-2";
+                statusEl.innerHTML = '<i class="fa-solid fa-circle text-[8px]"></i> 離線模式';
+                showMockDataInfo();
+            }
+        }
+
+        function listenToApplications() {
+            const q = collection(db, 'secretg_apps', appId, 'applications');
+            onSnapshot(q, (querySnapshot) => {
+                allApplications = [];
+                let pendingCount = 0;
+                let avatarPendingCount = 0;
+
+                querySnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    allApplications.push({ id: docSnap.id, ...data });
+
+                    if (data.status === 'pending') pendingCount++;
+                    if (data.avatarStatus === 'pending' || data.specEliteStatus === 'pending') avatarPendingCount++;
+                });
+
+                document.getElementById('count-pending').textContent = pendingCount;
+                document.getElementById('count-avatar-pending').textContent = avatarPendingCount;
+                document.getElementById('count-total').textContent = allApplications.length;
+
+                renderApplications();
+            }, (error) => {
+                console.error("監聽名單出錯:", error);
+                showToast("載入資料失敗，請檢查資料庫 Rules 權限", "error");
+            });
+        }
+
+        function listenToPosts() {
+            const q = collection(db, 'secretg_apps', appId, 'posts');
+            onSnapshot(q, (querySnapshot) => {
+                allPosts = [];
+                let reportedCount = 0;
+
+                querySnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    allPosts.push({ id: docSnap.id, ...data });
+                    if (data.reportCount && data.reportCount > 0) {
+                        reportedCount++;
+                    }
+                });
+
+                document.getElementById('count-reports').textContent = reportedCount;
+                renderApplications(); 
+            });
+        }
+
+        function showMockDataInfo() {
+            const listContainer = document.getElementById('admin-list');
+            listContainer.innerHTML = `
+                <div class="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 text-center flex flex-col items-center justify-center gap-4">
+                    <div class="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-500 text-xl">
+                        <i class="fa-solid fa-circle-info"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-200">目前為模擬測試模式</h4>
+                        <p class="text-xs text-slate-500 mt-1">您需要在本檔案的程式碼中貼上真實的 Firebase Config，才能進行真實資料審核。</p>
+                    </div>
+                </div>
+            `;
+            document.getElementById('count-pending').textContent = '0';
+            document.getElementById('count-avatar-pending').textContent = '0';
+            document.getElementById('count-total').textContent = '0';
+        }
+
+        // 高清燈箱放大功能
+        window.zoomImage = function(src) {
+            const modal = document.getElementById('zoom-modal');
+            const img = document.getElementById('zoom-modal-img');
+            if (modal && img) {
+                img.src = src;
+                modal.classList.remove('hidden');
+                setTimeout(() => modal.classList.remove('opacity-0'), 50);
+            }
+        }
+
+        window.closeZoomModal = function() {
+            const modal = document.getElementById('zoom-modal');
+            if (modal) {
+                modal.classList.add('opacity-0');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            }
+        }
+
+        window.renderApplications = function() {
+            const listContainer = document.getElementById('admin-list');
+            const filterValue = document.getElementById('filter-status').value;
+
+            if (filterValue === 'reported_posts') {
+                const reportedPosts = allPosts.filter(p => p.reportCount && p.reportCount > 0);
+                listContainer.innerHTML = '';
+
+                if (reportedPosts.length === 0) {
+                    listContainer.innerHTML = `
+                        <div class="text-center py-12 text-slate-500 flex flex-col items-center gap-2">
+                            <i class="fa-solid fa-circle-check text-2xl text-emerald-500"></i>
+                            <span>太棒了！目前社群中沒有任何被檢舉的貼文</span>
+                        </div>
+                    `;
+                    return;
+                }
+
+                reportedPosts.forEach(post => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-slate-900/60 p-5 rounded-2xl border border-rose-500/20 hover:border-rose-500/40 transition flex flex-col md:flex-row gap-5 items-start justify-between';
+                    
+                    const reportReasonsHtml = post.reports ? post.reports.map(r => `
+                        <div class="text-xs bg-rose-950/20 text-rose-400 p-2 rounded-lg border border-rose-500/10 mb-1 leading-relaxed">
+                            <span class="font-bold">檢舉原因:</span> ${r.reason}
+                        </div>
+                    `).join('') : '';
+
+                    card.innerHTML = `
+                        <div class="flex-1 space-y-3">
+                            <div class="flex items-center gap-3">
+                                <img src="${post.authorAvatar}" class="w-8 h-8 rounded-full object-cover cursor-zoom-in" onclick="zoomImage('${post.authorAvatar}')">
+                                <div>
+                                    <h4 class="font-bold text-xs text-slate-200">${post.authorName} <span class="text-slate-500 font-mono">(@${post.userId})</span></h4>
+                                    <p class="text-[10px] text-slate-500">貼文 ID: ${post.id}</p>
+                                </div>
+                            </div>
+                            <p class="text-xs text-slate-300 leading-relaxed font-light">${post.text}</p>
+                            <img src="${post.image}" class="w-24 h-auto rounded-xl border border-slate-800 max-h-36 object-cover cursor-zoom-in hover:scale-105 transition" onclick="zoomImage('${post.image}')">
+                            
+                            <!-- 檢舉紀錄紀錄 -->
+                            <div class="mt-2">
+                                <div class="text-[10px] text-slate-500 font-bold mb-1.5 uppercase"><i class="fa-solid fa-flag text-rose-500"></i> 檢舉清單 (共 ${post.reportCount} 次檢舉)</div>
+                                ${reportReasonsHtml}
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2 shrink-0">
+                            <button onclick="deleteSinglePost('${post.id}')" class="bg-red-600 hover:bg-red-500 text-white text-xs px-4 py-2.5 rounded-xl transition font-semibold shadow-lg shadow-red-950/20 flex items-center gap-1.5">
+                                <i class="fa-solid fa-trash-can"></i> 下架並刪除貼文
+                            </button>
+                        </div>
+                    `;
+                    listContainer.appendChild(card);
+                });
+                return;
+            }
+
+            // 帳號名單過濾
+            const filteredApps = allApplications.filter(app => {
+                if (filterValue === 'all') return true;
+                if (filterValue === 'avatar_pending') return app.avatarStatus === 'pending';
+                if (filterValue === 'spec_pending') return app.specEliteStatus === 'pending';
+                return app.status === filterValue;
+            });
+
+            listContainer.innerHTML = '';
+
+            if (filteredApps.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="text-center py-12 text-slate-500 flex flex-col items-center gap-2">
+                        <i class="fa-solid fa-folder-open text-2xl"></i>
+                        <span>無符合條件的申請資料</span>
+                    </div>
+                `;
+                return;
+            }
+
+            filteredApps.forEach((appData) => {
+                const card = document.createElement('div');
+                card.className = 'bg-slate-900/60 p-5 rounded-2xl border border-slate-800/80 hover:border-slate-700/60 transition flex flex-col md:flex-row md:items-center justify-between gap-4';
+                
+                let kinksStr = appData.kinks && appData.kinks.length > 0 ? appData.kinks.join(', ') : '無';
+                if (appData.otherKink) kinksStr += ` (其他: ${appData.otherKink})`;
+
+                const statusColors = {
+                    pending: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+                    approved: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+                    active: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+                    rejected: 'bg-red-500/10 text-red-400 border-red-500/20'
+                };
+                const currentStatusColor = statusColors[appData.status] || 'bg-slate-800 text-slate-400 border-slate-700';
+
+                let tgInfoHtml = '';
+                if (appData.telegramInfo) {
+                    tgInfoHtml = `
+                        <div class="mt-2 pt-2 border-t border-slate-800/60 text-xs text-blue-400 flex items-center gap-1.5">
+                            <i class="fa-brands fa-telegram text-sm"></i>
+                            <span>已成功綁定：@${appData.telegramInfo.username || appData.telegramInfo.first_name} (ID: ${appData.telegramInfo.id})</span>
+                        </div>
+                    `;
+                }
+
+                // 註冊頭像 or 頭像變更審核 UI 模塊 (點擊皆可放大)
+                let avatarReviewHtml = '';
+                if (appData.avatarStatus === 'pending' && appData.avatarPending) {
+                    avatarReviewHtml = `
+                        <div class="mt-4 p-3 bg-purple-950/20 border border-purple-500/20 rounded-xl space-y-2">
+                            <span class="text-xs text-purple-400 font-bold block"><i class="fa-solid fa-camera"></i> 提出頭像變更審核 (點擊可放大)：</span>
+                            <div class="flex items-center gap-4">
+                                <div class="text-center cursor-zoom-in" onclick="zoomImage('${appData.avatar}')">
+                                    <img src="${appData.avatar}" class="w-14 h-14 rounded-full object-cover border border-slate-700 hover:opacity-80 transition">
+                                    <span class="text-[9px] text-slate-500 block mt-1">目前原頭像</span>
+                                </div>
+                                <i class="fa-solid fa-arrow-right text-slate-600"></i>
+                                <div class="text-center cursor-zoom-in" onclick="zoomImage('${appData.avatarPending}')">
+                                    <img src="${appData.avatarPending}" class="w-14 h-14 rounded-full object-cover border-2 border-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.3)] hover:opacity-80 transition">
+                                    <span class="text-[9px] text-purple-400 font-bold block mt-1">申請新頭像</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-2 mt-2 pt-1">
+                                <button onclick="approveAvatarChange('${appData.id}')" class="bg-purple-600 hover:bg-purple-500 text-white text-[10px] px-3 py-1.5 rounded-lg transition font-semibold">核准新頭像</button>
+                                <button onclick="rejectAvatarChange('${appData.id}')" class="bg-slate-800 hover:bg-slate-750 text-slate-400 text-[10px] px-3 py-1.5 rounded-lg border border-slate-700 transition font-semibold">拒絕</button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    avatarReviewHtml = `
+                        <div class="flex items-center gap-3">
+                            <div class="cursor-zoom-in" onclick="zoomImage('${appData.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}')">
+                                <img src="${appData.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-12 h-12 rounded-full object-cover border-2 border-indigo-500/20 shadow hover:opacity-80 transition">
+                            </div>
+                            <span class="text-xs text-slate-500 font-medium">個人大頭照 (點擊可放大)</span>
+                        </div>
+                    `;
+                }
+
+                // 黃金 Spec 獨立專區審核與管理 (Decoupled Spec Elite Area)
+                let specReviewHtml = '';
+                if (appData.specEliteStatus === 'pending' && appData.specImage) {
+                    specReviewHtml = `
+                        <div class="mt-4 p-4 bg-amber-950/20 border border-amber-500/20 rounded-xl space-y-3 text-left">
+                            <span class="text-xs text-amber-400 font-bold block"><i class="fa-solid fa-lock"></i> 收到黃金 Spec Elite 徽章申請 (獨立審核區)：</span>
+                            <p class="text-[11px] text-slate-400">申報規格：長度 <strong class="text-slate-200">${appData.length}cm</strong> / 粗度 <strong class="text-slate-200">${appData.girth}cm</strong></p>
+                            
+                            <div class="relative w-32 h-32 rounded-lg overflow-hidden border border-slate-800 bg-slate-950 group cursor-zoom-in" onclick="zoomImage('${appData.specImage}')">
+                                <img src="${appData.specImage}" class="w-full h-full object-cover group-hover:scale-105 transition">
+                                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-[10px] text-white gap-1">
+                                    <i class="fa-solid fa-magnifying-glass-plus"></i> 點擊放大驗證
+                                </div>
+                            </div>
+
+                            <div class="flex gap-2 mt-1">
+                                <button onclick="approveSpecElite('${appData.id}')" class="bg-amber-600 hover:bg-amber-500 text-slate-950 text-[10px] px-3 py-1.5 rounded-lg transition font-bold shadow-md">核發黃金 Spec 徽章</button>
+                                <button onclick="rejectSpecElite('${appData.id}')" class="bg-slate-800 hover:bg-slate-750 text-slate-400 text-[10px] px-3 py-1.5 rounded-lg border border-slate-700 transition font-semibold">拒絕</button>
+                            </div>
+                        </div>
+                    `;
+                } else if (appData.isSpecElite) {
+                    specReviewHtml = `
+                        <div class="mt-4 p-3 bg-slate-950/40 border border-slate-800/80 rounded-xl text-left flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-r from-slate-900 via-slate-950 to-black text-slate-300 border border-slate-700 shadow-md">
+                                    <i class="fa-solid fa-lock text-[10px]"></i>
+                                </span>
+                                <span class="text-xs text-slate-300 font-semibold">已取得黃金 Spec 認證 🔒</span>
+                            </div>
+                            <button onclick="toggleManualBadge('${appData.id}', 'isSpecElite', false)" class="text-[10px] text-red-400 hover:text-red-300 border border-red-500/10 hover:border-red-500/30 bg-red-500/5 px-2.5 py-1 rounded-lg transition font-semibold">
+                                收回認證
+                            </button>
+                        </div>
+                    `;
+                }
+
+                // 手動徽章管理控制欄 (已移除 Spec Elite 的直接勾選選項)
+                let badgeManagementHtml = `
+                    <div class="mt-4 pt-3 border-t border-slate-800/50 flex flex-wrap gap-4 items-center justify-between">
+                        <span class="text-[10px] text-slate-500 font-bold uppercase"><i class="fa-solid fa-ribbon"></i> 官方授權徽章發放：</span>
+                        <div class="flex items-center gap-4">
+                            <!-- 管理員皇冠 -->
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="checkbox" onchange="toggleManualBadge('${appData.id}', 'isAdmin', this.checked)" ${appData.role === 'admin' || appData.isAdmin ? 'checked' : ''} class="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500">
+                                <span class="text-[11px] text-slate-300">管理員 👑</span>
+                            </label>
+                            <!-- 創始元老 -->
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="checkbox" onchange="toggleManualBadge('${appData.id}', 'isPioneer', this.checked)" ${appData.isPioneer ? 'checked' : ''} class="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500">
+                                <span class="text-[11px] text-slate-300">創始元老 🛡️</span>
+                            </label>
+                        </div>
+                    </div>
+                `;
+
+                // 註冊審核按鈕
+                let actionButtons = '';
+                if (appData.status === 'pending') {
+                    actionButtons = `
+                        <div class="flex gap-2 shrink-0 flex-wrap">
+                            <button onclick="updateStatus('${appData.id}', 'approved')" class="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-xs px-4 py-2.5 rounded-xl transition font-semibold shadow-lg shadow-emerald-950/20">
+                                <i class="fa-solid fa-check mr-1"></i> 核准加入
+                            </button>
+                            <button onclick="openRejectReasonModal('${appData.id}')" class="bg-red-600/20 hover:bg-red-600/30 active:scale-95 text-red-400 border border-red-500/20 text-xs px-4 py-2.5 rounded-xl transition font-semibold">
+                                <i class="fa-solid fa-xmark mr-1"></i> 拒絕
+                            </button>
+                            <button onclick="openDeleteModal('${appData.id}')" class="bg-slate-800 hover:bg-red-950/40 text-slate-400 hover:text-red-400 border border-slate-700/80 hover:border-red-500/20 text-xs px-3 py-2.5 rounded-xl transition font-semibold">
+                                <i class="fa-regular fa-trash-can"></i>
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    actionButtons = `
+                        <div class="flex items-center gap-3 shrink-0 flex-wrap">
+                            <div class="text-xs text-slate-500 font-medium bg-slate-950/40 px-3 py-2.5 rounded-xl border border-slate-900">
+                                已於 ${appData.createdAt ? new Date(appData.createdAt.seconds * 1000).toLocaleDateString() : '未知時間'} 處理
+                            </div>
+                            <button onclick="openDeleteModal('${appData.id}')" class="bg-slate-800 hover:bg-red-950/40 text-slate-400 hover:text-red-400 border border-slate-700/80 hover:border-red-500/20 text-xs px-3 py-2.5 rounded-xl transition font-semibold" title="刪除帳號">
+                                <i class="fa-regular fa-trash-can"></i> 刪除帳號
+                            </button>
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="space-y-1.5 flex-1 text-left">
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <h4 class="font-bold text-base text-slate-200">${appData.nickname || '未填'} <span class="text-xs text-slate-500 font-normal">(@${appData.id})</span></h4>
+                            <span class="px-2.5 py-0.5 text-xs font-medium rounded-full border ${currentStatusColor}">
+                                ${appData.status === 'pending' ? '待審核' : appData.status === 'approved' ? '已核准' : appData.status === 'active' ? '已啟用' : '已拒絕'}
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-400 flex items-center gap-1"><i class="fa-regular fa-envelope"></i> 通知信箱：<span class="text-slate-300 font-mono">${appData.email}</span></p>
+                        <div class="grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-slate-400 mt-2 pb-2">
+                            <div><span class="text-slate-500">身高體重：</span>${appData.height} cm / ${appData.weight} kg</div>
+                            <div><span class="text-slate-500">身體密碼：</span>長 ${appData.length} cm / 粗 ${appData.girth} cm</div>
+                            <div class="col-span-2 mt-1"><span class="text-slate-500">主題偏好：</span><span class="text-slate-300">${kinksStr}</span></div>
+                        </div>
+                        ${avatarReviewHtml}
+                        ${specReviewHtml}
+                        ${badgeManagementHtml}
+                        ${tgInfoHtml}
+                    </div>
+                    ${actionButtons}
+                `;
+                listContainer.appendChild(card);
+            });
+        }
+
+        window.filterApplications = function() {
+            renderApplications();
+        }
+
+        // 手動控制/撤回官方徽章
+        window.toggleManualBadge = async function(userId, badgeField, isChecked) {
+            if (!db) return;
+            try {
+                const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+                const updates = {};
+                updates[badgeField] = isChecked;
+                await updateDoc(docRef, updates);
+                showToast(`已成功${isChecked ? '發放' : '收回'}該項手動社群徽章！`, "success");
+            } catch (err) {
+                console.error("手動徽章異動失敗:", err);
+                showToast("變更失敗", "error");
+            }
+        }
+
+        // 核發 Spec Elite 徽章
+        window.approveSpecElite = async function(userId) {
+            if (!db) return;
+            try {
+                const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    await updateDoc(docRef, {
+                        isSpecElite: true,
+                        specEliteStatus: 'approved'
+                    });
+                    showToast("Spec Elite 徽章核准完成！", "success");
+                    sendEmailNotification(data, 'approved', "黃金 Spec 審核通過", "您的 SecretRoom 黃金 Spec Elite 勳章申請已正式核准，已即刻渲染在您的個人暱稱下方！");
+                }
+            } catch (err) {
+                console.error("核發失敗:", err);
+            }
+        }
+
+        // 拒絕 Spec Elite 徽章
+        window.rejectSpecElite = async function(userId) {
+            if (!db) return;
+            try {
+                const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    await updateDoc(docRef, {
+                        specEliteStatus: 'rejected',
+                        specImage: ''
+                    });
+                    showToast("Spec Elite 申請已被退回。", "info");
+                    sendEmailNotification(data, 'rejected', "黃金 Spec 審核退回", "您申請的 SecretRoom 黃金 Spec Elite 勳章經管理員檢視照片與規格未通過核可。");
+                }
+            } catch (err) {
+                console.error("拒絕出錯:", err);
+            }
+        }
+
+        let userIdToReject = null;
+        window.openRejectReasonModal = function(userId) {
+            userIdToReject = userId;
+            const modal = document.getElementById('reject-reason-modal');
+            const content = document.getElementById('reject-reason-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 50);
+
+            document.getElementById('confirm-reject-btn').onclick = async function() {
+                const checkedRadio = document.querySelector('input[name="rejection-reason"]:checked');
+                if (!checkedRadio) {
+                    showToast("請選擇拒絕原因", "error");
+                    return;
+                }
+                const reason = checkedRadio.value;
+                await updateStatusWithReason(userIdToReject, 'rejected', reason);
+                closeRejectReasonModal();
+            };
+        }
+
+        window.closeRejectReasonModal = function() {
+            const modal = document.getElementById('reject-reason-modal');
+            const content = document.getElementById('reject-reason-content');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                userIdToReject = null;
+            }, 300);
+        }
+
+        async function updateStatusWithReason(userId, status, reason) {
+            if (!db) {
+                showToast("離線模擬下無法寫入資料", "error");
+                return;
+            }
+
+            try {
+                const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const userData = docSnap.data();
+                    await updateDoc(docRef, { 
+                        status: status,
+                        rejectionReason: reason 
+                    });
+                    showToast('已更新狀態為 [已拒絕]', 'success');
+                    
+                    const rejectMessage = `很抱歉，您的加入申請未通過審核。感謝您的關注。\n\n【拒絕原因說明】：\n${reason}\n\n若您已修正上述不符之內容，歡迎點擊以下連結重整並再次提交審核申請：\nhttps://5j1u35k6.github.io/SecretRoom/`;
+                    sendEmailNotification(userData, status, "申請審核退回通知", rejectMessage);
+                }
+            } catch (err) {
+                console.error("拒絕狀態更新出錯:", err);
+                showToast("操作失敗", "error");
+            }
+        }
+
+        window.deleteSinglePost = async function(postId) {
+            if (!db) return;
+            try {
+                const postDocRef = doc(db, 'secretg_apps', appId, 'posts', postId);
+                await deleteDoc(postDocRef);
+                showToast("違規貼文已成功從資料庫下架銷毀！", "success");
+            } catch (err) {
+                console.error("貼文刪除出錯:", err);
+                showToast("下架失敗", "error");
+            }
+        }
+
+        async function sendEmailNotification(userData, status, title = "審核通知", customMsg = null) {
+            if (!emailjsConfig.publicKey || emailjsConfig.publicKey === "YOUR_EMAILJS_PUBLIC_KEY") {
+                console.info(`[Email 模擬] 發送郵件給 ${userData.email}`);
+                showToast(`[模擬信件] 已寄送審核通知至 ${userData.email}`, "info");
+                return;
+            }
+
+            const messageText = customMsg || (status === 'approved' 
+                ? `恭喜您！您的 SecretRoom 加入申請已通過審核。\n\n請您點擊下方連結重新進入平台，輸入您的帳號密碼進行登入，並綁定您的 Telegram 帳號：\nhttps://5j1u35k6.github.io/SecretRoom/`
+                : `很抱歉，您的加入申請未通過審核。感謝您的關注。`);
+
+            try {
+                await emailjs.send(emailjsConfig.serviceId, emailjsConfig.templateId, {
+                    to_email: userData.email,
+                    to_name: userData.nickname,
+                    status_text: title,
+                    message: messageText
+                });
+                showToast(`真實審核通知信已寄送至 ${userData.email}`, "success");
+            } catch (error) {
+                console.error("Email 發送失敗:", error);
+                showToast("通知信發送失敗，請確認您的 EmailJS 設定", "error");
+            }
+        }
+
+        window.updateStatus = async function(userId, status) {
+            if (!db) {
+                showToast("目前處於離線模擬，無法儲存狀態", "error");
+                return;
+            }
+
+            try {
+                const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+                const docSnap = await getDoc(docRef);
+                
+                if (!docSnap.exists()) {
+                    showToast("找不到該筆申請資料", "error");
+                    return;
+                }
+                
+                const userData = docSnap.data();
+                await updateDoc(docRef, { status: status });
+                showToast('已將狀態更新為 ' + (status === 'approved' ? '已核准' : '已拒絕'), 'success');
+                
+                sendEmailNotification(userData, status);
+            } catch (e) {
+                console.error("更新狀態失敗:", e);
+                showToast('更新失敗: ' + e.message, 'error');
+            }
+        }
+
+        window.approveAvatarChange = async function(userId) {
+            if (!db) return;
+            try {
+                const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const newAvatar = data.avatarPending;
+                    await updateDoc(docRef, {
+                        avatar: newAvatar,
+                        avatarPending: '',
+                        avatarStatus: 'approved'
+                    });
+                    showToast("頭像變更已核准啟用！", "success");
+                    sendEmailNotification(data, 'approved', "頭像變更審核通過", "您的 SecretRoom 新頭像更換申請已通過管理員審核，已立刻套用！");
+                }
+            } catch (err) {
+                console.error("核准頭像出錯:", err);
+                showToast("操作失敗", "error");
+            }
+        }
+
+        window.rejectAvatarChange = async function(userId) {
+            if (!db) return;
+            try {
+                const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    await updateDoc(docRef, {
+                        avatarPending: '',
+                        avatarStatus: 'rejected'
+                    });
+                    showToast("頭像變更申請已拒絕。", "info");
+                    sendEmailNotification(data, 'rejected', "頭像變更審核未通過", "您在 SecretRoom 申請更換的新大頭照，未通過管理員審核，已回復原頭像。");
+                }
+            } catch (err) {
+                console.error("拒絕頭像出錯:", err);
+                showToast("操作失敗", "error");
+            }
+        }
+
+        window.openDeleteModal = function(userId) {
+            userIdToDelete = userId;
+            const modal = document.getElementById('delete-modal');
+            const content = document.getElementById('delete-modal-content');
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 50);
+
+            document.getElementById('confirm-delete-btn').onclick = async function() {
+                await executeDelete(userIdToDelete);
+                closeDeleteModal();
+            };
+        }
+
+        window.closeDeleteModal = function() {
+            const modal = document.getElementById('delete-modal');
+            const content = document.getElementById('delete-modal-content');
+            
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                userIdToDelete = null;
+            }, 300);
+        }
+
+        async function executeDelete(userId) {
+            if (!db) {
+                showToast("離線模擬下無法執行真實刪除", "error");
+                return;
+            }
+
+            try {
+                // 1. 級聯連帶徹底消滅：先清空該用戶上傳過的所有歷史貼文
+                const postsRef = collection(db, 'secretg_apps', appId, 'posts');
+                const q = query(postsRef, where('userId', '==', userId));
+                const querySnapshot = await getDocs(q);
+                
+                const deletePromises = [];
+                querySnapshot.forEach((postDoc) => {
+                    const postDocRef = doc(db, 'secretg_apps', appId, 'posts', postDoc.id);
+                    deletePromises.push(deleteDoc(postDocRef));
+                });
+                
+                await Promise.all(deletePromises);
+
+                // 2. 刪除用戶的註冊資料
+                const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+                await deleteDoc(docRef);
+                
+                showToast(`帳號 @${userId} 及其 ${deletePromises.length} 則分享貼文已安全且徹底永久銷毀`, "success");
+            } catch (err) {
+                console.error("刪除失敗:", err);
+                showToast("刪除失敗: " + err.message, "error");
+            }
+        }
+
+        window.showToast = function(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bgColors = {
+                error: 'bg-red-500/95 border-red-400',
+                success: 'bg-emerald-500/95 border-emerald-400',
+                info: 'bg-indigo-600/95 border-indigo-500/40'
+            };
+            toast.className = `${bgColors[type]} text-white px-5 py-3.5 rounded-xl shadow-lg border text-sm font-medium transition-all duration-300 opacity-0 transform -translate-y-4 backdrop-blur-xl flex items-center gap-3`;
+            const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+            toast.innerHTML = `<i class="fa-solid ${icon} text-lg"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.remove('opacity-0', '-translate-y-4'));
+            setTimeout(() => {
+                toast.classList.add('opacity-0', '-translate-y-4');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        initAdmin();
     </script>
 </body>
 </html>
