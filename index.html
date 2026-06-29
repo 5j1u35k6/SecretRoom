@@ -8,6 +8,9 @@
     <link rel="icon" href="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" type="image/jpeg">
     <link rel="apple-touch-icon" href="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2">
     
+    <!-- 極速預載主要 Logo，在 JavaScript 執行渲染前就通知瀏覽器平行下載，徹底消滅圖檔閃爍與加載延遲 -->
+    <link rel="preload" href="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" as="image">
+    
     <title>SecretRoom | 專屬男性的私密生活分享社群</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -26,6 +29,25 @@
             backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
+        
+        /* 柔軟溫和的 SR 專屬 Logo 緩慢呼吸與霓虹擴散動畫 */
+        @keyframes gentle-breath {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 25px rgba(139, 92, 246, 0.35), inset 0 0 15px rgba(139, 92, 246, 0.15);
+                border-color: rgba(139, 92, 246, 0.25);
+            }
+            50% {
+                transform: scale(1.04);
+                box-shadow: 0 0 50px rgba(139, 92, 246, 0.65), inset 0 0 25px rgba(139, 92, 246, 0.3);
+                border-color: rgba(139, 92, 246, 0.55);
+            }
+        }
+        .animate-gentle-logo {
+            animation: gentle-breath 4.5s ease-in-out infinite;
+            will-change: transform, box-shadow, border-color;
+        }
+        
         /* 自訂拉條樣式 */
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -246,8 +268,8 @@
                     <div class="absolute w-80 h-80 bg-purple-500/5 rounded-full blur-3xl -bottom-10 -left-10"></div>
                     
                     <div class="z-10 w-full flex flex-col items-center">
-                        <!-- 應用精緻寬幅放大 SR 專屬 Logo -->
-                        <div class="w-36 h-36 md:w-40 md:h-40 rounded-full overflow-hidden mb-8 shadow-[0_0_35px_rgba(139,92,246,0.45)] border-2 border-indigo-500/30">
+                        <!-- 應用精緻放大且預先加載的 SR 標誌徽章 (套用高階 .animate-gentle-logo 柔軟呼吸光效) -->
+                        <div class="w-36 h-36 md:w-40 md:h-40 rounded-full overflow-hidden mb-8 border-2 animate-gentle-logo transition-transform duration-500 select-none">
                             <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-full h-full object-cover">
                         </div>
                         <h1 class="text-4xl font-extrabold mb-3 tracking-wider text-white" style="font-family: serif; font-style: italic;">SecretRoom</h1>
