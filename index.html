@@ -155,8 +155,8 @@
             },
             // 固定且永久鎖定的 10 個男同志主題標籤 (Gay Community Focused Theme Tags)
             kinksOptions: [
-                "性愛偏好｜角色定位", "BDSM｜繩縛", "制服愛好｜皮革/膠衣", "心理角色｜Daddy/Boy", "自我管理｜健身/健美", 
-                "友善社交｜約會/派對", "體型美學｜壯碩/熊系", "特殊癖好｜穿戴玩物", "旅遊休閒｜友善旅遊", "數位社交｜交友軟體"
+                "生活日常", "健身運動", "時尚穿搭", "攝影影像", "戶外旅遊", 
+                "熟男/Daddy", "純愛交友", "心靈交流", "皮革西裝", "熊族/肉熊"
             ],
             posts: [], 
             activeUsers: [], 
@@ -255,6 +255,139 @@
                 initDashboardFeatures();
                 setTimeout(() => { updateSearchAndFeedUI(); }, 50);
             }
+        }
+
+        // 智慧計算並渲染精緻的徽章樣式元件 (Badges Generator)
+        window.renderUserBadgesHTML = function(user) {
+            if (!user) return '';
+            const badges = [];
+            const myPosts = window.state.posts.filter(p => p.userId === user.username);
+            
+            // 1. 管理員 👑
+            if (user.role === 'admin' || user.isAdmin) {
+                badges.push(`
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wide bg-gradient-to-r from-purple-900 to-indigo-900 text-amber-300 border border-amber-500/30 shadow-[0_0_10px_rgba(251,191,36,0.35)]">
+                        <i class="fa-solid fa-crown text-[8px]"></i> 管理員
+                    </span>
+                `);
+            }
+            
+            // 2. 新人 🌱 (註冊未滿 7 天，168 小時)
+            let isNewcomer = false;
+            if (user.createdAt) {
+                const createdTime = user.createdAt.seconds ? user.createdAt.seconds * 1000 : new Date(user.createdAt).getTime();
+                if (Date.now() - createdTime < 7 * 24 * 60 * 60 * 1000) {
+                    isNewcomer = true;
+                }
+            }
+            if (isNewcomer) {
+                badges.push(`
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wide bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-[0_0_8px_rgba(16,185,129,0.3)]">
+                        <i class="fa-solid fa-seedling text-[8px]"></i> 新人
+                    </span>
+                `);
+            }
+
+            // 3. 創始元老
+            if (user.isPioneer) {
+                badges.push(`
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wide bg-gradient-to-r from-amber-800 to-amber-950 text-amber-200 border border-amber-600/30 shadow-[0_0_8px_rgba(180,83,9,0.2)]">
+                        <i class="fa-solid fa-shield-halved text-[8px]"></i> 創始元老
+                    </span>
+                `);
+            }
+
+            // 4. 人氣焦點 🔥 (累計獲得按讚 > 1000 次)
+            let totalLikes = 0;
+            myPosts.forEach(p => { if(p.likes) totalLikes += p.likes.length; });
+            if (totalLikes > 1000) {
+                badges.push(`
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wide bg-gradient-to-r from-orange-600 to-red-600 text-white shadow-[0_0_10px_rgba(249,115,22,0.4)]">
+                        <i class="fa-solid fa-fire text-[8px] animate-pulse"></i> 人氣焦點
+                    </span>
+                `);
+            }
+
+            // 5. 星級天菜 ⭐ (發布貼文 50 則以上，且貼文均為 5.0 分，每則累計評分人數 >= 500 人)
+            let isStarCreator = false;
+            if (myPosts.length >= 50) {
+                let allPerfectAndHighlyRated = true;
+                myPosts.forEach(p => {
+                    const ratingKeys = p.ratings ? Object.keys(p.ratings) : [];
+                    const ratingVals = p.ratings ? Object.values(p.ratings) : [];
+                    if (ratingKeys.length < 500) {
+                        allPerfectAndHighlyRated = false;
+                    } else {
+                        const avg = ratingVals.reduce((a, b) => a + b, 0) / ratingVals.length;
+                        if (avg < 4.98) allPerfectAndHighlyRated = false; 
+                    }
+                });
+                if (allPerfectAndHighlyRated) isStarCreator = true;
+            }
+            if (isStarCreator) {
+                badges.push(`
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wide bg-gradient-to-r from-yellow-500 to-amber-600 text-white border border-yellow-300/30 shadow-[0_0_12px_rgba(245,158,11,0.5)]">
+                        <i class="fa-solid fa-star text-[8px]"></i> 星級天菜
+                    </span>
+                `);
+            }
+
+            // 6. 生活分享家 📸 (累計發布貼文 >= 100)
+            if (myPosts.length >= 100) {
+                badges.push(`
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wide bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white shadow-[0_0_8px_rgba(168,85,247,0.3)]">
+                        <i class="fa-solid fa-camera text-[8px]"></i> 生活分享家
+                    </span>
+                `);
+            }
+
+            // 7. 健身天菜 🏋️ (標有「健身運動」貼文 >= 50 篇，且該類別累計獲讚 > 5000)
+            let gymPostsCount = 0;
+            let gymLikesCount = 0;
+            myPosts.forEach(p => {
+                if (p.tags && p.tags.includes("健身運動")) {
+                    gymPostsCount++;
+                    if (p.likes) gymLikesCount += p.likes.length;
+                }
+            });
+            if (gymPostsCount >= 50 && gymLikesCount > 5000) {
+                badges.push(`
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wide bg-gradient-to-r from-slate-600 to-slate-800 text-slate-100 border border-slate-500/30 shadow-[0_0_8px_rgba(100,116,139,0.3)]">
+                        <i class="fa-solid fa-dumbbell text-[8px]"></i> 健身天菜
+                    </span>
+                `);
+            }
+
+            // 8. 暖男紳士 💬 (在他人貼文下累計發表過 500 則以上的留言，且無任何檢舉)
+            let commentOnOthersCount = 0;
+            window.state.posts.forEach(p => {
+                if (p.userId !== user.username && p.comments) {
+                    p.comments.forEach(c => {
+                        if (c.userId === window.state.userId) commentOnOthersCount++;
+                    });
+                }
+            });
+            let isGentleman = commentOnOthersCount >= 500;
+            if (user.reportCount && user.reportCount > 0) isGentleman = false;
+            if (isGentleman) {
+                badges.push(`
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wide bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-[0_0_8px_rgba(244,63,94,0.3)]">
+                        <i class="fa-solid fa-heart-pulse text-[8px]"></i> 暖男紳士
+                    </span>
+                `);
+            }
+
+            // 9. 黃金 Spec 認證 🔒 (長度大於 16cm 且粗度大於 5cm，需後台審核通過)
+            if (user.isSpecElite) {
+                badges.push(`
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wide bg-gradient-to-r from-slate-900 via-slate-950 to-black text-slate-300 border border-slate-700 shadow-[0_0_10px_rgba(255,255,255,0.15)]">
+                        <i class="fa-solid fa-lock text-[8px]"></i> Spec Elite
+                    </span>
+                `);
+            }
+
+            if (badges.length === 0) return '';
+            return `<div class="flex flex-wrap gap-1.5 mt-2.5 w-full justify-center md:justify-start">${badges.join('')}</div>`;
         }
 
         function viewLanding() {
@@ -1091,7 +1224,10 @@
                         ${matchedUsers.map(u => `
                             <div onclick="viewUserProfile('${u.username}')" class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full cursor-pointer shrink-0 hover:border-indigo-500 transition">
                                 <img src="${u.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-5 h-5 rounded-full object-cover border border-slate-800">
-                                <span class="text-[11px] text-slate-200 font-medium">${u.nickname} <span class="text-[9px] text-slate-500">@${u.username}</span></span>
+                                <div class="flex flex-col text-left">
+                                    <span class="text-[11px] text-slate-200 font-medium leading-tight">${u.nickname}</span>
+                                    <span class="text-[9px] text-slate-500 font-mono leading-tight">@${u.username}</span>
+                                </div>
                             </div>
                         `).join('')}
                     </div>
@@ -1124,7 +1260,7 @@
                     
                     const commentsListHtml = f.comments && f.comments.length > 0
                         ? f.comments.map(c => `
-                            <div class="text-xs bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/50 mb-1.5 leading-relaxed">
+                            <div class="text-xs bg-slate-950/40 p-2.5 rounded-xl border border-slate-800/50 mb-1.5 leading-relaxed text-left">
                                 <span class="font-bold text-slate-300 mr-1.5">${c.authorName}</span>
                                 <span class="text-slate-400">${c.text}</span>
                             </div>
@@ -1132,18 +1268,20 @@
                         : `<p class="text-[11px] text-slate-600 italic py-2 text-center">目前尚無評論，快來搶沙發！</p>`;
 
                     const isCommentsOpen = window.state.openComments[f.id];
+                    const authorObj = window.state.activeUsers.find(u => u.username === f.userId) || { nickname: f.authorName, username: f.userId };
 
                     return `
                     <div class="bg-slate-900 border border-slate-800 rounded-3xl mb-6 overflow-hidden shadow-lg transition-transform hover:scale-[1.01]">
                         <div class="p-4 flex items-center justify-between">
                             <div class="flex items-center gap-3">
                                 <img src="${f.authorAvatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" onclick="viewUserProfile('${f.userId}')" class="w-10 h-10 rounded-full object-cover border border-indigo-500/30 cursor-pointer hover:scale-105 transition">
-                                <div>
-                                    <h4 onclick="viewUserProfile('${f.userId}')" class="font-bold text-sm text-slate-100 flex items-center gap-2 cursor-pointer hover:text-indigo-400 transition">
+                                <div class="text-left">
+                                    <h4 onclick="viewUserProfile('${f.userId}')" class="font-bold text-sm text-slate-100 flex flex-wrap items-center gap-x-2 cursor-pointer hover:text-indigo-400 transition leading-tight">
                                         ${f.authorName} 
                                         <span class="text-[10px] text-indigo-400 font-mono">@${f.userId}</span>
                                     </h4>
-                                    <p class="text-[10px] text-slate-500">${f.createdAt ? new Date(f.createdAt.seconds * 1000).toLocaleString() : '剛剛'}</p>
+                                    ${renderUserBadgesHTML(authorObj)}
+                                    <p class="text-[10px] text-slate-500 mt-1">${f.createdAt ? new Date(f.createdAt.seconds * 1000).toLocaleString() : '剛剛'}</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2">
@@ -1196,7 +1334,7 @@
                             </div>
                         </div>
                         
-                        <div class="px-4 pb-3">
+                        <div class="px-4 pb-3 text-left">
                             <p class="text-sm text-slate-300 leading-relaxed"><span class="font-bold mr-2 text-slate-100">${f.authorName}</span>${f.text}</p>
                             <div class="flex flex-wrap gap-1.5 mt-2.5">
                                 ${f.tags ? f.tags.map(t => `<span class="text-indigo-400 text-xs font-mono">#${t}</span>`).join('') : ''}
@@ -1257,6 +1395,28 @@
                 : `<div class="col-span-3 text-center py-12 text-slate-600 text-xs italic">尚無分享生活照片，點擊下方「+」分享一則吧！</div>`;
 
             const isAvatarPending = u.avatarStatus === 'pending' && u.avatarPending;
+            
+            // 是否符合黃金 Spec 申請資格 (長度 > 16 且粗度 > 5)
+            const lengthNum = parseFloat(u.length);
+            const girthNum = parseFloat(u.girth);
+            const qualifiesSpecElite = (!isNaN(lengthNum) && lengthNum > 16) && (!isNaN(girthNum) && girthNum > 5);
+            let specEliteBtnHtml = '';
+            
+            if (qualifiesSpecElite && !u.isSpecElite) {
+                if (u.specEliteStatus === 'pending') {
+                    specEliteBtnHtml = `
+                        <div class="w-full bg-slate-950 border border-amber-500/20 text-amber-400 text-xs py-3 rounded-xl transition font-semibold flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-hourglass-half animate-pulse"></i> 黃金 Spec 勳章審核中...
+                        </div>
+                    `;
+                } else {
+                    specEliteBtnHtml = `
+                        <button onclick="applyForSpecElite()" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 text-xs py-3 rounded-xl hover:opacity-90 transition font-bold shadow-lg shadow-amber-500/10 flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-certificate"></i> 申請黃金 Spec 認證勳章
+                        </button>
+                    `;
+                }
+            }
 
             return `
                 <div class="flex-1 overflow-y-auto bg-[#05050a] p-5 pb-24 scroll-smooth">
@@ -1264,16 +1424,19 @@
                         
                         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-5 relative overflow-hidden">
                             <div class="absolute top-0 right-0 p-4 opacity-5"><i class="fa-solid fa-fingerprint text-6xl text-white"></i></div>
-                            <div class="flex items-center gap-4">
-                                <div class="relative">
-                                    <img src="${u.avatar}" class="w-16 h-16 rounded-full object-cover border-2 border-indigo-500/30 shadow">
-                                    ${isAvatarPending ? `<div class="absolute -top-1 -right-1 bg-amber-500 w-3.5 h-3.5 rounded-full border-2 border-slate-900 animate-ping"></div><div class="absolute -top-1 -right-1 bg-amber-500 w-3.5 h-3.5 rounded-full border-2 border-slate-900" title="新頭像審核中"></div>` : ''}
+                            <div class="flex flex-col items-center md:items-start gap-4">
+                                <div class="flex items-center gap-4 w-full">
+                                    <div class="relative shrink-0">
+                                        <img src="${u.avatar}" class="w-16 h-16 rounded-full object-cover border-2 border-indigo-500/30 shadow">
+                                        ${isAvatarPending ? `<div class="absolute -top-1 -right-1 bg-amber-500 w-3.5 h-3.5 rounded-full border-2 border-slate-900 animate-ping"></div><div class="absolute -top-1 -right-1 bg-amber-500 w-3.5 h-3.5 rounded-full border-2 border-slate-900" title="新頭像審核中"></div>` : ''}
+                                    </div>
+                                    <div class="text-left flex-1 min-w-0">
+                                        <h3 class="text-lg font-bold text-slate-100 truncate">${u.nickname}</h3>
+                                        <p class="text-xs text-slate-400 font-mono truncate">@${u.username}</p>
+                                        ${isAvatarPending ? `<span class="text-[9px] text-amber-400 font-semibold bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/15 mt-1 inline-block">新頭像人工審核中...</span>` : ''}
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 class="text-lg font-bold text-slate-100 flex items-center gap-1.5">${u.nickname}</h3>
-                                    <p class="text-xs text-slate-400 font-mono">@${u.username}</p>
-                                    ${isAvatarPending ? `<span class="text-[9px] text-amber-400 font-semibold bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/15 mt-1 block">新頭像人工審核中...</span>` : ''}
-                                </div>
+                                ${renderUserBadgesHTML(u)}
                             </div>
 
                             <div class="grid grid-cols-2 gap-4">
@@ -1287,19 +1450,21 @@
                                 </div>
                             </div>
 
-                            <div>
+                            <div class="text-left">
                                 <span class="text-[10px] text-slate-500 block mb-2 font-medium">感興趣的主題</span>
                                 <div class="flex flex-wrap gap-1.5">
                                     ${displayKinks.map(k => `<span class="px-2.5 py-1 bg-slate-950/80 border border-slate-800 text-slate-300 rounded-lg text-[10px] font-medium">${k}</span>`).join('')}
                                 </div>
                             </div>
 
+                            ${specEliteBtnHtml}
+
                             <button onclick="openEditProfileModal()" class="w-full bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs py-3 rounded-xl transition font-semibold">
                                 <i class="fa-regular fa-pen-to-square mr-1"></i> 修改個人資料
                             </button>
                         </div>
 
-                        <div class="space-y-3">
+                        <div class="space-y-3 text-left">
                             <h4 class="text-xs font-bold text-slate-400 flex items-center gap-1.5"><i class="fa-solid fa-images text-indigo-500"></i> 我的生活動態 (${myPosts.length}) <span class="text-[9px] text-slate-600 font-normal">(長按貼文 1 秒可以進行下架)</span></h4>
                             <div class="grid grid-cols-3 gap-2.5">
                                 ${myPostsGridHtml}
@@ -1332,6 +1497,20 @@
             `;
         }
 
+        window.applyForSpecElite = async function() {
+            if (!db || !window.state.applicationId) return;
+            try {
+                const docRef = doc(db, 'secretg_apps', appId, 'applications', window.state.applicationId);
+                await updateDoc(docRef, { specEliteStatus: 'pending' });
+                showToast("🎉 黃金 Spec 勳章申請已送出！管理員會盡快完成規格審核。", "success");
+                window.state.userData.specEliteStatus = 'pending';
+                switchTab('profile');
+            } catch (err) {
+                console.error("申請 Spec Elite 失敗:", err);
+                showToast("申請失敗，請重試", "error");
+            }
+        }
+
         window.openEditProfileModal = function() {
             const u = window.state.userData;
             const m = document.getElementById('edit-profile-modal');
@@ -1361,7 +1540,7 @@
                     </div>
 
                     <!-- 1. 頭像變更 (更換需人工審核) -->
-                    <div class="space-y-2">
+                    <div class="space-y-2 text-left">
                         <label class="block text-[11px] font-semibold text-slate-400">1. 個人大頭照 (更換需人工審核)</label>
                         <div class="flex flex-col items-center justify-center py-3 bg-slate-950/50 rounded-2xl border border-slate-800">
                             <div class="relative w-20 h-20 rounded-full border border-slate-700 flex items-center justify-center overflow-hidden bg-slate-950 cursor-pointer" onclick="document.getElementById('edit-avatar-input').click()">
@@ -1373,7 +1552,7 @@
                     </div>
 
                     <!-- 2. 基本資料 -->
-                    <div class="space-y-3.5">
+                    <div class="space-y-3.5 text-left">
                         <div class="space-y-1">
                             <label class="block text-[11px] font-semibold text-slate-400">2. 個人暱稱</label>
                             <input type="text" id="edit-nickname" value="${u.nickname}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-indigo-500" placeholder="暱稱">
@@ -1392,7 +1571,7 @@
                     </div>
 
                     <!-- 3. 身體密碼 -->
-                    <div class="bg-slate-950/40 p-4 rounded-2xl border border-slate-800 space-y-3">
+                    <div class="bg-slate-950/40 p-4 rounded-2xl border border-slate-800 space-y-3 text-left">
                         <span class="text-[11px] font-semibold text-slate-300 block"><i class="fa-solid fa-lock text-indigo-400"></i> 3. 身體密碼 (私密數據)</span>
                         <div class="grid grid-cols-2 gap-3">
                             <div class="space-y-1">
@@ -1407,7 +1586,7 @@
                     </div>
 
                     <!-- 4. 個人標籤 -->
-                    <div class="space-y-2">
+                    <div class="space-y-2 text-left">
                         <label class="block text-[11px] font-semibold text-slate-400">4. 感興趣的主題標籤 (至少選1項)</label>
                         <div class="grid grid-cols-2 gap-2">
                             ${kinksHtml}
@@ -1566,12 +1745,15 @@
                         </button>
 
                         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-5 relative overflow-hidden">
-                            <div class="flex items-center gap-4">
-                                <img src="${u.avatar}" class="w-16 h-16 rounded-full object-cover border border-slate-700">
-                                <div>
-                                    <h3 class="text-base font-bold text-slate-100 flex items-center gap-1.5">${u.nickname}</h3>
-                                    <p class="text-xs text-slate-400 font-mono">@${u.username}</p>
+                            <div class="flex flex-col items-center md:items-start gap-4">
+                                <div class="flex items-center gap-4 w-full">
+                                    <img src="${u.avatar}" class="w-16 h-16 rounded-full object-cover border border-slate-700 shrink-0">
+                                    <div class="text-left flex-1 min-w-0">
+                                        <h3 class="text-base font-bold text-slate-100 truncate">${u.nickname}</h3>
+                                        <p class="text-xs text-slate-400 font-mono truncate">@${u.username}</p>
+                                    </div>
                                 </div>
+                                ${renderUserBadgesHTML(u)}
                             </div>
 
                             <div class="grid grid-cols-2 gap-4">
@@ -1585,7 +1767,7 @@
                                 </div>
                             </div>
 
-                            <div>
+                            <div class="text-left">
                                 <span class="text-[10px] text-slate-500 block mb-2 font-medium">興趣主題</span>
                                 <div class="flex flex-wrap gap-1.5">
                                     ${displayKinks.map(k => `<span class="px-2.5 py-1 bg-slate-950/80 border border-slate-800 text-slate-300 rounded-lg text-[10px] font-medium">${k}</span>`).join('')}
@@ -1593,7 +1775,7 @@
                             </div>
                         </div>
 
-                        <div class="space-y-3">
+                        <div class="space-y-3 text-left">
                             <h4 class="text-xs font-bold text-slate-400 flex items-center gap-1.5"><i class="fa-solid fa-images text-indigo-500"></i> ${u.nickname} 的生活動態 (${otherPosts.length})</h4>
                             <div class="grid grid-cols-3 gap-2.5">
                                 ${otherGridHtml}
