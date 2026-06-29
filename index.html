@@ -80,10 +80,10 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-0 md:p-4">
+<body class="min-h-screen w-full flex flex-col bg-[#05050a] p-0 m-0 overflow-hidden">
 
-    <!-- 主應用程式容器 (寬度改為自適應 md:max-w-6xl 解鎖電腦多欄控制台，同時高度完美適配) -->
-    <div id="app" class="w-full max-w-md h-[100dvh] md:h-[85vh] md:max-w-6xl md:rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden relative flex flex-col bg-[#05050a] md:glass-panel border-0 md:border md:border-slate-850 transition-all duration-300">
+    <!-- 主應用程式容器 (寬度改為 100% 全滿自適應，完美釋放電腦端全螢幕控制台) -->
+    <div id="app" class="w-full h-[100dvh] md:h-screen overflow-hidden relative flex flex-col bg-[#05050a] transition-all duration-300">
         <!-- 動態內容載入載入器 -->
         <div id="loading-screen" class="absolute inset-0 z-50 bg-[#05050a] flex flex-col items-center justify-center">
             <div class="w-14 h-14 border-4 border-slate-800 border-t-indigo-500 rounded-full animate-spin mb-4"></div>
@@ -307,7 +307,7 @@
                 `);
             }
 
-            // 3. 創始元老 🛡️
+            // 3. 創創始元老 🛡️
             if (user.isPioneer) {
                 badges.push(`
                     <span title="創始元老" class="inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] bg-gradient-to-r from-amber-800 to-amber-950 text-amber-200 border border-amber-600/30 shadow-[0_0_8px_rgba(180,83,9,0.2)] hover:scale-110 transition cursor-help">
@@ -421,7 +421,7 @@
                         </div>
                         <h1 class="text-4xl font-extrabold mb-3 tracking-wider text-white" style="font-family: serif; font-style: italic;">SecretRoom</h1>
                         <p class="text-slate-400 mb-10 text-xs font-light tracking-widest leading-relaxed">
-                            專專男性的私密生活分享社群<br>分享生活近況，看見最真實的彼此
+                            專屬男性的私密生活分享社群<br>分享生活近況，看見最真實的彼此
                         </p>
                         
                         <div class="w-full space-y-3">
@@ -942,31 +942,6 @@
             `;
         }
 
-        window.submitApplication = async function() {
-            if(!db || !window.state.userId) {
-                showToast('目前連線異常，無法寫入雲端', 'error');
-                return;
-            }
-
-            try {
-                const u = window.state.userData;
-                const docId = window.state.applicationId;
-                const docRef = doc(db, 'secretg_apps', appId, 'applications', docId);
-                
-                await setDoc(docRef, {
-                    ...u,
-                    createdAt: serverTimestamp ? serverTimestamp() : new Date(),
-                    userId: window.state.userId
-                });
-                
-                localStorage.setItem('sr_username', docId);
-                navigate('pending');
-            } catch(e) {
-                console.error("寫入錯誤:", e);
-                showToast('提交失敗，請檢查資料庫規則權限。', 'error');
-            }
-        }
-
         function viewPendingOrRejected() {
             const u = window.state.userData || {};
             
@@ -1042,8 +1017,7 @@
                     if(data.status === 'approved' && window.state.currentView === 'pending') {
                         showToast('🎉 人工審核通過！請綁定您的 Telegram 帳號', 'success');
                         setTimeout(() => navigate('telegram'), 1500);
-                    } else if (data.status === 'rejected' && window.state.currentView === 'pending' && (!u.rejectionReason)) {
-                        // 狀態變更為退件時重新刷新畫面
+                    } else if (data.status === 'rejected' && window.state.currentView === 'pending') {
                         renderView();
                     }
                 }
@@ -1210,7 +1184,6 @@
 
             if (activeTab === 'feed') {
                 tabContentHtml = `
-                    <!-- 搜尋列固定在頂部 -->
                     <div class="p-3 bg-[#05050a] border-b border-slate-900 sticky top-0 md:top-0 z-20 space-y-3">
                         <div class="relative">
                             <input type="text" id="search-input" oninput="handleSearchInput(this.value)" value="${window.state.searchTerm || ''}" placeholder="搜尋貼文、標籤、作者或帳號..." class="w-full bg-slate-900/80 border border-slate-800 rounded-2xl pl-11 pr-4 py-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition shadow-inner">
@@ -1553,8 +1526,17 @@
                     return likesB - likesA;
                 });
             } else {
-                // 標籤篩選
-                filteredPosts = filteredPosts.filter(p => p.tags && p.tags.includes(activeFilter));
+                // 🏷️ 標籤篩選優化（多關鍵字複合匹配）
+                filteredPosts = filteredPosts.filter(p => {
+                    if (!p.tags) return false;
+                    return p.tags.some(t => {
+                        const cleanT = t.toLowerCase().trim();
+                        const cleanFilter = activeFilter.toLowerCase().trim();
+                        // 針對複合標籤拆分如 "自我管理｜健身/健美" -> "自我管理", "健身/健美" 並與貼文中的標籤雙向匹配
+                        const parts = cleanFilter.split(/[｜/]/);
+                        return parts.some(part => cleanT.includes(part.trim()) || part.trim().includes(cleanT));
+                    });
+                });
             }
 
             const visiblePosts = filteredPosts.slice(0, window.state.visiblePostsCount);
@@ -1606,6 +1588,7 @@
                         </div>
                         
                         <div class="w-full bg-slate-950 relative group overflow-hidden select-none">
+                            <!-- 浮水印保護 -->
                             <div class="absolute inset-0 pointer-events-none select-none overflow-hidden opacity-[0.12] z-10 flex flex-wrap justify-center items-center gap-12 p-4 rotate-[-25deg]">
                                 ${Array(20).fill(`<span class="text-[10px] text-white font-extrabold tracking-widest whitespace-nowrap">SecretRoom @${window.state.userData.nickname || window.state.userId}</span>`).join('')}
                             </div>
