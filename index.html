@@ -2000,6 +2000,40 @@
             showToast('您已成功安全登出本裝置！', 'info');
         }
 
+        // 提示訊息全域元件 (Toast) 實作
+        window.showToast = function(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            
+            const toast = document.createElement('div');
+            const bgColors = {
+                error: 'bg-red-500/95 border-red-400',
+                success: 'bg-emerald-500/95 border-emerald-400',
+                info: 'bg-indigo-600/95 border-indigo-500/40' // 配合 SecretRoom 亮紫色專屬漸層
+            };
+            
+            toast.className = `${bgColors[type] || bgColors.info} text-white px-5 py-3.5 rounded-2xl shadow-lg border border-white/5 text-xs font-semibold transition-all duration-300 opacity-0 transform -translate-y-4 backdrop-blur-xl flex items-center gap-3`;
+            
+            const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+            toast.innerHTML = `<i class="fa-solid ${icon} text-sm"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            // 強制瀏覽器渲染以流暢套用動畫
+            requestAnimationFrame(() => {
+                toast.classList.remove('opacity-0', '-translate-y-4');
+            });
+            
+            // 3 秒後自動淡出銷毀
+            setTimeout(() => {
+                toast.classList.add('opacity-0', '-translate-y-4');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        };
+        
+        // 定義區域變數以確保模組（Module Scope）內部直接調用無礙
+        const showToast = window.showToast;
+
         // 啟動 App
         initApp();
     </script>
