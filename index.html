@@ -64,7 +64,7 @@
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* 防盜圖進階 CSS 鎖定 */
+        /* 版權保護鎖定 */
         img {
             -webkit-touch-callout: none !important;
             -webkit-user-select: none !important;
@@ -81,7 +81,7 @@
         <!-- 安全載入加載圖層 -->
         <div id="loading-screen" class="absolute inset-0 z-50 bg-[#05050a] flex flex-col items-center justify-center">
             <div class="w-14 h-14 border-4 border-slate-800 border-t-indigo-500 rounded-full animate-spin mb-4"></div>
-            <p class="text-slate-400 font-medium tracking-widest text-xs">安全連線中...</p>
+            <p class="text-slate-400 font-medium tracking-widest text-xs">正在與加密伺服器建立私密通道...</p>
         </div>
     </div>
 
@@ -154,7 +154,7 @@
 
                 return true;
             } catch (e) {
-                console.error("無法從 CDN 載入 Firebase SDK", e);
+                console.error("無法與私密伺服器取得加密連線", e);
                 return false;
             }
         }
@@ -182,6 +182,7 @@
                 nickname: '', birthYear: '', birthMonth: '', birthDay: '',
                 height: '', weight: '', length: '', girth: '', kinks: [], email: '', avatar: ''
             },
+            // 精選 10 大男同志主題標籤
             kinksOptions: [
                 "性愛偏好｜角色定位", "BDSM｜繩縛", "制服愛好｜皮革/膠衣", "心理角色｜Daddy/Boy", "自我管理｜健身/健美", 
                 "友善社交｜約會/派對", "體型美學｜壯碩/熊系", "特殊癖好｜穿戴玩物", "旅遊休閒｜友善旅遊", "數位社交｜交友軟體"
@@ -215,11 +216,11 @@
                         }
                     });
                 } catch (error) {
-                    console.error("Firebase 初始化錯誤:", error);
-                    showToast('資料庫連接異常，請確認設定檔。', 'error');
+                    console.error("資料庫連線超時:", error);
+                    showToast('伺服器安全連線異常，請稍後重試。', 'error');
                 }
             } else {
-                showToast('無法與伺服器建立安全連線', 'error');
+                showToast('無法建立高安全通訊協定', 'error');
             }
         }
 
@@ -284,7 +285,6 @@
             appContainer.innerHTML = '';
 
             const transitionContainer = document.createElement('div');
-            // 解鎖註冊頁面捲動自由
             if (view === 'register') {
                 transitionContainer.className = 'w-full h-full overflow-y-auto scrollbar-hide fade-enter-active';
             } else {
@@ -387,7 +387,7 @@
                 }
 
                 if (!db) {
-                    showToast('資料庫未連線，無法登入。', 'error');
+                    showToast('資料庫連線中，請稍候。', 'error');
                     return;
                 }
 
@@ -404,7 +404,7 @@
                             localStorage.setItem('sr_username', usernameInput);
                             
                             modal.remove();
-                            showToast('驗證成功！正在導入...', 'success');
+                            showToast('登入成功！正在載入主控台...', 'success');
 
                             if (data.status === 'pending') navigate('pending');
                             else if (data.status === 'rejected') navigate('rejected');
@@ -413,14 +413,14 @@
                                 else navigate('dashboard');
                             }
                         } else {
-                            showToast('帳號或密碼有誤，請再試一次。', 'error');
+                            showToast('密碼不正確，請重新檢查。', 'error');
                         }
                     } else {
-                        showToast('找不到該帳號，請確認帳號是否輸入正確。', 'error');
+                        showToast('該帳號未在本機或伺服器中完成申請。', 'error');
                     }
                 } catch (err) {
-                    console.error("登入出錯:", err);
-                    showToast('登入程序異常', 'error');
+                    console.error("登入驗證錯誤:", err);
+                    showToast('驗證程序異常', 'error');
                 } finally {
                     hideLoading();
                 }
@@ -440,7 +440,7 @@
                         
                         <div class="text-center mt-6 mb-8">
                             <h2 class="text-xl font-bold text-white tracking-wide">建立 SecretRoom 申請</h2>
-                            <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">請詳細填寫以下必要欄位。男同志私密生活社群落實 100% 人工實名真誠審查制度。</p>
+                            <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">請詳細填寫以下必要欄位。男同志私密生活社群落實人工審核驗證制度。</p>
                         </div>
 
                         <form id="apply-form" class="space-y-5" onsubmit="return false;">
@@ -527,11 +527,10 @@
                                 </div>
                             </div>
 
-                            <!-- 個人狀態 (一個區塊且有兩行) 身高、體重 勃起長度 (cm)、勃起粗度圍 (cm) -->
+                            <!-- 個人狀態 (雙行排版) -->
                             <div class="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl space-y-4">
                                 <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block"><i class="fa-solid fa-user-check"></i> 個人狀態</span>
                                 
-                                <!-- 第一行：身高、體重 -->
                                 <div class="grid grid-cols-2 gap-3">
                                     <div>
                                         <label class="block text-[9px] font-bold text-slate-500 mb-1">身高 (cm)</label>
@@ -543,7 +542,6 @@
                                     </div>
                                 </div>
                                 
-                                <!-- 第二行：長度、粗度 -->
                                 <div class="grid grid-cols-2 gap-3">
                                     <div>
                                         <label class="block text-[9px] font-bold text-slate-500 mb-1">勃起長度 (cm)</label>
@@ -556,7 +554,7 @@
                                 </div>
                             </div>
 
-                            <!-- 感興趣的主題與性癖偏好 (5列2行完全展開，無補充輸入框) -->
+                            <!-- 5列2行完全展開標籤清單 -->
                             <div class="space-y-2">
                                 <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider"><span class="text-red-500">*</span> 感興趣的主題與性癖偏好 (至少勾選一項)</label>
                                 <span class="text-[9px] text-slate-500 block mb-2 leading-relaxed">這些設定在您被審核啟用後，能方便其他兄弟快速找到您的主打標籤。</span>
@@ -580,7 +578,6 @@
                 </div>
             `;
 
-            // 初始化出生年月日下拉選單
             const yearSelect = document.getElementById('reg-year');
             const monthSelect = document.getElementById('reg-month');
             const daySelect = document.getElementById('reg-day');
@@ -596,7 +593,6 @@
                 daySelect.options.add(new Option(`${d} 日`, d));
             }
 
-            // 本機大頭照選取預覽
             const avatarTrigger = document.getElementById('avatar-trigger');
             const fileInput = document.getElementById('register-avatar-file');
             const previewImg = document.getElementById('avatar-preview');
@@ -633,7 +629,6 @@
                     return;
                 }
 
-                // 隨機產生 6 位數密鑰驗證碼
                 const generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
                 window.state.emailVerificationCode = generatedCode;
 
@@ -661,7 +656,6 @@
                     showToast(`[模擬發送] 驗證碼為：${generatedCode}`, 'info');
                 }
 
-                // 按鈕 60 秒冷卻倒數
                 let countdown = 60;
                 const timer = setInterval(() => {
                     countdown--;
@@ -685,7 +679,6 @@
                     window.state.emailVerified = true;
                     showToast('電子郵件驗證成功！', 'success');
                     
-                    // 鎖死輸入防止任意篡改
                     emailInput.disabled = true;
                     codeInput.disabled = true;
                     btnSendCode.disabled = true;
@@ -697,7 +690,6 @@
                 }
             };
 
-            // 密碼即時強度偵測條件回饋
             const pwdInput = document.getElementById('reg-password');
             const ruleLen = document.getElementById('pwd-rule-len');
             const ruleUpper = document.getElementById('pwd-rule-upper');
@@ -731,7 +723,6 @@
                 }
             };
 
-            // 註冊表單驗證與提交
             document.getElementById('apply-form').onsubmit = async (e) => {
                 e.preventDefault();
 
@@ -754,7 +745,6 @@
                     selectedKinks.push(cb.value);
                 });
 
-                // 安全驗證
                 if (username !== usernameConfirm) {
                     showToast('兩次輸入的帳號不一致！', 'error');
                     return;
@@ -764,7 +754,6 @@
                     return;
                 }
 
-                // 密碼強度規則校驗
                 const isLenMet = password.length >= 8;
                 const isUpperMet = /[A-Z]/.test(password);
                 const isSpecMet = /[!@#$%^&*(),.?":{}|<>]/.test(password);
@@ -774,7 +763,7 @@
                 }
 
                 if (!base64Avatar) {
-                    showToast('請務必上傳個人頭像供官方審核！', 'error');
+                    showToast('請上傳個人頭像供管理團隊審查。', 'error');
                     return;
                 }
 
@@ -789,7 +778,7 @@
                 }
 
                 if (!db) {
-                    showToast('系統資料庫異常，暫時無法寫入。', 'error');
+                    showToast('伺服器連線超時，暫時無法提交。', 'error');
                     return;
                 }
 
@@ -827,7 +816,7 @@
                     window.state.applicationId = username;
                     localStorage.setItem('sr_username', username);
 
-                    showToast('申請資料提交成功！官方將於24小時內完成人工查核。', 'success');
+                    showToast('申請資料提交成功！審核結果將發送至您的信箱。', 'success');
                     navigate('pending');
                 } catch (err) {
                     console.error("資料寫入錯誤:", err);
@@ -1123,7 +1112,7 @@
                             <div class="flex flex-wrap gap-2">
                                 ${window.state.kinksOptions.slice(0, 6).map((k) => `
                                     <button onclick="setGlobalFilter('${k}')" class="text-[10px] font-bold bg-slate-950/40 hover:bg-indigo-600/10 hover:text-indigo-400 border border-slate-850 hover:border-indigo-500/20 px-2.5 py-1.5 rounded-full text-slate-500 transition duration-300">
-                                        # ${k.split('｜')[1] || k}
+                                        # ${k}
                                     </button>
                                 `).join('')}
                             </div>
@@ -1163,7 +1152,7 @@
                 localStorage.removeItem('sr_username');
                 window.state.userData = {};
                 window.state.applicationId = null;
-                showToast('已安全登出 SecretRoom。', 'info');
+                showToast('已安全退出 SecretRoom。', 'info');
                 navigate('landing');
             };
 
@@ -1260,26 +1249,27 @@
                     <div id="search-users-container" class="absolute left-0 right-0 top-14 bg-slate-900 border border-slate-800 rounded-3xl p-3 shadow-2xl hidden flex flex-col gap-2 max-h-60 overflow-y-auto z-50 backdrop-blur-xl"></div>
                 </div>
 
+                <!-- 快速篩選器：移除了所有的 Emoji 標籤圖示 -->
                 <div class="flex items-center gap-2 overflow-x-auto scrollbar-hide py-1">
                     <button onclick="setGlobalFilter('recommended')" id="filter-btn-recommended" class="shrink-0 text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'recommended' ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-950/30' : 'bg-slate-900/50 text-slate-400 border-slate-850 hover:bg-slate-800'}">
-                        💡 智慧推薦
+                        <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>智慧推薦
                     </button>
                     <button onclick="setGlobalFilter('highly-rated')" id="filter-btn-highly-rated" class="shrink-0 text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'highly-rated' ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-950/30' : 'bg-slate-900/50 text-slate-400 border-slate-850 hover:bg-slate-800'}">
-                        ⭐ 天菜評分
+                        <i class="fa-solid fa-star mr-1.5"></i>天菜評分
                     </button>
                     <button onclick="setGlobalFilter('popular')" id="filter-btn-popular" class="shrink-0 text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'popular' ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-950/30' : 'bg-slate-900/50 text-slate-400 border-slate-850 hover:bg-slate-800'}">
-                        🔥 人氣按讚
+                        <i class="fa-solid fa-fire-flame-curved mr-1.5"></i>人氣按讚
                     </button>
                     <button onclick="setGlobalFilter('elite-ranking')" id="filter-btn-elite-ranking" class="shrink-0 text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'elite-ranking' ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-950/30' : 'bg-slate-900/50 text-slate-400 border-slate-850 hover:bg-slate-800'}">
-                        🏆 天菜排名
+                        <i class="fa-solid fa-trophy mr-1.5"></i>天菜排名
                     </button>
                 </div>
 
                 <div id="ranking-sub-tabs" class="hidden flex items-center gap-2 overflow-x-auto scrollbar-hide py-1.5 border-t border-b border-slate-900/40">
-                    <span class="shrink-0 text-[9px] font-bold text-indigo-400 uppercase tracking-widest mr-1">排名主題:</span>
+                    <span class="shrink-0 text-[9px] font-bold text-indigo-400 uppercase tracking-widest mr-1">排名分類:</span>
                     ${window.state.kinksOptions.map((k) => `
                         <button onclick="setRankingTag('${k}')" class="sub-rank-btn shrink-0 text-[10px] font-bold px-3 py-1.5 rounded-full border border-slate-850 transition duration-300 ${window.state.currentRankTag === k ? 'bg-violet-600/10 text-violet-400 border-violet-500/30' : 'bg-slate-950/30 text-slate-500'}" data-tag="${k}">
-                            # ${k.split('｜')[1] || k}
+                            # ${k}
                         </button>
                     `).join('')}
                 </div>
@@ -1287,7 +1277,7 @@
                 <div class="space-y-4" id="feed-posts-list">
                     <div class="text-center py-12 text-slate-500 flex flex-col items-center gap-2">
                         <i class="fa-solid fa-circle-notch animate-spin text-xl text-indigo-500"></i>
-                        <span>安全防護載入中...</span>
+                        <span>正在與私密伺服器建立安全通道...</span>
                     </div>
                 </div>
             `;
@@ -1406,7 +1396,7 @@
                     post.text.toLowerCase().includes(term) || 
                     post.authorName.toLowerCase().includes(term) ||
                     post.userId.includes(term) ||
-                    (post.kinks && post.kinks.some(k => k.includes(term)))
+                    (post.kinks && post.kinks.some(k => k.toLowerCase().includes(term)))
                 );
             }
 
@@ -1427,8 +1417,7 @@
                 if (targetTag) {
                     list = list.filter(post => {
                         if (!post.kinks) return false;
-                        const tagWords = targetTag.replace('｜', '/').split('/');
-                        return post.kinks.some(pk => tagWords.some(tw => pk.includes(tw) || tw.includes(pk)));
+                        return post.kinks.some(pk => pk === targetTag);
                     });
                 }
 
@@ -1443,8 +1432,7 @@
             } else if (f !== 'recommended' && f) {
                 list = list.filter(post => {
                     if (!post.kinks) return false;
-                    const words = f.replace('｜', '/').split('/');
-                    return post.kinks.some(pk => words.some(w => pk.includes(w) || w.includes(pk)));
+                    return post.kinks.some(pk => pk === f);
                 });
             }
 
@@ -1504,7 +1492,6 @@
                 const userLiked = post.likes && post.likes[window.state.applicationId];
                 const commentCount = post.comments ? Object.keys(post.comments).length : 0;
 
-                // NSFW Image Blurring rendering
                 let imageHtml = '';
                 if (post.image) {
                     const isNSFW = post.isSensitive;
@@ -1545,6 +1532,26 @@
                     `;
                 }
 
+                // 茄子與水蜜桃按讚重構：完美採用響應式向量 SVG 碼
+                const peachEggplantHtml = userLiked ? `
+                    <button onclick="toggleLikePost('${post.id}')" class="flex items-center gap-1.5 text-purple-400 font-semibold transition duration-300">
+                        <svg class="w-5 h-5 text-purple-400 fill-current animate-pulse" viewBox="0 0 64 64" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 48C12 40 18 20 38 12C54 6 58 18 54 30C50 42 32 54 16 48Z" />
+                            <path d="M34 16C32 10 26 12 28 16C30 20 36 16 36 16Z" fill="#10b981" stroke="#10b981" />
+                        </svg>
+                        <span>${post.likeCount || 0} 個讚</span>
+                    </button>
+                ` : `
+                    <button onclick="toggleLikePost('${post.id}')" class="flex items-center gap-1.5 text-slate-500 hover:text-rose-400 transition duration-300">
+                        <svg class="w-5 h-5 text-rose-300 fill-none transition-all" viewBox="0 0 64 64" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M32 54C18 54 10 44 10 30C10 16 18 8 32 8C46 8 54 16 54 30C54 44 46 54 32 54Z" />
+                            <path d="M32 8C32 18 38 30 32 54" />
+                            <path d="M32 8C28 2 20 4 22 10C24 16 32 8 32 8Z" fill="#10b981" stroke="#10b981" />
+                        </svg>
+                        <span>${post.likeCount || 0} 個讚</span>
+                    </button>
+                `;
+
                 card.innerHTML = `
                     ${rankingCrownHtml}
                     <div class="flex items-center justify-between">
@@ -1565,20 +1572,18 @@
 
                     ${imageHtml}
 
+                    <!-- 展示完整的標籤文字 -->
                     ${post.kinks && post.kinks.length > 0 ? `
                         <div class="flex flex-wrap gap-1.5">
                             ${post.kinks.map(k => `
-                                <span class="text-[10px] font-semibold text-indigo-400/80 bg-indigo-500/5 px-2.5 py-1 rounded-full border border-indigo-500/5"># ${k.split('｜')[1] || k}</span>
+                                <span class="text-[10px] font-semibold text-indigo-400/80 bg-indigo-500/5 px-2.5 py-1 rounded-full border border-indigo-500/5"># ${k}</span>
                             `).join('')}
                         </div>
                     ` : ''}
 
                     <div class="pt-2.5 border-t border-slate-900 flex items-center justify-between text-slate-500 text-[10.5px]">
                         
-                        <button onclick="toggleLikePost('${post.id}')" class="flex items-center gap-1.5 hover:text-rose-500 transition ${userLiked ? 'text-rose-500 font-semibold' : ''}">
-                            <i class="${userLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart'}"></i>
-                            <span>${post.likeCount || 0} 個讚</span>
-                        </button>
+                        ${peachEggplantHtml}
 
                         <button onclick="toggleCommentsSection('${post.id}')" class="flex items-center gap-1.5 hover:text-indigo-400 transition">
                             <i class="fa-regular fa-comments"></i>
@@ -1650,7 +1655,8 @@
                 addVisitorRecord(profileUserId);
             }
 
-            const kinksStr = profileUser.kinks && profileUser.kinks.length > 0 ? profileUser.kinks.map(k=>`# ${k.split('｜')[1] || k}`).join(', ') : '無選定標籤';
+            // 展示完整的主題文字
+            const kinksStr = profileUser.kinks && profileUser.kinks.length > 0 ? profileUser.kinks.map(k=>`# ${k}`).join(', ') : '無選定標籤';
 
             let specApplyBtnHtml = '';
             const specLength = parseFloat(profileUser.length || 0);
@@ -1694,7 +1700,6 @@
                 `;
             }
 
-            // 修改個人資料頁排版：移動徽章至頭像與名稱下方
             container.innerHTML = `
                 <div class="bg-slate-900/40 border border-slate-900/80 rounded-3xl p-6 relative flex flex-col items-center text-center space-y-4">
                     
@@ -1714,8 +1719,8 @@
                         </h2>
                         <span class="text-xs text-slate-500 block font-mono">@${profileUserId}</span>
                         
-                        <!-- 電腦版與行動版通用的徽章：完美放置於顯示帳號名稱的底下 -->
-                        <div class="flex items-center justify-center gap-1.5 mt-2 flex-wrap">
+                        <!-- 膠囊微光徽章：放大 200%（isBig 啟用 w-11 h-11 且移除了 Hover Tooltip） -->
+                        <div class="flex items-center justify-center gap-2 mt-3.5 flex-wrap">
                             ${getBadgeHTML(profileUser, true)}
                         </div>
                     </div>
@@ -1725,7 +1730,7 @@
                         <div><span class="text-slate-500 font-medium">身體密碼:</span> <span class="text-slate-300 font-semibold">長 ${profileUser.length} cm / 粗 ${profileUser.girth} cm</span></div>
                         <div class="col-span-2 pt-2 border-t border-slate-900/60 mt-1.5">
                             <span class="text-slate-500 font-medium">感興趣主題:</span>
-                            <p class="text-slate-300 font-light mt-1 text-[11px] leading-relaxed">${kinksStr}</p>
+                            <p class="text-slate-300 font-light mt-1 text-[11px] leading-relaxed font-semibold">${kinksStr}</p>
                         </div>
                     </div>
 
@@ -1764,7 +1769,7 @@
                     timestamp: serverTimestamp()
                 });
             } catch (err) {
-                console.error("訪客紀錄寫入失敗:", err);
+                console.error("訪客紀錄同步異常:", err);
             }
         }
 
@@ -1843,7 +1848,7 @@
             try {
                 const postRef = doc(db, 'secretg_apps', appId, 'posts', postId);
                 await updateDoc(postRef, { ratings: ratings });
-                showToast(`您給予了 ${ratingValue} 星天菜好評！`, 'success');
+                showToast(`您給予了 ${ratingValue} 星好評！`, 'success');
             } catch (err) {
                 console.error("評分同步出錯:", err);
             }
@@ -1942,7 +1947,7 @@
                                     </div>
                                 </div>
                                 <input type="file" id="share-file" accept="image/*" class="hidden">
-                                <span class="text-[9px] text-slate-500 mt-2 block">系統將直接在前端安全烘焙「僅限SecretRoom」浮水印。</span>
+                                <span class="text-[9px] text-slate-500 mt-2 block">上傳照片將自動壓製防偽浮水印。</span>
                             </div>
                         </div>
 
@@ -2132,7 +2137,7 @@
                             </div>
                         </div>
 
-                        <!-- 調整為與註冊介面一致的5列2行 -->
+                        <!-- 調整為 5列 2行 的標籤排版 -->
                         <div>
                             <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">興趣與性癖主題標籤</label>
                             <div class="grid grid-cols-2 gap-2 bg-slate-950/40 p-3.5 border border-slate-850 rounded-2xl">
@@ -2216,7 +2221,7 @@
                     window.state.userData.kinks = selectedKinks;
 
                     modal.remove();
-                    showToast('修改成功！暱稱已即時更新同步。', 'success');
+                    showToast('修改成功！資料已同步更新。', 'success');
                     
                     renderDashboard(appContainer);
                 } catch (err) {
@@ -2335,7 +2340,7 @@
                     window.state.userData.specImage = bakedSpecBase64;
 
                     modal.remove();
-                    showToast('照片防盜烘焙浮水印已送審！官方將於 24 小時內查核。', 'success');
+                    showToast('驗證照片已加上防偽浮水印並送交管理團隊審查！', 'success');
                     
                     renderDashboard(appContainer);
                 } catch (err) {
@@ -2435,9 +2440,9 @@
                 badges.push({ icon: 'fa-heart-circle-check', color: 'from-pink-500 to-rose-600 text-white shadow-pink-500/15', desc: '暖男紳士' });
             }
 
-            // 依指示：所有徽章僅保留圖示（Icon Only），並使用 title 屬性作為懸停說明，不再出現任何徽章文字
+            // 依指示：所有徽章僅保留圖示，在個人頁面放大200%（isBig時為w-11 h-11），且徹底取消 hover title 懸停提示說明
             return badges.map(b => `
-                <span title="${b.desc}" class="inline-flex items-center justify-center ${isBig ? 'w-5.5 h-5.5 text-[10px]' : 'w-4 h-4 text-[8px]'} rounded-full bg-gradient-to-r ${b.color} shadow-sm select-none cursor-help">
+                <span class="inline-flex items-center justify-center ${isBig ? 'w-11 h-11 text-base' : 'w-5.5 h-5.5 text-[10px]'} rounded-full bg-gradient-to-r ${b.color} shadow-sm select-none">
                     <i class="fa-solid ${b.icon}"></i>
                 </span>
             `).join('');
@@ -2475,7 +2480,6 @@
             }, 3000);
         };
 
-        // 核心修正：將模組作用域中的函式掛載至全域 window，確保 HTML inline onclick 可以完美執行
         window.showEditProfileModal = showEditProfileModal;
         window.showSpecApplyModal = showSpecApplyModal;
 
