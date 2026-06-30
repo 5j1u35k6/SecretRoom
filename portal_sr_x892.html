@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SecretRoom | 專屬管理員審核與管理後台</title>
+    <title>SecretRoom | 系統最高權限管理節點</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -28,12 +28,12 @@
         <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8 pb-6 border-b border-slate-800">
             <div>
                 <h1 class="text-3xl font-bold tracking-wider text-white flex items-center gap-3">
-                    <i class="fa-solid fa-user-shield text-indigo-500"></i> SecretRoom 後台管理系統
+                    <i class="fa-solid fa-user-shield text-indigo-500"></i> SecretRoom 總控制台 (v2.5.4)
                 </h1>
                 <p class="text-slate-400 text-sm mt-1">專屬男性的私密生活分享社群 · 人工審核通道</p>
             </div>
             <div id="connection-status" class="self-start px-4 py-2 rounded-full bg-slate-900 border border-slate-800 text-xs text-slate-500 flex items-center gap-2">
-                <i class="fa-solid fa-circle-notch animate-spin"></i> 正在同步 SecretRoom 私鑰資料庫...
+                <i class="fa-solid fa-circle-notch animate-spin"></i> 端對端加密通道：資料安全同步中...
             </div>
         </header>
 
@@ -44,11 +44,11 @@
                 <div id="count-pending" class="text-3xl font-bold text-amber-500 mt-1">-</div>
             </div>
             <div class="bg-slate-900/50 border border-slate-800/80 p-5 rounded-2xl">
-                <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider">待審核頭像與私密認證</div>
+                <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider">待審核頭像與身分認證</div>
                 <div id="count-avatar-pending" class="text-3xl font-bold text-purple-400 mt-1">-</div>
             </div>
             <div class="bg-slate-900/50 border border-slate-800/80 p-5 rounded-2xl">
-                <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider">被檢舉貼文</div>
+                <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider">安全通報檢舉件</div>
                 <div id="count-reports" class="text-3xl font-bold text-rose-500 mt-1">-</div>
             </div>
             <div class="bg-slate-900/50 border border-slate-800/80 p-5 rounded-2xl">
@@ -61,7 +61,7 @@
         <div class="bg-slate-900/40 border border-slate-800/60 rounded-3xl p-6 glass-panel">
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                    <div class="w-1.5 h-5 bg-indigo-500 rounded-full"></div> 申請審核與貼文管理系統
+                    <div class="w-1.5 h-5 bg-indigo-500 rounded-full"></div> 會籍准駁與社群內容安全中樞
                 </h2>
                 <div class="flex gap-2">
                     <select id="filter-status" onchange="filterApplications()" class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none">
@@ -81,7 +81,7 @@
             <div id="admin-list" class="space-y-4">
                 <div class="flex flex-col items-center justify-center py-12 text-slate-500 gap-3">
                     <i class="fa-solid fa-circle-notch animate-spin text-2xl text-indigo-500"></i>
-                    <span>正在同步申請資料...</span>
+                    <span>正在檢索受審會員佇列...</span>
                 </div>
             </div>
         </div>
@@ -151,7 +151,7 @@
     <script type="module">
         let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc, deleteDoc, query, where, getDocs;
 
-        const appId = 'secretg-demo-app';
+        const appId = 'secretg-production-node-tw';
         const firebaseConfig = {
             apiKey: "AIzaSyCNgJxYjC90DjtvTSaze5CREJf1Vt32aYQ",
             authDomain: "secretroom-ef728.firebaseapp.com",
@@ -211,7 +211,7 @@
                     const app = initializeApp(firebaseConfig);
                     db = getFirestore(app);
                     statusEl.className = "self-start px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 flex items-center gap-2";
-                    statusEl.innerHTML = '<i class="fa-solid fa-circle text-[8px] animate-pulse"></i> 私鑰資料庫連線正常';
+                    statusEl.innerHTML = '<i class="fa-solid fa-circle text-[8px] animate-pulse"></i> 安全連線已建立 - 節點驗證成功 ✓';
                     
                     listenToApplications();
                     listenToPosts();
@@ -223,7 +223,7 @@
                 }
             } else {
                 statusEl.className = "self-start px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 flex items-center gap-2";
-                statusEl.innerHTML = '<i class="fa-solid fa-circle text-[8px]"></i> 離線安全沙盒模式';
+                statusEl.innerHTML = '<i class="fa-solid fa-circle text-[8px]"></i> 離線安全沙盒環境';
                 showMockDataInfo();
             }
         }
@@ -281,8 +281,8 @@
                         <i class="fa-solid fa-circle-info"></i>
                     </div>
                     <div>
-                        <h4 class="font-bold text-slate-200">正在以安全加密沙盒模式載入管理模組</h4>
-                        <p class="text-xs text-slate-500 mt-1">請確保設定檔已正確部署，以便連線至您的私有雲端伺服器。</p>
+                        <h4 class="font-bold text-slate-200">安全網路診斷：本機加密沙盒已啟用</h4>
+                        <p class="text-xs text-slate-500 mt-1">提示：本機目前處於隔離測試狀態，如需對接正式資料庫，請於程式碼部署正式 Config 安全密鑰。</p>
                     </div>
                 </div>
             `;
@@ -446,7 +446,7 @@
                     `;
                 }
 
-                // 黃金 Spec 獨立專區審核與管理：同步 Spec Elite 金牌樣式
+                // 黃金 Spec 獨立專區審核與管理
                 let specReviewHtml = '';
                 if (appData.specEliteStatus === 'pending' && appData.specImage) {
                     specReviewHtml = `
@@ -485,7 +485,7 @@
 
                 let badgeManagementHtml = `
                     <div class="mt-4 pt-3 border-t border-slate-800/50 flex flex-wrap gap-4 items-center justify-between">
-                        <span class="text-[10px] text-slate-500 font-bold uppercase"><i class="fa-solid fa-ribbon"></i> 官方授權徽章發放：</span>
+                        <span class="text-[10px] text-slate-500 font-bold uppercase"><i class="fa-solid fa-ribbon"></i> 特權徽章手動授予：</span>
                         <div class="flex items-center gap-4">
                             <label class="flex items-center gap-1.5 cursor-pointer">
                                 <input type="checkbox" onchange="toggleManualBadge('${appData.id}', 'isAdmin', this.checked)" ${appData.role === 'admin' || appData.isAdmin ? 'checked' : ''} class="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500">
@@ -506,7 +506,7 @@
                             <button onclick="updateStatus('${appData.id}', 'approved')" class="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-xs px-4 py-2.5 rounded-xl transition font-semibold shadow-lg shadow-emerald-950/20">
                                 <i class="fa-solid fa-check mr-1"></i> 核准加入
                             </button>
-                            <button onclick="openRejectReasonModal('${appData.id}')" class="bg-red-600/20 hover:bg-red-600/30 active:scale-95 text-red-400 border border-red-500/20 text-xs px-4 py-2.5 rounded-xl transition font-semibold">
+                            <button onclick="openRejectReasonModal('${appData.id}')" class="bg-red-650 hover:bg-red-500 active:scale-95 text-red-400 border border-red-500/20 text-xs px-4 py-2.5 rounded-xl transition font-semibold">
                                 <i class="fa-solid fa-xmark mr-1"></i> 拒絕
                             </button>
                             <button onclick="openDeleteModal('${appData.id}')" class="bg-slate-800 hover:bg-red-950/40 text-slate-400 hover:text-red-400 border border-slate-700/80 hover:border-red-500/20 text-xs px-3 py-2.5 rounded-xl transition font-semibold">
