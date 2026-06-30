@@ -644,57 +644,85 @@
 
         async function updateStatusWithReason(userId, status, reason) {
             if (!db) {
-                showToast("加密模式下無法寫入資料", "error");
+                showToast("目前處於本機加密沙盒，無法儲存狀態", "error");
                 return;
             }
 
             try {
                 const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
                 const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    const userData = docSnap.data();
-                    await updateDoc(docRef, { 
-                        status: status,
-                        rejectionReason: reason 
-                    });
-                    showToast('已更新狀態為 [已拒絕]', 'success');
-                    
-                    const rejectMessage = `很抱歉，您的加入申請未通過審核。感謝您的關注。\n\n【拒絕原因說明】：\n${reason}\n\n若您已修正上述不符之內容，歡迎重整並再次提交審核申請。`;
-                    sendEmailNotification(userData, status, "申請審核退回通知", rejectMessage);
+                
+                if (!docSnap.exists()) {
+                    showToast("找不到該筆申請資料", "error");
+                    return;
                 }
-            } catch (err) {
-                console.error("拒絕狀態更新出錯:", err);
-                showToast("操作失敗", "error");
-            }
-        }
-
-        window.deleteSinglePost = async function(postId) {
-            if (!db) return;
-            try {
-                const postDocRef = doc(db, 'secretg_apps', appId, 'posts', postId);
-                await deleteDoc(postDocRef);
-                showToast("違規貼文已成功從資料庫下架銷毀！", "success");
-            } catch (err) {
-                console.error("貼文刪除出錯:", err);
-                showToast("下架失敗", "error");
-            }
-        }
-
-        window.dismissReports = async function(postId) {
-            if (!db) return;
-            try {
-                const postDocRef = doc(db, 'secretg_apps', appId, 'posts', postId);
-                await updateDoc(postDocRef, {
-                    reports: [],
-                    reportCount: 0
+                
+                const userData = docSnap.data();
+                await updateDoc(docRef, { 
+                    status: status,
+                    rejectionReason: reason 
                 });
-                showToast("已成功駁回檢舉，該貼文已恢復正常安全狀態！", "success");
-            } catch (err) {
-                console.error("駁回檢舉出錯:", err);
-                showToast("駁回失敗，請重試", "error");
+                showToast('已退回會籍申請', 'success');
+                
+                sendEmailNotification(userData, status, "會籍申請退回通知", `很抱歉，您的 SecretRoom 會籍申請未通過審核。退件理由：${reason}`);
+            } catch (e) {
+                console.error("更新狀態失敗:", e);
+                showToast('更新失敗: ' + e.message, 'error');
             }
         }
 
+        async function sendEmailNotification(userData, status, title = "審核通知", customMsg = null) {
+            if (!emailjsConfig.publicKey || emailjsConfig.publicKey === "YOUR_EMAILJS_PUBLIC_KEY") {
+                console.info(`[Email 模擬] 發送郵件給 ${userData.email}`);
+                showToast(`[模擬信件] 已寄送審核通知至 ${userData.email}`, "info");
+                return;
+            }
+
+            const messageText = customMsg || (status === 'approved' 
+                ? `恭喜您！您的 SecretRoom 加入申請已通過審核。\n\n請您點擊下方連結重新進入平台，輸入您的帳號密碼進行登入：\nhttps://5j1u35k6.github.io/SecretRoom/`
+                : `很抱歉，您的加入申請未通過審核。感謝您的關注。`);
+
+            try {
+                await emailjs.send(emailjsConfig.serviceId, emailjsConfig.templateId, {
+                    to_email: userData.email,
+                    to_name: userData.nickname,
+                    status_text: title,
+                    message: messageText
+                });
+                showToast(`真實審核通知信已寄送至 ${userData.email}`, "success");
+            } catch (error) {
+                console.error("Email 發送失敗:", error);
+                showToast("通知信發送失敗，請確認您的 EmailJS 設定", "error");
+            }
+        }
+
+        window.updateStatus = async function(userId, status) {
+            if (!db) {
+                showToast("目前處於本機加密沙盒，無法儲存狀態", "error");
+                return;
+            }
+
+            try {
+                const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+                const docSnap = await getDoc(docRef);
+                
+                if (!docSnap.exists()) {
+                    showToast("找不到該筆申請資料", "error");
+                    return;
+                }
+                
+                const userData = docSnap.data();
+                await updateDoc(docRef, { status: status });
+                showToast('已將狀態更新為 ' + (status === 'approved' ? '已核准' : '已拒絕'), 'success');
+                
+                sendEmailNotification(userData, status);
+            } catch (e) {
+                console.error("更新狀態失敗:", e);
+                showToast('更新失敗: ' + e.message, 'error');
+            }
+        }
+
+        // 審核大頭照：核准
         window.approveAvatarChange = async function(userId) {
             if (!db) return;
             try {
@@ -792,6 +820,33 @@
             } catch (err) {
                 console.error("刪除失敗:", err);
                 showToast("刪除失敗: " + err.message, "error");
+            }
+        }
+
+        window.dismissReports = async function(postId) {
+            if (!db) return;
+            try {
+                const postRef = doc(db, 'secretg_apps', appId, 'posts', postId);
+                await updateDoc(postRef, {
+                    reports: [],
+                    reportCount: 0
+                });
+                showToast("已成功反駁該貼文的所有檢舉！", "success");
+            } catch (err) {
+                console.error("反駁失敗:", err);
+                showToast("操作失敗", "error");
+            }
+        }
+
+        window.deleteSinglePost = async function(postId) {
+            if (!db) return;
+            try {
+                const postRef = doc(db, 'secretg_apps', appId, 'posts', postId);
+                await deleteDoc(postRef);
+                showToast("貼文已成功安全下架銷毀！", "success");
+            } catch (err) {
+                console.error("刪除失敗:", err);
+                showToast("操作失敗", "error");
             }
         }
 
