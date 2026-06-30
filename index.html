@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <link rel="shortcut icon" href="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" type="image/jpeg">
     <link rel="icon" href="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" type="image/jpeg">
     <link rel="apple-touch-icon" href="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2">
@@ -12,56 +12,103 @@
     
     <title>SecretRoom | 俱樂部式男性隱私社群</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;650;750;800&family=Cinzel:wght@600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    
     <style>
-        /* 奢華暗色背景與香檳金主題配對 */
+        /* 奢華曜石暗色與香檳金主題配對 */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #020204;
-            color: #f8fafc;
+            background-color: #030305;
+            color: #f1f5f9;
             overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .font-luxury {
+            font-family: 'Cinzel', serif;
+        }
+
+        /* 隱密會所：奢華黑金牆面背景線條 */
+        .club-groove-bg {
+            background-color: #030305;
+            background-image: linear-gradient(90deg, rgba(212, 175, 55, 0.015) 1px, transparent 1px);
+            background-size: 40px 100%;
         }
         
-        /* 奢華毛玻璃卡片 - 金絲質地 */
+        /* 奢華曜石磨砂卡片 - 金絲質地與微型光澤邊框 */
         .glass-panel {
-            background: rgba(6, 6, 12, 0.94);
-            backdrop-filter: blur(24px);
-            border: 1px solid rgba(217, 119, 6, 0.12);
-            box-shadow: 0 0 30px rgba(139, 92, 246, 0.04);
+            background: rgba(8, 8, 12, 0.97);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(212, 175, 55, 0.16);
+            box-shadow: 0 16px 48px 0 rgba(0, 0, 0, 0.95), 
+                        inset 0 1px 0 0 rgba(255, 255, 255, 0.02),
+                        inset 0 0 20px rgba(212, 175, 55, 0.02);
         }
-        
+
+        /* 頂級極細建築雙線裝飾框 */
+        .architectural-border {
+            border: 1px solid rgba(212, 175, 55, 0.18);
+            outline: 1px solid rgba(212, 175, 55, 0.05);
+            outline-offset: -4px;
+        }
+
+        /* 天鵝絨拉絲金屬材質 (皇家黃金/黃銅) */
+        .brushed-gold {
+            background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 25%, #b38728 50%, #fbf5b7 75%, #aa771c 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 4px 15px rgba(170, 119, 28, 0.25);
+        }
+
+        /* 重磅古銅金屬邊框與發光 */
+        .brass-badge {
+            border: 1px solid rgba(212, 175, 55, 0.35);
+            box-shadow: 0 0 12px rgba(212, 175, 55, 0.12), inset 0 0 8px rgba(212, 175, 55, 0.05);
+        }
+
+        /* 隱密射燈氛圍 (Speakeasy 頂照光源) */
+        .ambient-spotlight {
+            background: radial-gradient(circle at 50% -20%, rgba(212, 175, 55, 0.15) 0%, rgba(3, 3, 5, 0) 65%);
+        }
+
         /* 呼吸黃金光環 */
         @keyframes gentle-breath {
             0%, 100% {
                 transform: scale(1);
-                box-shadow: 0 0 25px rgba(217, 119, 6, 0.25), inset 0 0 15px rgba(217, 119, 6, 0.1);
-                border-color: rgba(217, 119, 6, 0.2);
+                box-shadow: 0 0 40px rgba(212, 175, 55, 0.18), inset 0 0 20px rgba(212, 175, 55, 0.04);
+                border-color: rgba(212, 175, 55, 0.25);
             }
             50% {
-                transform: scale(1.03);
-                box-shadow: 0 0 45px rgba(217, 119, 6, 0.45), inset 0 0 25px rgba(217, 119, 6, 0.15);
-                border-color: rgba(217, 119, 6, 0.45);
+                transform: scale(1.02);
+                box-shadow: 0 0 65px rgba(212, 175, 55, 0.45), inset 0 0 30px rgba(212, 175, 55, 0.15);
+                border-color: rgba(251, 245, 183, 0.55);
             }
         }
         
         .animate-gentle-logo {
-            animation: gentle-breath 4.5s ease-in-out infinite;
+            animation: gentle-breath 4.8s ease-in-out infinite;
             will-change: transform, box-shadow, border-color;
         }
+
+        /* 膠囊徽章呼吸霓虹光效果 */
+        .badge-glow {
+            box-shadow: 0 0 10px var(--tw-shadow-color);
+        }
         
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #1e1b18; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #b45309; }
+        /* 滾動條美化 */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }
+        ::-webkit-scrollbar-thumb { background: #1a1510; border-radius: 10px; border: 1px solid rgba(212, 175, 55, 0.12); }
+        ::-webkit-scrollbar-thumb:hover { background: #b38728; }
         
         .fade-enter { opacity: 0; transform: translateY(8px); }
-        .fade-enter-active { opacity: 1; transform: translateY(0); transition: opacity 300ms ease-out, transform 300ms ease-out; }
+        .fade-enter-active { opacity: 1; transform: translateY(0); transition: opacity 350ms cubic-bezier(0.16, 1, 0.3, 1), transform 350ms cubic-bezier(0.16, 1, 0.3, 1); }
         
+        /* 自訂Select奢華感箭頭 */
         select {
             appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d97706' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23bf953f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat;
             background-position: right 1rem center;
             background-size: 1em;
@@ -70,7 +117,7 @@
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* 純手作版權隱私防護 */
+        /* 純手作版權隱私防護 - 阻擋任何選取、拖拽與長按 */
         img {
             -webkit-touch-callout: none !important;
             -webkit-user-select: none !important;
@@ -78,33 +125,40 @@
             -moz-user-select: none !important;
             -ms-user-select: none !important;
             user-select: none !important;
+            pointer-events: none;
         }
     </style>
 </head>
-<body class="min-h-screen w-full flex flex-col bg-[#020204] p-0 m-0 overflow-hidden">
+<body class="min-h-screen w-full flex flex-col bg-[#030305] p-0 m-0 overflow-hidden select-none club-groove-bg">
 
-    <div id="app" class="w-full h-[100dvh] md:h-screen overflow-hidden relative flex flex-col bg-[#020204] transition-all duration-300">
+    <div id="app" class="w-full h-[100dvh] md:h-screen overflow-hidden relative flex flex-col bg-[#030305] transition-all duration-300">
         <!-- 安全通道載入圖層 -->
-        <div id="loading-screen" class="absolute inset-0 z-50 bg-[#020204] flex flex-col items-center justify-center">
-            <div class="w-14 h-14 border-4 border-slate-900 border-t-amber-500 rounded-full animate-spin mb-4"></div>
-            <p class="text-amber-500/80 font-medium tracking-widest text-xs">正在與伺服器建立通道...</p>
+        <div id="loading-screen" class="absolute inset-0 z-50 bg-[#030305] flex flex-col items-center justify-center">
+            <div class="relative flex items-center justify-center mb-6">
+                <div class="w-20 h-20 border-2 border-amber-500/10 border-t-amber-500 rounded-full animate-spin"></div>
+                <div class="absolute w-12 h-12 rounded-full overflow-hidden bg-black flex items-center justify-center border border-amber-500/20">
+                    <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-full h-full object-cover">
+                </div>
+            </div>
+            <p class="text-amber-500/80 font-bold tracking-[0.2em] text-xs font-luxury uppercase animate-pulse">Establishing Secure Channel...</p>
+            <p class="text-slate-550 text-[10px] mt-2 font-light">正在與 SecretRoom 伺服器建立端對端加密通道...</p>
         </div>
     </div>
 
     <!-- 奢華彈出通知容器 (Toast) -->
-    <div id="toast-container" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col gap-2 w-full max-w-xs px-4"></div>
+    <div id="toast-container" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col gap-2.5 w-full max-w-xs px-4"></div>
 
     <!-- 客製化安全確認彈窗 -->
-    <div id="custom-confirm-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[101] flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-950 border border-amber-500/20 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative text-center">
+    <div id="custom-confirm-modal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[101] flex items-center justify-center p-4 hidden">
+        <div class="bg-[#080810] border border-amber-500/20 rounded-3xl p-6 max-w-sm w-full shadow-[0_0_50px_rgba(0,0,0,0.9)] relative text-center">
             <div class="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-500 text-xl mx-auto mb-4">
                 <i class="fa-solid fa-triangle-exclamation"></i>
             </div>
             <h3 class="text-base font-bold text-white mb-2">確定刪除(永久銷毀)？</h3>
-            <p class="text-xs text-slate-400 mb-6 leading-relaxed">此篇天菜秘密動態與實體照片將永久徹底抹除，本操作無法撤回！</p>
+            <p class="text-xs text-slate-400 mb-6 leading-relaxed">此篇天菜秘密動態與實體照片將從伺服器端永久徹底抹除，本操作安全且無法撤回！</p>
             <div class="grid grid-cols-2 gap-3">
-                <button id="confirm-modal-cancel" class="bg-slate-900 hover:bg-slate-800 text-slate-300 font-semibold text-xs py-2.5 rounded-xl transition">取消</button>
-                <button id="confirm-modal-ok" class="bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs py-2.5 rounded-xl transition">確認刪除</button>
+                <button id="confirm-modal-cancel" class="bg-slate-900/80 hover:bg-slate-800 text-slate-350 font-bold text-xs py-3 rounded-xl transition">取消</button>
+                <button id="confirm-modal-ok" class="bg-gradient-to-r from-amber-600 to-amber-700 hover:brightness-110 text-slate-950 font-bold text-xs py-3 rounded-xl transition shadow-md shadow-amber-950/20">確認銷毀</button>
             </div>
         </div>
     </div>
@@ -316,30 +370,50 @@
 
         function renderLanding(container) {
             container.innerHTML = `
-                <div class="flex flex-col items-center justify-center min-h-[100dvh] w-full px-6 relative bg-gradient-to-b from-black via-[#040409] to-black">
-                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(217,119,6,0.06)_0%,transparent_60%)]"></div>
+                <div class="flex flex-col items-center justify-center min-h-[100dvh] w-full px-6 relative bg-gradient-to-b from-black via-[#040408] to-[#010102] overflow-hidden">
+                    <!-- 隱密射燈光效 -->
+                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(212,175,55,0.08)_0%,transparent_60%)]"></div>
                     
+                    <!-- 背景建築飾紋 -->
+                    <div class="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-500/10 to-transparent"></div>
+
                     <div class="z-10 max-w-sm w-full flex flex-col items-center">
-                        <div class="w-36 h-36 md:w-40 md:h-40 rounded-full border border-amber-500/25 flex items-center justify-center p-1 bg-slate-950/80 shadow-[0_0_35px_rgba(217,119,6,0.3)] mb-8 animate-gentle-logo overflow-hidden">
-                            <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-full h-full rounded-full object-cover" draggable="false" oncontextmenu="return false;">
+                        <!-- 帶有拉絲金邊的會所黃銅門牌徽章 -->
+                        <div class="w-36 h-36 md:w-40 md:h-40 rounded-full border border-amber-500/30 flex items-center justify-center p-2 bg-slate-950/90 shadow-[0_0_50px_rgba(212,175,55,0.2)] mb-8 animate-gentle-logo overflow-hidden">
+                            <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-full h-full rounded-full object-cover">
                         </div>
                         
-                        <h1 class="text-3xl font-extrabold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-yellow-500 font-serif mb-2 select-none italic text-center">SecretRoom</h1>
-                        <p class="text-amber-500/80 text-[10px] font-extrabold uppercase tracking-widest text-center">專屬男性的私密生活分享社群</p>
-                        <p class="text-slate-500 text-[11px] mt-1 text-center font-light leading-relaxed">分享生活近況，看見最真實的彼此</p>
+                        <div class="px-5 py-1 rounded-full bg-amber-500/5 border border-amber-500/10 mb-2">
+                            <span class="text-[9px] font-bold text-amber-500/80 tracking-[0.25em] uppercase font-luxury">Established Seclusion</span>
+                        </div>
+                        
+                        <h1 class="text-4xl font-black tracking-[0.28em] text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-100 to-amber-500 font-luxury mb-2 select-none italic text-center">SecretRoom</h1>
+                        <p class="text-amber-500/95 text-[10px] font-extrabold uppercase tracking-[0.4em] text-center">紳士式私密生活分享會所</p>
+                        
+                        <!-- 裝飾花紋線 -->
+                        <div class="flex items-center gap-2 w-28 my-4">
+                            <div class="h-[1px] flex-1 bg-gradient-to-r from-transparent to-amber-500/30"></div>
+                            <div class="w-1 h-1 bg-amber-500/40 rotate-45"></div>
+                            <div class="h-[1px] flex-1 bg-gradient-to-l from-transparent to-amber-500/30"></div>
+                        </div>
+
+                        <p class="text-slate-450 text-[11.5px] text-center font-light leading-relaxed tracking-wider px-4">
+                            穿過無標記的黑鐵大門，在曜石與溫暖微光間，遇見規格契合的極致同好。
+                        </p>
 
                         <div class="w-full space-y-4 mt-10">
-                            <button id="btn-goto-apply" class="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 hover:brightness-110 active:scale-95 text-slate-950 font-bold text-xs py-4 px-6 rounded-2xl shadow-lg shadow-amber-950/30 transition-all duration-300 tracking-wider">
-                                建立新帳號申請
+                            <button id="btn-goto-apply" class="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 hover:brightness-110 active:scale-[0.98] text-slate-950 font-bold text-xs py-4 px-6 rounded-2xl shadow-xl shadow-amber-950/20 transition-all duration-300 tracking-[0.18em] uppercase architectural-border">
+                                解鎖安全通道 / 申請會籍
                             </button>
-                            <button id="btn-goto-login" class="w-full bg-slate-950/85 hover:bg-slate-900 active:scale-95 text-amber-500 font-semibold text-xs py-4 px-6 rounded-2xl border border-amber-500/15 transition-all duration-300">
-                                已有帳號？登入查看進度
+                            <button id="btn-goto-login" class="w-full bg-slate-950/90 hover:bg-slate-900 active:scale-[0.98] text-amber-500 font-semibold text-xs py-4 px-6 rounded-2xl border border-amber-500/20 transition-all duration-300 tracking-wider flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-key text-[10px] text-amber-500/70"></i>
+                                <span>已授權會員？驗證登入通道</span>
                             </button>
                         </div>
 
-                        <div class="mt-14 px-4 py-2 rounded-full bg-amber-500/5 border border-amber-500/10 text-[10px] text-amber-500/70 font-semibold flex items-center gap-1.5 shadow-sm">
-                            <i class="fa-solid fa-shield-halved"></i>
-                            <span>人工審核機制 · 滿 18 歲限定</span>
+                        <div class="mt-12 px-5 py-2.5 rounded-full bg-amber-500/5 border border-amber-500/10 text-[10px] text-amber-400/80 font-bold tracking-wider flex items-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-shield-halved text-amber-500"></i>
+                            <span>落實人工審核驗證 · 滿 18 歲指定進入</span>
                         </div>
                     </div>
                 </div>
@@ -356,26 +430,26 @@
 
         function showLoginModal() {
             const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md';
+            modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-md';
             modal.innerHTML = `
-                <div class="bg-slate-950 border border-amber-500/15 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative">
-                    <button id="close-login" class="absolute top-4 right-4 text-slate-500 hover:text-white text-xl">&times;</button>
-                    <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2">
-                        <i class="fa-solid fa-right-to-bracket text-amber-500"></i> 使用者登入
+                <div class="bg-[#08080c] border border-amber-500/25 rounded-3xl p-6.5 max-w-sm w-full shadow-[0_0_50px_rgba(0,0,0,0.95)] relative architectural-border">
+                    <button id="close-login" class="absolute top-4 right-4 text-slate-500 hover:text-white text-xl transition">&times;</button>
+                    <h3 class="text-sm font-bold text-white mb-1 flex items-center gap-2 font-luxury tracking-widest">
+                        <i class="fa-solid fa-lock text-amber-500"></i> MEMBER VERIFICATION
                     </h3>
-                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">請輸入帳號與密碼以進入平台</p>
+                    <p class="text-[11px] text-slate-400 mb-5 leading-relaxed font-light">請在下方輸入您的設定憑證以解鎖隱密會所通道</p>
                     
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">使用者帳號</label>
-                            <input type="text" id="login-username" class="w-full bg-slate-900/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
+                            <label class="block text-[9px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">會籍專屬帳號</label>
+                            <input type="text" id="login-username" class="w-full bg-slate-900/60 border border-slate-800 rounded-xl px-3.5 py-3 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">密碼</label>
-                            <input type="password" id="login-password" class="w-full bg-slate-900/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
+                            <label class="block text-[9px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">密碼認證</label>
+                            <input type="password" id="login-password" class="w-full bg-slate-900/60 border border-slate-800 rounded-xl px-3.5 py-3 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
                         </div>
-                        <button id="btn-login-submit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-bold text-xs py-3 rounded-xl transition shadow-lg shadow-amber-950/20 tracking-wider">
-                            登入並驗證
+                        <button id="btn-login-submit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-bold text-xs py-3.5 rounded-xl transition shadow-lg shadow-amber-950/15 tracking-wider uppercase active:scale-[0.98]">
+                            開通通道並登入
                         </button>
                     </div>
                 </div>
@@ -439,15 +513,15 @@
             window.state.emailVerificationCode = null;
 
             container.innerHTML = `
-                <div class="w-full bg-[#020204] px-4 py-8 flex flex-col items-center h-full overflow-y-auto">
+                <div class="w-full bg-[#030306] px-4 py-8 flex flex-col items-center h-full overflow-y-auto">
                     <div class="max-w-4xl w-full bg-slate-950/90 border border-amber-500/10 rounded-3xl p-6 md:p-10 shadow-2xl relative mb-12">
-                        <button id="btn-back-landing" class="absolute top-5 left-5 text-slate-500 hover:text-white transition text-sm flex items-center gap-1.5 font-medium">
-                            <i class="fa-solid fa-arrow-left"></i> 返回
+                        <button id="btn-back-landing" class="absolute top-6 left-6 text-slate-400 hover:text-white transition text-xs flex items-center gap-2 font-semibold">
+                            <i class="fa-solid fa-arrow-left"></i> 返回起點
                         </button>
                         
-                        <div class="text-center mt-6 mb-8">
-                            <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-amber-400 tracking-wide">SecretRoom 紳士會籍申請手續</h2>
-                            <p class="text-xs text-slate-400 mt-2 leading-relaxed">請詳細填寫以下必要欄位。俱樂部內所有帳號均落實人工審核驗證制度。</p>
+                        <div class="text-center mt-6 mb-10">
+                            <h2 class="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-amber-400 tracking-wider font-luxury">SECRETROOM ACQUISITION</h2>
+                            <p class="text-xs text-slate-400 mt-2 leading-relaxed">請仔細填妥以下必要憑證。本會所採實名制與人工審查機制以維護全體會員之極致安全與私密。</p>
                         </div>
 
                         <!-- 雙欄排版，寬螢幕下完美撐滿不擁擠 -->
@@ -456,120 +530,120 @@
                             <!-- 左側區塊：相片上傳與安全憑證設定 -->
                             <div class="space-y-6">
                                 <!-- 上傳個人頭像 -->
-                                <div class="bg-slate-900/40 p-5 border border-slate-800 rounded-2xl flex flex-col items-center justify-center text-center">
-                                    <span class="text-xs font-bold text-slate-350 mb-3 uppercase tracking-wider block">
-                                        <span class="text-red-500">*</span> 上傳個人頭像
-                                        <span class="text-amber-500/80 font-normal text-[10px] block mt-1">(支援最大 10MB 檔案)</span>
+                                <div class="bg-slate-900/40 p-5 border border-slate-900/80 rounded-2xl flex flex-col items-center justify-center text-center">
+                                    <span class="text-xs font-bold text-slate-300 mb-3 uppercase tracking-wider block">
+                                        <span class="text-red-500">*</span> 上傳個人真實頭像
+                                        <span class="text-amber-550/80 font-normal text-[9.5px] block mt-1">(僅限 JPEG/PNG，支援最大 10MB)</span>
                                     </span>
-                                    <div class="relative w-28 h-28 rounded-full border border-dashed border-amber-500/20 hover:border-amber-500 transition cursor-pointer flex flex-col items-center justify-center bg-slate-900/80 overflow-hidden group" id="avatar-trigger">
+                                    <div class="relative w-28 h-28 rounded-full border border-dashed border-amber-500/20 hover:border-amber-500/50 transition cursor-pointer flex flex-col items-center justify-center bg-slate-900/80 overflow-hidden group" id="avatar-trigger">
                                         <img id="avatar-preview" class="absolute inset-0 w-full h-full object-cover hidden">
-                                        <div class="z-10 flex flex-col items-center text-slate-500 group-hover:text-amber-500/80" id="avatar-placeholder">
-                                            <i class="fa-solid fa-camera text-2xl mb-1"></i>
-                                            <span class="text-[10px]">點擊選取</span>
+                                        <div class="z-10 flex flex-col items-center text-slate-500 group-hover:text-amber-500/80 transition" id="avatar-placeholder">
+                                            <i class="fa-solid fa-camera text-2xl mb-1.5"></i>
+                                            <span class="text-[9px] font-bold uppercase tracking-wider">點擊選取檔案</span>
                                         </div>
                                     </div>
                                     <input type="file" id="register-avatar-file" accept="image/*" class="hidden">
-                                    <span class="text-[10px] text-slate-500 mt-2.5 block leading-normal">請選取個人清晰、露出五官、非風景卡通的大頭相片</span>
+                                    <span class="text-[9.5px] text-slate-500 mt-3 block leading-relaxed max-w-[240px]">請上傳個人正面清晰之大頭照，嚴禁风景、卡通或冒用他人照片</span>
                                 </div>
 
                                 <!-- 帳號以及密碼獨立區 -->
-                                <div class="p-5 bg-slate-900/30 border border-slate-800 rounded-2xl space-y-4">
-                                    <span class="text-[11px] font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-solid fa-lock"></i> 安全帳密憑證</span>
+                                <div class="p-5 bg-slate-900/30 border border-slate-900/80 rounded-2xl space-y-4">
+                                    <span class="text-[11px] font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-solid fa-lock mr-1.5"></i> 安全會籍登入憑證</span>
                                     <div>
-                                        <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 設定帳號(不限中英數大小寫)</label>
-                                        <input type="text" id="reg-username" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
+                                        <label class="block text-[9.5px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 設定專屬帳號 (不限中英數，不可與人重複)</label>
+                                        <input type="text" id="reg-username" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 再次輸入設定帳號</label>
-                                        <input type="text" id="reg-username-confirm" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
+                                        <label class="block text-[9.5px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 再次確認專屬帳號</label>
+                                        <input type="text" id="reg-username-confirm" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 設定密碼</label>
-                                        <input type="password" id="reg-password" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
+                                        <label class="block text-[9.5px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 設定密碼</label>
+                                        <input type="password" id="reg-password" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 再次輸入設定密碼</label>
-                                        <input type="password" id="reg-password-confirm" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
+                                        <label class="block text-[9.5px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 再次輸入密碼</label>
+                                        <input type="password" id="reg-password-confirm" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
                                     </div>
                                     
                                     <!-- 密碼強度回饋 -->
-                                    <div class="text-[10px] space-y-1 bg-slate-950/60 p-3 rounded-xl border border-slate-850">
-                                        <span class="text-slate-500 font-bold uppercase tracking-wider block mb-1">密碼強度設定條件：</span>
-                                        <div id="pwd-rule-len" class="flex items-center gap-1.5 text-slate-500">
-                                            <i class="fa-solid fa-circle-notch text-[8px]"></i> <span>設定8字元密碼</span>
+                                    <div class="text-[10px] space-y-1.5 bg-slate-950/60 p-3 rounded-xl border border-slate-850">
+                                        <span class="text-slate-500 font-bold uppercase tracking-wider block mb-1">密碼安全條件度：</span>
+                                        <div id="pwd-rule-len" class="flex items-center gap-1.5 text-slate-500 transition">
+                                            <i class="fa-solid fa-circle-notch text-[8px]"></i> <span>密碼長度達 8 個字元以上</span>
                                         </div>
-                                        <div id="pwd-rule-upper" class="flex items-center gap-1.5 text-slate-500">
-                                            <i class="fa-solid fa-circle-notch text-[8px]"></i> <span>設定大寫英文</span>
+                                        <div id="pwd-rule-upper" class="flex items-center gap-1.5 text-slate-500 transition">
+                                            <i class="fa-solid fa-circle-notch text-[8px]"></i> <span>包含至少一個大寫英文字母</span>
                                         </div>
-                                        <div id="pwd-rule-spec" class="flex items-center gap-1.5 text-slate-500">
-                                            <i class="fa-solid fa-circle-notch text-[8px]"></i> <span>設定特殊符號</span>
+                                        <div id="pwd-rule-spec" class="flex items-center gap-1.5 text-slate-500 transition">
+                                            <i class="fa-solid fa-circle-notch text-[8px]"></i> <span>包含至少一個特殊符號</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- 右側區塊：基本資料、物理密碼規格 -->
+                            <!-- 右側區塊：基本資料、物理規格 -->
                             <div class="space-y-6">
                                 <!-- 使用者名稱與生日 -->
-                                <div class="p-5 bg-slate-900/30 border border-slate-800 rounded-2xl space-y-4">
-                                    <span class="text-[11px] font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-solid fa-user"></i> 個人識別檔案</span>
+                                <div class="p-5 bg-slate-900/30 border border-slate-900/80 rounded-2xl space-y-4">
+                                    <span class="text-[11px] font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-solid fa-user mr-1.5"></i> 會員公開識別檔案</span>
                                     <div>
-                                        <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 使用者名稱</label>
-                                        <input type="text" id="reg-nickname" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
+                                        <label class="block text-[9.5px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 暱稱 / 使用者名稱</label>
+                                        <input type="text" id="reg-nickname" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
                                     </div>
 
                                     <div>
-                                        <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 出生年月日</label>
+                                        <label class="block text-[9.5px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 出生年月日 (須滿 18 歲)</label>
                                         <div class="grid grid-cols-3 gap-2">
-                                            <select id="reg-year" class="bg-slate-950 border border-slate-850 text-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-amber-500"></select>
-                                            <select id="reg-month" class="bg-slate-950 border border-slate-850 text-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-amber-500"></select>
-                                            <select id="reg-day" class="bg-slate-950 border border-slate-850 text-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-amber-500"></select>
+                                            <select id="reg-year" class="bg-slate-950 border border-slate-850 text-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-amber-500 transition"></select>
+                                            <select id="reg-month" class="bg-slate-950 border border-slate-850 text-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-amber-500 transition"></select>
+                                            <select id="reg-day" class="bg-slate-950 border border-slate-850 text-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-amber-500 transition"></select>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- 信箱驗證與認證碼 -->
-                                <div class="space-y-4 bg-slate-900/30 p-5 border border-slate-800 rounded-2xl">
-                                    <span class="text-[11px] font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-regular fa-envelope"></i> 雙信箱通訊安全核查</span>
+                                <div class="space-y-4 bg-slate-900/30 p-5 border border-slate-900/80 rounded-2xl">
+                                    <span class="text-[11px] font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-regular fa-envelope mr-1.5"></i> 通訊安全雙向核查</span>
                                     <div>
-                                        <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 信箱驗證</label>
+                                        <label class="block text-[9.5px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 電子郵件信箱</label>
                                         <div class="flex gap-2">
-                                            <input type="email" id="reg-email" class="flex-1 min-w-0 bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500">
-                                            <button type="button" id="btn-send-code" class="bg-amber-600 hover:bg-amber-500 active:scale-95 text-slate-950 font-bold text-[10px] px-3.5 rounded-xl transition duration-350 shrink-0">發送驗證碼</button>
+                                            <input type="email" id="reg-email" class="flex-1 min-w-0 bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition">
+                                            <button type="button" id="btn-send-code" class="bg-amber-600 hover:bg-amber-500 active:scale-[0.96] text-slate-950 font-bold text-[10px] px-3.5 rounded-xl transition duration-300 shrink-0">發送認證碼</button>
                                         </div>
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 驗證信箱</label>
+                                        <label class="block text-[9.5px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 驗證碼</label>
                                         <div class="flex gap-2">
-                                            <input type="text" id="reg-email-code" class="flex-1 min-w-0 bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500">
-                                            <button type="button" id="btn-verify-code" class="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-[10px] px-3.5 rounded-xl transition duration-350 shrink-0">驗證信箱</button>
+                                            <input type="text" id="reg-email-code" class="flex-1 min-w-0 bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition">
+                                            <button type="button" id="btn-verify-code" class="bg-emerald-600 hover:bg-emerald-500 active:scale-[0.96] text-white font-bold text-[10px] px-3.5 rounded-xl transition duration-300 shrink-0">驗證信箱</button>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- 個人狀態 (雙行排版) -->
-                                <div class="p-5 bg-slate-900/30 border border-slate-800 rounded-2xl space-y-4">
-                                    <span class="text-[11px] font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-solid fa-user-check"></i> 個人狀態</span>
+                                <div class="p-5 bg-slate-900/30 border border-slate-900/80 rounded-2xl space-y-4">
+                                    <span class="text-[11px] font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-solid fa-user-check mr-1.5"></i> 身體數據密碼</span>
                                     
                                     <div class="grid grid-cols-2 gap-3">
                                         <div>
                                             <label class="block text-[9px] font-bold text-slate-500 mb-1">身高 (cm)</label>
-                                            <input type="number" id="reg-height" class="w-full bg-slate-950 border border-slate-855 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
+                                            <input type="number" id="reg-height" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
                                         </div>
                                         <div>
                                             <label class="block text-[9px] font-bold text-slate-500 mb-1">體重 (kg)</label>
-                                            <input type="number" id="reg-weight" class="w-full bg-slate-950 border border-slate-855 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
+                                            <input type="number" id="reg-weight" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
                                         </div>
                                     </div>
                                     
                                     <div class="grid grid-cols-2 gap-3">
                                         <div>
                                             <label class="block text-[9px] font-bold text-slate-500 mb-1">勃起長度 (cm)</label>
-                                            <input type="number" id="reg-length" class="w-full bg-slate-950 border border-slate-855 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
+                                            <input type="number" id="reg-length" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
                                         </div>
                                         <div>
                                             <label class="block text-[9px] font-bold text-slate-500 mb-1">勃起粗度圍 (cm)</label>
-                                            <input type="number" id="reg-girth" class="w-full bg-slate-950 border border-slate-855 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
+                                            <input type="number" id="reg-girth" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
                                         </div>
                                     </div>
                                 </div>
@@ -577,14 +651,14 @@
 
                             <!-- 5列2行完全展開標籤清單 - 寬螢幕通欄排版 -->
                             <div class="md:col-span-2 space-y-2 mt-2">
-                                <label class="block text-xs font-bold text-slate-350 mb-1 uppercase tracking-wider"><span class="text-red-500">*</span> 感興趣的主題與性癖偏好 (至少勾選一項)</label>
-                                <span class="text-[10px] text-slate-500 block mb-3 leading-relaxed">這些設定在您被審核啟用後，能方便其他兄弟快速找到您的主打標籤。</span>
+                                <label class="block text-xs font-bold text-slate-300 mb-1 uppercase tracking-wider"><span class="text-red-500">*</span> 感興趣的主題與性癖偏好 (至少勾選一項)</label>
+                                <span class="text-[10px] text-slate-500 block mb-3 leading-relaxed">我們將依此標籤為您智慧配對符合之同好與合規貼文。</span>
                                 
-                                <div class="grid grid-cols-2 md:grid-cols-5 gap-3 bg-slate-950/40 p-4 border border-slate-850 rounded-2xl" id="register-kinks-box">
+                                <div class="grid grid-cols-2 md:grid-cols-5 gap-3 bg-slate-950/40 p-4 border border-slate-900 rounded-2xl" id="register-kinks-box">
                                     ${window.state.kinksOptions.map((k) => `
-                                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-900/60 p-2.5 rounded-xl transition border border-transparent hover:border-slate-800">
-                                            <input type="checkbox" name="reg-kink" value="${k}" class="rounded border-slate-850 bg-slate-950 text-amber-500 focus:ring-amber-500 w-3.5 h-3.5">
-                                            <span class="text-[10px] text-slate-350 font-medium leading-tight select-none">${k}</span>
+                                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-900/60 p-2.5 rounded-xl transition border border-transparent hover:border-slate-850">
+                                            <input type="checkbox" name="reg-kink" value="${k}" class="rounded border-slate-800 bg-slate-950 text-amber-500 focus:ring-amber-500 w-3.5 h-3.5">
+                                            <span class="text-[10px] text-slate-350 font-semibold leading-tight select-none">${k}</span>
                                         </label>
                                     `).join('')}
                                 </div>
@@ -592,8 +666,8 @@
 
                             <!-- 提交按鈕 - 通欄排列 -->
                             <div class="md:col-span-2 pt-4">
-                                <button type="submit" id="apply-submit" class="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 hover:brightness-110 text-slate-950 font-bold text-xs py-4 px-6 rounded-2xl transition duration-300 shadow-lg shadow-amber-950/20 tracking-wider uppercase">
-                                    送出註冊與審核申請
+                                <button type="submit" id="apply-submit" class="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 hover:brightness-110 text-slate-950 font-bold text-xs py-4 px-6 rounded-2xl transition duration-300 shadow-xl shadow-amber-950/20 tracking-wider uppercase active:scale-[0.98]">
+                                    送出註冊與會籍審核
                                 </button>
                             </div>
                         </form>
@@ -857,27 +931,27 @@
 
         function renderPending(container) {
             container.innerHTML = `
-                <div class="flex flex-col items-center justify-center min-h-screen w-full px-6 bg-[#020204]">
+                <div class="flex flex-col items-center justify-center min-h-screen w-full px-6 bg-[#030306]">
                     <div class="max-w-md w-full bg-slate-950 border border-amber-500/10 rounded-3xl p-8 shadow-2xl text-center space-y-6">
-                        <div class="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-500 text-3xl mx-auto shadow-[0_0_20px_rgba(217,119,6,0.15)] animate-pulse">
+                        <div class="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-500 text-3xl mx-auto shadow-[0_0_20px_rgba(245,158,11,0.15)] animate-pulse">
                             <i class="fa-solid fa-hourglass-half"></i>
                         </div>
                         <div class="space-y-2">
-                            <h2 class="text-xl font-bold text-white tracking-wide">申請已受理 · 人工審核中</h2>
+                            <h2 class="text-xl font-bold text-white tracking-wide font-luxury">APPLICATION PENDING</h2>
                             <p class="text-xs text-slate-400 leading-relaxed px-4">
                                 SecretRoom 採手動審核及推薦人引介機制，保障所有男神會員的頂級隱私防護。我們將於 24 小時內完成資料比對，核准通知會自動發送至您的通知信箱。
                             </p>
                         </div>
 
-                        <div class="bg-slate-900/50 border border-slate-800 p-4 rounded-2xl text-left space-y-2">
-                            <span class="text-[9px] font-bold text-amber-500 uppercase tracking-wider block font-serif">您的申請概要資訊</span>
+                        <div class="bg-slate-900/50 border border-slate-900 p-4 rounded-2xl text-left space-y-2">
+                            <span class="text-[9px] font-bold text-amber-500 uppercase tracking-wider block font-luxury">您的會籍概要資訊</span>
                             <p class="text-xs text-slate-300"><span class="text-slate-500 font-medium">您的帳號:</span> @${window.state.applicationId}</p>
                             <p class="text-xs text-slate-300"><span class="text-slate-500 font-medium">您的名稱:</span> ${window.state.userData.nickname}</p>
                             <p class="text-xs text-slate-300"><span class="text-slate-500 font-medium">信箱:</span> ${window.state.userData.email}</p>
                         </div>
 
                         <div class="pt-2">
-                            <button id="btn-pending-refresh" class="w-full bg-slate-900 hover:bg-slate-800 text-slate-300 font-semibold text-xs py-3 rounded-xl border border-slate-800/60 transition">
+                            <button id="btn-pending-refresh" class="w-full bg-slate-900 hover:bg-slate-850 text-slate-300 font-semibold text-xs py-3.5 rounded-xl border border-slate-800 transition active:scale-[0.98]">
                                 重新整理確認狀態
                             </button>
                         </div>
@@ -894,27 +968,27 @@
         function renderRejected(container) {
             const reason = window.state.userData.rejectionReason || "未遵守安全上傳規範（例如頭像模糊、非本人等）。";
             container.innerHTML = `
-                <div class="flex flex-col items-center justify-center min-h-screen w-full px-6 bg-[#020204]">
+                <div class="flex flex-col items-center justify-center min-h-screen w-full px-6 bg-[#030306]">
                     <div class="max-w-md w-full bg-slate-950 border border-amber-500/10 rounded-3xl p-8 shadow-2xl text-center space-y-6">
                         <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center text-red-500 text-3xl mx-auto shadow-[0_0_20px_rgba(239,68,68,0.15)]">
                             <i class="fa-solid fa-triangle-exclamation"></i>
                         </div>
                         <div class="space-y-2">
-                            <h2 class="text-xl font-bold text-white tracking-wide">審核未予通過</h2>
-                            <p class="text-xs text-slate-400 leading-relaxed px-4">很遺憾，您的會籍申請未能通過管理審查團隊的查核。</p>
+                            <h2 class="text-xl font-bold text-white tracking-wide font-luxury">APPLICATION REJECTED</h2>
+                            <p class="text-xs text-slate-400 leading-relaxed px-4 font-light">很遺憾，您的加入申請未能通過管理審查團隊的查核。</p>
                         </div>
 
-                        <div class="bg-red-500/5 border border-red-500/10 p-4 rounded-2xl text-left space-y-2">
+                        <div class="bg-red-550/5 border border-red-500/15 p-4 rounded-2xl text-left space-y-2">
                             <span class="text-[9px] font-bold text-red-400 uppercase tracking-wider block">退件具體理由</span>
                             <p class="text-xs text-slate-300 leading-relaxed font-light">${reason}</p>
                         </div>
 
                         <div class="pt-2 space-y-3">
-                            <button id="btn-reapply-edit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 hover:brightness-110 text-slate-950 font-bold text-xs py-3 rounded-xl transition shadow-lg">
+                            <button id="btn-reapply-edit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-650 hover:brightness-110 text-slate-950 font-bold text-xs py-3.5 rounded-xl transition shadow-lg active:scale-[0.98]">
                                 修正資料並重新提交送審
                             </button>
-                            <button id="btn-reapply-logout" class="w-full bg-slate-900 hover:bg-slate-800 text-slate-400 font-semibold text-xs py-3 rounded-xl transition border border-slate-800/50">
-                                登出帳號
+                            <button id="btn-reapply-logout" class="w-full bg-slate-900 hover:bg-slate-800 text-slate-450 font-semibold text-xs py-3.5 rounded-xl transition border border-slate-800/80 active:scale-[0.98]">
+                                登出當前帳號
                             </button>
                         </div>
                     </div>
@@ -965,173 +1039,49 @@
             };
         }
 
-        function renderTelegramBind(container) {
-            container.innerHTML = `
-                <div class="flex flex-col items-center justify-center min-h-screen w-full px-6 bg-[#020204]">
-                    <div class="max-w-md w-full bg-slate-950 border border-amber-500/10 rounded-3xl p-8 shadow-2xl text-center space-y-6">
-                        <div class="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-500 text-3xl mx-auto shadow-[0_0_20px_rgba(217,119,6,0.15)]">
-                            <i class="fa-brands fa-telegram"></i>
-                        </div>
-                        <div class="space-y-2">
-                            <h2 class="text-xl font-bold text-white tracking-wide">啟用會籍安全綁定</h2>
-                            <p class="text-xs text-slate-400 leading-relaxed px-4">
-                                歡迎來到 SecretRoom 紳士俱樂部！為了防範虛假帳號、保護全體會員隱私安全，請使用下方的 Telegram 官方元件登入您的 Telegram 帳號。
-                            </p>
-                        </div>
-
-                        <!-- 官方認證 Widget 掛載節點 -->
-                        <div class="flex flex-col items-center justify-center gap-4 py-2 border-t border-b border-slate-900/60 my-2">
-                            <div id="tg-widget-mount" class="min-h-[40px] flex items-center justify-center text-xs text-slate-500">
-                                正在連接 Telegram 官方安全協議...
-                            </div>
-                            
-                            <!-- 智慧預覽沙盒跳過 -->
-                            <div id="sandbox-fallback" class="w-full hidden">
-                                <button id="btn-sandbox-bypass" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-bold text-xs py-3.5 rounded-xl transition shadow-lg tracking-wider">
-                                    <i class="fa-solid fa-flask-vial"></i> 一鍵進入預覽沙盒（跳過綁定）
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="pt-2">
-                            <p class="text-[9px] text-slate-600 leading-normal">
-                                請輸入您 Telegram 綁定的手機號碼。登入請求發出後，請於您的 Telegram 官方系統帳號中點選「Confirm (確認)」，系統將會於背景瞬間自動同步開通，無需手動輸入任何驗證碼。
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            setTimeout(() => {
-                const currentHost = window.location.hostname;
-                const isSandbox = currentHost.includes('usercontent.goog') || currentHost.includes('localhost') || currentHost === '';
-                
-                if (isSandbox) {
-                    const fallbackBox = document.getElementById('sandbox-fallback');
-                    if (fallbackBox) fallbackBox.classList.remove('hidden');
-                    
-                    document.getElementById('btn-sandbox-bypass').onclick = async () => {
-                        if (!db || !window.state.applicationId) return;
-                        showLoading();
-                        try {
-                            const userRef = doc(db, 'secretg_apps', appId, 'applications', window.state.applicationId);
-                            const mockPayload = {
-                                telegramInfo: {
-                                    id: 99999999,
-                                    first_name: "沙盒測試員",
-                                    username: "sandbox_tester",
-                                    photo_url: ""
-                                },
-                                status: 'active'
-                            };
-                            await updateDoc(userRef, mockPayload);
-                            window.state.userData.telegramInfo = mockPayload.telegramInfo;
-                            window.state.userData.status = 'active';
-                            showToast('已繞過網域限制！成功以沙盒測試員身份登入。', 'success');
-                            navigate('dashboard');
-                        } catch (err) {
-                            console.error(err);
-                            showToast('沙盒登入同步失敗', 'error');
-                        } finally {
-                            hideLoading();
-                        }
-                    };
-                }
-
-                const mountNode = document.getElementById('tg-widget-mount');
-                if (mountNode) {
-                    mountNode.innerHTML = '';
-                    const script = document.createElement('script');
-                    script.async = true;
-                    script.src = "https://telegram.org/js/telegram-widget.js?22";
-                    script.setAttribute('data-telegram-login', telegramBotName);
-                    script.setAttribute('data-size', 'large');
-                    script.setAttribute('data-radius', '12'); 
-                    script.setAttribute('data-onauth', 'onTelegramAuth(user)');
-                    script.setAttribute('data-request-access', 'write');
-                    mountNode.appendChild(script);
-                }
-            }, 100);
-        }
-
-        window.onTelegramAuth = async function(user) {
-            if (!user || !user.id) {
-                showToast('Telegram 安全驗證失敗，請重試！', 'error');
-                return;
-            }
-
-            if (!db || !window.state.applicationId) return;
-
-            showLoading();
-            try {
-                const userRef = doc(db, 'secretg_apps', appId, 'applications', window.state.applicationId);
-                const updatePayload = {
-                    telegramInfo: {
-                        id: user.id,
-                        first_name: user.first_name || '',
-                        username: user.username || '',
-                        photo_url: user.photo_url || ''
-                    },
-                    status: 'active' 
-                };
-
-                await updateDoc(userRef, updatePayload);
-
-                window.state.userData.telegramInfo = updatePayload.telegramInfo;
-                window.state.userData.status = 'active';
-
-                showToast('會籍安全綁定成功！歡迎進入 SecretRoom。', 'success');
-                navigate('dashboard');
-            } catch (err) {
-                console.error("安全寫入會籍資料異常:", err);
-                showToast('安全協議協議寫入失敗，請重試。', 'error');
-            } finally {
-                hideLoading();
-            }
-        };
-
         function renderDashboard(container) {
             container.innerHTML = `
-                <div class="w-full h-[100dvh] md:h-screen flex flex-row overflow-hidden relative bg-[#020204]">
+                <div class="w-full h-[100dvh] md:h-screen flex flex-row overflow-hidden relative bg-[#030305] ambient-spotlight">
                     
-                    <!-- RWD: PC Left sidebar -->
-                    <aside class="hidden md:flex flex-col justify-between w-64 border-r border-amber-500/10 bg-slate-950/40 p-5 shrink-0 select-none glass-panel">
+                    <!-- RWD: PC Left sidebar with mahogany panels vibe -->
+                    <aside class="hidden md:flex flex-col justify-between w-64 border-r border-amber-500/10 bg-slate-950/80 p-5 shrink-0 select-none glass-panel rounded-r-3xl my-3 ml-3">
                         <div class="space-y-8">
                             <div class="flex items-center gap-3">
-                                <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-10 h-10 rounded-full border border-amber-500/20 object-cover animate-gentle-logo" draggable="false" oncontextmenu="return false;">
+                                <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-10 h-10 rounded-full border border-amber-500/25 object-cover animate-gentle-logo">
                                 <div>
-                                    <h2 class="text-base font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-amber-400 tracking-wider italic font-serif">SecretRoom</h2>
-                                    <span class="text-[9px] text-amber-500/60 font-bold uppercase tracking-widest block font-serif">紳士俱樂部</span>
+                                    <h2 class="text-base font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-amber-400 tracking-widest italic font-luxury">SecretRoom</h2>
+                                    <span class="text-[9px] text-amber-500/60 font-bold uppercase tracking-[0.2em] block font-luxury">Private Club</span>
                                 </div>
                             </div>
 
-                            <nav class="space-y-1.5">
-                                <button id="aside-tab-feed" class="w-full text-left px-4 py-3 rounded-2xl flex items-center gap-3 text-xs transition-all duration-300 font-bold ${window.state.currentTab === 'feed' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/15 shadow-sm' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
-                                    <i class="fa-solid fa-house-chimney text-amber-500/80"></i> 首頁動態牆
+                            <nav class="space-y-2.5">
+                                <button id="aside-tab-feed" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 text-xs transition-all duration-300 font-bold ${window.state.currentTab === 'feed' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
+                                    <i class="fa-solid fa-door-open text-amber-500/80"></i> 會所首頁秘密牆
                                 </button>
-                                <button id="aside-tab-profile" class="w-full text-left px-4 py-3 rounded-2xl flex items-center gap-3 text-xs transition-all duration-300 font-bold ${window.state.currentTab === 'profile' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/15 shadow-sm' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
-                                    <i class="fa-solid fa-user-circle text-amber-500/80"></i> 我的個人檔案
+                                <button id="aside-tab-profile" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 text-xs transition-all duration-300 font-bold ${window.state.currentTab === 'profile' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
+                                    <i class="fa-solid fa-user-shield text-amber-500/80"></i> 我的私密檔案
                                 </button>
                             </nav>
 
-                            <button id="aside-btn-share" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 hover:brightness-110 active:scale-95 text-slate-950 font-bold text-xs py-3.5 px-4 rounded-2xl transition duration-300 flex items-center justify-center gap-2 shadow-lg shadow-amber-950/25">
+                            <button id="aside-btn-share" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 hover:brightness-110 active:scale-[0.97] text-slate-950 font-bold text-xs py-3.5 px-4 rounded-2xl transition duration-300 flex items-center justify-center gap-2 shadow-lg shadow-amber-950/25 architectural-border">
                                 <i class="fa-solid fa-circle-plus"></i> 分享今日動態
                             </button>
                         </div>
 
                         <div class="space-y-4">
-                            <div class="flex items-center gap-3 p-3 bg-slate-900/40 border border-slate-900 rounded-2xl">
-                                <img src="${window.state.userData.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-9 h-9 rounded-full object-cover border border-slate-800">
+                            <!-- 精緻奢華個人小名牌 -->
+                            <div class="flex items-center gap-3 p-3 bg-slate-950/50 border border-amber-500/10 rounded-2xl relative overflow-hidden">
+                                <div class="absolute top-0 right-0 w-2 h-2 bg-emerald-500 rounded-full m-2 shadow-[0_0_8px_#10b981]"></div>
+                                <img src="${window.state.userData.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-9 h-9 rounded-full object-cover border border-amber-500/25">
                                 <div class="overflow-hidden">
                                     <div class="flex items-center gap-1">
                                         <h4 class="font-bold text-xs text-slate-200 truncate">${window.state.userData.nickname}</h4>
-                                        ${getBadgeHTML(window.state.userData)}
                                     </div>
-                                    <p class="text-[10px] text-slate-500 truncate">@${window.state.applicationId}</p>
+                                    <p class="text-[9px] text-slate-500 truncate font-mono mt-0.5">@${window.state.applicationId}</p>
                                 </div>
                             </div>
-                            <button id="aside-btn-logout" class="w-full bg-red-950/20 hover:bg-red-950/40 text-red-400 border border-red-500/10 hover:border-red-500/20 active:scale-95 font-bold text-xs py-3 px-4 rounded-2xl transition flex items-center justify-center gap-1.5 shadow-sm">
-                                <i class="fa-solid fa-power-off"></i> 安全登出
+                            <button id="aside-btn-logout" class="w-full bg-red-950/10 hover:bg-red-950/30 text-red-400 border border-red-500/10 hover:border-red-500/25 active:scale-[0.97] font-bold text-xs py-3.5 px-4 rounded-2xl transition flex items-center justify-center gap-2 shadow-sm">
+                                <i class="fa-solid fa-power-off"></i> 安全登出會所
                             </button>
                         </div>
                     </aside>
@@ -1140,62 +1090,63 @@
                     <main class="flex-1 h-full flex flex-col bg-transparent overflow-hidden">
                         
                         <!-- RWD: Mobile header -->
-                        <header class="flex md:hidden items-center justify-between px-5 py-4 border-b border-slate-900 bg-slate-950/40 shrink-0">
-                            <div class="flex items-center gap-2">
-                                <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-8 h-8 rounded-full border border-amber-500/20 object-cover animate-gentle-logo" draggable="false" oncontextmenu="return false;">
-                                <h1 class="text-base font-bold text-white tracking-wider italic font-serif">SecretRoom</h1>
+                        <header class="flex md:hidden items-center justify-between px-5 py-4.5 border-b border-amber-500/10 bg-slate-950/60 backdrop-blur-md shrink-0">
+                            <div class="flex items-center gap-2.5">
+                                <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-8 h-8 rounded-full border border-amber-500/20 object-cover animate-gentle-logo">
+                                <h1 class="text-lg font-black text-white tracking-[0.15em] italic font-luxury">SecretRoom</h1>
                             </div>
-                            <button id="mobile-btn-share" class="w-8 h-8 bg-amber-500 text-slate-950 rounded-full flex items-center justify-center shadow-md">
+                            <button id="mobile-btn-share" class="w-9 h-9 bg-gradient-to-r from-amber-500 to-yellow-600 hover:brightness-110 text-slate-950 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition">
                                 <i class="fa-solid fa-plus text-sm"></i>
                             </button>
                         </header>
 
                         <!-- Main content scroll block -->
                         <div class="flex-1 overflow-y-auto scrollbar-hide px-4 md:px-6 py-5" id="main-content-scroll">
-                            <div class="max-w-3xl mx-auto w-full space-y-5" id="dashboard-tab-content">
+                            <div class="max-w-2xl mx-auto w-full space-y-6" id="dashboard-tab-content">
                                 <!-- Dynamic Subtab Content -->
                             </div>
                         </div>
 
                         <!-- RWD: Mobile bottom navbar footer -->
-                        <footer class="flex md:hidden items-center justify-around border-t border-slate-900 bg-slate-950/80 p-3 shrink-0 select-none">
-                            <button id="mobile-tab-feed" class="flex flex-col items-center gap-1 transition ${window.state.currentTab === 'feed' ? 'text-amber-500' : 'text-slate-500'}">
+                        <footer class="flex md:hidden items-center justify-around border-t border-amber-500/10 bg-slate-950/90 backdrop-blur-md p-3 pb-safe-bottom shrink-0 select-none rounded-t-3xl">
+                            <button id="mobile-tab-feed" class="flex flex-col items-center gap-1 transition-all ${window.state.currentTab === 'feed' ? 'text-amber-500 scale-105 font-bold' : 'text-slate-500'}">
                                 <i class="fa-solid fa-house-chimney text-base"></i>
-                                <span class="text-[9px] font-bold uppercase tracking-wider">首頁動態</span>
+                                <span class="text-[9px] font-bold tracking-wider">首頁秘密</span>
                             </button>
-                            <button id="mobile-tab-profile" class="flex flex-col items-center gap-1 transition ${window.state.currentTab === 'profile' ? 'text-amber-500' : 'text-slate-500'}">
+                            <button id="mobile-tab-profile" class="flex flex-col items-center gap-1 transition-all ${window.state.currentTab === 'profile' ? 'text-amber-500 scale-105 font-bold' : 'text-slate-500'}">
                                 <i class="fa-solid fa-user-circle text-base"></i>
-                                <span class="text-[9px] font-bold uppercase tracking-wider">個人主頁</span>
+                                <span class="text-[9px] font-bold tracking-wider">個人主頁</span>
                             </button>
-                            <button id="mobile-btn-logout" class="flex flex-col items-center gap-1 text-slate-600 hover:text-red-400">
+                            <button id="mobile-btn-logout" class="flex flex-col items-center gap-1 text-slate-600 hover:text-red-400 transition-all">
                                 <i class="fa-solid fa-power-off text-base"></i>
-                                <span class="text-[9px] font-bold uppercase tracking-wider">登出</span>
+                                <span class="text-[9px] font-bold tracking-wider">登出</span>
                             </button>
                         </footer>
                     </main>
 
                     <!-- PC Right explorer sidebar -->
-                    <aside class="hidden lg:flex flex-col gap-6 w-80 border-l border-amber-500/10 bg-slate-950/10 p-5 shrink-0 overflow-y-auto select-none glass-panel">
+                    <aside class="hidden lg:flex flex-col gap-6 w-80 border-l border-amber-500/10 bg-slate-950/80 p-5 shrink-0 overflow-y-auto select-none glass-panel rounded-l-3xl my-3 mr-3">
                         
-                        <div class="bg-slate-950/40 border border-slate-900 p-4 rounded-3xl space-y-3">
-                            <h3 class="text-xs font-bold text-amber-500 flex items-center gap-2 uppercase tracking-wider font-serif">
-                                <i class="fa-solid fa-compass"></i> 熱門主題探索
+                        <div class="bg-slate-950/60 border border-amber-500/10 p-5 rounded-3xl space-y-3.5 relative overflow-hidden">
+                            <div class="absolute -top-6 -right-6 w-16 h-16 bg-amber-500/5 rounded-full blur-xl"></div>
+                            <h3 class="text-xs font-bold text-amber-500 flex items-center gap-2 uppercase tracking-wider font-luxury">
+                                <i class="fa-solid fa-compass text-[11px]"></i> 熱門主題探索
                             </h3>
                             <div class="flex flex-wrap gap-2">
                                 ${window.state.kinksOptions.slice(0, 6).map((k) => `
-                                    <button onclick="setGlobalFilter('${k}')" class="text-[10px] font-bold bg-slate-950/40 hover:bg-amber-500/10 hover:text-amber-400 border border-slate-900 hover:border-amber-500/20 px-2.5 py-1.5 rounded-full text-slate-500 transition duration-300">
+                                    <button onclick="setGlobalFilter('${k}')" class="text-[10px] font-bold bg-slate-950/40 hover:bg-amber-500/10 hover:text-amber-400 border border-slate-900 hover:border-amber-500/20 px-3 py-2 rounded-full text-slate-450 transition duration-300">
                                         # ${k}
                                     </button>
                                 `).join('')}
                             </div>
                         </div>
 
-                        <div class="bg-slate-950/40 border border-slate-900 p-4 rounded-3xl space-y-4">
-                            <h3 class="text-xs font-bold text-amber-500 flex items-center gap-2 uppercase tracking-wider font-serif">
-                                <i class="fa-solid fa-user-group"></i> 線上活躍兄弟
+                        <div class="bg-slate-950/60 border border-amber-500/10 p-5 rounded-3xl space-y-4">
+                            <h3 class="text-xs font-bold text-amber-500 flex items-center gap-2 uppercase tracking-wider font-luxury">
+                                <i class="fa-solid fa-user-group text-[11px]"></i> 線上活躍仕紳
                             </h3>
                             <div class="space-y-3.5" id="active-users-list-aside">
-                                <div class="text-xs text-slate-600 text-center py-2">載入帥哥名單中...</div>
+                                <div class="text-[11px] text-slate-650 text-center py-4 font-light">正在載入尊貴會員名單...</div>
                             </div>
                         </div>
                     </aside>
@@ -1225,7 +1176,7 @@
                 localStorage.removeItem('sr_username');
                 window.state.userData = {};
                 window.state.applicationId = null;
-                showToast('已安全退出 SecretRoom。', 'info');
+                showToast('已安全退出 SecretRoom 會所。', 'info');
                 navigate('landing');
             };
 
@@ -1287,7 +1238,7 @@
                 .slice(0, 4);
 
             if (showList.length === 0) {
-                listContainer.innerHTML = '<div class="text-[10px] text-slate-600 py-1.5 text-center">目前無其他活躍男神</div>';
+                listContainer.innerHTML = '<div class="text-[10px] text-slate-600 py-3 text-center">目前尚無其他活躍會員</div>';
                 return;
             }
 
@@ -1299,11 +1250,10 @@
                     <div class="flex items-center gap-2.5 overflow-hidden">
                         <img src="${user.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-8 h-8 rounded-full object-cover border border-slate-800">
                         <div class="overflow-hidden">
-                            <div class="flex items-center gap-1">
+                            <div class="flex items-center gap-1.5">
                                 <h4 class="font-bold text-xs text-slate-300 truncate">${user.nickname}</h4>
-                                ${getBadgeHTML(user)}
                             </div>
-                            <span class="text-[9px] text-slate-500 block truncate">@${user.id}</span>
+                            <span class="text-[9px] text-slate-500 block truncate font-mono mt-0.5">@${user.id}</span>
                         </div>
                     </div>
                     <i class="fa-solid fa-chevron-right text-[9px] text-slate-700"></i>
@@ -1315,9 +1265,9 @@
         function renderFeedTab(container) {
             container.innerHTML = `
                 <div class="relative w-full z-20">
-                    <div class="flex items-center bg-slate-950 border border-amber-500/10 rounded-2xl px-4 py-3 shadow-lg backdrop-blur-md">
+                    <div class="flex items-center bg-slate-950/90 border border-amber-500/10 rounded-2xl px-4 py-3 shadow-lg backdrop-blur-md">
                         <i class="fa-solid fa-magnifying-glass text-amber-500/70 text-xs mr-3"></i>
-                        <input type="text" id="feed-search-input" class="w-full bg-transparent text-xs text-white focus:outline-none" placeholder="搜尋天菜貼文、標籤、男神暱稱或帳號 ID..." value="${window.state.searchTerm}">
+                        <input type="text" id="feed-search-input" class="w-full bg-transparent text-xs text-white focus:outline-none" placeholder="搜尋動態、標籤、男神暱稱或帳號 ID..." value="${window.state.searchTerm}">
                     </div>
                     
                     <!-- 搜尋覆蓋面板 -->
@@ -1327,17 +1277,17 @@
 
                 <!-- 快速篩選器 -->
                 <div class="flex items-center gap-2 overflow-x-auto scrollbar-hide py-1">
-                    <button onclick="setGlobalFilter('recommended')" id="filter-btn-recommended" class="shrink-0 text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'recommended' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900'}">
+                    <button onclick="setGlobalFilter('recommended')" id="filter-btn-recommended" class="shrink-0 text-[10px] font-bold uppercase tracking-widest px-4 py-3 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'recommended' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900'}">
                         <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>智慧推薦
                     </button>
-                    <button onclick="setGlobalFilter('highly-rated')" id="filter-btn-highly-rated" class="shrink-0 text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'highly-rated' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900'}">
-                        <i class="fa-solid fa-star mr-1.5"></i>天菜評分
+                    <button onclick="setGlobalFilter('highly-rated')" id="filter-btn-highly-rated" class="shrink-0 text-[10px] font-bold uppercase tracking-widest px-4 py-3 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'highly-rated' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900'}">
+                        <i class="fa-solid fa-star mr-1.5"></i>高分評分
                     </button>
-                    <button onclick="setGlobalFilter('popular')" id="filter-btn-popular" class="shrink-0 text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'popular' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900'}">
+                    <button onclick="setGlobalFilter('popular')" id="filter-btn-popular" class="shrink-0 text-[10px] font-bold uppercase tracking-widest px-4 py-3 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'popular' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900'}">
                         <i class="fa-solid fa-fire-flame-curved mr-1.5"></i>人氣按讚
                     </button>
-                    <button onclick="setGlobalFilter('elite-ranking')" id="filter-btn-elite-ranking" class="shrink-0 text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'elite-ranking' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900'}">
-                        <i class="fa-solid fa-trophy mr-1.5"></i>天菜排名
+                    <button onclick="setGlobalFilter('elite-ranking')" id="filter-btn-elite-ranking" class="shrink-0 text-[10px] font-bold uppercase tracking-widest px-4 py-3 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'elite-ranking' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900'}">
+                        <i class="fa-solid fa-trophy mr-1.5"></i>綜合排行
                     </button>
                 </div>
 
@@ -1395,9 +1345,9 @@
                 const btn = document.getElementById(`filter-btn-${t}`);
                 if (btn) {
                     if (t === filterName) {
-                        btn.className = "shrink-0 text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-full border transition-all duration-300 bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30";
+                        btn.className = "shrink-0 text-[10px] font-bold uppercase tracking-widest px-4 py-3 rounded-full border transition-all duration-300 bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30 animate-pulse";
                     } else {
-                        btn.className = "shrink-0 text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-full border transition-all duration-300 bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900";
+                        btn.className = "shrink-0 text-[10px] font-bold uppercase tracking-widest px-4 py-3 rounded-full border transition-all duration-300 bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900";
                     }
                 }
             });
@@ -1474,26 +1424,26 @@
                     );
 
                     searchOverlay.innerHTML = `
-                        <div class="flex border-b border-slate-900 pb-2">
-                            <button onclick="setSearchTab('posts')" class="flex-1 text-center py-1.5 text-xs font-bold uppercase tracking-wider transition ${window.state.searchTab === 'posts' ? 'text-amber-500 border-b-2 border-amber-500' : 'text-slate-500 hover:text-slate-300'}">
-                                天菜貼文 (${matchedPosts.length})
+                        <div class="flex border-b border-amber-500/10 pb-2">
+                            <button onclick="setSearchTab('posts')" class="flex-1 text-center py-2 text-xs font-bold uppercase tracking-wider transition ${window.state.searchTab === 'posts' ? 'text-amber-500 border-b-2 border-amber-500' : 'text-slate-500 hover:text-slate-300'}">
+                                秘密牆動態 (${matchedPosts.length})
                             </button>
-                            <button onclick="setSearchTab('users')" class="flex-1 text-center py-1.5 text-xs font-bold uppercase tracking-wider transition ${window.state.searchTab === 'users' ? 'text-amber-500 border-b-2 border-amber-500' : 'text-slate-500 hover:text-slate-300'}">
-                                男神帳號 (${matchedUsers.length})
+                            <button onclick="setSearchTab('users')" class="flex-1 text-center py-2 text-xs font-bold uppercase tracking-wider transition ${window.state.searchTab === 'users' ? 'text-amber-500 border-b-2 border-amber-500' : 'text-slate-500 hover:text-slate-300'}">
+                                俱樂部成員 (${matchedUsers.length})
                             </button>
                         </div>
                         
                         <div class="overflow-y-auto pr-1 flex-1 space-y-2.5 max-h-[350px]">
                             ${window.state.searchTab === 'posts' ? 
                                 (matchedPosts.length === 0 ? 
-                                    `<div class="text-[10px] text-slate-600 py-6 text-center font-light">未尋得相符的秘密貼文</div>` :
+                                    `<div class="text-[10px] text-slate-650 py-6 text-center font-light">未尋得相符的秘密貼文</div>` :
                                     matchedPosts.map(post => `
-                                        <div class="p-3 bg-slate-900/60 hover:bg-slate-900 border border-slate-900 rounded-2xl transition cursor-pointer" onclick="viewSinglePost('${post.id}')">
+                                        <div class="p-3 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 rounded-2xl transition cursor-pointer" onclick="viewSinglePost('${post.id}')">
                                             <div class="flex items-center gap-2 mb-1.5">
                                                 <img src="${post.authorAvatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-6 h-6 rounded-full object-cover">
                                                 <div>
                                                     <span class="text-[10.5px] font-bold text-slate-300 block leading-tight">${post.authorName}</span>
-                                                    <span class="text-[8.5px] text-slate-500 font-mono block">@${post.userId}</span>
+                                                    <span class="text-[8.5px] text-slate-550 font-mono block">@${post.userId}</span>
                                                 </div>
                                             </div>
                                             <p class="text-[11px] text-slate-400 truncate">${post.text || '(僅發布相片)'}</p>
@@ -1501,13 +1451,13 @@
                                     `).join('')
                                 ) :
                                 (matchedUsers.length === 0 ? 
-                                    `<div class="text-[10px] text-slate-600 py-6 text-center font-light">未尋得相符的男神會員</div>` :
+                                    `<div class="text-[10px] text-slate-650 py-6 text-center font-light">未尋得相符的仕紳會員</div>` :
                                     matchedUsers.map(u => `
-                                        <div onclick="viewUserProfile('${u.id}')" class="flex items-center justify-between p-2.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-900 rounded-2xl transition cursor-pointer">
+                                        <div onclick="viewUserProfile('${u.id}')" class="flex items-center justify-between p-2.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 rounded-2xl transition cursor-pointer">
                                             <div class="flex items-center gap-2.5 overflow-hidden">
-                                                <img src="${u.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-8 h-8 rounded-full object-cover">
+                                                <img src="${u.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-8 h-8 rounded-full object-cover border border-amber-500/10">
                                                 <div class="overflow-hidden">
-                                                    <div class="flex items-center gap-1">
+                                                    <div class="flex items-center gap-1.5">
                                                         <span class="text-xs font-bold text-slate-200 truncate">${u.nickname}</span>
                                                         ${getBadgeHTML(u)}
                                                     </div>
@@ -1592,7 +1542,7 @@
                 backBtnWrapper.className = 'mb-4';
                 backBtnWrapper.innerHTML = `
                     <button onclick="clearSinglePostFocus()" class="bg-slate-900 hover:bg-slate-800 text-amber-500 font-bold text-xs py-2.5 px-4 rounded-xl border border-amber-500/10 flex items-center gap-2 transition shadow-md">
-                        <i class="fa-solid fa-arrow-left"></i> 顯示全體動態
+                        <i class="fa-solid fa-arrow-left"></i> 顯示全體祕密牆
                     </button>
                 `;
                 listContainer.appendChild(backBtnWrapper);
@@ -1602,12 +1552,12 @@
                 const emptyCard = document.createElement('div');
                 emptyCard.className = 'text-center py-16 bg-slate-900/10 border border-slate-900/50 rounded-3xl p-6 flex flex-col items-center justify-center gap-3';
                 emptyCard.innerHTML = `
-                    <div class="w-12 h-12 bg-slate-900/60 rounded-full flex items-center justify-center text-slate-600 text-xl">
-                        <i class="fa-solid fa-folder-open"></i>
+                    <div class="w-12 h-12 bg-slate-900/60 rounded-full flex items-center justify-center text-slate-650 text-xl border border-slate-800/55">
+                        <i class="fa-solid fa-folder-open text-amber-500/60"></i>
                     </div>
                     <div>
-                        <h4 class="font-bold text-slate-400 text-xs">目前尚無任何秘密動態</h4>
-                        <p class="text-[10px] text-slate-600 mt-1">成為第一個分享精采近況的兄弟吧！</p>
+                        <h4 class="font-bold text-slate-400 text-xs">目前尚無任何祕密動態</h4>
+                        <p class="text-[10px] text-slate-650 mt-1">成為第一個分享精彩近況的兄弟吧！</p>
                     </div>
                 `;
                 listContainer.appendChild(emptyCard);
@@ -1616,7 +1566,7 @@
             
             slicedList.forEach((post, index) => {
                 const card = document.createElement('div');
-                card.className = 'bg-slate-900/40 border border-slate-900/85 rounded-3xl p-5 hover:border-amber-500/10 transition duration-300 relative space-y-4';
+                card.className = 'bg-slate-900/25 border border-slate-900/85 rounded-3xl p-5 hover:border-amber-500/20 transition duration-300 relative space-y-4 architectural-border';
                 
                 if (!window.state.viewedPostsInSession[post.id]) {
                     window.state.viewedPostsInSession[post.id] = true;
@@ -1629,15 +1579,15 @@
                     const colors = {
                         1: 'from-amber-400 via-yellow-500 to-amber-600 shadow-amber-950/20 text-slate-950',
                         2: 'from-slate-300 via-slate-400 to-slate-500 shadow-slate-950/15 text-slate-950',
-                        3: 'from-amber-600 via-orange-600 to-amber-800 shadow-orange-950/15 text-white'
+                        3: 'from-amber-600 via-orange-650 to-amber-800 shadow-orange-950/15 text-white'
                     };
                     const badgeText = rank === 1 ? '🥇 1st' : rank === 2 ? '🥈 2nd' : rank === 3 ? '🥉 3rd' : `🏆 ${rank}th`;
                     const currentBg = colors[rank] || 'from-slate-900 via-slate-950 to-black text-slate-500 border border-slate-800';
                     
                     rankingCrownHtml = `
-                        <div class="absolute -top-2.5 -left-2.5 bg-gradient-to-r ${currentBg} text-[10px] font-extrabold px-3 py-1.5 rounded-full shadow-lg z-10 flex items-center gap-1 uppercase tracking-wider">
+                        <div class="absolute -top-2.5 -left-2.5 bg-gradient-to-r ${currentBg} text-[10px] font-extrabold px-3 py-1.5 rounded-full shadow-lg z-10 flex items-center gap-1.5 uppercase tracking-wider font-luxury">
                             <span>${badgeText}</span>
-                            <span class="text-[8px] font-light text-slate-400/80 lowercase">score: ${post.rankScore ? post.rankScore.toFixed(1) : 0}</span>
+                            <span class="text-[8px] font-light opacity-75 font-sans lowercase">Score: ${post.rankScore ? post.rankScore.toFixed(1) : 0}</span>
                         </div>
                     `;
                 }
@@ -1657,24 +1607,24 @@
                     
                     if (isNSFW && !isUnlocked) {
                         imageHtml = `
-                            <div class="relative w-full rounded-2xl overflow-hidden border border-slate-850 bg-slate-950 h-56 group cursor-pointer" onclick="unlockNSFW('${post.id}')">
-                                <img src="${post.image}" class="w-full h-full object-cover filter blur-2xl opacity-40 pointer-events-none" draggable="false" oncontextmenu="return false;">
-                                <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-md flex flex-col items-center justify-center text-center p-4">
-                                    <div class="w-11 h-11 bg-rose-500/10 rounded-full flex items-center justify-center text-rose-500 text-lg mb-2">
+                            <div class="relative w-full rounded-2xl overflow-hidden border border-slate-900 bg-slate-950 h-56 group cursor-pointer" onclick="unlockNSFW('${post.id}')">
+                                <img src="${post.image}" class="w-full h-full object-cover filter blur-3xl opacity-35 pointer-events-none" draggable="false" oncontextmenu="return false;">
+                                <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-md flex flex-col items-center justify-center text-center p-4">
+                                    <div class="w-11 h-11 bg-rose-500/15 rounded-full flex items-center justify-center text-rose-500 text-lg mb-2 shadow-lg shadow-rose-950/20">
                                         <i class="fa-solid fa-eye-slash"></i>
                                     </div>
                                     <h5 class="text-xs font-bold text-rose-400">私密尺度照片 (NSFW)</h5>
-                                    <p class="text-[9px] text-slate-500 mt-1">此照片被發布者標記為敏感照片，點擊立即安全解鎖觀看 🔒</p>
+                                    <p class="text-[9.5px] text-slate-500 mt-1.5">此照片被發布者標記為敏感照片，點擊立即解鎖 🔒</p>
                                 </div>
                             </div>
                         `;
                     } else {
                         imageHtml = `
-                            <div class="relative w-full rounded-2xl overflow-hidden border border-slate-850 bg-slate-950 max-h-[420px] group select-none">
-                                <img src="${post.image}" class="w-full h-auto object-contain max-h-[400px] pointer-events-none" draggable="false" oncontextmenu="return false;">
-                                <div class="absolute inset-0 pointer-events-none select-none flex flex-col items-center justify-center opacity-[0.04]">
-                                    <span class="text-white text-3xl font-extrabold rotate-12 tracking-widest uppercase mb-12">SecretRoom Proof</span>
-                                    <span class="text-white text-3xl font-extrabold rotate-12 tracking-widest uppercase">SecretRoom Proof</span>
+                            <div class="relative w-full rounded-2xl overflow-hidden border border-slate-900 bg-slate-950 max-h-[420px] group select-none flex justify-center items-center">
+                                <img src="${post.image}" class="w-full h-auto object-contain max-h-[400px] pointer-events-none rounded-xl" draggable="false" oncontextmenu="return false;">
+                                <div class="absolute inset-0 pointer-events-none select-none flex flex-col items-center justify-center opacity-[0.03]">
+                                    <span class="text-white text-3xl font-extrabold rotate-12 tracking-widest uppercase mb-12 font-luxury">SecretRoom Proof</span>
+                                    <span class="text-white text-3xl font-extrabold rotate-12 tracking-widest uppercase font-luxury">SecretRoom Proof</span>
                                 </div>
                             </div>
                         `;
@@ -1685,20 +1635,20 @@
                 let actionBtnHtml = '';
                 if (post.userId === window.state.applicationId) {
                     actionBtnHtml = `
-                        <button onclick="deleteMyPost('${post.id}')" class="text-slate-600 hover:text-red-400 transition text-xs" title="刪除此動態">
+                        <button onclick="deleteMyPost('${post.id}')" class="text-slate-600 hover:text-red-400 transition text-xs" title="刪除此秘密">
                             <i class="fa-regular fa-trash-can"></i>
                         </button>
                     `;
                 } else {
                     actionBtnHtml = `
-                        <button onclick="openReportModal('${post.id}')" class="text-slate-600 hover:text-rose-450 transition text-xs" title="檢舉此動態">
+                        <button onclick="openReportModal('${post.id}')" class="text-slate-600 hover:text-rose-450 transition text-xs" title="檢舉此內容">
                             <i class="fa-regular fa-flag"></i>
                         </button>
                     `;
                 }
 
                 const peachEggplantHtml = userLiked ? `
-                    <button onclick="toggleLikePost('${post.id}')" class="flex items-center gap-1.5 text-purple-400 font-semibold transition duration-300">
+                    <button onclick="toggleLikePost('${post.id}')" class="flex items-center gap-1.5 text-purple-400 font-bold transition duration-300">
                         <svg class="w-5 h-5 text-purple-400 fill-current" viewBox="0 0 64 64" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M16 48C12 40 18 20 38 12C54 6 58 18 54 30C50 42 32 54 16 48Z" />
                             <path d="M34 16C32 10 26 12 28 16C30 20 36 16 36 16Z" fill="#10b981" stroke="#10b981" />
@@ -1722,7 +1672,7 @@
                         <div class="flex items-center gap-3 cursor-pointer" onclick="viewUserProfile('${post.userId}')">
                             <img src="${post.authorAvatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-10 h-10 rounded-full object-cover border border-slate-800">
                             <div>
-                                <div class="flex items-center gap-1.5">
+                                <div class="flex items-center gap-2">
                                     <h4 class="font-bold text-xs text-slate-200">${post.authorName}</h4>
                                     ${authorBadgeHtml}
                                 </div>
@@ -1732,19 +1682,19 @@
                         ${actionBtnHtml}
                     </div>
 
-                    <p class="text-xs text-slate-300 leading-relaxed font-light">${post.text}</p>
+                    <p class="text-xs text-slate-300 leading-relaxed font-light whitespace-pre-line">${post.text}</p>
 
                     ${imageHtml}
 
                     ${post.kinks && post.kinks.length > 0 ? `
                         <div class="flex flex-wrap gap-1.5">
                             ${post.kinks.map(k => `
-                                <span class="text-[10px] font-semibold text-amber-500/80 bg-amber-500/5 px-2.5 py-1 rounded-full border border-amber-500/5"># ${k}</span>
+                                <span class="text-[9.5px] font-bold text-amber-500/80 bg-amber-550/5 px-3 py-1 rounded-full border border-amber-500/5"># ${k}</span>
                             `).join('')}
                         </div>
                     ` : ''}
 
-                    <div class="pt-2.5 border-t border-slate-900 flex items-center justify-between text-slate-500 text-[10.5px]">
+                    <div class="pt-3 border-t border-slate-900/60 flex items-center justify-between text-slate-500 text-[10.5px]">
                         
                         ${peachEggplantHtml}
 
@@ -1754,32 +1704,32 @@
                         </button>
 
                         <div class="flex items-center gap-2">
-                            <div class="flex items-center gap-0.5 text-slate-600">
+                            <div class="flex items-center gap-0.5 text-slate-650">
                                 ${[1, 2, 3, 4, 5].map(star => {
                                     const ratingVal = post.ratings && post.ratings[window.state.applicationId];
                                     const activeColor = ratingVal && ratingVal >= star ? 'text-amber-500' : 'text-slate-700 hover:text-amber-400';
                                     return `<i onclick="ratePost('${post.id}', ${star})" class="fa-solid fa-star cursor-pointer transition text-[11px] ${activeColor}"></i>`;
                                 }).join('')}
                             </div>
-                            <span class="text-[10px] text-slate-400 font-bold bg-slate-950 px-2 py-0.5 rounded-md">${averageRating.toFixed(1)} (${ratings.length}人評分)</span>
+                            <span class="text-[10px] text-slate-400 font-bold bg-slate-950 px-2 py-0.5 rounded-md border border-slate-900">${averageRating.toFixed(1)} (${ratings.length}人)</span>
                         </div>
                     </div>
 
                     <div id="comments-box-${post.id}" class="${window.state.openComments[post.id] ? '' : 'hidden'} mt-4 pt-4 border-t border-slate-900/60 space-y-3">
                         <div class="flex gap-2">
-                            <input type="text" id="comment-input-${post.id}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500" placeholder="真誠留言，打個招呼吧...">
-                            <button onclick="submitComment('${post.id}')" class="bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-[10px] px-4 rounded-xl transition shrink-0">送出</button>
+                            <input type="text" id="comment-input-${post.id}" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" placeholder="誠摯回應，打個招呼吧...">
+                            <button onclick="submitComment('${post.id}')" class="bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-[10px] px-4 rounded-xl transition shrink-0 active:scale-95">送出</button>
                         </div>
                         <div class="space-y-2.5 max-h-48 overflow-y-auto pr-1" id="comments-list-${post.id}">
                             ${post.comments ? Object.values(post.comments).map(c => `
-                                <div class="bg-slate-950/40 p-2.5 rounded-xl border border-slate-900/60 text-xs">
-                                    <div class="flex items-center justify-between mb-1">
+                                <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-900/60 text-xs">
+                                    <div class="flex items-center justify-between mb-1.5">
                                         <span class="font-bold text-slate-300">@${c.userId}</span>
-                                        <span class="text-[8px] text-slate-600">${new Date(c.time).toLocaleDateString()}</span>
+                                        <span class="text-[8px] text-slate-650 font-mono">${new Date(c.time).toLocaleDateString()}</span>
                                     </div>
                                     <p class="text-slate-400 font-light leading-relaxed">${c.text}</p>
                                 </div>
-                            `).reverse().join('') : `<div class="text-[9px] text-slate-600 text-center py-2">目前尚無留言</div>`}
+                            `).reverse().join('') : `<div class="text-[9px] text-slate-650 text-center py-2">目前尚無任何留言</div>`}
                         </div>
                     </div>
                 `;
@@ -1788,12 +1738,12 @@
 
             if (totalCount > window.state.visiblePostsCount && !isFocusedMode) {
                 const loadMoreEl = document.createElement('div');
-                loadMoreEl.className = 'text-center py-4 text-[10px] text-slate-600 animate-pulse';
-                loadMoreEl.textContent = '往下滾動載入更多天菜帥哥動態... 🌟';
+                loadMoreEl.className = 'text-center py-4 text-[10px] text-slate-550 animate-pulse';
+                loadMoreEl.textContent = '往下滾動載入更多祕密內容... 🔑';
                 listContainer.appendChild(loadMoreEl);
             } else if (!isFocusedMode) {
                 const finishedEl = document.createElement('div');
-                finishedEl.className = 'text-center py-6 text-[10px] text-slate-600 border-t border-slate-900/50 mt-4';
+                finishedEl.className = 'text-center py-6 text-[10px] text-slate-600 border-t border-slate-900/40 mt-4';
                 finishedEl.innerHTML = '已看完目前所有的秘密動態 🔒';
                 listContainer.appendChild(finishedEl);
             }
@@ -1829,13 +1779,13 @@
                     specApplyBtnHtml = '';
                 } else if (profileUser.specEliteStatus === 'pending') {
                     specApplyBtnHtml = `
-                        <button class="w-full bg-slate-900 border border-slate-800 text-amber-500/70 font-semibold text-xs py-3 px-4 rounded-xl mt-3 flex items-center justify-center gap-1.5 select-none animate-pulse">
+                        <button class="w-full bg-slate-900/50 border border-slate-850 text-amber-500/70 font-semibold text-xs py-3 px-4 rounded-xl mt-3 flex items-center justify-center gap-1.5 select-none animate-pulse">
                             <i class="fa-solid fa-spinner animate-spin"></i> 黃金 Spec 認證審查中...
                         </button>
                     `;
                 } else if (isMe) {
                     specApplyBtnHtml = `
-                        <button onclick="showSpecApplyModal()" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 hover:brightness-110 text-slate-950 font-bold text-xs py-3.5 px-4 rounded-xl shadow-lg shadow-amber-950/15 transition mt-3 flex items-center justify-center gap-1.5">
+                        <button onclick="showSpecApplyModal()" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 hover:brightness-110 text-slate-950 font-bold text-xs py-3.5 px-4 rounded-xl shadow-lg shadow-amber-950/15 transition mt-3 flex items-center justify-center gap-1.5 active:scale-[0.98]">
                             <i class="fa-solid fa-lock"></i> 申請黃金 Spec 認證勳章
                         </button>
                     `;
@@ -1846,15 +1796,15 @@
             if (isMe) {
                 const myVisitors = window.state.visitors || [];
                 visitorsHtml = `
-                    <div class="bg-[#040409] border border-amber-500/10 p-4 rounded-3xl space-y-3.5 animate-fade-in">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block"><i class="fa-regular fa-eye text-amber-500"></i> 最近誰來看過我 (足跡)：</span>
-                        <div class="flex items-center gap-3 overflow-x-auto scrollbar-hide py-1">
+                    <div class="bg-[#05050a] border border-amber-500/10 p-5 rounded-3xl space-y-4 animate-fade-in shadow-xl shadow-black/40">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block"><i class="fa-regular fa-eye text-amber-500 mr-1"></i> 最近誰來看過我 (足跡)：</span>
+                        <div class="flex items-center gap-4 overflow-x-auto scrollbar-hide py-1">
                             ${myVisitors.length === 0 ? `
-                                <div class="text-[10px] text-slate-600 py-1 font-light">目前尚無足跡</div>
+                                <div class="text-[10px] text-slate-650 py-1 font-light">目前尚無訪問足跡</div>
                             ` : myVisitors.map(v => `
                                 <div onclick="viewUserProfile('${v.from}')" class="flex flex-col items-center shrink-0 cursor-pointer group">
                                     <img src="${v.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-10 h-10 rounded-full object-cover border border-slate-800 group-hover:border-amber-500 transition duration-300">
-                                    <span class="text-[9px] text-slate-500 mt-1.5 truncate max-w-[50px]">@${v.from}</span>
+                                    <span class="text-[9px] text-slate-500 mt-2 truncate max-w-[55px] font-mono group-hover:text-amber-400 transition">@${v.from}</span>
                                 </div>
                             `).join('')}
                         </div>
@@ -1863,16 +1813,16 @@
             }
 
             container.innerHTML = `
-                <div class="bg-slate-900/40 border border-slate-900/80 rounded-3xl p-6 relative flex flex-col items-center text-center space-y-4">
+                <div class="bg-slate-900/25 border border-slate-900/80 rounded-3xl p-6 relative flex flex-col items-center text-center space-y-5">
                     
                     ${!isMe ? `
-                        <button onclick="backToFeed()" class="absolute top-5 left-5 text-slate-500 hover:text-white transition text-[11px] font-medium flex items-center gap-1">
-                            <i class="fa-solid fa-arrow-left"></i> 返回動態牆
+                        <button onclick="backToFeed()" class="absolute top-5 left-5 text-slate-500 hover:text-white transition text-xs font-semibold flex items-center gap-1">
+                            <i class="fa-solid fa-arrow-left"></i> 返回秘密牆
                         </button>
                     ` : ''}
 
-                    <div class="relative w-24 h-24 rounded-full p-1 bg-slate-900 border border-slate-800 shadow-xl select-none">
-                        <img src="${profileUser.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-full h-full rounded-full object-cover" draggable="false" oncontextmenu="return false;">
+                    <div class="relative w-24 h-24 rounded-full p-1 bg-slate-950 border border-slate-850 shadow-2xl select-none">
+                        <img src="${profileUser.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-full h-full rounded-full object-cover">
                     </div>
 
                     <div class="space-y-1.5 pt-1 flex flex-col items-center">
@@ -1881,31 +1831,31 @@
                         </h2>
                         <span class="text-xs text-slate-500 block font-mono">@${profileUserId}</span>
                         
-                        <!-- 膠囊微光徽章：移至大頭照正下方 -->
-                        <div class="flex items-center justify-center gap-2 mt-3.5 flex-wrap">
+                        <!-- 膠囊微光勳章：極致奢華膠囊造型設計，帶有柔和霓虹背景 -->
+                        <div class="flex items-center justify-center gap-2 mt-4.5 flex-wrap">
                             ${getBadgeHTML(profileUser, true)}
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3 w-full bg-slate-950/50 p-4 border border-slate-900 rounded-2xl text-xs text-left text-slate-400">
-                        <div><span class="text-slate-500 font-medium">身高體重:</span> <span class="text-slate-300 font-semibold">${profileUser.height} cm / ${profileUser.weight} kg</span></div>
-                        <div><span class="text-slate-500 font-medium">身體密碼:</span> <span class="text-slate-300 font-semibold">長 ${profileUser.length} cm / 粗 ${profileUser.girth} cm</span></div>
-                        <div class="col-span-2 pt-2 border-t border-slate-900/60 mt-1.5">
-                            <span class="text-slate-500 font-medium">感興趣主題:</span>
-                            <p class="text-slate-300 font-light mt-1 text-[11px] leading-relaxed font-semibold">${kinksStr}</p>
+                    <div class="grid grid-cols-2 gap-3 w-full bg-slate-950/40 p-4 border border-slate-900 rounded-2xl text-xs text-left text-slate-400 shadow-inner">
+                        <div><span class="text-slate-550 font-semibold mr-1">身高體重:</span> <span class="text-slate-300 font-bold">${profileUser.height} cm / ${profileUser.weight} kg</span></div>
+                        <div><span class="text-slate-550 font-semibold mr-1">物理密碼:</span> <span class="text-slate-300 font-bold">長 ${profileUser.length} cm / 粗 ${profileUser.girth} cm</span></div>
+                        <div class="col-span-2 pt-2 border-t border-slate-900/60 mt-2">
+                            <span class="text-slate-550 font-semibold">偏好主題:</span>
+                            <p class="text-slate-300 font-light mt-1.5 text-[11px] leading-relaxed font-semibold">${kinksStr}</p>
                         </div>
                     </div>
 
                     ${isMe && profileUser.avatarStatus === 'pending' ? `
-                        <div class="w-full p-2.5 bg-purple-500/5 border border-purple-500/10 rounded-xl text-[10px] text-purple-400 font-semibold flex items-center justify-center gap-1.5 select-none animate-pulse">
-                            <i class="fa-solid fa-camera"></i> 新上傳頭像已在背景人工審核中... (目前展示原頭像)
+                        <div class="w-full p-3 bg-purple-500/5 border border-purple-500/10 rounded-xl text-[10px] text-purple-400 font-bold flex items-center justify-center gap-1.5 select-none animate-pulse">
+                            <i class="fa-solid fa-camera"></i> 新大頭相片正在背景人工審核中... (暫以原頭像顯示)
                         </div>
                     ` : ''}
 
                     ${specApplyBtnHtml}
 
                     ${isMe ? `
-                        <button onclick="showEditProfileModal()" class="w-full bg-slate-900 hover:bg-slate-800 text-slate-300 font-semibold text-xs py-3 px-4 rounded-xl border border-slate-800 transition duration-300">
+                        <button onclick="showEditProfileModal()" class="w-full bg-slate-900 hover:bg-slate-850 text-slate-300 font-semibold text-xs py-3 px-4 rounded-xl border border-slate-800 transition duration-300 active:scale-[0.98]">
                             修改個人資料
                         </button>
                     ` : ''}
@@ -2017,7 +1967,7 @@
             try {
                 const postRef = doc(db, 'secretg_apps', appId, 'posts', postId);
                 await updateDoc(postRef, { ratings: ratings });
-                showToast(`您給予了 ${ratingValue} 星好評！`, 'success');
+                showToast(`您給予了此篇秘密 ${ratingValue} 星評分！`, 'success');
             } catch (err) {
                 console.error("評分同步出錯:", err);
             }
@@ -2058,10 +2008,10 @@
                 await updateDoc(postRef, { comments: comments });
                 
                 input.value = '';
-                showToast('留言發布成功！', 'success');
+                showToast('回覆發布完成！已寫入安全備忘', 'success');
             } catch (err) {
                 console.error("發布留言出錯:", err);
-                showToast('留言失敗', 'error');
+                showToast('回覆發布失敗', 'error');
             } finally {
                 hideLoading();
             }
@@ -2085,7 +2035,7 @@
         window.unlockNSFW = function(postId) {
             window.state.unlockedNSFWPosts[postId] = true;
             updateSearchAndFeedUI();
-            showToast('已解鎖看圖 🔞', 'success');
+            showToast('已完成端對端解密，解鎖私密圖片觀看 🔞', 'success');
         };
 
         // 恢復貼文檢舉功能：彈出檢舉模態視窗與提交 Firebase 事件
@@ -2093,32 +2043,32 @@
             const modal = document.createElement('div');
             modal.className = 'fixed inset-0 z-[105] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md';
             modal.innerHTML = `
-                <div class="bg-slate-950 border border-amber-500/20 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative">
+                <div class="bg-[#080810] border border-amber-500/20 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative">
                     <button id="close-report-modal" class="absolute top-4 right-4 text-slate-500 hover:text-white text-xl">&times;</button>
-                    <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
-                        <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> 檢舉此篇動態
+                    <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2 font-luxury">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> 檢舉此篇秘密
                     </h3>
-                    <p class="text-xs text-slate-400 mb-4 leading-relaxed">請選擇檢舉原因，我們將派專員審核此內容：</p>
+                    <p class="text-xs text-slate-400 mb-4 leading-relaxed">請選擇檢舉原因，我們將在後台派專員審核此內容：</p>
                     <div class="space-y-2 mb-6">
-                        <label class="flex items-center gap-2.5 cursor-pointer p-2 bg-slate-900 border border-slate-800 rounded-xl hover:border-amber-500/30 transition">
+                        <label class="flex items-center gap-2.5 cursor-pointer p-2.5 bg-slate-900 border border-slate-850 rounded-xl hover:border-amber-500/30 transition">
                             <input type="radio" name="report-reason" value="垃圾訊息或惡意洗版" class="accent-amber-500" checked>
-                            <span class="text-xs text-slate-350 font-medium">垃圾訊息或惡意洗版</span>
+                            <span class="text-xs text-slate-300 font-semibold">垃圾訊息或惡意洗版</span>
                         </label>
-                        <label class="flex items-center gap-2.5 cursor-pointer p-2 bg-slate-900 border border-slate-800 rounded-xl hover:border-amber-500/30 transition">
+                        <label class="flex items-center gap-2.5 cursor-pointer p-2.5 bg-slate-900 border border-slate-850 rounded-xl hover:border-amber-500/30 transition">
                             <input type="radio" name="report-reason" value="未標記敏感內容 (NSFW/露骨)" class="accent-amber-500">
-                            <span class="text-xs text-slate-350 font-medium">未標記敏感內容 (NSFW/露骨)</span>
+                            <span class="text-xs text-slate-300 font-semibold">未標記敏感內容 (NSFW/露骨)</span>
                         </label>
-                        <label class="flex items-center gap-2.5 cursor-pointer p-2 bg-slate-900 border border-slate-800 rounded-xl hover:border-amber-500/30 transition">
+                        <label class="flex items-center gap-2.5 cursor-pointer p-2.5 bg-slate-900 border border-slate-850 rounded-xl hover:border-amber-500/30 transition">
                             <input type="radio" name="report-reason" value="騷擾、人身攻擊或謾罵" class="accent-amber-500">
-                            <span class="text-xs text-slate-350 font-medium">騷擾、人身攻擊或謾罵</span>
+                            <span class="text-xs text-slate-300 font-semibold">騷擾、人身攻擊或謾罵</span>
                         </label>
-                        <label class="flex items-center gap-2.5 cursor-pointer p-2 bg-slate-900 border border-slate-800 rounded-xl hover:border-amber-500/30 transition">
+                        <label class="flex items-center gap-2.5 cursor-pointer p-2.5 bg-slate-900 border border-slate-850 rounded-xl hover:border-amber-500/30 transition">
                             <input type="radio" name="report-reason" value="盜用照片、冒充他人身分" class="accent-amber-500">
-                            <span class="text-xs text-slate-350 font-medium">盜用照片、冒充他人身分</span>
+                            <span class="text-xs text-slate-300 font-semibold">盜用照片、冒充他人身分</span>
                         </label>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
-                        <button id="btn-report-cancel" class="bg-slate-900 hover:bg-slate-800 text-slate-300 font-semibold text-xs py-2.5 rounded-xl transition">取消</button>
+                        <button id="btn-report-cancel" class="bg-slate-900 hover:bg-slate-800 text-slate-300 font-bold text-xs py-2.5 rounded-xl transition">取消</button>
                         <button id="btn-report-submit" class="bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs py-2.5 rounded-xl transition">提交檢舉</button>
                     </div>
                 </div>
@@ -2163,7 +2113,7 @@
                         reportCount: updatedReports.length
                     });
 
-                    showToast('檢舉已提交成功，管理團隊會儘速審查！', 'success');
+                    showToast('安全檢舉已提交成功，管理團隊會儘速審查此秘密動態！', 'success');
                 }
             } catch (err) {
                 console.error("提交檢舉異常:", err);
@@ -2177,58 +2127,58 @@
             const modal = document.createElement('div');
             modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md';
             modal.innerHTML = `
-                <div class="bg-slate-950 border border-amber-500/10 rounded-3xl p-6 max-w-md w-full shadow-2xl relative overflow-y-auto max-h-[90vh]">
-                    <button id="close-share" class="absolute top-4 right-4 text-slate-500 hover:text-white text-xl">&times;</button>
-                    <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2">
-                        <i class="fa-solid fa-feather-point text-amber-500"></i> 分享今日近況
+                <div class="bg-[#080810] border border-amber-500/15 rounded-3xl p-6 max-w-md w-full shadow-2xl relative overflow-y-auto max-h-[90vh]">
+                    <button id="close-share" class="absolute top-4 right-4 text-slate-500 hover:text-white text-xl transition">&times;</button>
+                    <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2 font-luxury">
+                        <i class="fa-solid fa-feather-point text-amber-500"></i> PUBLISH SECRET
                     </h3>
-                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">上傳近況動態。可選取多個偏好標籤。</p>
+                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">發布您的今日秘密動態。發布相片時將自動壓制安全防偽水印。</p>
 
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">動態內容 (選填)</label>
-                            <textarea id="share-text" rows="3" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 resize-none" placeholder="分享當下的健美近況 or 私密心境..."></textarea>
+                            <label class="block text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">動態內容描述 (選填)</label>
+                            <textarea id="share-text" rows="3" class="w-full bg-slate-900 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 resize-none transition" placeholder="分享當下的健美近況 or 私密心境..."></textarea>
                         </div>
 
                         <div>
                             <label class="block text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">上傳照片 (選填)</label>
-                            <div class="border border-slate-800 rounded-2xl p-4 flex flex-col items-center justify-center bg-slate-950/40 text-center">
+                            <div class="border border-slate-850 rounded-2xl p-4 flex flex-col items-center justify-center bg-slate-900/20 text-center">
                                 <div id="share-img-trigger" class="relative w-full h-40 rounded-xl border border-dashed border-slate-800 hover:border-amber-500 flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-slate-950 transition">
-                                    <img id="share-preview" class="absolute inset-0 w-full h-full object-contain hidden" draggable="false" oncontextmenu="return false;">
-                                    <div id="share-placeholder" class="text-slate-600 flex flex-col items-center gap-1.5">
+                                    <img id="share-preview" class="absolute inset-0 w-full h-full object-contain hidden">
+                                    <div id="share-placeholder" class="text-slate-650 flex flex-col items-center gap-1.5 transition">
                                         <i class="fa-regular fa-image text-2xl"></i>
-                                        <span class="text-[10px]">點擊選取相片檔案</span>
+                                        <span class="text-[9.5px] font-bold">點擊選取相片檔案</span>
                                     </div>
                                 </div>
                                 <input type="file" id="share-file" accept="image/*" class="hidden">
-                                <span class="text-[9px] text-slate-500 mt-2 block">上傳照片將自動套用安全防偽浮水印。</span>
+                                <span class="text-[9px] text-slate-500 mt-2 block">照片上傳後會於背景自動套用防盜防偽安全浮水印。</span>
                             </div>
                         </div>
 
                         <div class="p-3 bg-rose-500/5 border border-rose-500/10 rounded-2xl">
                             <label class="flex items-center gap-3 cursor-pointer">
-                                <input type="checkbox" id="share-nsfw-cb" class="rounded border-slate-800 bg-slate-950 text-rose-600 focus:ring-rose-500">
+                                <input type="checkbox" id="share-nsfw-cb" class="rounded border-slate-800 bg-slate-950 text-rose-600 focus:ring-rose-500 w-4 h-4">
                                 <div>
                                     <span class="text-xs text-rose-400 font-bold block">標記為私密尺度照片 (NSFW) 🔞</span>
-                                    <p class="text-[9px] text-slate-500 mt-0.5 leading-relaxed">勾選後，動態牆上的圖片會套用高斯毛玻璃模糊保護，防止他人意外曝光社死。</p>
+                                    <p class="text-[9px] text-slate-500 mt-0.5 leading-relaxed">勾選後，動態牆上照片會預設套用高斯毛玻璃模糊保護，防止他人意外曝光而尷尬。</p>
                                 </div>
                             </label>
                         </div>
 
                         <div>
-                            <label class="block text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">關聯的主題標籤 (至少勾選一項)</label>
+                            <label class="block text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">關聯主題標籤 (至少勾選一項)</label>
                             <div class="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto bg-slate-950/40 p-3 border border-slate-850 rounded-2xl" id="share-kinks-container">
                                 ${window.state.kinksOptions.map(k => `
                                     <label class="flex items-center gap-2.5 cursor-pointer p-1 rounded hover:bg-slate-900/60 transition">
                                         <input type="checkbox" name="share-kink" value="${k}" class="rounded border-slate-800 bg-slate-950 text-amber-500">
-                                        <span class="text-xs text-slate-300 font-medium">${k}</span>
+                                        <span class="text-xs text-slate-350 font-semibold">${k}</span>
                                     </label>
                                 `).join('')}
                             </div>
                         </div>
 
-                        <button id="btn-submit-post" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-bold text-xs py-3.5 rounded-xl transition shadow-lg tracking-wider">
-                            發布天菜秘密動態
+                        <button id="btn-submit-post" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-bold text-xs py-3.5 rounded-xl transition shadow-lg tracking-wider active:scale-[0.98]">
+                            發布秘密動態
                         </button>
                     </div>
                 </div>
@@ -2267,7 +2217,7 @@
                             ctx.drawImage(img, 0, 0, w, h);
 
                             ctx.save();
-                            ctx.font = "bold 26px sans-serif";
+                            ctx.font = "bold 26px Cinzel";
                             ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
                             ctx.translate(w/2, h/2);
                             ctx.rotate(-Math.PI / 6); 
@@ -2328,7 +2278,7 @@
                     });
 
                     modal.remove();
-                    showToast('動態已安全發布並完成加密同步！', 'success');
+                    showToast('動態已安全發布並完成加密備份！', 'success');
                 } catch (err) {
                     console.error("貼文失敗:", err);
                     showToast('貼文失敗', 'error');
@@ -2343,21 +2293,21 @@
             const modal = document.createElement('div');
             modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md';
             modal.innerHTML = `
-                <div class="bg-slate-950 border border-amber-500/10 rounded-3xl p-6 max-w-md w-full shadow-2xl relative overflow-y-auto max-h-[90vh]">
-                    <button id="close-edit" class="absolute top-4 right-4 text-slate-500 hover:text-white text-xl">&times;</button>
-                    <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2">
-                        <i class="fa-solid fa-user-gear text-amber-500"></i> 修改個人資料
+                <div class="bg-[#080810] border border-amber-500/10 rounded-3xl p-6 max-w-md w-full shadow-2xl relative overflow-y-auto max-h-[90vh]">
+                    <button id="close-edit" class="absolute top-4 right-4 text-slate-500 hover:text-white text-xl transition">&times;</button>
+                    <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2 font-luxury">
+                        <i class="fa-solid fa-user-gear text-amber-500"></i> EDIT PROFILE
                     </h3>
                     <p class="text-xs text-slate-400 mb-5 leading-relaxed">填寫要變更的個人資訊，除頭像變更後需人工審核外，其餘欄位修改儲存後即會自動更新！</p>
 
                     <div class="space-y-4">
                         
-                        <div class="bg-slate-900/60 p-4 border border-slate-800 rounded-2xl flex items-center justify-between">
-                            <div class="text-left">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">變更個人頭像 <span class="text-amber-500 block mt-1">(支援最大 10MB 檔案)</span></span>
-                                <span class="text-[9px] text-amber-500/80 font-semibold block mt-1 leading-normal"><i class="fa-solid fa-camera"></i> 變更大頭照需要管理團隊人工二次核定才能替用。</span>
+                        <div class="bg-slate-900/60 p-4 border border-slate-850 rounded-2xl flex items-center justify-between">
+                            <div class="text-left max-w-[210px]">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">變更個人大頭照</span>
+                                <span class="text-[9px] text-amber-500/80 font-semibold block mt-1 leading-normal"><i class="fa-solid fa-camera"></i> 變更大頭照需要管理團隊人工二次核定後才予以替換啟用。</span>
                             </div>
-                            <div class="relative w-14 h-14 rounded-full border border-slate-800 cursor-pointer overflow-hidden" id="edit-avatar-trigger">
+                            <div class="relative w-14 h-14 rounded-full border border-slate-800 cursor-pointer overflow-hidden shadow-md" id="edit-avatar-trigger">
                                 <img src="${user.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" id="edit-avatar-preview" class="w-full h-full object-cover">
                             </div>
                             <input type="file" id="edit-avatar-file" accept="image/*" class="hidden">
@@ -2365,48 +2315,48 @@
 
                         <div>
                             <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">個人暱稱</label>
-                            <input type="text" id="edit-nickname" value="${user.nickname || ''}" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
+                            <input type="text" id="edit-nickname" value="${user.nickname || ''}" class="w-full bg-slate-900 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">身高 (cm)</label>
-                                <input type="number" id="edit-height" value="${user.height || ''}" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
+                                <input type="number" id="edit-height" value="${user.height || ''}" class="w-full bg-slate-900 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">體重 (kg)</label>
-                                <input type="number" id="edit-weight" value="${user.weight || ''}" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
+                                <input type="number" id="edit-weight" value="${user.weight || ''}" class="w-full bg-slate-900 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
                             </div>
                         </div>
 
-                        <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-2xl">
-                            <span class="text-[10px] font-bold text-amber-500 uppercase tracking-widest block mb-2"><i class="fa-solid fa-lock"></i> 身體私密規格密碼</span>
+                        <div class="p-4 bg-slate-900/60 border border-slate-855 rounded-2xl">
+                            <span class="text-[10px] font-bold text-amber-500 uppercase tracking-widest block mb-2"><i class="fa-solid fa-lock mr-1"></i> 身體數據密碼規格</span>
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <label class="block text-[9px] font-bold text-slate-500 mb-1">勃起長度 (cm)</label>
-                                    <input type="number" id="edit-length" value="${user.length || ''}" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
+                                    <input type="number" id="edit-length" value="${user.length || ''}" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
                                 </div>
                                 <div>
                                     <label class="block text-[9px] font-bold text-slate-500 mb-1">勃起粗度圍 (cm)</label>
-                                    <input type="number" id="edit-girth" value="${user.girth || ''}" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
+                                    <input type="number" id="edit-girth" value="${user.girth || ''}" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
                                 </div>
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">興趣與主題標籤</label>
+                            <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">感興趣的主題與偏好標籤</label>
                             <div class="grid grid-cols-2 gap-2 bg-slate-950/40 p-3.5 border border-slate-850 rounded-2xl">
                                 ${window.state.kinksOptions.map(k => `
                                     <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-900/60 p-2 rounded-xl transition border border-transparent hover:border-slate-800">
                                         <input type="checkbox" name="edit-kink" value="${k}" ${user.kinks && user.kinks.includes(k) ? 'checked' : ''} class="rounded border-slate-850 bg-slate-950 text-amber-500 focus:ring-amber-500 w-3.5 h-3.5">
-                                        <span class="text-[10px] text-slate-350 font-medium leading-tight select-none">${k}</span>
+                                        <span class="text-[10px] text-slate-350 font-semibold leading-tight select-none">${k}</span>
                                     </label>
                                 `).join('')}
                             </div>
                         </div>
 
-                        <button id="btn-submit-profile-edit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-bold text-xs py-3.5 rounded-xl transition tracking-wider">
-                            儲存修改與送出
+                        <button id="btn-submit-profile-edit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-bold text-xs py-3.5 rounded-xl transition tracking-wider active:scale-[0.98]">
+                            儲存變更
                         </button>
                     </div>
                 </div>
@@ -2481,7 +2431,7 @@
                     window.state.userData.kinks = selectedKinks;
 
                     modal.remove();
-                    showToast('修改成功！資料已同步更新。', 'success');
+                    showToast('資料修改完成並同步更新！', 'success');
                     
                     renderDashboard(appContainer);
                 } catch (err) {
@@ -2497,32 +2447,32 @@
             const modal = document.createElement('div');
             modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md';
             modal.innerHTML = `
-                <div class="bg-slate-950 border border-amber-500/10 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative">
-                    <button id="close-spec" class="absolute top-4 right-4 text-slate-500 hover:text-white text-xl">&times;</button>
-                    <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2">
-                        <i class="fa-solid fa-ribbon text-amber-500"></i> 黃金 Spec 認證申請
+                <div class="bg-[#080810] border border-amber-500/10 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative">
+                    <button id="close-spec" class="absolute top-4 right-4 text-slate-500 hover:text-white text-xl transition">&times;</button>
+                    <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2 font-luxury">
+                        <i class="fa-solid fa-ribbon text-amber-500"></i> GOLDEN SPEC
                     </h3>
-                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">「黃金 Spec」是 SecretRoom 內最高規格之物理認證勳章。</p>
+                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">「黃金 Spec」是本會所內物理規格之頂級榮譽認證徽章。</p>
                     
-                    <div class="bg-amber-500/5 border border-amber-500/10 p-3.5 rounded-2xl mb-4 text-xs text-amber-300 leading-relaxed font-light">
+                    <div class="bg-amber-500/5 border border-amber-500/10 p-3.5 rounded-2xl mb-4 text-xs text-amber-350 leading-relaxed font-light">
                         <span class="font-bold block mb-1">⚠️ 認證規則說明：</span>
-                        請上傳生殖器長度大於 16cm 且粗度大於 5cm之照片，且照片內應有參考物(例如尺)作為依據。本相片僅限管理團隊在後台人工比對查核。
+                        請上傳生殖器長度大於 16cm 且粗度大於 5cm之照片，且照片內應有參考物(例如尺)作為依據。本相片僅限管理團隊在後台人工比對查核，絕對不對外公開。
                     </div>
 
                     <div class="space-y-4">
-                        <div class="border border-slate-800 rounded-2xl p-4 flex flex-col items-center justify-center bg-slate-950/40 text-center">
+                        <div class="border border-slate-850 rounded-2xl p-4 flex flex-col items-center justify-center bg-slate-900/20 text-center">
                             <div id="spec-img-trigger" class="relative w-full h-36 rounded-xl border border-dashed border-slate-800 hover:border-amber-500 flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-slate-950 transition">
-                                <img id="spec-preview" class="absolute inset-0 w-full h-full object-contain hidden" draggable="false" oncontextmenu="return false;">
-                                <div id="spec-placeholder" class="text-slate-600 flex flex-col items-center gap-1">
+                                <img id="spec-preview" class="absolute inset-0 w-full h-full object-contain hidden">
+                                <div id="spec-placeholder" class="text-slate-650 flex flex-col items-center gap-1">
                                     <i class="fa-solid fa-camera text-xl"></i>
-                                    <span class="text-[9.5px]">上傳實證照片 (尺標/對比物)</span>
+                                    <span class="text-[9.5px] font-bold">上傳實證照片 (尺標/對比物)</span>
                                 </div>
                             </div>
                             <input type="file" id="spec-file" accept="image/*" class="hidden">
                         </div>
 
-                        <button id="btn-submit-spec" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-bold text-xs py-3.5 rounded-xl transition shadow-lg tracking-wider">
-                            上傳資料送審
+                        <button id="btn-submit-spec" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-bold text-xs py-3.5 rounded-xl transition shadow-lg tracking-wider active:scale-[0.98]">
+                            上傳照片提交驗證
                         </button>
                     </div>
                 </div>
@@ -2561,7 +2511,7 @@
                             ctx.drawImage(img, 0, 0, w, h);
 
                             ctx.save();
-                            ctx.font = "bold 20px sans-serif";
+                            ctx.font = "bold 20px Cinzel";
                             ctx.fillStyle = "rgba(239, 68, 68, 0.18)"; 
                             ctx.translate(w/2, h/2);
                             ctx.rotate(-Math.PI / 6); 
@@ -2600,7 +2550,7 @@
                     window.state.userData.specImage = bakedSpecBase64;
 
                     modal.remove();
-                    showToast('驗證照片已加上防偽浮水印並送交管理團隊審查！', 'success');
+                    showToast('驗證照片已加上防偽水印並送交管理團隊審查！', 'success');
                     
                     renderDashboard(appContainer);
                 } catch (err) {
@@ -2632,7 +2582,7 @@
                 try {
                     const postRef = doc(db, 'secretg_apps', appId, 'posts', postId);
                     await deleteDoc(postRef);
-                    showToast('貼文已成功安全下架銷毀！', 'success');
+                    showToast('秘密動態已成功銷毀下架！', 'success');
                 } catch (err) {
                     console.error("刪除失敗:", err);
                     showToast('刪除失敗', 'error');
@@ -2642,30 +2592,63 @@
             };
         };
 
+        /* 
+           設計亮點：特色社群膠囊徽章系統 
+           暱稱正下方橫向排開、帶有柔和霓虹背景與發光
+        */
         function getBadgeHTML(user, isBig = false) {
             const badges = [];
 
             if (user.role === 'admin' || user.isAdmin) {
-                badges.push({ icon: 'fa-crown', color: 'from-amber-400 to-yellow-600 text-slate-950 shadow-yellow-500/20' });
+                badges.push({ 
+                    icon: 'fa-crown', 
+                    color: 'from-amber-400 via-yellow-500 to-amber-600 shadow-yellow-500/20', 
+                    label: '管理員', 
+                    textColor: 'text-slate-950 font-extrabold',
+                    tooltip: '官方最高權限治理者'
+                });
             }
             const createdSecs = user.createdAt ? user.createdAt.seconds : 0;
             const nowSecs = Date.now() / 1000;
             if (createdSecs && (nowSecs - createdSecs) <= (168 * 3600)) {
-                badges.push({ icon: 'fa-seedling', color: 'from-emerald-500 to-green-600 text-white shadow-emerald-500/20' });
+                badges.push({ 
+                    icon: 'fa-seedling', 
+                    color: 'from-emerald-500 via-green-500 to-teal-600 shadow-emerald-500/20', 
+                    label: '新星', 
+                    textColor: 'text-white font-bold',
+                    tooltip: '本週新進之尊貴仕紳'
+                });
             }
             if (user.isPioneer) {
-                badges.push({ icon: 'fa-shield-halved', color: 'from-amber-600 to-orange-700 text-white shadow-orange-500/10' });
+                badges.push({ 
+                    icon: 'fa-shield-halved', 
+                    color: 'from-amber-600 to-orange-700 shadow-orange-500/10 border-orange-500/10', 
+                    label: '元老', 
+                    textColor: 'text-white font-bold',
+                    tooltip: '創始階段即入駐的終身元老'
+                });
             }
-            
             if (user.isSpecElite) {
-                badges.push({ icon: 'fa-medal', color: 'from-amber-400 via-yellow-500 to-amber-600 text-slate-950 shadow-yellow-500/25 animate-pulse' });
+                badges.push({ 
+                    icon: 'fa-medal', 
+                    color: 'from-amber-300 via-amber-500 to-yellow-650 shadow-amber-500/35 animate-pulse', 
+                    label: '黃金 Spec', 
+                    textColor: 'text-slate-950 font-extrabold border-amber-400/20',
+                    tooltip: '通過官方物理生殖規格實證認證'
+                });
             }
 
             const userPosts = window.state.posts.filter(p => p.userId === user.id);
             const totalLikes = userPosts.reduce((sum, p) => sum + (p.likeCount || 0), 0);
 
             if (totalLikes >= 1000) {
-                badges.push({ icon: 'fa-fire', color: 'from-orange-500 to-rose-600 text-white shadow-orange-500/20' });
+                badges.push({ 
+                    icon: 'fa-fire', 
+                    color: 'from-orange-500 to-rose-600 shadow-orange-500/20', 
+                    label: '人氣', 
+                    textColor: 'text-white font-bold',
+                    tooltip: '獲得超過千次按讚之社群人氣王'
+                });
             }
 
             const perfectPosts = userPosts.filter(p => {
@@ -2674,17 +2657,35 @@
                 return avg === 5.0 && ratings.length >= 500;
             });
             if (userPosts.length >= 50 && perfectPosts.length === userPosts.length) {
-                badges.push({ icon: 'fa-star', color: 'from-amber-400 via-yellow-500 to-amber-600 text-slate-950 shadow-yellow-500/25' });
+                badges.push({ 
+                    icon: 'fa-star', 
+                    color: 'from-amber-400 to-yellow-500 shadow-amber-400/20', 
+                    label: '天菜', 
+                    textColor: 'text-slate-950 font-bold',
+                    tooltip: '多篇作品榮獲無瑕滿分評價'
+                });
             }
 
             if (userPosts.length >= 100) {
-                badges.push({ icon: 'fa-camera', color: 'from-violet-500 to-purple-700 text-white shadow-violet-500/15' });
+                badges.push({ 
+                    icon: 'fa-camera', 
+                    color: 'from-violet-500 to-purple-700 shadow-violet-500/20', 
+                    label: '分享家', 
+                    textColor: 'text-white font-bold',
+                    tooltip: '累計發布上百篇秘密作品'
+                });
             }
 
             const gymPosts = userPosts.filter(p => p.kinks && p.kinks.some(k => k.includes('健身')));
             const gymLikes = gymPosts.reduce((sum, p) => sum + (p.likeCount || 0), 0);
             if (gymPosts.length >= 50 && gymLikes >= 5000) {
-                badges.push({ icon: 'fa-dumbbell', color: 'from-slate-500 to-slate-700 text-white shadow-slate-500/10' });
+                badges.push({ 
+                    icon: 'fa-dumbbell', 
+                    color: 'from-slate-550 to-slate-750 shadow-slate-500/10', 
+                    label: '健身Icon', 
+                    textColor: 'text-white font-bold',
+                    tooltip: '頂尖健身美學實踐者'
+                });
             }
 
             let otherCommentsCount = 0;
@@ -2696,16 +2697,32 @@
                 }
             });
             if (otherCommentsCount >= 500) {
-                badges.push({ icon: 'fa-heart-circle-check', color: 'from-pink-500 to-rose-600 text-white shadow-pink-500/15' });
+                badges.push({ 
+                    icon: 'fa-heart-circle-check', 
+                    color: 'from-pink-500 to-rose-600 shadow-pink-500/20', 
+                    label: '暖男', 
+                    textColor: 'text-white font-bold',
+                    tooltip: '社群互動熱情頻繁的溫和紳士'
+                });
             }
 
             return badges.map(b => {
-                const sizeClasses = isBig ? 'w-11 h-11 text-lg' : 'w-5.5 h-5.5 text-[10px]';
-                return `
-                    <span class="inline-flex items-center justify-center ${sizeClasses} rounded-full bg-gradient-to-r ${b.color} shadow-sm select-none pointer-events-none">
-                        <i class="fa-solid ${b.icon}"></i>
-                    </span>
-                `;
+                if (isBig) {
+                    // 個人主頁展示：大膠囊鍍金徽章
+                    return `
+                        <span title="${b.tooltip}" class="inline-flex items-center bg-gradient-to-r ${b.color} ${b.textColor} px-3.5 py-1.5 gap-2 text-[10px] rounded-full shadow-md badge-glow pointer-events-auto select-none tracking-wider brass-badge cursor-help font-luxury">
+                            <i class="fa-solid ${b.icon}"></i>
+                            <span>${b.label}</span>
+                        </span>
+                    `;
+                } else {
+                    // 微型圓形密封章（只展示 Icon，保持優雅極簡）
+                    return `
+                        <span title="${b.label} - ${b.tooltip}" class="inline-flex items-center justify-center w-5.5 h-5.5 rounded-full bg-gradient-to-r ${b.color} ${b.textColor} shadow-sm badge-glow pointer-events-auto select-none cursor-help brass-badge text-[9px]">
+                            <i class="fa-solid ${b.icon}"></i>
+                        </span>
+                    `;
+                }
             }).join('');
         }
 
