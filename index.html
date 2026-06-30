@@ -3,19 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- 1. 設置專屬 SR Favicon 瀏覽器分頁小圖示，加入 v=2 快取破壞確保即時更新 -->
     <link rel="shortcut icon" href="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" type="image/jpeg">
     <link rel="icon" href="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" type="image/jpeg">
     <link rel="apple-touch-icon" href="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2">
     
-    <!-- 極速預載主要 Logo -->
+    <!-- 預載入技術：高優先級下載圖章以達到秒速啟動載入 -->
     <link rel="preload" href="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" as="image">
     
     <title>SecretRoom | 專屬男性的私密生活分享社群</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- 引入 EmailJS SDK 用於發送審核及驗證通知郵件 -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
         body {
@@ -30,7 +28,6 @@
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
         
-        /* 柔軟溫和的 SR 專屬 Logo 緩慢呼吸與霓虹擴散動畫 */
         @keyframes gentle-breath {
             0%, 100% {
                 transform: scale(1);
@@ -48,7 +45,6 @@
             will-change: transform, box-shadow, border-color;
         }
         
-        /* 自訂拉條樣式 */
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
@@ -57,7 +53,6 @@
         .fade-enter { opacity: 0; transform: translateY(8px); }
         .fade-enter-active { opacity: 1; transform: translateY(0); transition: opacity 300ms ease-out, transform 300ms ease-out; }
         
-        /* 自訂下拉選單外觀 */
         select {
             appearance: none;
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
@@ -69,7 +64,7 @@
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* 網頁端防盜與右鍵禁用 CSS 強化 */
+        /* 防盜圖進階 CSS 鎖定 */
         img {
             -webkit-touch-callout: none !important;
             -webkit-user-select: none !important;
@@ -82,17 +77,31 @@
 </head>
 <body class="min-h-screen w-full flex flex-col bg-[#05050a] p-0 m-0 overflow-hidden">
 
-    <!-- 主應用程式容器 (寬度改為 100% 全滿自適應，完美釋放電腦端全螢幕控制台) -->
     <div id="app" class="w-full h-[100dvh] md:h-screen overflow-hidden relative flex flex-col bg-[#05050a] transition-all duration-300">
-        <!-- 動態內容載入載入器 -->
+        <!-- 安全載入加載圖層 -->
         <div id="loading-screen" class="absolute inset-0 z-50 bg-[#05050a] flex flex-col items-center justify-center">
             <div class="w-14 h-14 border-4 border-slate-800 border-t-indigo-500 rounded-full animate-spin mb-4"></div>
             <p class="text-slate-400 font-medium tracking-widest text-xs">安全連線中...</p>
         </div>
     </div>
 
-    <!-- 浮動提示訊息容器 (Toast) -->
+    <!-- 彈出通知容器 -->
     <div id="toast-container" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col gap-2 w-full max-w-xs px-4"></div>
+
+    <!-- 刪除確認客製化 Modal -->
+    <div id="custom-confirm-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[101] flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative text-center">
+            <div class="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center text-red-500 text-xl mx-auto mb-4">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 class="text-base font-bold text-white mb-2">確定永久銷毀？</h3>
+            <p class="text-xs text-slate-400 mb-6 leading-relaxed">此篇天菜秘密動態與實體照片將永久從雲端伺服器徹底抹除，本操作無法撤回！</p>
+            <div class="grid grid-cols-2 gap-3">
+                <button id="confirm-modal-cancel" class="bg-slate-800 hover:bg-slate-750 text-slate-300 font-semibold text-xs py-2.5 rounded-xl transition">取消</button>
+                <button id="confirm-modal-ok" class="bg-red-650 hover:bg-red-500 text-white font-semibold text-xs py-2.5 rounded-xl transition">確認刪除</button>
+            </div>
+        </div>
+    </div>
 
     <script type="module">
         let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
@@ -152,25 +161,27 @@
 
         let app, db, auth;
 
+        // 全域核心狀態
         window.state = {
             currentView: 'landing',
-            currentTab: 'feed', // feed, profile, other-profile
-            currentFilter: 'recommended', // recommended, highly-rated, popular, elite-ranking, or a specific tag
-            currentRankTag: null, // 用於儲存「天菜排名」模式下的二級分類標籤
+            currentTab: 'feed', 
+            currentFilter: 'recommended', 
+            currentRankTag: null, 
             userId: null,
             applicationId: null,
             unsubscribeListener: null,
             unsubscribeVisitorsListener: null,
             visiblePostsCount: 5,
             openComments: {}, 
-            unlockedNSFWPosts: {}, // 用於儲存已被當前使用者解鎖的 NSFW 貼文
-            visitors: [], // 觀看我的訪客列表
-            viewedPostsInSession: {}, // 避免在同一次瀏覽中重複累計 viewCount 刷流量
+            unlockedNSFWPosts: {}, 
+            visitors: [], 
+            viewedPostsInSession: {}, 
+            emailVerified: false,
+            emailVerificationCode: null,
             userData: {
                 nickname: '', birthYear: '', birthMonth: '', birthDay: '',
-                height: '', weight: '', length: '', girth: '', kinks: [], otherKink: '', email: '', avatar: ''
+                height: '', weight: '', length: '', girth: '', kinks: [], email: '', avatar: ''
             },
-            // 固定且永久鎖定的 10 個男同志主題標籤
             kinksOptions: [
                 "性愛偏好｜角色定位", "BDSM｜繩縛", "制服愛好｜皮革/膠衣", "心理角色｜Daddy/Boy", "自我管理｜健身/健美", 
                 "友善社交｜約會/派對", "體型美學｜壯碩/熊系", "特殊癖好｜穿戴玩物", "旅遊休閒｜友善旅遊", "數位社交｜交友軟體"
@@ -256,7 +267,6 @@
         function navigate(viewName) {
             window.state.currentView = viewName;
             
-            // 當離開主介面時，安全清除即時監聽器以節省雲端資源
             if (viewName !== 'dashboard' && window.state.unsubscribeListener) {
                 window.state.unsubscribeListener();
                 window.state.unsubscribeListener = null;
@@ -274,7 +284,12 @@
             appContainer.innerHTML = '';
 
             const transitionContainer = document.createElement('div');
-            transitionContainer.className = 'w-full h-full fade-enter-active';
+            // 解鎖註冊頁面捲動自由
+            if (view === 'register') {
+                transitionContainer.className = 'w-full h-full overflow-y-auto scrollbar-hide fade-enter-active';
+            } else {
+                transitionContainer.className = 'w-full h-full fade-enter-active';
+            }
             appContainer.appendChild(transitionContainer);
 
             if (view === 'landing') {
@@ -298,7 +313,6 @@
                     <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.08)_0%,transparent_60%)]"></div>
                     
                     <div class="z-10 max-w-sm w-full flex flex-col items-center">
-                        <!-- 柔軟優雅的呼吸感放大標誌 (符合截圖 2026-06-29 13.59.49.jpg 尊榮氛圍) -->
                         <div class="w-36 h-36 md:w-40 md:h-40 rounded-full border border-violet-500/30 flex items-center justify-center p-1 bg-slate-900/60 shadow-[0_0_35px_rgba(139,92,246,0.45)] mb-8 animate-gentle-logo overflow-hidden">
                             <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-full h-full rounded-full object-cover" draggable="false" oncontextmenu="return false;">
                         </div>
@@ -307,7 +321,6 @@
                         <p class="text-slate-400 text-xs font-semibold uppercase tracking-widest text-center">專屬男性的私密生活分享社群</p>
                         <p class="text-slate-500 text-[11px] mt-1 text-center font-light leading-relaxed">分享生活近況，看見最真實的彼此</p>
 
-                        <!-- 控制按鈕區 -->
                         <div class="w-full space-y-3.5 mt-10">
                             <button id="btn-goto-apply" class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 active:scale-95 text-white font-semibold text-sm py-3.5 px-6 rounded-2xl shadow-lg shadow-indigo-950/40 transition-all duration-300">
                                 建立新帳號申請
@@ -317,7 +330,6 @@
                             </button>
                         </div>
 
-                        <!-- 頁尾安全宣告 -->
                         <div class="mt-14 px-4 py-2 rounded-full bg-slate-900/30 border border-slate-800/40 text-[10px] text-slate-500 font-semibold flex items-center gap-1.5 shadow-sm">
                             <i class="fa-solid fa-shield-halved text-indigo-500/80"></i>
                             <span>人工審核機制 · 滿 18 歲限定</span>
@@ -342,18 +354,18 @@
                 <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative">
                     <button id="close-login" class="absolute top-4 right-4 text-slate-500 hover:text-white text-xl">&times;</button>
                     <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2">
-                        <i class="fa-solid fa-right-to-bracket text-indigo-500"></i> 會員進度查詢
+                        <i class="fa-solid fa-right-to-bracket text-indigo-500"></i> 使用者登入
                     </h3>
-                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">請輸入當初申請填寫的唯一帳號 ID 與密碼以進入平台。</p>
+                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">請輸入帳號與密碼以進入平台</p>
                     
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">自訂唯一帳號 ID</label>
-                            <input type="text" id="login-username" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-700" placeholder="例如: max1995" required>
+                            <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">使用者帳號</label>
+                            <input type="text" id="login-username" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">密碼</label>
-                            <input type="password" id="login-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-700" placeholder="••••••••" required>
+                            <input type="password" id="login-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
                         </div>
                         <button id="btn-login-submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs py-3 rounded-xl transition shadow-lg shadow-indigo-950/20">
                             登入並驗證
@@ -366,7 +378,7 @@
             document.getElementById('close-login').onclick = () => modal.remove();
 
             document.getElementById('btn-login-submit').onclick = async () => {
-                const usernameInput = document.getElementById('login-username').value.trim().toLowerCase();
+                const usernameInput = document.getElementById('login-username').value.trim();
                 const passwordInput = document.getElementById('login-password').value;
 
                 if (!usernameInput || !passwordInput) {
@@ -404,7 +416,7 @@
                             showToast('帳號或密碼有誤，請再試一次。', 'error');
                         }
                     } else {
-                        showToast('找不到該帳號，請確認 ID 是否輸入正確。', 'error');
+                        showToast('找不到該帳號，請確認帳號是否輸入正確。', 'error');
                     }
                 } catch (err) {
                     console.error("登入出錯:", err);
@@ -416,9 +428,12 @@
         }
 
         function renderRegister(container) {
+            window.state.emailVerified = false;
+            window.state.emailVerificationCode = null;
+
             container.innerHTML = `
-                <div class="min-h-screen w-full bg-slate-950 overflow-y-auto px-4 py-8 flex flex-col items-center">
-                    <div class="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl relative">
+                <div class="w-full bg-slate-950 px-4 py-8 flex flex-col items-center">
+                    <div class="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl relative mb-12">
                         <button id="btn-back-landing" class="absolute top-5 left-5 text-slate-500 hover:text-white transition text-sm flex items-center gap-1.5 font-medium">
                             <i class="fa-solid fa-arrow-left"></i> 返回
                         </button>
@@ -430,9 +445,9 @@
 
                         <form id="apply-form" class="space-y-5" onsubmit="return false;">
                             
-                            <!-- 頭像上傳 (強制作為註冊必填，含即時預覽) -->
+                            <!-- 上傳個人頭像 -->
                             <div class="bg-slate-950/60 p-4 border border-slate-800 rounded-2xl flex flex-col items-center justify-center text-center">
-                                <span class="text-[10px] font-bold text-slate-400 mb-3 uppercase tracking-wider block"><span class="text-red-500">*</span> 1. 上傳個人大頭貼 (審核重點)</span>
+                                <span class="text-[10px] font-bold text-slate-400 mb-3 uppercase tracking-wider block"><span class="text-red-500">*</span> 上傳個人頭像</span>
                                 <div class="relative w-24 h-24 rounded-full border-2 border-dashed border-slate-700 hover:border-indigo-500 transition cursor-pointer flex flex-col items-center justify-center bg-slate-900 overflow-hidden group" id="avatar-trigger">
                                     <img id="avatar-preview" class="absolute inset-0 w-full h-full object-cover hidden">
                                     <div class="z-10 flex flex-col items-center text-slate-500 group-hover:text-slate-300" id="avatar-placeholder">
@@ -444,31 +459,49 @@
                                 <span class="text-[9px] text-slate-500 mt-2 block">請選取個人清晰、露出五官、非風景卡通的大頭相片</span>
                             </div>
 
-                            <!-- 基本帳密與通知信箱 -->
-                            <div class="space-y-4">
+                            <!-- 帳號以及密碼獨立區 -->
+                            <div class="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl space-y-4">
                                 <div>
-                                    <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 2. 自訂專屬 ID 帳號</label>
-                                    <input type="text" id="reg-username" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-700" placeholder="僅支援小寫英文字母與數字" required>
-                                </div>
-                                <div class="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 3. 自訂密碼</label>
-                                        <input type="password" id="reg-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-700" placeholder="建議6字元以上" required>
-                                    </div>
-                                    <div>
-                                        <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 4. 真實暱稱</label>
-                                        <input type="text" id="reg-nickname" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-700" placeholder="例如: 阿諾 / Arno" required>
-                                    </div>
+                                    <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 設定帳號(不限中英數大小寫)</label>
+                                    <input type="text" id="reg-username" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 5. 審核結果通知信箱</label>
-                                    <input type="email" id="reg-email" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-700" placeholder="審核通過信將寄送至此，請務必填寫真實" required>
+                                    <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 再次輸入設定帳號</label>
+                                    <input type="text" id="reg-username-confirm" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 設定密碼</label>
+                                    <input type="password" id="reg-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 再次輸入設定密碼</label>
+                                    <input type="password" id="reg-password-confirm" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
+                                </div>
+                                
+                                <!-- 密碼強度回饋 -->
+                                <div class="text-[10px] space-y-1 bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                                    <span class="text-slate-500 font-bold uppercase tracking-wider block mb-1">密碼強度設定條件：</span>
+                                    <div id="pwd-rule-len" class="flex items-center gap-1.5 text-slate-500">
+                                        <i class="fa-solid fa-circle-notch text-[8px]"></i> <span>設定8字元密碼</span>
+                                    </div>
+                                    <div id="pwd-rule-upper" class="flex items-center gap-1.5 text-slate-500">
+                                        <i class="fa-solid fa-circle-notch text-[8px]"></i> <span>設定大寫英文</span>
+                                    </div>
+                                    <div id="pwd-rule-spec" class="flex items-center gap-1.5 text-slate-500">
+                                        <i class="fa-solid fa-circle-notch text-[8px]"></i> <span>設定特殊符號</span>
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- 出生年月日 (鎖定滿18歲) -->
+                            <!-- 使用者名稱 -->
                             <div>
-                                <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 6. 出生年月日</label>
+                                <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 使用者名稱</label>
+                                <input type="text" id="reg-nickname" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
+                            </div>
+
+                            <!-- 出生年月日 -->
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 出生年月日</label>
                                 <div class="grid grid-cols-3 gap-2">
                                     <select id="reg-year" class="bg-slate-950 border border-slate-800 text-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-indigo-500"></select>
                                     <select id="reg-month" class="bg-slate-950 border border-slate-800 text-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-indigo-500"></select>
@@ -476,51 +509,65 @@
                                 </div>
                             </div>
 
-                            <!-- 身高體重欄位 -->
-                            <div class="grid grid-cols-2 gap-3">
+                            <!-- 信箱驗證與認證碼 (左右佈局按鈕版) -->
+                            <div class="space-y-4 bg-slate-950/40 p-4 border border-slate-850 rounded-2xl">
                                 <div>
-                                    <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 7. 身高 (cm)</label>
-                                    <input type="number" id="reg-height" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-700" placeholder="178" required>
+                                    <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 信箱驗證</label>
+                                    <div class="flex gap-2">
+                                        <input type="email" id="reg-email" class="flex-1 min-w-0 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">
+                                        <button type="button" id="btn-send-code" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-[10px] px-3.5 rounded-xl transition duration-350 shrink-0">發送驗證碼</button>
+                                    </div>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 8. 體重 (kg)</label>
-                                    <input type="number" id="reg-weight" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-700" placeholder="70" required>
+                                    <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 驗證信箱</label>
+                                    <div class="flex gap-2">
+                                        <input type="text" id="reg-email-code" class="flex-1 min-w-0 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">
+                                        <button type="button" id="btn-verify-code" class="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-[10px] px-3.5 rounded-xl transition duration-350 shrink-0">驗證信箱</button>
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- 身體私密規格密碼 -->
-                            <div class="p-4 bg-slate-950/40 border border-slate-800/80 rounded-2xl space-y-3.5">
-                                <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block"><i class="fa-solid fa-lock"></i> 9. 私密身體密碼門檻</span>
+                            <!-- 個人狀態 (一個區塊且有兩行) 身高、體重 勃起長度 (cm)、勃起粗度圍 (cm) -->
+                            <div class="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl space-y-4">
+                                <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block"><i class="fa-solid fa-user-check"></i> 個人狀態</span>
+                                
+                                <!-- 第一行：身高、體重 -->
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 mb-1">身高 (cm)</label>
+                                        <input type="number" id="reg-height" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] font-bold text-slate-500 mb-1">體重 (kg)</label>
+                                        <input type="number" id="reg-weight" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
+                                    </div>
+                                </div>
+                                
+                                <!-- 第二行：長度、粗度 -->
                                 <div class="grid grid-cols-2 gap-3">
                                     <div>
                                         <label class="block text-[9px] font-bold text-slate-500 mb-1">勃起長度 (cm)</label>
-                                        <input type="number" id="reg-length" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-700" placeholder="例如: 15" required>
+                                        <input type="number" id="reg-length" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
                                     </div>
                                     <div>
                                         <label class="block text-[9px] font-bold text-slate-500 mb-1">勃起粗度圍 (cm)</label>
-                                        <input type="number" id="reg-girth" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-700" placeholder="例如: 4.5" required>
+                                        <input type="number" id="reg-girth" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
                                     </div>
                                 </div>
-                                <span class="text-[9px] text-slate-500 block leading-relaxed">請真實申報。此欄位若符合 16cm / 5cm 以上，加入後可提出證明解鎖「黃金 Spec」社群頂級勳章。</span>
                             </div>
 
-                            <!-- 性癖與興趣多選 (強制作為註冊必填) -->
+                            <!-- 感興趣的主題與性癖偏好 (5列2行完全展開，無補充輸入框) -->
                             <div class="space-y-2">
-                                <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider"><span class="text-red-500">*</span> 10. 感興趣的主題與性癖偏好 (至少勾選一項)</label>
-                                <span class="text-[9px] text-slate-500 block mb-2 leading-relaxed">這些設定在您被審核啟用後，能方便其他兄弟快速找到您的契合主題標籤。</span>
+                                <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider"><span class="text-red-500">*</span> 感興趣的主題與性癖偏好 (至少勾選一項)</label>
+                                <span class="text-[9px] text-slate-500 block mb-2 leading-relaxed">這些設定在您被審核啟用後，能方便其他兄弟快速找到您的主打標籤。</span>
                                 
-                                <div class="grid grid-cols-1 gap-2 bg-slate-950/40 p-3.5 border border-slate-850 rounded-2xl max-h-48 overflow-y-auto" id="register-kinks-box">
-                                    <!-- 10 個經典性癖好選項，每次更新皆不受影響 -->
-                                    ${window.state.kinksOptions.map((k, idx) => `
-                                        <label class="flex items-center gap-2.5 cursor-pointer hover:bg-slate-900/60 p-1.5 rounded-lg transition">
-                                            <input type="checkbox" name="reg-kink" value="${k}" class="rounded border-slate-800 bg-slate-950 text-indigo-600 focus:ring-indigo-500">
-                                            <span class="text-xs text-slate-300 font-medium">${k}</span>
+                                <div class="grid grid-cols-2 gap-2 bg-slate-950/40 p-3.5 border border-slate-850 rounded-2xl" id="register-kinks-box">
+                                    ${window.state.kinksOptions.map((k) => `
+                                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-900/60 p-2 rounded-xl transition border border-transparent hover:border-slate-800">
+                                            <input type="checkbox" name="reg-kink" value="${k}" class="rounded border-slate-850 bg-slate-950 text-indigo-650 focus:ring-indigo-500 w-3.5 h-3.5">
+                                            <span class="text-[10px] text-slate-350 font-medium leading-tight select-none">${k}</span>
                                         </label>
                                     `).join('')}
-                                </div>
-                                <div class="mt-2.5">
-                                    <label class="block text-[9px] font-bold text-slate-500 mb-1 uppercase">其他個人特質或偏好補充</label>
-                                    <input type="text" id="reg-other-kink" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-700" placeholder="例如: 肌肉控 / 白襪 / 正裝">
                                 </div>
                             </div>
 
@@ -533,13 +580,12 @@
                 </div>
             `;
 
-            // 初始化生日選單下拉項目
+            // 初始化出生年月日下拉選單
             const yearSelect = document.getElementById('reg-year');
             const monthSelect = document.getElementById('reg-month');
             const daySelect = document.getElementById('reg-day');
 
             const currentYear = new Date().getFullYear();
-            // 限制必須滿 18 歲，故最高年份為 currentYear - 18
             for (let y = currentYear - 18; y >= currentYear - 80; y--) {
                 yearSelect.options.add(new Option(`${y} 年`, y));
             }
@@ -550,7 +596,7 @@
                 daySelect.options.add(new Option(`${d} 日`, d));
             }
 
-            // 大頭照本機選取預覽
+            // 本機大頭照選取預覽
             const avatarTrigger = document.getElementById('avatar-trigger');
             const fileInput = document.getElementById('register-avatar-file');
             const previewImg = document.getElementById('avatar-preview');
@@ -575,14 +621,126 @@
 
             document.getElementById('btn-back-landing').onclick = () => navigate('landing');
 
-            // 註冊表單提交審核
+            const btnSendCode = document.getElementById('btn-send-code');
+            const btnVerifyCode = document.getElementById('btn-verify-code');
+            const emailInput = document.getElementById('reg-email');
+            const codeInput = document.getElementById('reg-email-code');
+
+            btnSendCode.onclick = async () => {
+                const email = emailInput.value.trim();
+                if (!email || !email.includes('@')) {
+                    showToast('請輸入正確的電子郵件信箱！', 'error');
+                    return;
+                }
+
+                // 隨機產生 6 位數密鑰驗證碼
+                const generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
+                window.state.emailVerificationCode = generatedCode;
+
+                btnSendCode.disabled = true;
+                btnSendCode.classList.add('opacity-50', 'cursor-not-allowed');
+
+                if (emailjsConfig.publicKey && emailjsConfig.publicKey !== "YOUR_EMAILJS_PUBLIC_KEY") {
+                    try {
+                        await emailjs.send(emailjsConfig.serviceId, emailjsConfig.templateId, {
+                            to_email: email,
+                            to_name: "SecretRoom 新成員",
+                            status_text: "新帳號信箱安全驗證",
+                            message: `歡迎申請加入 SecretRoom！您的註冊信箱驗證碼為：【${generatedCode}】。請於 10 分鐘內將此碼填回申請頁面以完成安全查核。`
+                        });
+                        showToast('信箱驗證郵件已發送，請立即查收信箱！', 'success');
+                    } catch (err) {
+                        console.error(err);
+                        showToast('驗證信送出失敗，請確認信箱無誤後重試。', 'error');
+                        btnSendCode.disabled = false;
+                        btnSendCode.classList.remove('opacity-50', 'cursor-not-allowed');
+                        return;
+                    }
+                } else {
+                    console.log("[模擬發送] 驗證碼：", generatedCode);
+                    showToast(`[模擬發送] 驗證碼為：${generatedCode}`, 'info');
+                }
+
+                // 按鈕 60 秒冷卻倒數
+                let countdown = 60;
+                const timer = setInterval(() => {
+                    countdown--;
+                    btnSendCode.textContent = `${countdown}s 後重發`;
+                    if (countdown <= 0) {
+                        clearInterval(timer);
+                        btnSendCode.disabled = false;
+                        btnSendCode.classList.remove('opacity-50', 'cursor-not-allowed');
+                        btnSendCode.textContent = '發送驗證碼';
+                    }
+                }, 1000);
+            };
+
+            btnVerifyCode.onclick = () => {
+                const userCode = codeInput.value.trim();
+                if (!window.state.emailVerificationCode) {
+                    showToast('請先點擊發送驗證碼！', 'error');
+                    return;
+                }
+                if (userCode === window.state.emailVerificationCode) {
+                    window.state.emailVerified = true;
+                    showToast('電子郵件驗證成功！', 'success');
+                    
+                    // 鎖死輸入防止任意篡改
+                    emailInput.disabled = true;
+                    codeInput.disabled = true;
+                    btnSendCode.disabled = true;
+                    btnVerifyCode.disabled = true;
+                    btnVerifyCode.textContent = '驗證完成 ✓';
+                    btnVerifyCode.className = "bg-emerald-750 text-white font-bold text-[10px] px-3.5 rounded-xl cursor-not-allowed shrink-0";
+                } else {
+                    showToast('驗證碼不正確，請重新確認！', 'error');
+                }
+            };
+
+            // 密碼即時強度偵測條件回饋
+            const pwdInput = document.getElementById('reg-password');
+            const ruleLen = document.getElementById('pwd-rule-len');
+            const ruleUpper = document.getElementById('pwd-rule-upper');
+            const ruleSpec = document.getElementById('pwd-rule-spec');
+
+            pwdInput.oninput = () => {
+                const val = pwdInput.value;
+                
+                if (val.length >= 8) {
+                    ruleLen.className = "flex items-center gap-1.5 text-emerald-500 font-semibold";
+                    ruleLen.querySelector('i').className = "fa-solid fa-circle-check text-[10px]";
+                } else {
+                    ruleLen.className = "flex items-center gap-1.5 text-slate-500";
+                    ruleLen.querySelector('i').className = "fa-solid fa-circle-notch text-[8px]";
+                }
+
+                if (/[A-Z]/.test(val)) {
+                    ruleUpper.className = "flex items-center gap-1.5 text-emerald-500 font-semibold";
+                    ruleUpper.querySelector('i').className = "fa-solid fa-circle-check text-[10px]";
+                } else {
+                    ruleUpper.className = "flex items-center gap-1.5 text-slate-500";
+                    ruleUpper.querySelector('i').className = "fa-solid fa-circle-notch text-[8px]";
+                }
+
+                if (/[!@#$%^&*(),.?":{}|<>]/.test(val)) {
+                    ruleSpec.className = "flex items-center gap-1.5 text-emerald-500 font-semibold";
+                    ruleSpec.querySelector('i').className = "fa-solid fa-circle-check text-[10px]";
+                } else {
+                    ruleSpec.className = "flex items-center gap-1.5 text-slate-500";
+                    ruleSpec.querySelector('i').className = "fa-solid fa-circle-notch text-[8px]";
+                }
+            };
+
+            // 註冊表單驗證與提交
             document.getElementById('apply-form').onsubmit = async (e) => {
                 e.preventDefault();
 
-                const username = document.getElementById('reg-username').value.trim().toLowerCase();
+                const username = document.getElementById('reg-username').value.trim();
+                const usernameConfirm = document.getElementById('reg-username-confirm').value.trim();
                 const password = document.getElementById('reg-password').value;
+                const passwordConfirm = document.getElementById('reg-password-confirm').value;
                 const nickname = document.getElementById('reg-nickname').value.trim();
-                const email = document.getElementById('reg-email').value.trim();
+                const email = emailInput.value.trim();
                 const year = yearSelect.value;
                 const month = monthSelect.value;
                 const day = daySelect.value;
@@ -590,24 +748,43 @@
                 const weight = document.getElementById('reg-weight').value;
                 const length = document.getElementById('reg-length').value;
                 const girth = document.getElementById('reg-girth').value;
-                const otherKink = document.getElementById('reg-other-kink').value.trim();
 
                 const selectedKinks = [];
                 document.querySelectorAll('input[name="reg-kink"]:checked').forEach((cb) => {
                     selectedKinks.push(cb.value);
                 });
 
-                // 防呆必填欄位核對
+                // 安全驗證
+                if (username !== usernameConfirm) {
+                    showToast('兩次輸入的帳號不一致！', 'error');
+                    return;
+                }
+                if (password !== passwordConfirm) {
+                    showToast('兩次輸入的密碼不一致！', 'error');
+                    return;
+                }
+
+                // 密碼強度規則校驗
+                const isLenMet = password.length >= 8;
+                const isUpperMet = /[A-Z]/.test(password);
+                const isSpecMet = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+                if (!isLenMet || !isUpperMet || !isSpecMet) {
+                    showToast('密碼未滿足強度條件設定！', 'error');
+                    return;
+                }
+
                 if (!base64Avatar) {
-                    showToast('請務必上傳一張個人大頭照供官方審核！', 'error');
+                    showToast('請務必上傳個人頭像供官方審核！', 'error');
                     return;
                 }
-                if (!username.match(/^[a-z0-9]+$/)) {
-                    showToast('帳號 ID 僅支援小寫英文字母與數字！', 'error');
+
+                if (!window.state.emailVerified) {
+                    showToast('請務必完成信箱安全性驗證！', 'error');
                     return;
                 }
+
                 if (selectedKinks.length === 0) {
-                    showToast('請至少勾選一項感興趣的生活主題與性癖偏好！', 'error');
+                    showToast('請至少勾選一項感興趣的主題與性癖偏好！', 'error');
                     return;
                 }
 
@@ -618,11 +795,10 @@
 
                 showLoading();
                 try {
-                    // 帳號全域唯一性核對
                     const checkRef = doc(db, 'secretg_apps', appId, 'applications', username);
                     const checkSnap = await getDoc(checkRef);
                     if (checkSnap.exists()) {
-                        showToast('該自訂 ID 已被註冊過！請更換其他 ID。', 'error');
+                        showToast('該帳號已存在！請更換其他設定帳號。', 'error');
                         hideLoading();
                         return;
                     }
@@ -640,9 +816,8 @@
                         length,
                         girth,
                         kinks: selectedKinks,
-                        otherKink,
                         avatar: base64Avatar,
-                        avatarStatus: 'approved', // 初次註冊之頭像直接併入主註冊流程
+                        avatarStatus: 'approved', 
                         createdAt: serverTimestamp()
                     };
 
@@ -679,9 +854,9 @@
 
                         <div class="bg-slate-950/50 border border-slate-850 p-4 rounded-2xl text-left space-y-2">
                             <span class="text-[9px] font-bold text-slate-500 uppercase tracking-wider block">您的申請概要資訊</span>
-                            <p class="text-xs text-slate-300"><span class="text-slate-500 font-medium">您的 ID 帳號:</span> @${window.state.applicationId}</p>
-                            <p class="text-xs text-slate-300"><span class="text-slate-500 font-medium">您的暱稱:</span> ${window.state.userData.nickname}</p>
-                            <p class="text-xs text-slate-300"><span class="text-slate-500 font-medium">通知信箱:</span> ${window.state.userData.email}</p>
+                            <p class="text-xs text-slate-300"><span class="text-slate-500 font-medium">您的帳號:</span> @${window.state.applicationId}</p>
+                            <p class="text-xs text-slate-300"><span class="text-slate-500 font-medium">您的名稱:</span> ${window.state.userData.nickname}</p>
+                            <p class="text-xs text-slate-300"><span class="text-slate-500 font-medium">信箱:</span> ${window.state.userData.email}</p>
                         </div>
 
                         <div class="pt-2">
@@ -710,17 +885,15 @@
                         <div class="space-y-2">
                             <h2 class="text-xl font-bold text-white tracking-wide">審核未核准 · 申請已退回</h2>
                             <p class="text-xs text-slate-400 leading-relaxed px-4">
-                                很抱歉，您的 SecretRoom 申請經管理員檢視後未通過。您可以詳閱下方的具體原因，修改資料後重新送審。
+                                很抱歉，您的 SecretRoom 申請經管理員檢視後未通過。您可以審查下方的退件理由，修正資料後重新提交。
                             </p>
                         </div>
 
-                        <!-- 拒絕原因通知 -->
                         <div class="bg-red-500/5 border border-red-500/15 p-4 rounded-2xl text-left space-y-2.5">
                             <span class="text-[9px] font-bold text-red-400 uppercase tracking-wider block"><i class="fa-solid fa-envelope-open-text"></i> 退件理由說明：</span>
                             <p class="text-xs text-slate-300 leading-relaxed font-light">${reason}</p>
                         </div>
 
-                        <!-- 重新送審操作按鈕 -->
                         <div class="pt-4 space-y-3">
                             <button id="btn-fix-apply" class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-xs py-3 rounded-xl transition duration-300 shadow-md">
                                 修正資料並重新送審
@@ -733,7 +906,6 @@
                 </div>
             `;
 
-            // 登出當前申請
             document.getElementById('btn-logout-rejected').onclick = () => {
                 localStorage.removeItem('sr_username');
                 window.state.userData = {};
@@ -741,32 +913,30 @@
                 navigate('landing');
             };
 
-            // 修正資料：將先前填寫的資料預填並跳回註冊畫面
             document.getElementById('btn-fix-apply').onclick = () => {
                 const oldData = { ...window.state.userData };
                 navigate('register');
                 
-                // 預填之前填寫過的欄位
                 setTimeout(() => {
                     document.getElementById('reg-username').value = window.state.applicationId || '';
-                    document.getElementById('reg-username').disabled = true; // 鎖定不可變更原申請帳號ID
+                    document.getElementById('reg-username').disabled = true; 
+                    document.getElementById('reg-username-confirm').value = window.state.applicationId || '';
+                    document.getElementById('reg-username-confirm').disabled = true; 
                     document.getElementById('reg-password').value = oldData.password || '';
+                    document.getElementById('reg-password-confirm').value = oldData.password || '';
                     document.getElementById('reg-nickname').value = oldData.nickname || '';
                     document.getElementById('reg-email').value = oldData.email || '';
                     document.getElementById('reg-height').value = oldData.height || '';
                     document.getElementById('reg-weight').value = oldData.weight || '';
                     document.getElementById('reg-length').value = oldData.length || '';
                     document.getElementById('reg-girth').value = oldData.girth || '';
-                    document.getElementById('reg-other-kink').value = oldData.otherKink || '';
                     
-                    // 預設打勾性癖標籤
                     if (oldData.kinks && Array.isArray(oldData.kinks)) {
                         document.querySelectorAll('input[name="reg-kink"]').forEach(cb => {
                             if (oldData.kinks.includes(cb.value)) cb.checked = true;
                         });
                     }
                     
-                    // 回填生日下拉選單
                     if (oldData.birthYear) document.getElementById('reg-year').value = oldData.birthYear;
                     if (oldData.birthMonth) document.getElementById('reg-month').value = oldData.birthMonth;
                     if (oldData.birthDay) document.getElementById('reg-day').value = oldData.birthDay;
@@ -782,7 +952,7 @@
                             <i class="fa-brands fa-telegram"></i>
                         </div>
                         <div class="space-y-2">
-                            <h2 class="text-xl font-bold text-white tracking-wide">安全認證：綁定 Telegram</h2>
+                            <h2 class="text-xl font-bold text-white tracking-wide">安全認證：雙重驗證</h2>
                             <p class="text-xs text-slate-400 leading-relaxed px-4">
                                 本社群採用雙重身分認證。請點擊下方連結前往 Telegram Bot 機器人完成安全驗證並取得四位數 PIN 碼。
                             </p>
@@ -821,7 +991,6 @@
                         const pinData = pinSnap.data();
                         
                         if (pinData.userId === window.state.applicationId) {
-                            // 檢查此 Telegram ID 是否已被全域綁定過，防止多重帳號防重綁安全鎖
                             const appsCol = collection(db, 'secretg_apps', appId, 'applications');
                             const q = query(appsCol, where('telegramInfo.id', '==', pinData.tgUser.id));
                             const doubleCheckSnap = await getDocs(q);
@@ -838,7 +1007,6 @@
                                 telegramInfo: pinData.tgUser
                             });
                             
-                            // 刪除已使用之一次性驗證 Pin 碼以維持系統乾淨與安全
                             await deleteDoc(pinRef);
 
                             window.state.userData.status = 'active';
@@ -862,14 +1030,12 @@
         }
 
         function renderDashboard(container) {
-            // 建構 RWD 電腦/平板/手機一體化全螢幕大氣架構
             container.innerHTML = `
                 <div class="w-full h-[100dvh] md:h-screen flex flex-row overflow-hidden relative bg-[#040409]">
                     
-                    <!-- 【左側大氣側邊控制台】(只在電腦 md 以上寬螢幕顯示) -->
+                    <!-- RWD: PC Left sidebar -->
                     <aside class="hidden md:flex flex-col justify-between w-64 border-r border-slate-900 bg-slate-950/60 p-5 shrink-0 select-none">
                         <div class="space-y-8">
-                            <!-- Logo 微光小圖示 -->
                             <div class="flex items-center gap-3">
                                 <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-10 h-10 rounded-full border border-violet-500/20 object-cover" draggable="false" oncontextmenu="return false;">
                                 <div>
@@ -878,7 +1044,6 @@
                                 </div>
                             </div>
 
-                            <!-- 導覽頁籤清單 -->
                             <nav class="space-y-1.5">
                                 <button id="aside-tab-feed" class="w-full text-left px-4 py-3 rounded-2xl flex items-center gap-3 text-sm transition-all duration-300 font-bold ${window.state.currentTab === 'feed' ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/15 shadow-sm' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
                                     <i class="fa-solid fa-house-chimney"></i> 首頁動態牆
@@ -888,13 +1053,11 @@
                                 </button>
                             </nav>
 
-                            <!-- 電腦端分享快捷按鈕 -->
                             <button id="aside-btn-share" class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 active:scale-95 text-white font-bold text-xs py-3.5 px-4 rounded-2xl transition duration-300 flex items-center justify-center gap-2 shadow-lg shadow-indigo-950/25">
                                 <i class="fa-solid fa-circle-plus"></i> 分享今日動態
                             </button>
                         </div>
 
-                        <!-- 底部帳號狀態卡片與安全登出 -->
                         <div class="space-y-4">
                             <div class="flex items-center gap-3 p-3 bg-slate-900/40 border border-slate-900 rounded-2xl">
                                 <img src="${window.state.userData.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-9 h-9 rounded-full object-cover border border-slate-800">
@@ -906,16 +1069,16 @@
                                     <p class="text-[10px] text-slate-500 truncate">@${window.state.applicationId}</p>
                                 </div>
                             </div>
-                            <button id="aside-btn-logout" class="w-full bg-red-600/10 hover:bg-red-600/20 text-red-400 border border-red-500/10 hover:border-red-500/20 active:scale-95 font-bold text-xs py-3 px-4 rounded-2xl transition flex items-center justify-center gap-1.5 shadow-sm">
+                            <button id="aside-btn-logout" class="w-full bg-red-650/10 hover:bg-red-650/20 text-red-400 border border-red-500/10 hover:border-red-500/20 active:scale-95 font-bold text-xs py-3 px-4 rounded-2xl transition flex items-center justify-center gap-1.5 shadow-sm">
                                 <i class="fa-solid fa-power-off"></i> 安全登出
                             </button>
                         </div>
                     </aside>
 
-                    <!-- 【中間核心功能與 Feed 滾動流】 (寬度 100% 全滿延展，完美自適應) -->
+                    <!-- Main center feed and user profile section -->
                     <main class="flex-1 h-full flex flex-col bg-transparent overflow-hidden">
                         
-                        <!-- 手機/平板端 頂部迷你 Header -->
+                        <!-- RWD: Mobile header -->
                         <header class="flex md:hidden items-center justify-between px-5 py-4 border-b border-slate-900 bg-slate-950/40 shrink-0">
                             <div class="flex items-center gap-2">
                                 <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-8 h-8 rounded-full border border-violet-500/20 object-cover" draggable="false" oncontextmenu="return false;">
@@ -926,14 +1089,14 @@
                             </button>
                         </header>
 
-                        <!-- 中間主內容呈現區域 (貼文流 or 個人主頁) -->
+                        <!-- Main content scroll block -->
                         <div class="flex-1 overflow-y-auto scrollbar-hide px-4 md:px-6 py-5" id="main-content-scroll">
                             <div class="max-w-3xl mx-auto w-full space-y-5" id="dashboard-tab-content">
-                                <!-- 這裡的動態 HTML 將由渲染子函式接手填充 -->
+                                <!-- Dynamic Subtab Content -->
                             </div>
                         </div>
 
-                        <!-- 手機端 RWD 底部固定導覽列 -->
+                        <!-- RWD: Mobile bottom navbar footer -->
                         <footer class="flex md:hidden items-center justify-around border-t border-slate-900 bg-slate-950/80 p-3 shrink-0 select-none">
                             <button id="mobile-tab-feed" class="flex flex-col items-center gap-1 transition ${window.state.currentTab === 'feed' ? 'text-indigo-500' : 'text-slate-500'}">
                                 <i class="fa-solid fa-house-chimney text-base"></i>
@@ -950,10 +1113,9 @@
                         </footer>
                     </main>
 
-                    <!-- 【右側探索輔助側邊欄】(只在電腦 md 以上寬螢幕顯示，呈現全螢幕完美版面) -->
+                    <!-- PC Right explorer sidebar -->
                     <aside class="hidden lg:flex flex-col gap-6 w-80 border-l border-slate-900 bg-slate-950/20 p-5 shrink-0 overflow-y-auto select-none">
                         
-                        <!-- 探索熱門標籤 -->
                         <div class="bg-slate-900/30 border border-slate-900 p-4 rounded-3xl space-y-3">
                             <h3 class="text-xs font-bold text-slate-400 flex items-center gap-2 uppercase tracking-wider">
                                 <i class="fa-solid fa-compass text-indigo-500"></i> 熱門主題探索
@@ -967,7 +1129,6 @@
                             </div>
                         </div>
 
-                        <!-- 活躍兄弟名單 -->
                         <div class="bg-slate-900/30 border border-slate-900 p-4 rounded-3xl space-y-4">
                             <h3 class="text-xs font-bold text-slate-400 flex items-center gap-2 uppercase tracking-wider">
                                 <i class="fa-solid fa-user-group text-indigo-500"></i> 線上活躍兄弟
@@ -981,12 +1142,10 @@
                 </div>
             `;
 
-            // 綁定各裝置下的點擊切換事件
             const bindTabEvents = (id, tabName) => {
                 const el = document.getElementById(id);
                 if (el) el.onclick = () => { 
                     window.state.currentTab = tabName; 
-                    // 切換回 feed 時重置二級分類，回到默認
                     if (tabName === 'feed') {
                         window.state.currentFilter = 'recommended';
                         window.state.currentRankTag = null;
@@ -1014,14 +1173,12 @@
             const logoutBtnMobile = document.getElementById('mobile-btn-logout');
             if (logoutBtnMobile) logoutBtnMobile.onclick = logoutAction;
 
-            // 綁定發文彈窗事件
             const shareBtnAside = document.getElementById('aside-btn-share');
             if (shareBtnAside) shareBtnAside.onclick = () => showSharePostModal();
 
             const shareBtnMobile = document.getElementById('mobile-btn-share');
             if (shareBtnMobile) shareBtnMobile.onclick = () => showSharePostModal();
 
-            // 渲染選定分頁內容
             const tabContentContainer = document.getElementById('dashboard-tab-content');
             if (window.state.currentTab === 'feed') {
                 renderFeedTab(tabContentContainer);
@@ -1031,14 +1188,12 @@
                 renderProfileTab(tabContentContainer, window.state.viewTargetUserId);
             }
 
-            // 啟動資料庫即時同步監聽
             startRealtimeSnapshotSync();
         }
 
         function startRealtimeSnapshotSync() {
             if (!db || window.state.unsubscribeListener) return;
 
-            // 1. 同步監聽貼文 (愛心、評論、評分、觀看數跨裝置秒級零延遲渲染)
             const postsQuery = query(collection(db, 'secretg_apps', appId, 'posts'));
             window.state.unsubscribeListener = onSnapshot(postsQuery, (snapshot) => {
                 const fetchedPosts = [];
@@ -1046,12 +1201,9 @@
                     fetchedPosts.push({ id: docSnap.id, ...docSnap.data() });
                 });
                 window.state.posts = fetchedPosts;
-                
-                // 即時重新計算並渲染當前 Feed 畫面
                 updateSearchAndFeedUI();
             });
 
-            // 2. 同步監聽註冊成功的使用者 (渲染右側活躍兄弟與搜尋對比)
             const usersQuery = query(collection(db, 'secretg_apps', appId, 'applications'), where('status', '==', 'active'));
             onSnapshot(usersQuery, (snapshot) => {
                 const fetchedUsers = [];
@@ -1063,13 +1215,11 @@
             });
         }
 
-        // 渲染右側活躍兄弟卡片
         function renderActiveUsersAside() {
             const listContainer = document.getElementById('active-users-list-aside');
             if (!listContainer) return;
 
             listContainer.innerHTML = '';
-            // 排除登入者自己，隨機展示最新註冊啟用的 4 位男神
             const showList = window.state.activeUsers
                 .filter(u => u.id !== window.state.applicationId)
                 .slice(0, 4);
@@ -1102,17 +1252,14 @@
 
         function renderFeedTab(container) {
             container.innerHTML = `
-                <!-- 精密搜尋欄位 (保留 DOM 不被重新渲染) -->
                 <div class="relative w-full z-20">
                     <div class="flex items-center bg-slate-900/60 border border-slate-850 rounded-2xl px-4 py-3 shadow-lg backdrop-blur-md">
                         <i class="fa-solid fa-magnifying-glass text-slate-500 text-xs mr-3"></i>
-                        <input type="text" id="feed-search-input" class="w-full bg-transparent text-xs text-white focus:outline-none placeholder-slate-500" placeholder="搜尋天菜貼文、標籤、男神暱稱或帳號 ID..." value="${window.state.searchTerm}">
+                        <input type="text" id="feed-search-input" class="w-full bg-transparent text-xs text-white focus:outline-none" placeholder="搜尋天菜貼文、標籤、男神暱稱或帳號 ID..." value="${window.state.searchTerm}">
                     </div>
-                    <!-- 即時搜尋用戶名單匹配容器 -->
                     <div id="search-users-container" class="absolute left-0 right-0 top-14 bg-slate-900 border border-slate-800 rounded-3xl p-3 shadow-2xl hidden flex flex-col gap-2 max-h-60 overflow-y-auto z-50 backdrop-blur-xl"></div>
                 </div>
 
-                <!-- 頂級精簡 4 大核心分類篩選列 -->
                 <div class="flex items-center gap-2 overflow-x-auto scrollbar-hide py-1">
                     <button onclick="setGlobalFilter('recommended')" id="filter-btn-recommended" class="shrink-0 text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'recommended' ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-950/30' : 'bg-slate-900/50 text-slate-400 border-slate-850 hover:bg-slate-800'}">
                         💡 智慧推薦
@@ -1128,7 +1275,6 @@
                     </button>
                 </div>
 
-                <!-- 🏆 【天菜排名專屬：二級分類標籤滾動選單】 -->
                 <div id="ranking-sub-tabs" class="hidden flex items-center gap-2 overflow-x-auto scrollbar-hide py-1.5 border-t border-b border-slate-900/40">
                     <span class="shrink-0 text-[9px] font-bold text-indigo-400 uppercase tracking-widest mr-1">排名主題:</span>
                     ${window.state.kinksOptions.map((k) => `
@@ -1138,7 +1284,6 @@
                     `).join('')}
                 </div>
 
-                <!-- 貼文瀑布流列表渲染主容器 (保留 DOM 滾動狀態) -->
                 <div class="space-y-4" id="feed-posts-list">
                     <div class="text-center py-12 text-slate-500 flex flex-col items-center gap-2">
                         <i class="fa-solid fa-circle-notch animate-spin text-xl text-indigo-500"></i>
@@ -1147,7 +1292,6 @@
                 </div>
             `;
 
-            // 綁定極速搜尋事件 (排除鍵盤 IME 組字卡頓問題)
             const searchInput = document.getElementById('feed-search-input');
             searchInput.oninput = (e) => {
                 window.state.searchTerm = e.target.value.toLowerCase();
@@ -1157,34 +1301,28 @@
                 }, 150);
             };
 
-            // 手機端下拉滾動觸底載入新內容 (Infinite Scroll 無限滾動)
             const mainScroll = document.getElementById('main-content-scroll');
             if (mainScroll) {
                 mainScroll.onscroll = () => {
                     if (mainScroll.scrollTop + mainScroll.clientHeight >= mainScroll.scrollHeight - 60) {
-                        // 滾動觸底，一次多顯示 5 筆動態
                         window.state.visiblePostsCount += 5;
                         updateSearchAndFeedUI();
                     }
                 };
             }
 
-            // 即時渲染貼文資料
             updateSearchAndFeedUI();
         }
 
         window.setGlobalFilter = function(filterName) {
             window.state.currentFilter = filterName;
             
-            // 點選其他 Tab 時，若不是天菜排名，自動清除二級分類標籤
             if (filterName !== 'elite-ranking') {
                 window.state.currentRankTag = null;
             } else if (!window.state.currentRankTag) {
-                // 天菜排名預設展示第一個性癖標籤
                 window.state.currentRankTag = window.state.kinksOptions[0];
             }
             
-            // 重新刷新 Feed Tabs 視覺選中狀態
             const tabs = ['recommended', 'highly-rated', 'popular', 'elite-ranking'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`filter-btn-${t}`);
@@ -1197,7 +1335,6 @@
                 }
             });
 
-            // 控制天菜排名二級子分類的開關顯示
             const subTabsContainer = document.getElementById('ranking-sub-tabs');
             if (subTabsContainer) {
                 if (filterName === 'elite-ranking') {
@@ -1210,11 +1347,9 @@
             updateSearchAndFeedUI();
         };
 
-        // 設定天菜排名下的二級分類標籤
         window.setRankingTag = function(kinkTag) {
             window.state.currentRankTag = kinkTag;
             
-            // 更新二級篩選按鈕視覺外觀
             document.querySelectorAll('.sub-rank-btn').forEach(btn => {
                 const dataTag = btn.getAttribute('data-tag');
                 if (dataTag === kinkTag) {
@@ -1233,7 +1368,6 @@
 
             const term = window.state.searchTerm;
 
-            // 1. 同步處理「相關帳號」搜尋彈出框
             const searchUsersBox = document.getElementById('search-users-container');
             if (searchUsersBox) {
                 if (term) {
@@ -1265,10 +1399,8 @@
                 }
             }
 
-            // 2. 進行貼文資料篩選與排序計算
             let list = [...window.state.posts];
 
-            // 關鍵字與標籤 Fuzz Cross-Matching 模糊比對
             if (term) {
                 list = list.filter(post => 
                     post.text.toLowerCase().includes(term) || 
@@ -1278,11 +1410,9 @@
                 );
             }
 
-            // 依據四大選定 Tab 進行篩選
             const f = window.state.currentFilter;
             
             if (f === 'highly-rated') {
-                // 篩選平均大於 4.0 星且照平均分數由高到低降序
                 list = list.map(post => {
                     const ratings = post.ratings ? Object.values(post.ratings) : [];
                     const avg = ratings.length > 0 ? (ratings.reduce((a,b)=>a+b, 0) / ratings.length) : 0;
@@ -1290,22 +1420,18 @@
                 }).filter(p => p.tempAvg >= 4.0).sort((a,b) => b.tempAvg - a.tempAvg);
 
             } else if (f === 'popular') {
-                // 照愛心按讚數排序
                 list = list.sort((a,b) => (b.likeCount || 0) - (a.likeCount || 0));
 
             } else if (f === 'elite-ranking') {
-                // 🏆 「天菜排名」依據標籤拆分篩選並按照打榜加權公式排序
                 const targetTag = window.state.currentRankTag;
                 if (targetTag) {
                     list = list.filter(post => {
                         if (!post.kinks) return false;
-                        // 雙向模糊交叉匹配 (複合字詞拆分比對)
                         const tagWords = targetTag.replace('｜', '/').split('/');
                         return post.kinks.some(pk => tagWords.some(tw => pk.includes(tw) || tw.includes(pk)));
                     });
                 }
 
-                // 🏅 實施打榜公式計算: 5% 曝光瀏覽 + 45% 按讚 + 50% 評分星等總和
                 list = list.map(post => {
                     const views = post.viewCount || 0;
                     const likes = post.likeCount || 0;
@@ -1315,7 +1441,6 @@
                 }).sort((a,b) => b.rankScore - a.rankScore);
 
             } else if (f !== 'recommended' && f) {
-                // 如果篩選器非上述四項，表示其點選的是右側「熱門標籤快捷篩選」
                 list = list.filter(post => {
                     if (!post.kinks) return false;
                     const words = f.replace('｜', '/').split('/');
@@ -1323,7 +1448,6 @@
                 });
             }
 
-            // 無限滾動下拉截斷顯示數量
             const totalCount = list.length;
             const slicedList = list.slice(0, window.state.visiblePostsCount);
 
@@ -1344,18 +1468,15 @@
 
             listContainer.innerHTML = '';
             
-            // 逐一渲染貼文卡片
             slicedList.forEach((post, index) => {
                 const card = document.createElement('div');
                 card.className = 'bg-slate-900/40 border border-slate-900/80 rounded-3xl p-5 hover:border-indigo-500/10 transition duration-300 relative space-y-4';
                 
-                // 增加「曝光瀏覽數」在線曝光累計 (同一次 Session 避免重置刷流量)
                 if (!window.state.viewedPostsInSession[post.id]) {
                     window.state.viewedPostsInSession[post.id] = true;
                     incrementPostViewCount(post.id);
                 }
 
-                // 1. 打榜排名皇冠徽章 (只在 elite-ranking 模式下展示)
                 let rankingCrownHtml = '';
                 if (f === 'elite-ranking') {
                     const rank = index + 1;
@@ -1375,18 +1496,15 @@
                     `;
                 }
 
-                // 2. 個人擁有之官方標章取得
                 const authorBadgeHtml = getUserBadgeHTMLForPost(post);
 
-                // 3. 貼文評分星等計算
                 const ratings = post.ratings ? Object.values(post.ratings) : [];
                 const averageRating = ratings.length > 0 ? (ratings.reduce((a,b)=>a+b, 0) / ratings.length) : 0.0;
 
-                // 4. 按讚與解鎖防護判定
                 const userLiked = post.likes && post.likes[window.state.applicationId];
                 const commentCount = post.comments ? Object.keys(post.comments).length : 0;
 
-                // 5. NSFW 磨砂高斯模糊防護機制
+                // NSFW Image Blurring rendering
                 let imageHtml = '';
                 if (post.image) {
                     const isNSFW = post.isSensitive;
@@ -1409,7 +1527,6 @@
                         imageHtml = `
                             <div class="relative w-full rounded-2xl overflow-hidden border border-slate-850 bg-slate-950 max-h-[420px] group select-none">
                                 <img src="${post.image}" class="w-full h-auto object-contain max-h-[400px] pointer-events-none" draggable="false" oncontextmenu="return false;">
-                                <!-- 網頁端基礎斜向半透明防偽浮水印覆蓋層 -->
                                 <div class="absolute inset-0 pointer-events-none select-none flex flex-col items-center justify-center opacity-[0.04]">
                                     <span class="text-white text-3xl font-extrabold rotate-12 tracking-widest uppercase mb-12">SecretRoom Proof</span>
                                     <span class="text-white text-3xl font-extrabold rotate-12 tracking-widest uppercase">SecretRoom Proof</span>
@@ -1419,7 +1536,6 @@
                     }
                 }
 
-                // 6. 是否為發布人本人貼文，若是則可長按或點選右上角垃圾桶刪除自己貼文
                 let deleteBtnHtml = '';
                 if (post.userId === window.state.applicationId) {
                     deleteBtnHtml = `
@@ -1431,7 +1547,6 @@
 
                 card.innerHTML = `
                     ${rankingCrownHtml}
-                    <!-- 頂部發文人卡片 -->
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3 cursor-pointer" onclick="viewUserProfile('${post.userId}')">
                             <img src="${post.authorAvatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-10 h-10 rounded-full object-cover border border-slate-800">
@@ -1446,13 +1561,10 @@
                         ${deleteBtnHtml}
                     </div>
 
-                    <!-- 內文文字 -->
                     <p class="text-xs text-slate-300 leading-relaxed font-light">${post.text}</p>
 
-                    <!-- 圖片 -->
                     ${imageHtml}
 
-                    <!-- 標籤雲 -->
                     ${post.kinks && post.kinks.length > 0 ? `
                         <div class="flex flex-wrap gap-1.5">
                             ${post.kinks.map(k => `
@@ -1461,22 +1573,18 @@
                         </div>
                     ` : ''}
 
-                    <!-- 底部控制項與實時數據列 -->
                     <div class="pt-2.5 border-t border-slate-900 flex items-center justify-between text-slate-500 text-[10.5px]">
                         
-                        <!-- 點讚 (愛心) -->
                         <button onclick="toggleLikePost('${post.id}')" class="flex items-center gap-1.5 hover:text-rose-500 transition ${userLiked ? 'text-rose-500 font-semibold' : ''}">
                             <i class="${userLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart'}"></i>
                             <span>${post.likeCount || 0} 個讚</span>
                         </button>
 
-                        <!-- 評論區 (帶有即時對話數量) -->
                         <button onclick="toggleCommentsSection('${post.id}')" class="flex items-center gap-1.5 hover:text-indigo-400 transition">
                             <i class="fa-regular fa-comments"></i>
                             <span>${commentCount} 則留言</span>
                         </button>
 
-                        <!-- 1-5星 評分反饋系統 -->
                         <div class="flex items-center gap-2">
                             <div class="flex items-center gap-0.5 text-slate-600">
                                 ${[1, 2, 3, 4, 5].map(star => {
@@ -1489,10 +1597,9 @@
                         </div>
                     </div>
 
-                    <!-- 內嵌留言評論抽屜 (當被點選展開時渲染) -->
                     <div id="comments-box-${post.id}" class="${window.state.openComments[post.id] ? '' : 'hidden'} mt-4 pt-4 border-t border-slate-900/60 space-y-3">
                         <div class="flex gap-2">
-                            <input type="text" id="comment-input-${post.id}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-700" placeholder="真誠留言，打個招呼吧...">
+                            <input type="text" id="comment-input-${post.id}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500" placeholder="真誠留言，打個招呼吧...">
                             <button onclick="submitComment('${post.id}')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[10px] px-4 rounded-xl transition shrink-0">送出</button>
                         </div>
                         <div class="space-y-2.5 max-h-48 overflow-y-auto pr-1" id="comments-list-${post.id}">
@@ -1511,7 +1618,6 @@
                 listContainer.appendChild(card);
             });
 
-            // 底部無限滾動完畢標誌提示
             if (totalCount > window.state.visiblePostsCount) {
                 const loadMoreEl = document.createElement('div');
                 loadMoreEl.className = 'text-center py-4 text-[10px] text-slate-600 animate-pulse';
@@ -1527,8 +1633,6 @@
 
         function renderProfileTab(container, profileUserId) {
             const isMe = profileUserId === window.state.applicationId;
-            
-            // 查詢或在 activeUsers 中撈取此檔案所有人的 Profile 資料
             const profileUser = isMe ? window.state.userData : window.state.activeUsers.find(u => u.id === profileUserId);
 
             if (!profileUser) {
@@ -1542,30 +1646,19 @@
                 return;
             }
 
-            // 寫入觀看足跡：若進入他人檔案，安全異動 visitor 集合
             if (!isMe) {
                 addVisitorRecord(profileUserId);
             }
 
-            // 主題興趣標籤生成
             const kinksStr = profileUser.kinks && profileUser.kinks.length > 0 ? profileUser.kinks.map(k=>`# ${k.split('｜')[1] || k}`).join(', ') : '無選定標籤';
 
-            // 🔒 黃金 Spec 認證申請狀態判定
             let specApplyBtnHtml = '';
             const specLength = parseFloat(profileUser.length || 0);
             const specGirth = parseFloat(profileUser.girth || 0);
 
             if (specLength >= 16 && specGirth >= 5) {
                 if (profileUser.isSpecElite) {
-                    specApplyBtnHtml = `
-                        <div class="p-3 bg-amber-500/5 border border-amber-500/15 rounded-2xl flex items-center gap-2.5 text-amber-400 text-xs mt-3 select-none">
-                            <i class="fa-solid fa-medal text-sm animate-pulse"></i>
-                            <div>
-                                <h5 class="font-bold">已榮獲黃金 Spec 頂級認證</h5>
-                                <p class="text-[9px] text-slate-500 font-light">您的勃起長度、勃起粗度圍已經過官方照片實證查驗合格！</p>
-                            </div>
-                        </div>
-                    `;
+                    specApplyBtnHtml = '';
                 } else if (profileUser.specEliteStatus === 'pending') {
                     specApplyBtnHtml = `
                         <button class="w-full bg-slate-900 border border-slate-800 text-amber-500/70 font-semibold text-xs py-3 px-4 rounded-xl mt-3 flex items-center justify-center gap-1.5 select-none animate-pulse">
@@ -1581,7 +1674,6 @@
                 }
             }
 
-            // 訪客足跡 HTML 生成 (僅限本人主頁觀看)
             let visitorsHtml = '';
             if (isMe) {
                 const myVisitors = window.state.visitors || [];
@@ -1602,8 +1694,8 @@
                 `;
             }
 
+            // 修改個人資料頁排版：移動徽章至頭像與名稱下方
             container.innerHTML = `
-                <!-- 頂部頭部區 -->
                 <div class="bg-slate-900/40 border border-slate-900/80 rounded-3xl p-6 relative flex flex-col items-center text-center space-y-4">
                     
                     ${!isMe ? `
@@ -1612,40 +1704,37 @@
                         </button>
                     ` : ''}
 
-                    <!-- 個人奢華大頭貼 (圓形光圈，純Icon極簡圓形氣泡徽章懸浮在下方) -->
                     <div class="relative w-24 h-24 rounded-full p-1 bg-slate-900 border border-slate-800 shadow-xl select-none">
                         <img src="${profileUser.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-full h-full rounded-full object-cover" draggable="false" oncontextmenu="return false;">
-                        <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 flex items-center justify-center gap-1.5 z-10 bg-slate-950/80 px-2.5 py-1 rounded-full border border-slate-800">
-                            ${getBadgeHTML(profileUser, true)}
-                        </div>
                     </div>
 
-                    <div class="space-y-1.5 pt-1.5">
+                    <div class="space-y-1.5 pt-1 flex flex-col items-center">
                         <h2 class="text-xl font-bold text-white tracking-wide flex items-center gap-1.5 justify-center">
                             <span>${profileUser.nickname}</span>
                         </h2>
                         <span class="text-xs text-slate-500 block font-mono">@${profileUserId}</span>
+                        
+                        <!-- 電腦版與行動版通用的徽章：完美放置於顯示帳號名稱的底下 -->
+                        <div class="flex items-center justify-center gap-1.5 mt-2 flex-wrap">
+                            ${getBadgeHTML(profileUser, true)}
+                        </div>
                     </div>
 
-                    <!-- 規格卡片與主題偏好 -->
                     <div class="grid grid-cols-2 gap-3 w-full bg-slate-950/50 p-4 border border-slate-900 rounded-2xl text-xs text-left text-slate-400">
                         <div><span class="text-slate-500 font-medium">身高體重:</span> <span class="text-slate-300 font-semibold">${profileUser.height} cm / ${profileUser.weight} kg</span></div>
                         <div><span class="text-slate-500 font-medium">身體密碼:</span> <span class="text-slate-300 font-semibold">長 ${profileUser.length} cm / 粗 ${profileUser.girth} cm</span></div>
                         <div class="col-span-2 pt-2 border-t border-slate-900/60 mt-1.5">
                             <span class="text-slate-500 font-medium">感興趣主題:</span>
                             <p class="text-slate-300 font-light mt-1 text-[11px] leading-relaxed">${kinksStr}</p>
-                            ${profileUser.otherKink ? `<p class="text-[10px] text-slate-500 font-medium mt-1">其他備註: ${profileUser.otherKink}</p>` : ''}
                         </div>
                     </div>
 
-                    <!-- 安全審批：頭像提出待審查標籤 -->
                     ${isMe && profileUser.avatarStatus === 'pending' ? `
                         <div class="w-full p-2.5 bg-purple-500/5 border border-purple-500/10 rounded-xl text-[10px] text-purple-400 font-semibold flex items-center justify-center gap-1.5 select-none animate-pulse">
                             <i class="fa-solid fa-camera"></i> 新上傳頭像已在背景人工審核中... (目前展示原頭像)
                         </div>
                     ` : ''}
 
-                    <!-- 認證與功能選單 -->
                     ${specApplyBtnHtml}
 
                     ${isMe ? `
@@ -1655,11 +1744,9 @@
                     ` : ''}
                 </div>
 
-                <!-- 訪客足跡 -->
                 ${visitorsHtml}
             `;
 
-            // 當 A 點擊 B 主頁時，在 B 背景記錄訪客，並同步啟動 B 的足跡監聽
             if (isMe) {
                 listenToMyVisitors();
             }
@@ -1668,7 +1755,6 @@
         async function addVisitorRecord(targetUserId) {
             if (!db || targetUserId === window.state.applicationId) return;
             try {
-                // 為避免重刷寫入量，限制在同一 Session 同一 A 訪問 B 的重複記錄
                 const vId = `${window.state.applicationId}_to_${targetUserId}`;
                 const visitorRef = doc(db, 'secretg_apps', appId, 'visitors', vId);
                 await setDoc(visitorRef, {
@@ -1682,7 +1768,6 @@
             }
         }
 
-        // 監聽有誰來看過登入者本人
         function listenToMyVisitors() {
             if (!db || window.state.unsubscribeVisitorsListener) return;
             const q = query(
@@ -1694,10 +1779,8 @@
                 snapshot.forEach((docSnap) => {
                     list.push(docSnap.data());
                 });
-                // 按時間由新到舊倒序
                 window.state.visitors = list.slice(0, 10);
                 
-                // 若當前停留在個人資料頁，立即局部渲染足跡區
                 const scrollContainer = document.getElementById('dashboard-tab-content');
                 if (window.state.currentTab === 'profile') {
                     renderProfileTab(scrollContainer, window.state.applicationId);
@@ -1705,7 +1788,6 @@
             });
         }
 
-        // 點點頭像看他人主頁專區
         window.viewUserProfile = function(targetUserId) {
             if (targetUserId === window.state.applicationId) {
                 window.state.currentTab = 'profile';
@@ -1744,7 +1826,6 @@
             }
         };
 
-        // 按讚或篩選貼文標籤跳轉
         window.setGlobalFilterLabel = function(label) {
             window.state.currentFilter = label;
             updateSearchAndFeedUI();
@@ -1768,7 +1849,6 @@
             }
         };
 
-        // 展開 or 收起貼文留言區
         window.toggleCommentsSection = function(postId) {
             window.state.openComments[postId] = !window.state.openComments[postId];
             const box = document.getElementById(`comments-box-${postId}`);
@@ -1828,10 +1908,8 @@
             }
         }
 
-        // 點擊解鎖敏感 NSFW 照片
         window.unlockNSFW = function(postId) {
             window.state.unlockedNSFWPosts[postId] = true;
-            // 局部重繪瀑布流
             updateSearchAndFeedUI();
             showToast('已解鎖看圖 🔞', 'success');
         };
@@ -1845,18 +1923,16 @@
                     <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2">
                         <i class="fa-solid fa-feather-point text-indigo-500"></i> 分享天菜動態
                     </h3>
-                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">上傳生活帥照或健身照。可選取多個性癖與生活貼文標籤。</p>
+                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">上傳生活/健身照。可選取多個性癖與生活貼文標籤。</p>
 
                     <div class="space-y-4">
-                        <!-- 文字內容 -->
                         <div>
                             <label class="block text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">動態內容 (選填)</label>
-                            <textarea id="share-text" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-700 resize-none" placeholder="分享當下的健美近況或私密心境..."></textarea>
+                            <textarea id="share-text" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 resize-none" placeholder="分享當下的健美近況 or 私密心境..."></textarea>
                         </div>
 
-                        <!-- 照片選取與浮水印即時烘焙 preview -->
                         <div>
-                            <label class="block text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">1. 上傳生活/尺度照 (選填)</label>
+                            <label class="block text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">上傳生活/尺度照 (選填)</label>
                             <div class="border border-slate-800 rounded-2xl p-4 flex flex-col items-center justify-center bg-slate-950/40 text-center">
                                 <div id="share-img-trigger" class="relative w-full h-40 rounded-xl border border-dashed border-slate-800 hover:border-indigo-500 flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-slate-950 transition">
                                     <img id="share-preview" class="absolute inset-0 w-full h-full object-contain hidden" draggable="false" oncontextmenu="return false;">
@@ -1870,24 +1946,22 @@
                             </div>
                         </div>
 
-                        <!-- 敏感照片 NSFW 分級保護 -->
                         <div class="p-3 bg-rose-500/5 border border-rose-500/10 rounded-2xl">
                             <label class="flex items-center gap-3 cursor-pointer">
                                 <input type="checkbox" id="share-nsfw-cb" class="rounded border-slate-800 bg-slate-950 text-rose-600 focus:ring-rose-500">
                                 <div>
-                                    <span class="text-xs text-rose-400 font-bold block">2. 標記為私密尺度照片 (NSFW) 🔞</span>
+                                    <span class="text-xs text-rose-400 font-bold block">標記為私密尺度照片 (NSFW) 🔞</span>
                                     <p class="text-[9px] text-slate-500 mt-0.5 leading-relaxed">勾選後，動態牆上的圖片會套用高斯毛玻璃模糊保護，防止他人意外曝光社死。</p>
                                 </div>
                             </label>
                         </div>
 
-                        <!-- 主題興趣標籤多選 -->
                         <div>
-                            <label class="block text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">3. 關聯的主題標籤 (至少勾選一項)</label>
+                            <label class="block text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">關聯的主題標籤 (至少勾選一項)</label>
                             <div class="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto bg-slate-950/40 p-3 border border-slate-850 rounded-2xl" id="share-kinks-container">
                                 ${window.state.kinksOptions.map(k => `
                                     <label class="flex items-center gap-2.5 cursor-pointer p-1 rounded hover:bg-slate-900/60 transition">
-                                        <input type="checkbox" name="share-kink" value="${k}" class="rounded border-slate-800 bg-slate-950 text-indigo-600 focus:ring-indigo-500">
+                                        <input type="checkbox" name="share-kink" value="${k}" class="rounded border-slate-800 bg-slate-950 text-indigo-600">
                                         <span class="text-xs text-slate-300 font-medium">${k}</span>
                                     </label>
                                 `).join('')}
@@ -1911,7 +1985,6 @@
 
             document.getElementById('share-img-trigger').onclick = () => fileInput.click();
 
-            // 實施 HTML5 Canvas 「前台防盜浮水印安全烘焙技術」
             fileInput.onchange = (e) => {
                 const file = e.target.files[0];
                 if (file) {
@@ -1920,9 +1993,8 @@
                         const img = new Image();
                         img.src = evt.target.result;
                         img.onload = function() {
-                            // 構建畫布渲染等比縮放
                             const canvas = document.createElement('canvas');
-                            const maxDim = 800; // 等比壓縮至寬高最高 800px，大幅節省讀取量
+                            const maxDim = 800; 
                             let w = img.width;
                             let h = img.height;
                             if (w > maxDim || h > maxDim) {
@@ -1935,14 +2007,12 @@
                             const ctx = canvas.getContext('2d');
                             ctx.drawImage(img, 0, 0, w, h);
 
-                            // 在畫布上實時渲染防偽防另存浮水印
                             ctx.save();
                             ctx.font = "bold 26px sans-serif";
                             ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
                             ctx.translate(w/2, h/2);
-                            ctx.rotate(-Math.PI / 6); // 旋轉 30 度
+                            ctx.rotate(-Math.PI / 6); 
                             
-                            // 渲染對角雙排大浮水印
                             ctx.fillText("SECRETROOM PROOF", -160, -50);
                             ctx.fillText("SECRETROOM PROOF", -160, 50);
                             ctx.restore();
@@ -1967,7 +2037,7 @@
                 });
 
                 if (!text && !bakedBase64) {
-                    showToast('請填寫動態文字內容或選取要發布的照片！', 'error');
+                    showToast('請填寫動態內容或選取要發布的照片！', 'error');
                     return;
                 }
                 if (selectedKinks.length === 0) {
@@ -2017,14 +2087,13 @@
                     <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2">
                         <i class="fa-solid fa-user-gear text-indigo-500"></i> 修改個人資料
                     </h3>
-                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">填寫您要變更的個人資訊，除大頭照變更外，其餘欄位修改皆免審核、點擊儲存即刻同步生效！</p>
+                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">填寫要變更的個人資訊，除頭像變更後需人工審核外，其餘欄位修改儲存後即會自動更新！</p>
 
                     <div class="space-y-4">
                         
-                        <!-- 1. 頭像變更審查 -->
                         <div class="bg-slate-950 p-4 border border-slate-850 rounded-2xl flex items-center justify-between">
                             <div class="text-left">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">1. 變更個人頭像</span>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">變更個人頭像</span>
                                 <span class="text-[9px] text-purple-400 font-semibold block mt-1 leading-normal"><i class="fa-solid fa-camera"></i> 變更大頭照需要管理員人工二次核定才能替用。</span>
                             </div>
                             <div class="relative w-14 h-14 rounded-full border border-slate-800 cursor-pointer overflow-hidden" id="edit-avatar-trigger">
@@ -2033,25 +2102,22 @@
                             <input type="file" id="edit-avatar-file" accept="image/*" class="hidden">
                         </div>
 
-                        <!-- 2. 個人暱稱 -->
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">2. 個人暱稱</label>
-                            <input type="text" id="edit-nickname" value="${user.nickname || ''}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 placeholder-slate-700" placeholder="暱稱" required>
+                            <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">個人暱稱</label>
+                            <input type="text" id="edit-nickname" value="${user.nickname || ''}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
                         </div>
 
-                        <!-- 3. 身高體重 -->
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">3. 身高 (cm)</label>
+                                <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">身高 (cm)</label>
                                 <input type="number" id="edit-height" value="${user.height || ''}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
                             </div>
                             <div>
-                                <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">4. 體重 (kg)</label>
+                                <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">體重 (kg)</label>
                                 <input type="number" id="edit-weight" value="${user.weight || ''}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
                             </div>
                         </div>
 
-                        <!-- 4. 私密身體規格 (採用奢華密碼卡設計) -->
                         <div class="p-4 bg-slate-950/40 border border-slate-800 rounded-2xl">
                             <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block mb-2"><i class="fa-solid fa-lock"></i> 身體私密規格密碼</span>
                             <div class="grid grid-cols-2 gap-3">
@@ -2066,20 +2132,16 @@
                             </div>
                         </div>
 
-                        <!-- 5. 10個男同志的主題標籤勾選 (不更動、不減少) -->
+                        <!-- 調整為與註冊介面一致的5列2行 -->
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">5. 興趣與性癖主題標籤</label>
-                            <div class="grid grid-cols-1 gap-2 max-h-36 overflow-y-auto bg-slate-950/40 p-3 border border-slate-850 rounded-2xl">
+                            <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">興趣與性癖主題標籤</label>
+                            <div class="grid grid-cols-2 gap-2 bg-slate-950/40 p-3.5 border border-slate-850 rounded-2xl">
                                 ${window.state.kinksOptions.map(k => `
-                                    <label class="flex items-center gap-2.5 cursor-pointer p-1 rounded hover:bg-slate-900/60 transition">
-                                        <input type="checkbox" name="edit-kink" value="${k}" ${user.kinks && user.kinks.includes(k) ? 'checked' : ''} class="rounded border-slate-800 bg-slate-950 text-indigo-600 focus:ring-indigo-500">
-                                        <span class="text-xs text-slate-300 font-medium">${k}</span>
+                                    <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-900/60 p-2 rounded-xl transition border border-transparent hover:border-slate-800">
+                                        <input type="checkbox" name="edit-kink" value="${k}" ${user.kinks && user.kinks.includes(k) ? 'checked' : ''} class="rounded border-slate-850 bg-slate-950 text-indigo-650 focus:ring-indigo-500 w-3.5 h-3.5">
+                                        <span class="text-[10px] text-slate-350 font-medium leading-tight select-none">${k}</span>
                                     </label>
                                 `).join('')}
-                            </div>
-                            <div class="mt-2">
-                                <label class="block text-[9px] font-bold text-slate-500 mb-1 uppercase">其他偏好註記</label>
-                                <input type="text" id="edit-other-kink" value="${user.otherKink || ''}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">
                             </div>
                         </div>
 
@@ -2117,7 +2179,6 @@
                 const weight = document.getElementById('edit-weight').value;
                 const length = document.getElementById('edit-length').value;
                 const girth = document.getElementById('edit-girth').value;
-                const otherKink = document.getElementById('edit-other-kink').value.trim();
 
                 const selectedKinks = [];
                 document.querySelectorAll('input[name="edit-kink"]:checked').forEach(cb => {
@@ -2134,11 +2195,10 @@
                     const userRef = doc(db, 'secretg_apps', appId, 'applications', window.state.applicationId);
                     
                     const payload = {
-                        nickname, height, weight, length, girth, otherKink,
+                        nickname, height, weight, length, girth,
                         kinks: selectedKinks
                     };
 
-                    // 若更換大頭照，寫入 avatarPending 並設為待審核 (不影響現存頭像)
                     if (pendingBase64) {
                         payload.avatarPending = pendingBase64;
                         payload.avatarStatus = 'pending';
@@ -2148,19 +2208,16 @@
 
                     await updateDoc(userRef, payload);
 
-                    // 即時將更動欄位寫入本機 userData，修正更新名稱畫面不變更的問題
                     window.state.userData.nickname = nickname;
                     window.state.userData.height = height;
                     window.state.userData.weight = weight;
                     window.state.userData.length = length;
                     window.state.userData.girth = girth;
-                    window.state.userData.otherKink = otherKink;
                     window.state.userData.kinks = selectedKinks;
 
                     modal.remove();
                     showToast('修改成功！暱稱已即時更新同步。', 'success');
                     
-                    // 重新局部刷新儀表板
                     renderDashboard(appContainer);
                 } catch (err) {
                     console.error("更新失敗:", err);
@@ -2224,7 +2281,6 @@
                         const img = new Image();
                         img.src = evt.target.result;
                         img.onload = function() {
-                            // 構建畫布渲染等比縮放
                             const canvas = document.createElement('canvas');
                             const maxDim = 800; 
                             let w = img.width;
@@ -2239,14 +2295,12 @@
                             const ctx = canvas.getContext('2d');
                             ctx.drawImage(img, 0, 0, w, h);
 
-                            // 在畫布上實時渲染防偽防另存浮水印 (安全機制第一點，浮水印「僅限SecretRoom黃金 Spec 認證使用」)
                             ctx.save();
                             ctx.font = "bold 20px sans-serif";
-                            ctx.fillStyle = "rgba(239, 68, 68, 0.18)"; // 亮紅色高能防護浮水印
+                            ctx.fillStyle = "rgba(239, 68, 68, 0.18)"; 
                             ctx.translate(w/2, h/2);
                             ctx.rotate(-Math.PI / 6); 
                             
-                            // 渲染交叉覆蓋保護大浮水印
                             ctx.fillText("僅限SecretRoom黃金 Spec 認證使用", -200, -60);
                             ctx.fillText("僅限SecretRoom黃金 Spec 認證使用", -200, 60);
                             ctx.restore();
@@ -2293,57 +2347,63 @@
             };
         }
 
-        window.deleteMyPost = async function(postId) {
-            if (!db) return;
-            const confirmDel = confirm('確定要永久刪除此篇秘密動態貼文與照片嗎？此操作無法撤回！');
-            if (!confirmDel) return;
+        window.deleteMyPost = function(postId) {
+            const confirmModal = document.getElementById('custom-confirm-modal');
+            const btnCancel = document.getElementById('confirm-modal-cancel');
+            const btnOk = document.getElementById('confirm-modal-ok');
 
-            showLoading();
-            try {
-                const postRef = doc(db, 'secretg_apps', appId, 'posts', postId);
-                await deleteDoc(postRef);
-                showToast('貼文已成功安全下架銷毀！', 'success');
-            } catch (err) {
-                console.error("刪除失敗:", err);
-                showToast('刪除失敗', 'error');
-            } finally {
-                hideLoading();
-            }
+            if (!confirmModal) return;
+
+            confirmModal.classList.remove('hidden');
+
+            btnCancel.onclick = () => {
+                confirmModal.classList.add('hidden');
+            };
+
+            btnOk.onclick = async () => {
+                confirmModal.classList.add('hidden');
+                if (!db) return;
+                showLoading();
+                try {
+                    const postRef = doc(db, 'secretg_apps', appId, 'posts', postId);
+                    await deleteDoc(postRef);
+                    showToast('貼文已成功安全下架銷毀！', 'success');
+                } catch (err) {
+                    console.error("刪除失敗:", err);
+                    showToast('刪除失敗', 'error');
+                } finally {
+                    hideLoading();
+                }
+            };
         };
 
         function getBadgeHTML(user, isBig = false) {
-            // 系統自動依各項徽章觸發條件即時判定 (1.管理員、2.新人、3.創始元老、4.人氣焦點、5.星級天菜、6.分享家、7.健身狂、8.暖男、9.黃金Spec)
             const badges = [];
 
-            // 👑 管理員
             if (user.role === 'admin' || user.isAdmin) {
                 badges.push({ icon: 'fa-crown', color: 'from-amber-400 to-yellow-600 text-slate-950 shadow-yellow-500/20', desc: '管理員' });
             }
-            // 🌱 新人 (註冊未滿7天)
             const createdSecs = user.createdAt ? user.createdAt.seconds : 0;
             const nowSecs = Date.now() / 1000;
             if (createdSecs && (nowSecs - createdSecs) <= (168 * 3600)) {
                 badges.push({ icon: 'fa-seedling', color: 'from-emerald-500 to-green-600 text-white shadow-emerald-500/20', desc: '新加入成員' });
             }
-            // 🛡️ 創始元老
             if (user.isPioneer) {
                 badges.push({ icon: 'fa-shield-halved', color: 'from-amber-600 to-orange-700 text-white shadow-orange-500/10', desc: '創始元老' });
             }
-            // 🔒 黃金 Spec 認證 Spec Elite
+            
+            // 升級 Spec Elite 黃金認證徽章：全新極光皇家金牌樣式（更尊榮且動態發光）
             if (user.isSpecElite) {
-                badges.push({ icon: 'fa-lock', color: 'from-slate-900 via-slate-950 to-black text-slate-300 border border-slate-800 shadow-slate-950/40', desc: '黃金 Spec 認證 🔒' });
+                badges.push({ icon: 'fa-medal', color: 'from-amber-400 via-yellow-500 to-amber-600 text-slate-950 shadow-yellow-500/25 animate-pulse', desc: '黃金 Spec 認證 🔒' });
             }
 
-            // --- 聯動計算系統自動觸發徽章 ---
             const userPosts = window.state.posts.filter(p => p.userId === user.id);
             const totalLikes = userPosts.reduce((sum, p) => sum + (p.likeCount || 0), 0);
 
-            // 🔥 人氣焦點 (按讚數累計超 1000)
             if (totalLikes >= 1000) {
                 badges.push({ icon: 'fa-fire', color: 'from-orange-500 to-rose-600 text-white shadow-orange-500/20', desc: '人氣焦點' });
             }
 
-            // ⭐ 星級天菜 (50則以上貼文，評分皆為5.0，每則評分500人以上)
             const perfectPosts = userPosts.filter(p => {
                 const ratings = p.ratings ? Object.values(p.ratings) : [];
                 const avg = ratings.length > 0 ? (ratings.reduce((a,b)=>a+b, 0) / ratings.length) : 0;
@@ -2353,19 +2413,16 @@
                 badges.push({ icon: 'fa-star', color: 'from-amber-400 via-yellow-500 to-amber-600 text-slate-950 shadow-yellow-500/25', desc: '星級天菜' });
             }
 
-            // 📸 生活分享家 (發文累計大於等於100篇)
             if (userPosts.length >= 100) {
                 badges.push({ icon: 'fa-camera', color: 'from-violet-500 to-purple-700 text-white shadow-violet-500/15', desc: '生活分享家' });
             }
 
-            // 🏋️ 健身天菜 (標籤標有「健身運動」大於 50 篇，且該類別按讚大於 5000 次)
             const gymPosts = userPosts.filter(p => p.kinks && p.kinks.some(k => k.includes('健身')));
             const gymLikes = gymPosts.reduce((sum, p) => sum + (p.likeCount || 0), 0);
             if (gymPosts.length >= 50 && gymLikes >= 5000) {
                 badges.push({ icon: 'fa-dumbbell', color: 'from-slate-500 to-slate-700 text-white shadow-slate-500/10', desc: '健身天菜' });
             }
 
-            // 💬 暖男紳士 (在「他人」貼文下累計評論超 500 則)
             let otherCommentsCount = 0;
             window.state.posts.forEach(p => {
                 if (p.userId !== user.id && p.comments) {
@@ -2378,7 +2435,7 @@
                 badges.push({ icon: 'fa-heart-circle-check', color: 'from-pink-500 to-rose-600 text-white shadow-pink-500/15', desc: '暖男紳士' });
             }
 
-            // 渲染：使用者介面的所有徽章僅保留圖示，勿出現徽章文字，滑鼠懸停顯示 Tooltip 提示
+            // 依指示：所有徽章僅保留圖示（Icon Only），並使用 title 屬性作為懸停說明，不再出現任何徽章文字
             return badges.map(b => `
                 <span title="${b.desc}" class="inline-flex items-center justify-center ${isBig ? 'w-5.5 h-5.5 text-[10px]' : 'w-4 h-4 text-[8px]'} rounded-full bg-gradient-to-r ${b.color} shadow-sm select-none cursor-help">
                     <i class="fa-solid ${b.icon}"></i>
@@ -2386,7 +2443,6 @@
             `).join('');
         }
 
-        // 用於貼文上渲染發文者的勳章標章
         function getUserBadgeHTMLForPost(post) {
             const author = window.state.activeUsers.find(u => u.id === post.userId);
             if (!author) return '';
@@ -2419,39 +2475,9 @@
             }, 3000);
         };
 
-        // 綁定全域搜尋輔助
-        window.setGlobalFilter = function(filterName) {
-            window.state.currentFilter = filterName;
-            
-            if (filterName !== 'elite-ranking') {
-                window.state.currentRankTag = null;
-            } else if (!window.state.currentRankTag) {
-                window.state.currentRankTag = window.state.kinksOptions[0];
-            }
-            
-            const tabs = ['recommended', 'highly-rated', 'popular', 'elite-ranking'];
-            tabs.forEach(t => {
-                const btn = document.getElementById(`filter-btn-${t}`);
-                if (btn) {
-                    if (t === filterName) {
-                        btn.className = "shrink-0 text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-full border transition-all duration-300 bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-950/30";
-                    } else {
-                        btn.className = "shrink-0 text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-full border transition-all duration-300 bg-slate-900/50 text-slate-400 border-slate-850 hover:bg-slate-800";
-                    }
-                }
-            });
-
-            const subTabsContainer = document.getElementById('ranking-sub-tabs');
-            if (subTabsContainer) {
-                if (filterName === 'elite-ranking') {
-                    subTabsContainer.classList.remove('hidden');
-                } else {
-                    subTabsContainer.classList.add('hidden');
-                }
-            }
-
-            updateSearchAndFeedUI();
-        };
+        // 核心修正：將模組作用域中的函式掛載至全域 window，確保 HTML inline onclick 可以完美執行
+        window.showEditProfileModal = showEditProfileModal;
+        window.showSpecApplyModal = showSpecApplyModal;
 
         window.onload = function() {
             initApp();
