@@ -863,76 +863,6 @@
             };
         }
 
-        function renderRejected(container) {
-            const reason = window.state.userData.rejectionReason || "不符本站審核政策。請確保頭像露出五官且清晰，且註冊之年齡與資料真實無冒用。";
-            container.innerHTML = `
-                <div class="flex flex-col items-center justify-center min-h-screen w-full px-6 bg-[#030307]">
-                    <div class="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl text-center space-y-6">
-                        <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center text-red-500 text-3xl mx-auto shadow-[0_0_20px_rgba(239,68,68,0.15)]">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
-                        </div>
-                        <div class="space-y-2">
-                            <h2 class="text-xl font-bold text-white tracking-wide">審核未核准 · 申請已退回</h2>
-                            <p class="text-xs text-slate-400 leading-relaxed px-4">
-                                很抱歉，您的 SecretRoom 申請經管理員檢視後未通過。您可以審查下方的退件理由，修正資料後重新提交。
-                            </p>
-                        </div>
-
-                        <div class="bg-red-500/5 border border-red-500/15 p-4 rounded-2xl text-left space-y-2.5">
-                            <span class="text-[9px] font-bold text-red-400 uppercase tracking-wider block"><i class="fa-solid fa-envelope-open-text"></i> 退件理由說明：</span>
-                            <p class="text-xs text-slate-300 leading-relaxed font-light">${reason}</p>
-                        </div>
-
-                        <div class="pt-4 space-y-3">
-                            <button id="btn-fix-apply" class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-xs py-3 rounded-xl transition duration-300 shadow-md">
-                                修正資料並重新送審
-                            </button>
-                            <button id="btn-logout-rejected" class="w-full bg-slate-950 hover:bg-slate-900 text-slate-500 hover:text-slate-400 text-[11px] font-semibold py-2.5 rounded-xl border border-slate-900 transition">
-                                登出當前申請
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            document.getElementById('btn-logout-rejected').onclick = () => {
-                localStorage.removeItem('sr_username');
-                window.state.userData = {};
-                window.state.applicationId = null;
-                navigate('landing');
-            };
-
-            document.getElementById('btn-fix-apply').onclick = () => {
-                const oldData = { ...window.state.userData };
-                navigate('register');
-                
-                setTimeout(() => {
-                    document.getElementById('reg-username').value = window.state.applicationId || '';
-                    document.getElementById('reg-username').disabled = true; 
-                    document.getElementById('reg-username-confirm').value = window.state.applicationId || '';
-                    document.getElementById('reg-username-confirm').disabled = true; 
-                    document.getElementById('reg-password').value = oldData.password || '';
-                    document.getElementById('reg-password-confirm').value = oldData.password || '';
-                    document.getElementById('reg-nickname').value = oldData.nickname || '';
-                    document.getElementById('reg-email').value = oldData.email || '';
-                    document.getElementById('reg-height').value = oldData.height || '';
-                    document.getElementById('reg-weight').value = oldData.weight || '';
-                    document.getElementById('reg-length').value = oldData.length || '';
-                    document.getElementById('reg-girth').value = oldData.girth || '';
-                    
-                    if (oldData.kinks && Array.isArray(oldData.kinks)) {
-                        document.querySelectorAll('input[name="reg-kink"]').forEach(cb => {
-                            if (oldData.kinks.includes(cb.value)) cb.checked = true;
-                        });
-                    }
-                    
-                    if (oldData.birthYear) document.getElementById('reg-year').value = oldData.birthYear;
-                    if (oldData.birthMonth) document.getElementById('reg-month').value = oldData.birthMonth;
-                    if (oldData.birthDay) document.getElementById('reg-day').value = oldData.birthDay;
-                }, 100);
-            };
-        }
-
         function renderTelegramBind(container) {
             container.innerHTML = `
                 <div class="flex flex-col items-center justify-center min-h-screen w-full px-6 bg-[#030307]">
@@ -941,25 +871,25 @@
                             <i class="fa-brands fa-telegram"></i>
                         </div>
                         <div class="space-y-2">
-                            <h2 class="text-xl font-bold text-white tracking-wide">雙因子身分核驗</h2>
+                            <h2 class="text-xl font-bold text-white tracking-wide">綁定 Telegram 帳號</h2>
                             <p class="text-xs text-slate-400 leading-relaxed px-4">
-                                為落實最高規格隱私安全，請點擊下方按鈕前往 Telegram 取得您的安全登入驗證碼。
+                                為了確保您的專屬會籍安全並啟用社群私密功能，請點擊下方按鈕前往 Telegram 取得您的安全綁定碼。
                             </p>
                         </div>
 
                         <div class="py-1">
                             <a href="https://t.me/${telegramBotName}?start=${window.state.applicationId}" target="_blank" class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white font-semibold text-xs py-3 px-6 rounded-xl transition duration-300 shadow-md">
-                                <i class="fa-brands fa-telegram text-base"></i> 前往 Telegram 安全核驗
+                                <i class="fa-brands fa-telegram text-base"></i> 前往 Telegram 取得綁定碼
                             </a>
                         </div>
 
                         <div class="border-t border-slate-800/80 pt-5 space-y-4 text-left">
                             <div>
-                                <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">輸入核驗碼</label>
+                                <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">輸入 4 位數綁定碼</label>
                                 <input type="text" id="tg-pin-input" maxlength="4" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-center text-lg font-bold text-white focus:outline-none focus:border-blue-500 placeholder-slate-800 tracking-widest" placeholder="0000">
                             </div>
                             <button id="btn-submit-tg-bind" class="w-full bg-slate-800 hover:bg-slate-750 text-slate-300 font-semibold text-xs py-3 rounded-xl border border-slate-700/60 transition">
-                                驗證完成並進入平台
+                                確認綁定並進入平台
                             </button>
                         </div>
                     </div>
