@@ -318,7 +318,7 @@
                         </div>
                         
                         <h1 class="text-3xl font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-slate-400 font-serif mb-2 select-none italic text-center">SecretRoom</h1>
-                        <p class="text-slate-400 text-xs font-semibold uppercase tracking-widest text-center">專專屬男性的私密生活分享社群</p>
+                        <p class="text-slate-400 text-xs font-semibold uppercase tracking-widest text-center">專屬男性的私密生活分享社群</p>
                         <p class="text-slate-500 text-[11px] mt-1 text-center font-light leading-relaxed">分享生活近況，看見最真實的彼此</p>
 
                         <div class="w-full space-y-3.5 mt-10">
@@ -416,7 +416,7 @@
                             showToast('密碼不正確，請重新檢查。', 'error');
                         }
                     } else {
-                        showToast('該帳號未在本機或伺服器中完成申請。', 'error');
+                        showToast('該帳號未完成會籍申請。', 'error');
                     }
                 } catch (err) {
                     console.error("登入驗證錯誤:", err);
@@ -439,7 +439,7 @@
                         </button>
                         
                         <div class="text-center mt-6 mb-8">
-                            <h2 class="text-xl font-bold text-white tracking-wide">建立 SecretRoom 申請</h2>
+                            <h2 class="text-xl font-bold text-white tracking-wide">SecretRoom 紳士會籍申請手續</h2>
                             <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">請詳細填寫以下必要欄位。男同志私密生活社群落實人工審核驗證制度。</p>
                         </div>
 
@@ -509,7 +509,7 @@
                                 </div>
                             </div>
 
-                            <!-- 信箱驗證與認證碼 (左右佈局按鈕版) -->
+                            <!-- 信箱驗證與認證碼 -->
                             <div class="space-y-4 bg-slate-950/40 p-4 border border-slate-850 rounded-2xl">
                                 <div>
                                     <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 信箱驗證</label>
@@ -948,79 +948,79 @@
                         <div class="space-y-2">
                             <h2 class="text-xl font-bold text-white tracking-wide">啟用會籍安全綁定</h2>
                             <p class="text-xs text-slate-400 leading-relaxed px-4">
-                                歡迎來到 SecretRoom 紳士俱樂部！為了防範虛假帳號、保護全體會員隱私安全，請點擊下方按鈕前往 Telegram 啟動官方機器人。
+                                歡迎來到 SecretRoom 紳士俱樂部！為了防範虛假帳號、保護全體會員隱私安全，請使用下方的 Telegram 官方元件登入您的 Telegram 帳號。
                             </p>
                         </div>
 
-                        <div class="py-2">
-                            <a href="https://t.me/${telegramBotName}?start=${window.state.applicationId}" target="_blank" class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white font-semibold text-xs py-3.5 px-6 rounded-xl transition duration-300 shadow-md">
-                                <i class="fa-brands fa-telegram text-base"></i> 前往 Telegram 啟動機器人
-                            </a>
+                        <!-- 官方登入元件容器 (完全替換舊按鈕) -->
+                        <div id="telegram-widget-container" class="flex justify-center py-4 min-h-[40px]">
+                            <span class="text-xs text-slate-500">正在與 Telegram 官方伺服器安全對接...</span>
                         </div>
 
                         <div class="border-t border-slate-800/80 pt-5 space-y-3">
-                            <div class="flex items-center justify-center gap-2 text-[10px] text-slate-500 font-semibold animate-pulse">
-                                <i class="fa-solid fa-circle-notch animate-spin text-blue-500"></i>
-                                <span id="tg-status-text">等待 Telegram 授權啟用訊號中...</span>
-                            </div>
                             <p class="text-[9px] text-slate-600 leading-normal">
-                                請於 Telegram 點選「開始 (Start)」後，系統將會在背景自動同步開通，無需手動輸入任何驗證碼。
+                                請輸入您 Telegram 綁定的手機號碼。登入請求發出後，請於您的 Telegram 官方系統帳號中點選「Confirm (確認)」，系統將會於背景瞬間自動同步開通，無需手動輸入任何驗證碼。
                             </p>
-                        </div>
-
-                        <div class="pt-2">
-                            <button id="btn-manual-sync-tg" class="w-full bg-slate-800 hover:bg-slate-750 text-slate-300 font-semibold text-xs py-2.5 rounded-xl border border-slate-700/60 transition">
-                                已啟動機器人？點擊手動同步會籍
-                            </button>
                         </div>
                     </div>
                 </div>
             `;
 
-            if (db) {
-                const userRef = doc(db, 'secretg_apps', appId, 'applications', window.state.applicationId);
-                
-                // 即時監聽：一旦機器人寫入 Telegram 資訊且狀態為核准/啟用，毫秒級瞬間自動跳转
-                const unsubscribeBind = onSnapshot(userRef, (docSnap) => {
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        if (data.telegramInfo && (data.status === 'approved' || data.status === 'active')) {
-                            unsubscribeBind();
-                            window.state.userData = data;
-                            showToast('會籍安全綁定成功！歡迎進入 SecretRoom。', 'success');
-                            navigate('dashboard');
-                        }
-                    }
-                });
-
-                // 備用手動同步按鈕：防止 deep-link 參數被特殊客戶端阻擋時的極致體驗保障
-                const manualBtn = document.getElementById('btn-manual-sync-tg');
-                if (manualBtn) {
-                    manualBtn.onclick = async () => {
-                        showLoading();
-                        try {
-                            const docSnap = await getDoc(userRef);
-                            if (docSnap.exists()) {
-                                const data = docSnap.data();
-                                if (data.telegramInfo && (data.status === 'approved' || data.status === 'active')) {
-                                    unsubscribeBind();
-                                    window.state.userData = data;
-                                    showToast('同步檢查成功！歡迎進入 SecretRoom。', 'success');
-                                    navigate('dashboard');
-                                } else {
-                                    showToast('未檢測到綁定訊號，請確保您已於 Telegram 中對機器人點擊了「開始 (Start)」', 'info');
-                                }
-                            }
-                        } catch (err) {
-                            console.error("手動同步錯誤:", err);
-                            showToast('會籍同步失敗，請稍後再試。', 'error');
-                        } finally {
-                            hideLoading();
-                        }
-                    };
+            // 動態加載並注入官方 Telegram 認證 Widget 腳本
+            setTimeout(() => {
+                const widgetContainer = document.getElementById('telegram-widget-container');
+                if (widgetContainer) {
+                    widgetContainer.innerHTML = '';
+                    const script = document.createElement('script');
+                    script.async = true;
+                    script.src = "https://telegram.org/js/telegram-widget.js?22";
+                    script.setAttribute('data-telegram-login', telegramBotName);
+                    script.setAttribute('data-size', 'large');
+                    script.setAttribute('data-radius', '12'); 
+                    script.setAttribute('data-onauth', 'onTelegramAuth(user)');
+                    script.setAttribute('data-request-access', 'write');
+                    widgetContainer.appendChild(script);
                 }
-            }
+            }, 150);
         }
+
+        // 全域 Telegram 官方認證 Callback (Confirm 後瞬間毫秒跳轉)
+        window.onTelegramAuth = async function(user) {
+            if (!user || !user.id) {
+                showToast('Telegram 安全驗證失敗，請重試！', 'error');
+                return;
+            }
+
+            if (!db || !window.state.applicationId) return;
+
+            showLoading();
+            try {
+                const userRef = doc(db, 'secretg_apps', appId, 'applications', window.state.applicationId);
+                const updatePayload = {
+                    telegramInfo: {
+                        id: user.id,
+                        first_name: user.first_name || '',
+                        username: user.username || '',
+                        photo_url: user.photo_url || ''
+                    },
+                    status: 'active' 
+                };
+
+                await updateDoc(userRef, updatePayload);
+
+                // 同步本地暫存
+                window.state.userData.telegramInfo = updatePayload.telegramInfo;
+                window.state.userData.status = 'active';
+
+                showToast('會籍安全綁定成功！歡迎進入 SecretRoom。', 'success');
+                navigate('dashboard');
+            } catch (err) {
+                console.error("安全寫入會籍資料異常:", err);
+                showToast('安全協議協議寫入失敗，請重試。', 'error');
+            } finally {
+                hideLoading();
+            }
+        };
 
         function renderDashboard(container) {
             container.innerHTML = `
@@ -1539,7 +1539,7 @@
                     `;
                 }
 
-                // 茄子與水蜜桃按讚重構：完美採用響應式向量 SVG 碼
+                // 茄子與水蜜桃按讚：向量 SVG 碼
                 const peachEggplantHtml = userLiked ? `
                     <button onclick="toggleLikePost('${post.id}')" class="flex items-center gap-1.5 text-purple-400 font-semibold transition duration-300">
                         <svg class="w-5 h-5 text-purple-400 fill-current" viewBox="0 0 64 64" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
@@ -1662,7 +1662,6 @@
                 addVisitorRecord(profileUserId);
             }
 
-            // 展示完整的主題文字
             const kinksStr = profileUser.kinks && profileUser.kinks.length > 0 ? profileUser.kinks.map(k=>`# ${k}`).join(', ') : '無選定標籤';
 
             let specApplyBtnHtml = '';
@@ -1691,7 +1690,7 @@
             if (isMe) {
                 const myVisitors = window.state.visitors || [];
                 visitorsHtml = `
-                    <div class="bg-slate-900/30 border border-slate-900 p-4 rounded-3xl space-y-3.5">
+                    <div class="bg-slate-900/30 border border-slate-900 p-4 rounded-3xl space-y-3.5 animate-fade-in">
                         <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block"><i class="fa-regular fa-eye text-indigo-500"></i> 最近誰來看過我 (足跡)：</span>
                         <div class="flex items-center gap-3 overflow-x-auto scrollbar-hide py-1">
                             ${myVisitors.length === 0 ? `
@@ -2404,7 +2403,7 @@
                 badges.push({ icon: 'fa-shield-halved', color: 'from-amber-600 to-orange-700 text-white shadow-orange-500/10' });
             }
             
-            // 升級 Spec Elite 黃金認證徽章：全新極光皇家金牌樣式
+            // Spec Elite 徽章：全新極光皇家金牌
             if (user.isSpecElite) {
                 badges.push({ icon: 'fa-medal', color: 'from-amber-400 via-yellow-500 to-amber-600 text-slate-950 shadow-yellow-500/25 animate-pulse' });
             }
@@ -2447,7 +2446,7 @@
                 badges.push({ icon: 'fa-heart-circle-check', color: 'from-pink-500 to-rose-600 text-white shadow-pink-500/15' });
             }
 
-            // 所有徽章僅保留圖示，且徹底取消 hover title 懸停提示說明
+            // 徹底取消 hover title 懸停提示說明
             return badges.map(b => `
                 <span class="inline-flex items-center justify-center ${isBig ? 'w-11 h-11 text-base' : 'w-5.5 h-5.5 text-[10px]'} rounded-full bg-gradient-to-r ${b.color} shadow-sm select-none">
                     <i class="fa-solid ${b.icon}"></i>
