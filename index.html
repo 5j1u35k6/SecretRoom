@@ -10,7 +10,7 @@
     <!-- 預載入技術：高優先級下載圖章以達到秒速啟動載入 -->
     <link rel="preload" href="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" as="image">
     
-    <title>SecretRoom | 專屬男性的私密生活分享社群</title>
+    <title>SecretRoom | 秘密專屬社交空間</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -220,7 +220,7 @@
                     showToast('伺服器安全連線異常，請稍後重試。', 'error');
                 }
             } else {
-                showToast('無法建立高安全通訊協定', 'error');
+                showToast('無法建立安全通訊協定', 'error');
             }
         }
 
@@ -319,7 +319,7 @@
                         
                         <h1 class="text-3xl font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-slate-400 font-serif mb-2 select-none italic text-center">SecretRoom</h1>
                         <p class="text-slate-400 text-xs font-semibold uppercase tracking-widest text-center">專屬男性的私密生活分享社群</p>
-                        <p class="text-slate-500 text-[11px] mt-1 text-center font-light leading-relaxed">分享生活近況，看見最真實的彼此</p>
+                        <p class="text-slate-500 text-[11px] mt-1 text-center font-light leading-relaxed">分享生活近況，看見最真實的他</p>
 
                         <div class="w-full space-y-3.5 mt-10">
                             <button id="btn-goto-apply" class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 active:scale-95 text-white font-semibold text-sm py-3.5 px-6 rounded-2xl shadow-lg shadow-indigo-950/40 transition-all duration-300">
@@ -387,7 +387,7 @@
                 }
 
                 if (!db) {
-                    showToast('資料庫連線中，請稍候。', 'error');
+                    showToast('資料連線中，請稍候。', 'error');
                     return;
                 }
 
@@ -404,7 +404,7 @@
                             localStorage.setItem('sr_username', usernameInput);
                             
                             modal.remove();
-                            showToast('登入成功！正在載入主控台...', 'success');
+                            showToast('登入成功！正在載入...', 'success');
 
                             if (data.status === 'pending') navigate('pending');
                             else if (data.status === 'rejected') navigate('rejected');
@@ -413,14 +413,14 @@
                                 else navigate('dashboard');
                             }
                         } else {
-                            showToast('密碼不正確，請重新檢查。', 'error');
+                            showToast('密碼不正確，請重新輸入。', 'error');
                         }
                     } else {
-                        showToast('該帳號未完成會籍申請。', 'error');
+                        showToast('該帳號未完成帳號申請。', 'error');
                     }
                 } catch (err) {
                     console.error("登入驗證錯誤:", err);
-                    showToast('驗證程序異常', 'error');
+                    showToast('驗證異常', 'error');
                 } finally {
                     hideLoading();
                 }
@@ -439,8 +439,8 @@
                         </button>
                         
                         <div class="text-center mt-6 mb-8">
-                            <h2 class="text-xl font-bold text-white tracking-wide">SecretRoom 紳士會籍申請手續</h2>
-                            <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">請詳細填寫以下必要欄位。男同志私密生活社群落實人工審核驗證制度。</p>
+                            <h2 class="text-xl font-bold text-white tracking-wide">SecretRoom 帳號申請</h2>
+                            <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">請詳細填寫以下必要欄位。私密社群落實人工審核驗證制度。</p>
                         </div>
 
                         <form id="apply-form" class="space-y-5" onsubmit="return false;">
@@ -557,7 +557,7 @@
                             <!-- 5列2行完全展開標籤清單 -->
                             <div class="space-y-2">
                                 <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider"><span class="text-red-500">*</span> 感興趣的主題與性癖偏好 (至少勾選一項)</label>
-                                <span class="text-[9px] text-slate-500 block mb-2 leading-relaxed">這些設定在您被審核啟用後，能方便其他兄弟快速找到您的主打標籤。</span>
+                                <span class="text-[9px] text-slate-500 block mb-2 leading-relaxed">這些設定審核啟用後，能方便其他帳號快速找到你的主打標籤。</span>
                                 
                                 <div class="grid grid-cols-2 gap-2 bg-slate-950/40 p-3.5 border border-slate-850 rounded-2xl" id="register-kinks-box">
                                     ${window.state.kinksOptions.map((k) => `
@@ -837,7 +837,7 @@
                         <div class="space-y-2">
                             <h2 class="text-xl font-bold text-white tracking-wide">申請已受理 · 人工審核中</h2>
                             <p class="text-xs text-slate-400 leading-relaxed px-4">
-                                SecretRoom 採手動審核及推薦人引介機制，保障所有男神會員的頂級隱私防護。我們將於 24 小時內完成資料比對，核准通知會自動發送至您的通知信箱。
+                                SecretRoom 採手動審核制，保障所有帳號的隱私防護。核准通知會自動發送至您的通知信箱。
                             </p>
                         </div>
 
@@ -946,9 +946,9 @@
                             <i class="fa-brands fa-telegram"></i>
                         </div>
                         <div class="space-y-2">
-                            <h2 class="text-xl font-bold text-white tracking-wide">啟用會籍安全綁定</h2>
+                            <h2 class="text-xl font-bold text-white tracking-wide">帳號安全綁定</h2>
                             <p class="text-xs text-slate-400 leading-relaxed px-4">
-                                歡迎來到 SecretRoom 紳士俱樂部！為了防範虛假帳號、保護全體會員隱私安全，請使用下方的 Telegram 官方元件登入您的 Telegram 帳號。
+                                歡迎來到 SecretRoom 俱樂部！為了防範虛假帳號、保護全體帳號隱私安全，請使用下方的 Telegram 官方帳號登入你的 Telegram 帳號。
                             </p>
                         </div>
 
@@ -1012,7 +1012,7 @@
                 window.state.userData.telegramInfo = updatePayload.telegramInfo;
                 window.state.userData.status = 'active';
 
-                showToast('會籍安全綁定成功！歡迎進入 SecretRoom。', 'success');
+                showToast('帳號綁定成功！歡迎進入 SecretRoom。', 'success');
                 navigate('dashboard');
             } catch (err) {
                 console.error("安全寫入會籍資料異常:", err);
@@ -1033,16 +1033,16 @@
                                 <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-10 h-10 rounded-full border border-violet-500/20 object-cover" draggable="false" oncontextmenu="return false;">
                                 <div>
                                     <h2 class="text-base font-bold text-white tracking-wider italic font-serif">SecretRoom</h2>
-                                    <span class="text-[9px] text-slate-500 font-bold uppercase tracking-widest block">男同志私密社群</span>
+                                    <span class="text-[9px] text-slate-500 font-bold uppercase tracking-widest block">私密俱樂部</span>
                                 </div>
                             </div>
 
                             <nav class="space-y-1.5">
                                 <button id="aside-tab-feed" class="w-full text-left px-4 py-3 rounded-2xl flex items-center gap-3 text-sm transition-all duration-300 font-bold ${window.state.currentTab === 'feed' ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/15 shadow-sm' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
-                                    <i class="fa-solid fa-house-chimney"></i> 首頁動態牆
+                                    <i class="fa-solid fa-house-chimney"></i> 首頁
                                 </button>
                                 <button id="aside-tab-profile" class="w-full text-left px-4 py-3 rounded-2xl flex items-center gap-3 text-sm transition-all duration-300 font-bold ${window.state.currentTab === 'profile' ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/15 shadow-sm' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
-                                    <i class="fa-solid fa-user-circle"></i> 我的個人檔案
+                                    <i class="fa-solid fa-user-circle"></i> 個人檔案
                                 </button>
                             </nav>
 
@@ -1063,7 +1063,7 @@
                                 </div>
                             </div>
                             <button id="aside-btn-logout" class="w-full bg-red-650/10 hover:bg-red-650/20 text-red-400 border border-red-500/10 hover:border-red-500/20 active:scale-95 font-bold text-xs py-3 px-4 rounded-2xl transition flex items-center justify-center gap-1.5 shadow-sm">
-                                <i class="fa-solid fa-power-off"></i> 安全登出
+                                <i class="fa-solid fa-power-off"></i> 登出
                             </button>
                         </div>
                     </aside>
@@ -1124,10 +1124,10 @@
 
                         <div class="bg-slate-900/30 border border-slate-900 p-4 rounded-3xl space-y-4">
                             <h3 class="text-xs font-bold text-slate-400 flex items-center gap-2 uppercase tracking-wider">
-                                <i class="fa-solid fa-user-group text-indigo-500"></i> 線上活躍兄弟
+                                <i class="fa-solid fa-user-group text-indigo-500"></i> 線上活躍帳號
                             </h3>
                             <div class="space-y-3.5" id="active-users-list-aside">
-                                <div class="text-xs text-slate-600 text-center py-2">載入帥哥名單中...</div>
+                                <div class="text-xs text-slate-600 text-center py-2">載入天菜名單中...</div>
                             </div>
                         </div>
                     </aside>
@@ -1218,7 +1218,7 @@
                 .slice(0, 4);
 
             if (showList.length === 0) {
-                listContainer.innerHTML = '<div class="text-[10px] text-slate-600 py-1.5 text-center">目前無其他活躍男神</div>';
+                listContainer.innerHTML = '<div class="text-[10px] text-slate-600 py-1.5 text-center">目前無其他活躍帳號</div>';
                 return;
             }
 
@@ -1248,7 +1248,7 @@
                 <div class="relative w-full z-20">
                     <div class="flex items-center bg-slate-900/60 border border-slate-850 rounded-2xl px-4 py-3 shadow-lg backdrop-blur-md">
                         <i class="fa-solid fa-magnifying-glass text-slate-500 text-xs mr-3"></i>
-                        <input type="text" id="feed-search-input" class="w-full bg-transparent text-xs text-white focus:outline-none" placeholder="搜尋天菜貼文、標籤、男神暱稱或帳號 ID..." value="${window.state.searchTerm}">
+                        <input type="text" id="feed-search-input" class="w-full bg-transparent text-xs text-white focus:outline-none" placeholder="搜尋天菜貼文、標籤、天菜暱稱或帳號 ID..." value="${window.state.searchTerm}">
                     </div>
                     <div id="search-users-container" class="absolute left-0 right-0 top-14 bg-slate-900 border border-slate-800 rounded-3xl p-3 shadow-2xl hidden flex flex-col gap-2 max-h-60 overflow-y-auto z-50 backdrop-blur-xl"></div>
                 </div>
@@ -1371,7 +1371,7 @@
                     if (matchedUsers.length > 0) {
                         searchUsersBox.classList.remove('hidden');
                         searchUsersBox.innerHTML = `
-                            <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest px-1 block mb-1">🔍 搜尋到的相關男神帳號</span>
+                            <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest px-1 block mb-1">🔍 搜尋到的相關帳號</span>
                             ${matchedUsers.map(u => `
                                 <div onclick="viewUserProfile('${u.id}')" class="flex items-center gap-2.5 p-2 bg-slate-950/40 hover:bg-indigo-600/10 rounded-xl cursor-pointer border border-slate-850/40 transition">
                                     <img src="${u.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-8 h-8 rounded-full object-cover">
@@ -1454,7 +1454,7 @@
                         </div>
                         <div>
                             <h4 class="font-bold text-slate-400 text-xs">目前尚無任何秘密動態</h4>
-                            <p class="text-[10px] text-slate-600 mt-1">成為第一個分享精采近況的兄弟吧！</p>
+                            <p class="text-[10px] text-slate-600 mt-1">成為第一個分享精采近況的吧！</p>
                         </div>
                     </div>
                 `;
@@ -1742,7 +1742,7 @@
 
                     ${isMe && profileUser.avatarStatus === 'pending' ? `
                         <div class="w-full p-2.5 bg-purple-500/5 border border-purple-500/10 rounded-xl text-[10px] text-purple-400 font-semibold flex items-center justify-center gap-1.5 select-none animate-pulse">
-                            <i class="fa-solid fa-camera"></i> 新上傳頭像已在背景人工審核中... (目前展示原頭像)
+                            <i class="fa-solid fa-camera"></i> 新上傳頭像已在人工審核中... (目前展示原頭像)
                         </div>
                     ` : ''}
 
