@@ -652,7 +652,7 @@
                             <!-- 5列2行完全展開標籤清單 - 寬螢幕通欄排版 -->
                             <div class="md:col-span-2 space-y-2 mt-2">
                                 <label class="block text-xs font-bold text-slate-300 mb-1 uppercase tracking-wider"><span class="text-red-500">*</span> 感興趣的主題與性癖偏好 (至少勾選一項)</label>
-                                <span class="text-[10px] text-slate-500 block mb-3 leading-relaxed">我們將依此標籤為您配對符合之同好與貼文。</span>
+                                <span class="text-[10px] text-slate-500 block mb-3 leading-relaxed">我們將依此標籤為您配對符合之同好與動態。</span>
                                 
                                 <div class="grid grid-cols-2 md:grid-cols-5 gap-3 bg-slate-950/40 p-4 border border-slate-900 rounded-2xl" id="register-kinks-box">
                                     ${window.state.kinksOptions.map((k) => `
@@ -1143,10 +1143,10 @@
 
                         <div class="bg-slate-950/60 border border-amber-500/10 p-5 rounded-3xl space-y-4">
                             <h3 class="text-xs font-bold text-amber-500 flex items-center gap-2 uppercase tracking-wider font-luxury">
-                                <i class="fa-solid fa-user-group text-[11px]"></i> 線上活躍仕紳
+                                <i class="fa-solid fa-user-group text-[11px]"></i> 線上活躍帳號
                             </h3>
                             <div class="space-y-3.5" id="active-users-list-aside">
-                                <div class="text-[11px] text-slate-650 text-center py-4 font-light">正在載入尊貴會員名單...</div>
+                                <div class="text-[11px] text-slate-650 text-center py-4 font-light">正在加載線上帳號中...</div>
                             </div>
                         </div>
                     </aside>
@@ -1267,7 +1267,7 @@
                 <div class="relative w-full z-20">
                     <div class="flex items-center bg-slate-950/90 border border-amber-500/10 rounded-2xl px-4 py-3 shadow-lg backdrop-blur-md">
                         <i class="fa-solid fa-magnifying-glass text-amber-500/70 text-xs mr-3"></i>
-                        <input type="text" id="feed-search-input" class="w-full bg-transparent text-xs text-white focus:outline-none" placeholder="搜尋動態、標籤、男神暱稱或帳號 ID..." value="${window.state.searchTerm}">
+                        <input type="text" id="feed-search-input" class="w-full bg-transparent text-xs text-white focus:outline-none" placeholder="搜尋動態、標籤、暱稱或帳號ID" value="${window.state.searchTerm}">
                     </div>
                     
                     <!-- 搜尋覆蓋面板 -->
@@ -1436,7 +1436,7 @@
                         <div class="overflow-y-auto pr-1 flex-1 space-y-2.5 max-h-[350px]">
                             ${window.state.searchTab === 'posts' ? 
                                 (matchedPosts.length === 0 ? 
-                                    `<div class="text-[10px] text-slate-650 py-6 text-center font-light">未尋得相符的秘密貼文</div>` :
+                                    `<div class="text-[10px] text-slate-650 py-6 text-center font-light">未尋得相符動態</div>` :
                                     matchedPosts.map(post => `
                                         <div class="p-3 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 rounded-2xl transition cursor-pointer" onclick="viewSinglePost('${post.id}')">
                                             <div class="flex items-center gap-2 mb-1.5">
@@ -1451,7 +1451,7 @@
                                     `).join('')
                                 ) :
                                 (matchedUsers.length === 0 ? 
-                                    `<div class="text-[10px] text-slate-650 py-6 text-center font-light">未尋得相符的仕紳會員</div>` :
+                                    `<div class="text-[10px] text-slate-650 py-6 text-center font-light">未尋得相符帳號</div>` :
                                     matchedUsers.map(u => `
                                         <div onclick="viewUserProfile('${u.id}')" class="flex items-center justify-between p-2.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 rounded-2xl transition cursor-pointer">
                                             <div class="flex items-center gap-2.5 overflow-hidden">
@@ -1744,7 +1744,7 @@
             } else if (!isFocusedMode) {
                 const finishedEl = document.createElement('div');
                 finishedEl.className = 'text-center py-6 text-[10px] text-slate-600 border-t border-slate-900/40 mt-4';
-                finishedEl.innerHTML = '已看完目前所有的秘密動態 🔒';
+                finishedEl.innerHTML = '已看完最新動態 🔒';
                 listContainer.appendChild(finishedEl);
             }
         }
@@ -1967,7 +1967,7 @@
             try {
                 const postRef = doc(db, 'secretg_apps', appId, 'posts', postId);
                 await updateDoc(postRef, { ratings: ratings });
-                showToast(`您給予了此篇秘密 ${ratingValue} 星評分！`, 'success');
+                showToast(`你已評分此動態 ${ratingValue} 星！`, 'success');
             } catch (err) {
                 console.error("評分同步出錯:", err);
             }
@@ -2097,7 +2097,7 @@
 
                     // 避免同一個使用者在當前會期重複檢舉
                     if (currentReports.some(r => r.reporterId === reporterId)) {
-                        showToast('您已經檢舉過此篇貼文了！', 'info');
+                        showToast('您已經檢舉過此篇動態了！', 'info');
                         hideLoading();
                         return;
                     }
