@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- 引入 EmailJS SDK -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
         body {
@@ -88,7 +87,7 @@
         </div>
     </div>
 
-    <!-- 圖片高清燈箱放大模態視窗 (Zoom Image Lightbox) -->
+    <!-- 圖片高清燈箱放大模態視窗 -->
     <div id="zoom-modal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[100] flex items-center justify-center hidden opacity-0 transition-opacity duration-300" onclick="closeZoomModal()">
         <div class="relative max-w-4xl max-h-[90vh] p-4 flex flex-col items-center justify-center" onclick="event.stopPropagation()">
             <button onclick="closeZoomModal()" class="absolute top-4 right-4 text-white hover:text-slate-300 text-3xl transition z-10">&times;</button>
@@ -105,7 +104,6 @@
             <p class="text-slate-400 text-xs mb-4">這項原因將會自動代入並發送給對方的通知信中。</p>
             
             <div class="space-y-2 mb-6">
-                <!-- 拒絕原因選項，點選後直接帶入 -->
                 <label class="flex items-center gap-3 p-2.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40 transition">
                     <input type="radio" name="rejection-reason" value="註冊大頭照不清晰、未露出五官，或涉嫌冒用他人照片。" class="accent-indigo-500" required checked>
                     <span class="text-xs text-slate-300 font-semibold">頭像不合規</span>
@@ -293,7 +291,6 @@
             document.getElementById('count-total').textContent = '0';
         }
 
-        // 高清燈箱放大功能
         window.zoomImage = function(src) {
             const modal = document.getElementById('zoom-modal');
             const img = document.getElementById('zoom-modal-img');
@@ -352,7 +349,6 @@
                             <p class="text-xs text-slate-300 leading-relaxed font-light">${post.text}</p>
                             <img src="${post.image}" class="w-24 h-auto rounded-xl border border-slate-800 max-h-36 object-cover cursor-zoom-in hover:scale-105 transition" onclick="zoomImage('${post.image}')">
                             
-                            <!-- 檢舉紀錄紀錄 -->
                             <div class="mt-2">
                                 <div class="text-[10px] text-slate-500 font-bold mb-1.5 uppercase"><i class="fa-solid fa-flag text-rose-500"></i> 檢舉清單 (共 ${post.reportCount} 次檢舉)</div>
                                 ${reportReasonsHtml}
@@ -373,7 +369,6 @@
                 return;
             }
 
-            // 帳號名單過濾
             const filteredApps = allApplications.filter(app => {
                 if (filterValue === 'all') return true;
                 if (filterValue === 'avatar_pending') return app.avatarStatus === 'pending';
@@ -418,7 +413,6 @@
                     `;
                 }
 
-                // 註冊頭像 or 頭像變更審核 UI 模塊 (點擊皆可放大)
                 let avatarReviewHtml = '';
                 if (appData.avatarStatus === 'pending' && appData.avatarPending) {
                     avatarReviewHtml = `
@@ -452,7 +446,7 @@
                     `;
                 }
 
-                // 黃金 Spec 獨立專區審核與管理 (Decoupled Spec Elite Area)
+                // 黃金 Spec 獨立專區審核與管理：同步 Spec Elite 金牌樣式
                 let specReviewHtml = '';
                 if (appData.specEliteStatus === 'pending' && appData.specImage) {
                     specReviewHtml = `
@@ -477,8 +471,8 @@
                     specReviewHtml = `
                         <div class="mt-4 p-3 bg-slate-950/40 border border-slate-800/80 rounded-xl text-left flex justify-between items-center">
                             <div class="flex items-center gap-2">
-                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-r from-slate-900 via-slate-950 to-black text-slate-300 border border-slate-700 shadow-md">
-                                    <i class="fa-solid fa-lock text-[10px]"></i>
+                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 text-slate-950 shadow-yellow-500/25 animate-pulse">
+                                    <i class="fa-solid fa-medal text-[10px]"></i>
                                 </span>
                                 <span class="text-xs text-slate-300 font-semibold">已取得黃金 Spec 認證 🔒</span>
                             </div>
@@ -489,17 +483,14 @@
                     `;
                 }
 
-                // 手動徽章管理控制欄 (已移除 Spec Elite 的直接勾選選項)
                 let badgeManagementHtml = `
                     <div class="mt-4 pt-3 border-t border-slate-800/50 flex flex-wrap gap-4 items-center justify-between">
                         <span class="text-[10px] text-slate-500 font-bold uppercase"><i class="fa-solid fa-ribbon"></i> 官方授權徽章發放：</span>
                         <div class="flex items-center gap-4">
-                            <!-- 管理員皇冠 -->
                             <label class="flex items-center gap-1.5 cursor-pointer">
                                 <input type="checkbox" onchange="toggleManualBadge('${appData.id}', 'isAdmin', this.checked)" ${appData.role === 'admin' || appData.isAdmin ? 'checked' : ''} class="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500">
                                 <span class="text-[11px] text-slate-300">管理員 👑</span>
                             </label>
-                            <!-- 創始元老 -->
                             <label class="flex items-center gap-1.5 cursor-pointer">
                                 <input type="checkbox" onchange="toggleManualBadge('${appData.id}', 'isPioneer', this.checked)" ${appData.isPioneer ? 'checked' : ''} class="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500">
                                 <span class="text-[11px] text-slate-300">創始元老 🛡️</span>
@@ -508,7 +499,6 @@
                     </div>
                 `;
 
-                // 註冊審核按鈕
                 let actionButtons = '';
                 if (appData.status === 'pending') {
                     actionButtons = `
@@ -566,7 +556,6 @@
             renderApplications();
         }
 
-        // 手動控制/撤回官方徽章
         window.toggleManualBadge = async function(userId, badgeField, isChecked) {
             if (!db) return;
             try {
@@ -581,7 +570,6 @@
             }
         }
 
-        // 核發 Spec Elite 徽章
         window.approveSpecElite = async function(userId) {
             if (!db) return;
             try {
@@ -601,7 +589,6 @@
             }
         }
 
-        // 拒絕 Spec Elite 徽章
         window.rejectSpecElite = async function(userId) {
             if (!db) return;
             try {
@@ -786,7 +773,6 @@
             }
 
             try {
-                // 1. 級聯連帶徹底消滅：先清空該用戶上傳過的所有歷史貼文
                 const postsRef = collection(db, 'secretg_apps', appId, 'posts');
                 const q = query(postsRef, where('userId', '==', userId));
                 const querySnapshot = await getDocs(q);
@@ -799,7 +785,6 @@
                 
                 await Promise.all(deletePromises);
 
-                // 2. 刪除用戶的註冊資料
                 const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
                 await deleteDoc(docRef);
                 
