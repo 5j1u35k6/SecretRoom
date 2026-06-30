@@ -6,11 +6,9 @@
     <link rel="shortcut icon" href="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" type="image/jpeg">
     <link rel="icon" href="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" type="image/jpeg">
     <link rel="apple-touch-icon" href="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2">
-    
-    <!-- 預載入技術：高優先級下載圖章以達到秒速啟動載入 -->
     <link rel="preload" href="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" as="image">
     
-    <title>SecretRoom | 秘密專屬社交空間</title>
+    <title>SecretRoom | 俱樂部式男性隱私社群</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -18,44 +16,45 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #05050a;
+            background-color: #020204;
             color: #f8fafc;
             overflow: hidden;
         }
         .glass-panel {
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(6, 6, 12, 0.94);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(217, 119, 6, 0.12);
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.04);
         }
-        
         @keyframes gentle-breath {
             0%, 100% {
                 transform: scale(1);
-                box-shadow: 0 0 25px rgba(139, 92, 246, 0.35), inset 0 0 15px rgba(139, 92, 246, 0.15);
-                border-color: rgba(139, 92, 246, 0.25);
+                box-shadow: 0 0 25px rgba(217, 119, 6, 0.25), inset 0 0 15px rgba(217, 119, 6, 0.1);
+                border-color: rgba(217, 119, 6, 0.2);
             }
             50% {
-                transform: scale(1.04);
-                box-shadow: 0 0 50px rgba(139, 92, 246, 0.65), inset 0 0 25px rgba(139, 92, 246, 0.3);
-                border-color: rgba(139, 92, 246, 0.55);
+                transform: scale(1.03);
+                box-shadow: 0 0 45px rgba(217, 119, 6, 0.45), inset 0 0 25px rgba(217, 119, 6, 0.15);
+                border-color: rgba(217, 119, 6, 0.45);
             }
         }
+        
         .animate-gentle-logo {
             animation: gentle-breath 4.5s ease-in-out infinite;
             will-change: transform, box-shadow, border-color;
         }
         
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #334155; }
+        ::-webkit-scrollbar-thumb { background: #1e1b18; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #b45309; }
         
         .fade-enter { opacity: 0; transform: translateY(8px); }
         .fade-enter-active { opacity: 1; transform: translateY(0); transition: opacity 300ms ease-out, transform 300ms ease-out; }
         
         select {
             appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d97706' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat;
             background-position: right 1rem center;
             background-size: 1em;
@@ -64,7 +63,7 @@
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* 版權保護鎖定 */
+        /* 純手作版權隱私防護 */
         img {
             -webkit-touch-callout: none !important;
             -webkit-user-select: none !important;
@@ -75,30 +74,30 @@
         }
     </style>
 </head>
-<body class="min-h-screen w-full flex flex-col bg-[#05050a] p-0 m-0 overflow-hidden">
+<body class="min-h-screen w-full flex flex-col bg-[#020204] p-0 m-0 overflow-hidden">
 
-    <div id="app" class="w-full h-[100dvh] md:h-screen overflow-hidden relative flex flex-col bg-[#05050a] transition-all duration-300">
-        <!-- 安全載入加載圖層 -->
-        <div id="loading-screen" class="absolute inset-0 z-50 bg-[#05050a] flex flex-col items-center justify-center">
-            <div class="w-14 h-14 border-4 border-slate-800 border-t-indigo-500 rounded-full animate-spin mb-4"></div>
-            <p class="text-slate-400 font-medium tracking-widest text-xs">正在與加密伺服器建立私密通道...</p>
+    <div id="app" class="w-full h-[100dvh] md:h-screen overflow-hidden relative flex flex-col bg-[#020204] transition-all duration-300">
+        <!-- 安全通道載入圖層 -->
+        <div id="loading-screen" class="absolute inset-0 z-50 bg-[#020204] flex flex-col items-center justify-center">
+            <div class="w-14 h-14 border-4 border-slate-900 border-t-amber-500 rounded-full animate-spin mb-4"></div>
+            <p class="text-amber-500/80 font-medium tracking-widest text-xs">正在與伺服器建立通道...</p>
         </div>
     </div>
 
-    <!-- 彈出通知容器 -->
+    <!-- 奢華彈出通知容器 (Toast) -->
     <div id="toast-container" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col gap-2 w-full max-w-xs px-4"></div>
 
-    <!-- 刪除確認客製化 Modal -->
-    <div id="custom-confirm-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[101] flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative text-center">
-            <div class="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center text-red-500 text-xl mx-auto mb-4">
+    <!-- 客製化安全確認彈窗 -->
+    <div id="custom-confirm-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[101] flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-950 border border-amber-500/20 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative text-center">
+            <div class="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-500 text-xl mx-auto mb-4">
                 <i class="fa-solid fa-triangle-exclamation"></i>
             </div>
-            <h3 class="text-base font-bold text-white mb-2">確定永久銷毀？</h3>
-            <p class="text-xs text-slate-400 mb-6 leading-relaxed">此篇天菜秘密動態與實體照片將永久從雲端伺服器徹底抹除，本操作無法撤回！</p>
+            <h3 class="text-base font-bold text-white mb-2">確定刪除(永久銷毀)？</h3>
+            <p class="text-xs text-slate-400 mb-6 leading-relaxed">此篇天菜秘密動態與實體照片將永久徹底抹除，本操作無法撤回！</p>
             <div class="grid grid-cols-2 gap-3">
-                <button id="confirm-modal-cancel" class="bg-slate-800 hover:bg-slate-750 text-slate-300 font-semibold text-xs py-2.5 rounded-xl transition">取消</button>
-                <button id="confirm-modal-ok" class="bg-red-650 hover:bg-red-500 text-white font-semibold text-xs py-2.5 rounded-xl transition">確認刪除</button>
+                <button id="confirm-modal-cancel" class="bg-slate-900 hover:bg-slate-800 text-slate-300 font-semibold text-xs py-2.5 rounded-xl transition">取消</button>
+                <button id="confirm-modal-ok" class="bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs py-2.5 rounded-xl transition">確認刪除</button>
             </div>
         </div>
     </div>
@@ -154,14 +153,13 @@
 
                 return true;
             } catch (e) {
-                console.error("無法與私密伺服器取得加密連線", e);
+                console.error("無法與伺服器取得連線", e);
                 return false;
             }
         }
 
         let app, db, auth;
 
-        // 全域核心狀態
         window.state = {
             currentView: 'landing',
             currentTab: 'feed', 
@@ -178,11 +176,12 @@
             viewedPostsInSession: {}, 
             emailVerified: false,
             emailVerificationCode: null,
+            searchTab: 'posts', 
+            singlePostFocusId: null,
             userData: {
                 nickname: '', birthYear: '', birthMonth: '', birthDay: '',
                 height: '', weight: '', length: '', girth: '', kinks: [], email: '', avatar: ''
             },
-            // 精選 10 大男同志主題標籤 (不可更動)
             kinksOptions: [
                 "性愛偏好｜角色定位", "BDSM｜繩縛", "制服愛好｜皮革/膠衣", "心理角色｜Daddy/Boy", "自我管理｜健身/健美", 
                 "友善社交｜約會/派對", "體型美學｜壯碩/熊系", "特殊癖好｜穿戴玩物", "旅遊休閒｜友善旅遊", "數位社交｜交友軟體"
@@ -216,11 +215,11 @@
                         }
                     });
                 } catch (error) {
-                    console.error("資料庫連線超時:", error);
-                    showToast('伺服器安全連線異常，請稍後重試。', 'error');
+                    console.error("連線超時:", error);
+                    showToast('伺服器連線異常，請稍後重試。', 'error');
                 }
             } else {
-                showToast('無法建立安全通訊協定', 'error');
+                showToast('無法建立通訊協定', 'error');
             }
         }
 
@@ -309,29 +308,29 @@
 
         function renderLanding(container) {
             container.innerHTML = `
-                <div class="flex flex-col items-center justify-center min-h-[100dvh] w-full px-6 relative bg-gradient-to-b from-slate-950 via-[#030307] to-slate-950">
-                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.08)_0%,transparent_60%)]"></div>
+                <div class="flex flex-col items-center justify-center min-h-[100dvh] w-full px-6 relative bg-gradient-to-b from-black via-[#040409] to-black">
+                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(217,119,6,0.06)_0%,transparent_60%)]"></div>
                     
                     <div class="z-10 max-w-sm w-full flex flex-col items-center">
-                        <div class="w-36 h-36 md:w-40 md:h-40 rounded-full border border-violet-500/30 flex items-center justify-center p-1 bg-slate-900/60 shadow-[0_0_35px_rgba(139,92,246,0.45)] mb-8 animate-gentle-logo overflow-hidden">
+                        <div class="w-36 h-36 md:w-40 md:h-40 rounded-full border border-amber-500/25 flex items-center justify-center p-1 bg-slate-950/80 shadow-[0_0_35px_rgba(217,119,6,0.3)] mb-8 animate-gentle-logo overflow-hidden">
                             <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-full h-full rounded-full object-cover" draggable="false" oncontextmenu="return false;">
                         </div>
                         
-                        <h1 class="text-3xl font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-slate-400 font-serif mb-2 select-none italic text-center">SecretRoom</h1>
-                        <p class="text-slate-400 text-xs font-semibold uppercase tracking-widest text-center">專屬男性的私密生活分享社群</p>
-                        <p class="text-slate-500 text-[11px] mt-1 text-center font-light leading-relaxed">分享生活近況，看見最真實的他</p>
+                        <h1 class="text-3xl font-extrabold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-yellow-500 font-serif mb-2 select-none italic text-center">SecretRoom</h1>
+                        <p class="text-amber-500/80 text-[10px] font-extrabold uppercase tracking-widest text-center">專屬男性的私密生活分享社群</p>
+                        <p class="text-slate-500 text-[11px] mt-1 text-center font-light leading-relaxed">分享生活近況，看見最真實的彼此</p>
 
-                        <div class="w-full space-y-3.5 mt-10">
-                            <button id="btn-goto-apply" class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 active:scale-95 text-white font-semibold text-sm py-3.5 px-6 rounded-2xl shadow-lg shadow-indigo-950/40 transition-all duration-300">
+                        <div class="w-full space-y-4 mt-10">
+                            <button id="btn-goto-apply" class="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 hover:brightness-110 active:scale-95 text-slate-950 font-bold text-xs py-4 px-6 rounded-2xl shadow-lg shadow-amber-950/30 transition-all duration-300 tracking-wider">
                                 建立新帳號申請
                             </button>
-                            <button id="btn-goto-login" class="w-full bg-slate-900/80 hover:bg-slate-850 active:scale-95 text-slate-300 font-semibold text-sm py-3.5 px-6 rounded-2xl border border-slate-800/80 transition-all duration-300">
+                            <button id="btn-goto-login" class="w-full bg-slate-950/85 hover:bg-slate-900 active:scale-95 text-amber-500 font-semibold text-xs py-4 px-6 rounded-2xl border border-amber-500/15 transition-all duration-300">
                                 已有帳號？登入查看進度
                             </button>
                         </div>
 
-                        <div class="mt-14 px-4 py-2 rounded-full bg-slate-900/30 border border-slate-800/40 text-[10px] text-slate-500 font-semibold flex items-center gap-1.5 shadow-sm">
-                            <i class="fa-solid fa-shield-halved text-indigo-500/80"></i>
+                        <div class="mt-14 px-4 py-2 rounded-full bg-amber-500/5 border border-amber-500/10 text-[10px] text-amber-500/70 font-semibold flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-shield-halved"></i>
                             <span>人工審核機制 · 滿 18 歲限定</span>
                         </div>
                     </div>
@@ -349,25 +348,25 @@
 
         function showLoginModal() {
             const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md';
+            modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md';
             modal.innerHTML = `
-                <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative">
+                <div class="bg-slate-950 border border-amber-500/15 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative">
                     <button id="close-login" class="absolute top-4 right-4 text-slate-500 hover:text-white text-xl">&times;</button>
                     <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2">
-                        <i class="fa-solid fa-right-to-bracket text-indigo-500"></i> 使用者登入
+                        <i class="fa-solid fa-right-to-bracket text-amber-500"></i> 使用者登入
                     </h3>
                     <p class="text-xs text-slate-400 mb-5 leading-relaxed">請輸入帳號與密碼以進入平台</p>
                     
                     <div class="space-y-4">
                         <div>
                             <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">使用者帳號</label>
-                            <input type="text" id="login-username" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
+                            <input type="text" id="login-username" class="w-full bg-slate-900/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">密碼</label>
-                            <input type="password" id="login-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
+                            <input type="password" id="login-password" class="w-full bg-slate-900/60 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
                         </div>
-                        <button id="btn-login-submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs py-3 rounded-xl transition shadow-lg shadow-indigo-950/20">
+                        <button id="btn-login-submit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-bold text-xs py-3 rounded-xl transition shadow-lg shadow-amber-950/20 tracking-wider">
                             登入並驗證
                         </button>
                     </div>
@@ -387,7 +386,7 @@
                 }
 
                 if (!db) {
-                    showToast('資料連線中，請稍候。', 'error');
+                    showToast('驗證中，正在進行安全協議...', 'error');
                     return;
                 }
 
@@ -404,7 +403,7 @@
                             localStorage.setItem('sr_username', usernameInput);
                             
                             modal.remove();
-                            showToast('登入成功！正在載入...', 'success');
+                            showToast('登入成功！正在安全授權進度...', 'success');
 
                             if (data.status === 'pending') navigate('pending');
                             else if (data.status === 'rejected') navigate('rejected');
@@ -413,7 +412,7 @@
                                 else navigate('dashboard');
                             }
                         } else {
-                            showToast('密碼不正確，請重新輸入。', 'error');
+                            showToast('密碼不正確，請重新檢查。', 'error');
                         }
                     } else {
                         showToast('該帳號未完成帳號申請。', 'error');
@@ -432,147 +431,163 @@
             window.state.emailVerificationCode = null;
 
             container.innerHTML = `
-                <div class="w-full bg-slate-950 px-4 py-8 flex flex-col items-center">
-                    <div class="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl relative mb-12">
+                <div class="w-full bg-[#020204] px-4 py-8 flex flex-col items-center h-full overflow-y-auto">
+                    <div class="max-w-4xl w-full bg-slate-950/90 border border-amber-500/10 rounded-3xl p-6 md:p-10 shadow-2xl relative mb-12">
                         <button id="btn-back-landing" class="absolute top-5 left-5 text-slate-500 hover:text-white transition text-sm flex items-center gap-1.5 font-medium">
                             <i class="fa-solid fa-arrow-left"></i> 返回
                         </button>
                         
                         <div class="text-center mt-6 mb-8">
-                            <h2 class="text-xl font-bold text-white tracking-wide">SecretRoom 帳號申請</h2>
-                            <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">請詳細填寫以下必要欄位。私密社群落實人工審核驗證制度。</p>
+                            <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-amber-400 tracking-wide">SecretRoom 紳士會籍申請手續</h2>
+                            <p class="text-xs text-slate-400 mt-2 leading-relaxed">請詳細填寫以下必要欄位。俱樂部內所有帳號均落實人工審核驗證制度。</p>
                         </div>
 
-                        <form id="apply-form" class="space-y-5" onsubmit="return false;">
+                        <!-- 雙欄排版，寬螢幕下完美撐滿不擁擠 -->
+                        <form id="apply-form" class="grid grid-cols-1 md:grid-cols-2 gap-8" onsubmit="return false;">
                             
-                            <!-- 上傳個人頭像 -->
-                            <div class="bg-slate-950/60 p-4 border border-slate-800 rounded-2xl flex flex-col items-center justify-center text-center">
-                                <span class="text-[10px] font-bold text-slate-400 mb-3 uppercase tracking-wider block"><span class="text-red-500">*</span> 上傳個人頭像</span>
-                                <div class="relative w-24 h-24 rounded-full border-2 border-dashed border-slate-700 hover:border-indigo-500 transition cursor-pointer flex flex-col items-center justify-center bg-slate-900 overflow-hidden group" id="avatar-trigger">
-                                    <img id="avatar-preview" class="absolute inset-0 w-full h-full object-cover hidden">
-                                    <div class="z-10 flex flex-col items-center text-slate-500 group-hover:text-slate-300" id="avatar-placeholder">
-                                        <i class="fa-solid fa-camera text-xl mb-1"></i>
-                                        <span class="text-[9px]">點擊選取</span>
+                            <!-- 左側區塊：相片上傳與安全憑證設定 -->
+                            <div class="space-y-6">
+                                <!-- 上傳個人頭像 -->
+                                <div class="bg-slate-900/40 p-5 border border-slate-800 rounded-2xl flex flex-col items-center justify-center text-center">
+                                    <span class="text-xs font-bold text-slate-350 mb-3 uppercase tracking-wider block">
+                                        <span class="text-red-500">*</span> 上傳個人頭像
+                                        <span class="text-amber-500/80 font-normal text-[10px] block mt-1">(支援最大 10MB 檔案)</span>
+                                    </span>
+                                    <div class="relative w-28 h-28 rounded-full border border-dashed border-amber-500/20 hover:border-amber-500 transition cursor-pointer flex flex-col items-center justify-center bg-slate-900/80 overflow-hidden group" id="avatar-trigger">
+                                        <img id="avatar-preview" class="absolute inset-0 w-full h-full object-cover hidden">
+                                        <div class="z-10 flex flex-col items-center text-slate-500 group-hover:text-amber-500/80" id="avatar-placeholder">
+                                            <i class="fa-solid fa-camera text-2xl mb-1"></i>
+                                            <span class="text-[10px]">點擊選取</span>
+                                        </div>
                                     </div>
+                                    <input type="file" id="register-avatar-file" accept="image/*" class="hidden">
+                                    <span class="text-[10px] text-slate-500 mt-2.5 block leading-normal">請選取個人清晰、露出五官、非風景卡通的大頭相片</span>
                                 </div>
-                                <input type="file" id="register-avatar-file" accept="image/*" class="hidden">
-                                <span class="text-[9px] text-slate-500 mt-2 block">請選取個人清晰、露出五官、非風景卡通的大頭相片</span>
-                            </div>
 
-                            <!-- 帳號以及密碼獨立區 -->
-                            <div class="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl space-y-4">
-                                <div>
-                                    <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 設定帳號(不限中英數大小寫)</label>
-                                    <input type="text" id="reg-username" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 再次輸入設定帳號</label>
-                                    <input type="text" id="reg-username-confirm" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 設定密碼</label>
-                                    <input type="password" id="reg-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 再次輸入設定密碼</label>
-                                    <input type="password" id="reg-password-confirm" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
-                                </div>
-                                
-                                <!-- 密碼強度回饋 -->
-                                <div class="text-[10px] space-y-1 bg-slate-900/60 p-3 rounded-xl border border-slate-800">
-                                    <span class="text-slate-500 font-bold uppercase tracking-wider block mb-1">密碼強度設定條件：</span>
-                                    <div id="pwd-rule-len" class="flex items-center gap-1.5 text-slate-500">
-                                        <i class="fa-solid fa-circle-notch text-[8px]"></i> <span>設定8字元密碼</span>
-                                    </div>
-                                    <div id="pwd-rule-upper" class="flex items-center gap-1.5 text-slate-500">
-                                        <i class="fa-solid fa-circle-notch text-[8px]"></i> <span>設定大寫英文</span>
-                                    </div>
-                                    <div id="pwd-rule-spec" class="flex items-center gap-1.5 text-slate-500">
-                                        <i class="fa-solid fa-circle-notch text-[8px]"></i> <span>設定特殊符號</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 使用者名稱 -->
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 使用者名稱</label>
-                                <input type="text" id="reg-nickname" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
-                            </div>
-
-                            <!-- 出生年月日 -->
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 出生年月日</label>
-                                <div class="grid grid-cols-3 gap-2">
-                                    <select id="reg-year" class="bg-slate-950 border border-slate-800 text-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-indigo-500"></select>
-                                    <select id="reg-month" class="bg-slate-950 border border-slate-800 text-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-indigo-500"></select>
-                                    <select id="reg-day" class="bg-slate-950 border border-slate-800 text-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-indigo-500"></select>
-                                </div>
-                            </div>
-
-                            <!-- 信箱驗證與認證碼 -->
-                            <div class="space-y-4 bg-slate-950/40 p-4 border border-slate-850 rounded-2xl">
-                                <div>
-                                    <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 信箱驗證</label>
-                                    <div class="flex gap-2">
-                                        <input type="email" id="reg-email" class="flex-1 min-w-0 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">
-                                        <button type="button" id="btn-send-code" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-bold text-[10px] px-3.5 rounded-xl transition duration-350 shrink-0">發送驗證碼</button>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 驗證信箱</label>
-                                    <div class="flex gap-2">
-                                        <input type="text" id="reg-email-code" class="flex-1 min-w-0 bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">
-                                        <button type="button" id="btn-verify-code" class="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-[10px] px-3.5 rounded-xl transition duration-350 shrink-0">驗證信箱</button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 個人狀態 (雙行排版) -->
-                            <div class="p-4 bg-slate-950/60 border border-slate-800 rounded-2xl space-y-4">
-                                <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block"><i class="fa-solid fa-user-check"></i> 個人狀態</span>
-                                
-                                <div class="grid grid-cols-2 gap-3">
+                                <!-- 帳號以及密碼獨立區 -->
+                                <div class="p-5 bg-slate-900/30 border border-slate-800 rounded-2xl space-y-4">
+                                    <span class="text-[11px] font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-solid fa-lock"></i> 安全帳密憑證</span>
                                     <div>
-                                        <label class="block text-[9px] font-bold text-slate-500 mb-1">身高 (cm)</label>
-                                        <input type="number" id="reg-height" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
+                                        <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 設定帳號(不限中英數大小寫)</label>
+                                        <input type="text" id="reg-username" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
                                     </div>
                                     <div>
-                                        <label class="block text-[9px] font-bold text-slate-500 mb-1">體重 (kg)</label>
-                                        <input type="number" id="reg-weight" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
-                                    </div>
-                                </div>
-                                
-                                <div class="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label class="block text-[9px] font-bold text-slate-500 mb-1">勃起長度 (cm)</label>
-                                        <input type="number" id="reg-length" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
+                                        <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 再次輸入設定帳號</label>
+                                        <input type="text" id="reg-username-confirm" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
                                     </div>
                                     <div>
-                                        <label class="block text-[9px] font-bold text-slate-500 mb-1">勃起粗度圍 (cm)</label>
-                                        <input type="number" id="reg-girth" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
+                                        <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 設定密碼</label>
+                                        <input type="password" id="reg-password" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 再次輸入設定密碼</label>
+                                        <input type="password" id="reg-password-confirm" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
+                                    </div>
+                                    
+                                    <!-- 密碼強度回饋 -->
+                                    <div class="text-[10px] space-y-1 bg-slate-950/60 p-3 rounded-xl border border-slate-850">
+                                        <span class="text-slate-500 font-bold uppercase tracking-wider block mb-1">密碼強度設定條件：</span>
+                                        <div id="pwd-rule-len" class="flex items-center gap-1.5 text-slate-500">
+                                            <i class="fa-solid fa-circle-notch text-[8px]"></i> <span>設定8字元密碼</span>
+                                        </div>
+                                        <div id="pwd-rule-upper" class="flex items-center gap-1.5 text-slate-500">
+                                            <i class="fa-solid fa-circle-notch text-[8px]"></i> <span>設定大寫英文</span>
+                                        </div>
+                                        <div id="pwd-rule-spec" class="flex items-center gap-1.5 text-slate-500">
+                                            <i class="fa-solid fa-circle-notch text-[8px]"></i> <span>設定特殊符號</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- 5列2行完全展開標籤清單 -->
-                            <div class="space-y-2">
-                                <label class="block text-[10px] font-bold text-slate-400 mb-1 uppercase tracking-wider"><span class="text-red-500">*</span> 感興趣的主題與性癖偏好 (至少勾選一項)</label>
-                                <span class="text-[9px] text-slate-500 block mb-2 leading-relaxed">這些設定審核啟用後，能方便其他帳號快速找到你的主打標籤。</span>
+                            <!-- 右側區塊：基本資料、物理密碼規格 -->
+                            <div class="space-y-6">
+                                <!-- 使用者名稱與生日 -->
+                                <div class="p-5 bg-slate-900/30 border border-slate-800 rounded-2xl space-y-4">
+                                    <span class="text-[11px] font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-solid fa-user"></i> 個人識別檔案</span>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 使用者名稱</label>
+                                        <input type="text" id="reg-nickname" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 出生年月日</label>
+                                        <div class="grid grid-cols-3 gap-2">
+                                            <select id="reg-year" class="bg-slate-950 border border-slate-850 text-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-amber-500"></select>
+                                            <select id="reg-month" class="bg-slate-950 border border-slate-850 text-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-amber-500"></select>
+                                            <select id="reg-day" class="bg-slate-950 border border-slate-850 text-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-amber-500"></select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 信箱驗證與認證碼 -->
+                                <div class="space-y-4 bg-slate-900/30 p-5 border border-slate-800 rounded-2xl">
+                                    <span class="text-[11px] font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-regular fa-envelope"></i> 雙信箱通訊安全核查</span>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 信箱驗證</label>
+                                        <div class="flex gap-2">
+                                            <input type="email" id="reg-email" class="flex-1 min-w-0 bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500">
+                                            <button type="button" id="btn-send-code" class="bg-amber-600 hover:bg-amber-500 active:scale-95 text-slate-950 font-bold text-[10px] px-3.5 rounded-xl transition duration-350 shrink-0">發送驗證碼</button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 驗證信箱</label>
+                                        <div class="flex gap-2">
+                                            <input type="text" id="reg-email-code" class="flex-1 min-w-0 bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500">
+                                            <button type="button" id="btn-verify-code" class="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-[10px] px-3.5 rounded-xl transition duration-350 shrink-0">驗證信箱</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 個人狀態 (雙行排版) -->
+                                <div class="p-5 bg-slate-900/30 border border-slate-800 rounded-2xl space-y-4">
+                                    <span class="text-[11px] font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-solid fa-user-check"></i> 個人狀態</span>
+                                    
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-[9px] font-bold text-slate-500 mb-1">身高 (cm)</label>
+                                            <input type="number" id="reg-height" class="w-full bg-slate-950 border border-slate-855 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[9px] font-bold text-slate-500 mb-1">體重 (kg)</label>
+                                            <input type="number" id="reg-weight" class="w-full bg-slate-950 border border-slate-855 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-[9px] font-bold text-slate-500 mb-1">勃起長度 (cm)</label>
+                                            <input type="number" id="reg-length" class="w-full bg-slate-950 border border-slate-855 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[9px] font-bold text-slate-500 mb-1">勃起粗度圍 (cm)</label>
+                                            <input type="number" id="reg-girth" class="w-full bg-slate-950 border border-slate-855 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 5列2行完全展開標籤清單 - 寬螢幕通欄排版 -->
+                            <div class="md:col-span-2 space-y-2 mt-2">
+                                <label class="block text-xs font-bold text-slate-350 mb-1 uppercase tracking-wider"><span class="text-red-500">*</span> 感興趣的主題與性癖偏好 (至少勾選一項)</label>
+                                <span class="text-[10px] text-slate-500 block mb-3 leading-relaxed">這些設定在您被審核啟用後，能方便其他兄弟快速找到您的主打標籤。</span>
                                 
-                                <div class="grid grid-cols-2 gap-2 bg-slate-950/40 p-3.5 border border-slate-850 rounded-2xl" id="register-kinks-box">
+                                <div class="grid grid-cols-2 md:grid-cols-5 gap-3 bg-slate-950/40 p-4 border border-slate-850 rounded-2xl" id="register-kinks-box">
                                     ${window.state.kinksOptions.map((k) => `
-                                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-900/60 p-2 rounded-xl transition border border-transparent hover:border-slate-800">
-                                            <input type="checkbox" name="reg-kink" value="${k}" class="rounded border-slate-850 bg-slate-950 text-indigo-650 focus:ring-indigo-500 w-3.5 h-3.5">
+                                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-900/60 p-2.5 rounded-xl transition border border-transparent hover:border-slate-800">
+                                            <input type="checkbox" name="reg-kink" value="${k}" class="rounded border-slate-850 bg-slate-950 text-amber-500 focus:ring-amber-500 w-3.5 h-3.5">
                                             <span class="text-[10px] text-slate-350 font-medium leading-tight select-none">${k}</span>
                                         </label>
                                     `).join('')}
                                 </div>
                             </div>
 
-                            <!-- 提交按鈕 -->
-                            <button type="submit" id="apply-submit" class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-xs py-3.5 px-6 rounded-xl transition duration-300 shadow-lg shadow-indigo-950/20">
-                                送出註冊與審核申請
-                            </button>
+                            <!-- 提交按鈕 - 通欄排列 -->
+                            <div class="md:col-span-2 pt-4">
+                                <button type="submit" id="apply-submit" class="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 hover:brightness-110 text-slate-950 font-bold text-xs py-4 px-6 rounded-2xl transition duration-300 shadow-lg shadow-amber-950/20 tracking-wider uppercase">
+                                    送出註冊與審核申請
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -604,6 +619,11 @@
             fileInput.onchange = (e) => {
                 const file = e.target.files[0];
                 if (file) {
+                    if (file.size > 10 * 1024 * 1024) {
+                        showToast('上傳失敗！頭像檔案大小不得超過 10MB。', 'error');
+                        fileInput.value = '';
+                        return;
+                    }
                     const reader = new FileReader();
                     reader.onload = function(evt) {
                         base64Avatar = evt.target.result;
@@ -639,7 +659,7 @@
                     try {
                         await emailjs.send(emailjsConfig.serviceId, emailjsConfig.templateId, {
                             to_email: email,
-                            to_name: "SecretRoom 新成員",
+                            to_name: "SecretRoom 俱樂部",
                             status_text: "新帳號信箱安全驗證",
                             message: `歡迎申請加入 SecretRoom！您的註冊信箱驗證碼為：【${generatedCode}】。請於 10 分鐘內將此碼填回申請頁面以完成安全查核。`
                         });
@@ -684,7 +704,7 @@
                     btnSendCode.disabled = true;
                     btnVerifyCode.disabled = true;
                     btnVerifyCode.textContent = '驗證完成 ✓';
-                    btnVerifyCode.className = "bg-emerald-750 text-white font-bold text-[10px] px-3.5 rounded-xl cursor-not-allowed shrink-0";
+                    btnVerifyCode.className = "bg-emerald-700 text-white font-bold text-[10px] px-3.5 rounded-xl cursor-not-allowed shrink-0";
                 } else {
                     showToast('驗證碼不正確，請重新確認！', 'error');
                 }
@@ -829,27 +849,27 @@
 
         function renderPending(container) {
             container.innerHTML = `
-                <div class="flex flex-col items-center justify-center min-h-screen w-full px-6 bg-[#030307]">
-                    <div class="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl text-center space-y-6">
-                        <div class="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-500 text-3xl mx-auto shadow-[0_0_20px_rgba(245,158,11,0.15)] animate-pulse">
+                <div class="flex flex-col items-center justify-center min-h-screen w-full px-6 bg-[#020204]">
+                    <div class="max-w-md w-full bg-slate-950 border border-amber-500/10 rounded-3xl p-8 shadow-2xl text-center space-y-6">
+                        <div class="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-500 text-3xl mx-auto shadow-[0_0_20px_rgba(217,119,6,0.15)] animate-pulse">
                             <i class="fa-solid fa-hourglass-half"></i>
                         </div>
                         <div class="space-y-2">
                             <h2 class="text-xl font-bold text-white tracking-wide">申請已受理 · 人工審核中</h2>
                             <p class="text-xs text-slate-400 leading-relaxed px-4">
-                                SecretRoom 採手動審核制，保障所有帳號的隱私防護。核准通知會自動發送至您的通知信箱。
+                                SecretRoom 為保障所有帳號隱私防護，均採手動審核。我們於審核結束後會將結果發送至您的通知信箱。
                             </p>
                         </div>
 
-                        <div class="bg-slate-950/50 border border-slate-850 p-4 rounded-2xl text-left space-y-2">
-                            <span class="text-[9px] font-bold text-slate-500 uppercase tracking-wider block">您的申請概要資訊</span>
+                        <div class="bg-slate-900/50 border border-slate-800 p-4 rounded-2xl text-left space-y-2">
+                            <span class="text-[9px] font-bold text-amber-500 uppercase tracking-wider block font-serif">您的申請概要資訊</span>
                             <p class="text-xs text-slate-300"><span class="text-slate-500 font-medium">您的帳號:</span> @${window.state.applicationId}</p>
                             <p class="text-xs text-slate-300"><span class="text-slate-500 font-medium">您的名稱:</span> ${window.state.userData.nickname}</p>
                             <p class="text-xs text-slate-300"><span class="text-slate-500 font-medium">信箱:</span> ${window.state.userData.email}</p>
                         </div>
 
                         <div class="pt-2">
-                            <button id="btn-pending-refresh" class="w-full bg-slate-800 hover:bg-slate-750 text-slate-300 font-semibold text-xs py-3 rounded-xl border border-slate-700/60 transition">
+                            <button id="btn-pending-refresh" class="w-full bg-slate-900 hover:bg-slate-800 text-slate-300 font-semibold text-xs py-3 rounded-xl border border-slate-800/60 transition">
                                 重新整理確認狀態
                             </button>
                         </div>
@@ -866,14 +886,14 @@
         function renderRejected(container) {
             const reason = window.state.userData.rejectionReason || "未遵守安全上傳規範（例如頭像模糊、非本人等）。";
             container.innerHTML = `
-                <div class="flex flex-col items-center justify-center min-h-screen w-full px-6 bg-[#030307]">
-                    <div class="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl text-center space-y-6">
+                <div class="flex flex-col items-center justify-center min-h-screen w-full px-6 bg-[#020204]">
+                    <div class="max-w-md w-full bg-slate-950 border border-amber-500/10 rounded-3xl p-8 shadow-2xl text-center space-y-6">
                         <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center text-red-500 text-3xl mx-auto shadow-[0_0_20px_rgba(239,68,68,0.15)]">
                             <i class="fa-solid fa-triangle-exclamation"></i>
                         </div>
                         <div class="space-y-2">
                             <h2 class="text-xl font-bold text-white tracking-wide">審核未予通過</h2>
-                            <p class="text-xs text-slate-400 leading-relaxed px-4">很遺憾，您的會籍申請未能通過管理審查團隊的查核。</p>
+                            <p class="text-xs text-slate-400 leading-relaxed px-4">很遺憾，帳號申請未通過人工查核。</p>
                         </div>
 
                         <div class="bg-red-500/5 border border-red-500/10 p-4 rounded-2xl text-left space-y-2">
@@ -882,10 +902,10 @@
                         </div>
 
                         <div class="pt-2 space-y-3">
-                            <button id="btn-reapply-edit" class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-xs py-3 rounded-xl transition shadow-lg">
+                            <button id="btn-reapply-edit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 hover:brightness-110 text-slate-950 font-bold text-xs py-3 rounded-xl transition shadow-lg">
                                 修正資料並重新提交送審
                             </button>
-                            <button id="btn-reapply-logout" class="w-full bg-slate-800 hover:bg-slate-750 text-slate-400 font-semibold text-xs py-3 rounded-xl transition border border-slate-700/50">
+                            <button id="btn-reapply-logout" class="w-full bg-slate-900 hover:bg-slate-800 text-slate-400 font-semibold text-xs py-3 rounded-xl transition border border-slate-800/50">
                                 登出帳號
                             </button>
                         </div>
@@ -904,7 +924,6 @@
                 const draft = { ...window.state.userData };
                 navigate('register');
                 
-                // 預填先前填寫的資料
                 setTimeout(() => {
                     const uInput = document.getElementById('reg-username');
                     const uConf = document.getElementById('reg-username-confirm');
@@ -940,24 +959,33 @@
 
         function renderTelegramBind(container) {
             container.innerHTML = `
-                <div class="flex flex-col items-center justify-center min-h-screen w-full px-6 bg-[#030307]">
-                    <div class="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl text-center space-y-6">
-                        <div class="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center text-blue-400 text-3xl mx-auto shadow-[0_0_20px_rgba(59,130,246,0.15)]">
+                <div class="flex flex-col items-center justify-center min-h-screen w-full px-6 bg-[#020204]">
+                    <div class="max-w-md w-full bg-slate-950 border border-amber-500/10 rounded-3xl p-8 shadow-2xl text-center space-y-6">
+                        <div class="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-500 text-3xl mx-auto shadow-[0_0_20px_rgba(217,119,6,0.15)]">
                             <i class="fa-brands fa-telegram"></i>
                         </div>
                         <div class="space-y-2">
-                            <h2 class="text-xl font-bold text-white tracking-wide">帳號安全綁定</h2>
+                            <h2 class="text-xl font-bold text-white tracking-wide">啟用帳號安全綁定</h2>
                             <p class="text-xs text-slate-400 leading-relaxed px-4">
-                                歡迎來到 SecretRoom 俱樂部！為了防範虛假帳號、保護全體帳號隱私安全，請使用下方的 Telegram 官方帳號登入你的 Telegram 帳號。
+                                歡迎來到 SecretRoom 俱樂部！為了防範虛假帳號、保護全體會員隱私安全，請使用下方的 Telegram 登入您的 Telegram 帳號。
                             </p>
                         </div>
 
-                        <!-- 官方登入元件容器 (完全替換舊按鈕) -->
-                        <div id="telegram-widget-container" class="flex justify-center py-4 min-h-[40px]">
-                            <span class="text-xs text-slate-500">正在與 Telegram 官方伺服器安全對接...</span>
+                        <!-- 官方認證 Widget 掛載節點 -->
+                        <div class="flex flex-col items-center justify-center gap-4 py-2 border-t border-b border-slate-900/60 my-2">
+                            <div id="tg-widget-mount" class="min-h-[40px] flex items-center justify-center text-xs text-slate-500">
+                                正在連接 Telegram 官方安全協議...
+                            </div>
+                            
+                            <!-- 智慧預覽沙盒跳過 (用於 Iframe / Google 沙盒預覽無痛調試，正式網域自動隱藏) -->
+                            <div id="sandbox-fallback" class="w-full hidden">
+                                <button id="btn-sandbox-bypass" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-bold text-xs py-3.5 rounded-xl transition shadow-lg tracking-wider">
+                                    <i class="fa-solid fa-flask-vial"></i> 一鍵進入預覽沙盒（跳過綁定）
+                                </button>
+                            </div>
                         </div>
 
-                        <div class="border-t border-slate-800/80 pt-5 space-y-3">
+                        <div class="pt-2">
                             <p class="text-[9px] text-slate-600 leading-normal">
                                 請輸入您 Telegram 綁定的手機號碼。登入請求發出後，請於您的 Telegram 官方系統帳號中點選「Confirm (確認)」，系統將會於背景瞬間自動同步開通，無需手動輸入任何驗證碼。
                             </p>
@@ -966,11 +994,9 @@
                 </div>
             `;
 
-            // 動態加載並注入官方 Telegram 認證 Widget 腳本
-            setTimeout(() => {
-                const widgetContainer = document.getElementById('telegram-widget-container');
-                if (widgetContainer) {
-                    widgetContainer.innerHTML = '';
+                const mountNode = document.getElementById('tg-widget-mount');
+                if (mountNode) {
+                    mountNode.innerHTML = '';
                     const script = document.createElement('script');
                     script.async = true;
                     script.src = "https://telegram.org/js/telegram-widget.js?22";
@@ -979,12 +1005,11 @@
                     script.setAttribute('data-radius', '12'); 
                     script.setAttribute('data-onauth', 'onTelegramAuth(user)');
                     script.setAttribute('data-request-access', 'write');
-                    widgetContainer.appendChild(script);
+                    mountNode.appendChild(script);
                 }
-            }, 150);
+            }, 100);
         }
 
-        // 全域 Telegram 官方認證 Callback (Confirm 後瞬間毫秒跳轉)
         window.onTelegramAuth = async function(user) {
             if (!user || !user.id) {
                 showToast('Telegram 安全驗證失敗，請重試！', 'error');
@@ -1008,15 +1033,14 @@
 
                 await updateDoc(userRef, updatePayload);
 
-                // 同步本地暫存
                 window.state.userData.telegramInfo = updatePayload.telegramInfo;
                 window.state.userData.status = 'active';
 
-                showToast('帳號綁定成功！歡迎進入 SecretRoom。', 'success');
+                showToast('帳號安全綁定成功！歡迎進入 SecretRoom。', 'success');
                 navigate('dashboard');
             } catch (err) {
-                console.error("安全寫入會籍資料異常:", err);
-                showToast('安全協議協議寫入失敗，請重試。', 'error');
+                console.error("安全寫入資料異常:", err);
+                showToast('安全協議寫入失敗，請重試。', 'error');
             } finally {
                 hideLoading();
             }
@@ -1024,30 +1048,30 @@
 
         function renderDashboard(container) {
             container.innerHTML = `
-                <div class="w-full h-[100dvh] md:h-screen flex flex-row overflow-hidden relative bg-[#040409]">
+                <div class="w-full h-[100dvh] md:h-screen flex flex-row overflow-hidden relative bg-[#020204]">
                     
                     <!-- RWD: PC Left sidebar -->
-                    <aside class="hidden md:flex flex-col justify-between w-64 border-r border-slate-900 bg-slate-950/60 p-5 shrink-0 select-none">
+                    <aside class="hidden md:flex flex-col justify-between w-64 border-r border-amber-500/10 bg-slate-950/40 p-5 shrink-0 select-none glass-panel">
                         <div class="space-y-8">
                             <div class="flex items-center gap-3">
-                                <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-10 h-10 rounded-full border border-violet-500/20 object-cover" draggable="false" oncontextmenu="return false;">
+                                <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-10 h-10 rounded-full border border-amber-500/20 object-cover animate-gentle-logo" draggable="false" oncontextmenu="return false;">
                                 <div>
-                                    <h2 class="text-base font-bold text-white tracking-wider italic font-serif">SecretRoom</h2>
-                                    <span class="text-[9px] text-slate-500 font-bold uppercase tracking-widest block">私密俱樂部</span>
+                                    <h2 class="text-base font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-amber-400 tracking-wider italic font-serif">SecretRoom</h2>
+                                    <span class="text-[9px] text-amber-500/60 font-bold uppercase tracking-widest block font-serif">紳士俱樂部</span>
                                 </div>
                             </div>
 
                             <nav class="space-y-1.5">
-                                <button id="aside-tab-feed" class="w-full text-left px-4 py-3 rounded-2xl flex items-center gap-3 text-sm transition-all duration-300 font-bold ${window.state.currentTab === 'feed' ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/15 shadow-sm' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
-                                    <i class="fa-solid fa-house-chimney"></i> 首頁
+                                <button id="aside-tab-feed" class="w-full text-left px-4 py-3 rounded-2xl flex items-center gap-3 text-xs transition-all duration-300 font-bold ${window.state.currentTab === 'feed' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/15 shadow-sm' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
+                                    <i class="fa-solid fa-house-chimney text-amber-500/80"></i> 首頁
                                 </button>
-                                <button id="aside-tab-profile" class="w-full text-left px-4 py-3 rounded-2xl flex items-center gap-3 text-sm transition-all duration-300 font-bold ${window.state.currentTab === 'profile' ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/15 shadow-sm' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
-                                    <i class="fa-solid fa-user-circle"></i> 個人檔案
+                                <button id="aside-tab-profile" class="w-full text-left px-4 py-3 rounded-2xl flex items-center gap-3 text-xs transition-all duration-300 font-bold ${window.state.currentTab === 'profile' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/15 shadow-sm' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
+                                    <i class="fa-solid fa-user-circle text-amber-500/80"></i> 我的個人檔案
                                 </button>
                             </nav>
 
-                            <button id="aside-btn-share" class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 active:scale-95 text-white font-bold text-xs py-3.5 px-4 rounded-2xl transition duration-300 flex items-center justify-center gap-2 shadow-lg shadow-indigo-950/25">
-                                <i class="fa-solid fa-circle-plus"></i> 分享今日動態
+                            <button id="aside-btn-share" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 hover:brightness-110 active:scale-95 text-slate-950 font-bold text-xs py-3.5 px-4 rounded-2xl transition duration-300 flex items-center justify-center gap-2 shadow-lg shadow-amber-950/25">
+                                <i class="fa-solid fa-circle-plus"></i> 分享動態
                             </button>
                         </div>
 
@@ -1062,7 +1086,7 @@
                                     <p class="text-[10px] text-slate-500 truncate">@${window.state.applicationId}</p>
                                 </div>
                             </div>
-                            <button id="aside-btn-logout" class="w-full bg-red-650/10 hover:bg-red-650/20 text-red-400 border border-red-500/10 hover:border-red-500/20 active:scale-95 font-bold text-xs py-3 px-4 rounded-2xl transition flex items-center justify-center gap-1.5 shadow-sm">
+                            <button id="aside-btn-logout" class="w-full bg-red-950/20 hover:bg-red-950/40 text-red-400 border border-red-500/10 hover:border-red-500/20 active:scale-95 font-bold text-xs py-3 px-4 rounded-2xl transition flex items-center justify-center gap-1.5 shadow-sm">
                                 <i class="fa-solid fa-power-off"></i> 登出
                             </button>
                         </div>
@@ -1074,10 +1098,10 @@
                         <!-- RWD: Mobile header -->
                         <header class="flex md:hidden items-center justify-between px-5 py-4 border-b border-slate-900 bg-slate-950/40 shrink-0">
                             <div class="flex items-center gap-2">
-                                <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-8 h-8 rounded-full border border-violet-500/20 object-cover" draggable="false" oncontextmenu="return false;">
+                                <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-8 h-8 rounded-full border border-amber-500/20 object-cover animate-gentle-logo" draggable="false" oncontextmenu="return false;">
                                 <h1 class="text-base font-bold text-white tracking-wider italic font-serif">SecretRoom</h1>
                             </div>
-                            <button id="mobile-btn-share" class="w-8 h-8 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white rounded-full flex items-center justify-center shadow-md">
+                            <button id="mobile-btn-share" class="w-8 h-8 bg-amber-500 text-slate-950 rounded-full flex items-center justify-center shadow-md">
                                 <i class="fa-solid fa-plus text-sm"></i>
                             </button>
                         </header>
@@ -1091,11 +1115,11 @@
 
                         <!-- RWD: Mobile bottom navbar footer -->
                         <footer class="flex md:hidden items-center justify-around border-t border-slate-900 bg-slate-950/80 p-3 shrink-0 select-none">
-                            <button id="mobile-tab-feed" class="flex flex-col items-center gap-1 transition ${window.state.currentTab === 'feed' ? 'text-indigo-500' : 'text-slate-500'}">
+                            <button id="mobile-tab-feed" class="flex flex-col items-center gap-1 transition ${window.state.currentTab === 'feed' ? 'text-amber-500' : 'text-slate-500'}">
                                 <i class="fa-solid fa-house-chimney text-base"></i>
                                 <span class="text-[9px] font-bold uppercase tracking-wider">首頁動態</span>
                             </button>
-                            <button id="mobile-tab-profile" class="flex flex-col items-center gap-1 transition ${window.state.currentTab === 'profile' ? 'text-indigo-500' : 'text-slate-500'}">
+                            <button id="mobile-tab-profile" class="flex flex-col items-center gap-1 transition ${window.state.currentTab === 'profile' ? 'text-amber-500' : 'text-slate-500'}">
                                 <i class="fa-solid fa-user-circle text-base"></i>
                                 <span class="text-[9px] font-bold uppercase tracking-wider">個人主頁</span>
                             </button>
@@ -1107,27 +1131,27 @@
                     </main>
 
                     <!-- PC Right explorer sidebar -->
-                    <aside class="hidden lg:flex flex-col gap-6 w-80 border-l border-slate-900 bg-slate-950/20 p-5 shrink-0 overflow-y-auto select-none">
+                    <aside class="hidden lg:flex flex-col gap-6 w-80 border-l border-amber-500/10 bg-slate-950/10 p-5 shrink-0 overflow-y-auto select-none glass-panel">
                         
-                        <div class="bg-slate-900/30 border border-slate-900 p-4 rounded-3xl space-y-3">
-                            <h3 class="text-xs font-bold text-slate-400 flex items-center gap-2 uppercase tracking-wider">
-                                <i class="fa-solid fa-compass text-indigo-500"></i> 熱門主題探索
+                        <div class="bg-slate-950/40 border border-slate-900 p-4 rounded-3xl space-y-3">
+                            <h3 class="text-xs font-bold text-amber-500 flex items-center gap-2 uppercase tracking-wider font-serif">
+                                <i class="fa-solid fa-compass"></i> 熱門主題探索
                             </h3>
                             <div class="flex flex-wrap gap-2">
                                 ${window.state.kinksOptions.slice(0, 6).map((k) => `
-                                    <button onclick="setGlobalFilter('${k}')" class="text-[10px] font-bold bg-slate-950/40 hover:bg-indigo-600/10 hover:text-indigo-400 border border-slate-850 hover:border-indigo-500/20 px-2.5 py-1.5 rounded-full text-slate-500 transition duration-300">
+                                    <button onclick="setGlobalFilter('${k}')" class="text-[10px] font-bold bg-slate-950/40 hover:bg-amber-500/10 hover:text-amber-400 border border-slate-900 hover:border-amber-500/20 px-2.5 py-1.5 rounded-full text-slate-500 transition duration-300">
                                         # ${k}
                                     </button>
                                 `).join('')}
                             </div>
                         </div>
 
-                        <div class="bg-slate-900/30 border border-slate-900 p-4 rounded-3xl space-y-4">
-                            <h3 class="text-xs font-bold text-slate-400 flex items-center gap-2 uppercase tracking-wider">
-                                <i class="fa-solid fa-user-group text-indigo-500"></i> 線上活躍帳號
+                        <div class="bg-slate-950/40 border border-slate-900 p-4 rounded-3xl space-y-4">
+                            <h3 class="text-xs font-bold text-amber-500 flex items-center gap-2 uppercase tracking-wider font-serif">
+                                <i class="fa-solid fa-user-group"></i> 線上活躍帳號
                             </h3>
                             <div class="space-y-3.5" id="active-users-list-aside">
-                                <div class="text-xs text-slate-600 text-center py-2">載入天菜名單中...</div>
+                                <div class="text-xs text-slate-600 text-center py-2">載入帳號中...</div>
                             </div>
                         </div>
                     </aside>
@@ -1142,6 +1166,7 @@
                     if (tabName === 'feed') {
                         window.state.currentFilter = 'recommended';
                         window.state.currentRankTag = null;
+                        window.state.singlePostFocusId = null; 
                     }
                     renderDashboard(container); 
                 };
@@ -1156,7 +1181,7 @@
                 localStorage.removeItem('sr_username');
                 window.state.userData = {};
                 window.state.applicationId = null;
-                showToast('已安全退出 SecretRoom。', 'info');
+                showToast('已登出 SecretRoom。', 'info');
                 navigate('landing');
             };
 
@@ -1224,7 +1249,7 @@
 
             showList.forEach((user) => {
                 const card = document.createElement('div');
-                card.className = 'flex items-center justify-between p-2.5 bg-slate-950/40 hover:bg-indigo-600/5 rounded-2xl border border-slate-900 hover:border-indigo-500/10 cursor-pointer transition duration-300';
+                card.className = 'flex items-center justify-between p-2.5 bg-slate-950/60 hover:bg-amber-500/5 rounded-2xl border border-slate-900 hover:border-amber-500/10 cursor-pointer transition duration-300';
                 card.onclick = () => viewUserProfile(user.id);
                 card.innerHTML = `
                     <div class="flex items-center gap-2.5 overflow-hidden">
@@ -1246,33 +1271,36 @@
         function renderFeedTab(container) {
             container.innerHTML = `
                 <div class="relative w-full z-20">
-                    <div class="flex items-center bg-slate-900/60 border border-slate-850 rounded-2xl px-4 py-3 shadow-lg backdrop-blur-md">
-                        <i class="fa-solid fa-magnifying-glass text-slate-500 text-xs mr-3"></i>
-                        <input type="text" id="feed-search-input" class="w-full bg-transparent text-xs text-white focus:outline-none" placeholder="搜尋天菜貼文、標籤、天菜暱稱或帳號 ID..." value="${window.state.searchTerm}">
+                    <div class="flex items-center bg-slate-950 border border-amber-500/10 rounded-2xl px-4 py-3 shadow-lg backdrop-blur-md">
+                        <i class="fa-solid fa-magnifying-glass text-amber-500/70 text-xs mr-3"></i>
+                        <input type="text" id="feed-search-input" class="w-full bg-transparent text-xs text-white focus:outline-none" placeholder="搜尋貼文、標籤、暱稱或帳號ID..." value="${window.state.searchTerm}">
                     </div>
-                    <div id="search-users-container" class="absolute left-0 right-0 top-14 bg-slate-900 border border-slate-800 rounded-3xl p-3 shadow-2xl hidden flex flex-col gap-2 max-h-60 overflow-y-auto z-50 backdrop-blur-xl"></div>
+                    
+                    <!-- 搜尋覆蓋面板 (雙分頁切換) -->
+                    <div id="search-results-overlay" class="absolute left-0 right-0 top-14 bg-slate-950/95 border border-amber-500/15 rounded-3xl p-4 shadow-2xl hidden flex flex-col gap-3 max-h-[450px] overflow-hidden z-50 backdrop-blur-xl">
+                    </div>
                 </div>
 
-                <!-- 快速篩選器：已移除所有的 Emoji 標籤圖示 -->
+                <!-- 快速篩選器 -->
                 <div class="flex items-center gap-2 overflow-x-auto scrollbar-hide py-1">
-                    <button onclick="setGlobalFilter('recommended')" id="filter-btn-recommended" class="shrink-0 text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'recommended' ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-950/30' : 'bg-slate-900/50 text-slate-400 border-slate-850 hover:bg-slate-800'}">
+                    <button onclick="setGlobalFilter('recommended')" id="filter-btn-recommended" class="shrink-0 text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'recommended' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900'}">
                         <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>智慧推薦
                     </button>
-                    <button onclick="setGlobalFilter('highly-rated')" id="filter-btn-highly-rated" class="shrink-0 text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'highly-rated' ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-950/30' : 'bg-slate-900/50 text-slate-400 border-slate-850 hover:bg-slate-800'}">
+                    <button onclick="setGlobalFilter('highly-rated')" id="filter-btn-highly-rated" class="shrink-0 text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'highly-rated' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900'}">
                         <i class="fa-solid fa-star mr-1.5"></i>天菜評分
                     </button>
-                    <button onclick="setGlobalFilter('popular')" id="filter-btn-popular" class="shrink-0 text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'popular' ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-950/30' : 'bg-slate-900/50 text-slate-400 border-slate-850 hover:bg-slate-800'}">
+                    <button onclick="setGlobalFilter('popular')" id="filter-btn-popular" class="shrink-0 text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'popular' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900'}">
                         <i class="fa-solid fa-fire-flame-curved mr-1.5"></i>人氣按讚
                     </button>
-                    <button onclick="setGlobalFilter('elite-ranking')" id="filter-btn-elite-ranking" class="shrink-0 text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'elite-ranking' ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-950/30' : 'bg-slate-900/50 text-slate-400 border-slate-850 hover:bg-slate-800'}">
+                    <button onclick="setGlobalFilter('elite-ranking')" id="filter-btn-elite-ranking" class="shrink-0 text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'elite-ranking' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900'}">
                         <i class="fa-solid fa-trophy mr-1.5"></i>天菜排名
                     </button>
                 </div>
 
                 <div id="ranking-sub-tabs" class="hidden flex items-center gap-2 overflow-x-auto scrollbar-hide py-1.5 border-t border-b border-slate-900/40">
-                    <span class="shrink-0 text-[9px] font-bold text-indigo-400 uppercase tracking-widest mr-1">排名分類:</span>
+                    <span class="shrink-0 text-[9px] font-bold text-amber-500 uppercase tracking-widest mr-1">排名分類:</span>
                     ${window.state.kinksOptions.map((k) => `
-                        <button onclick="setRankingTag('${k}')" class="sub-rank-btn shrink-0 text-[10px] font-bold px-3 py-1.5 rounded-full border border-slate-850 transition duration-300 ${window.state.currentRankTag === k ? 'bg-violet-600/10 text-violet-400 border-violet-500/30' : 'bg-slate-950/30 text-slate-500'}" data-tag="${k}">
+                        <button onclick="setRankingTag('${k}')" class="sub-rank-btn shrink-0 text-[10px] font-bold px-3 py-1.5 rounded-full border border-slate-900 transition duration-300 ${window.state.currentRankTag === k ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-slate-950/30 text-slate-500'}" data-tag="${k}">
                             # ${k}
                         </button>
                     `).join('')}
@@ -1280,15 +1308,15 @@
 
                 <div class="space-y-4" id="feed-posts-list">
                     <div class="text-center py-12 text-slate-500 flex flex-col items-center gap-2">
-                        <i class="fa-solid fa-circle-notch animate-spin text-xl text-indigo-500"></i>
-                        <span>正在與私密伺服器建立安全通道...</span>
+                        <i class="fa-solid fa-circle-notch animate-spin text-xl text-amber-500"></i>
+                        <span>正在與伺服器建立通道...</span>
                     </div>
                 </div>
             `;
 
             const searchInput = document.getElementById('feed-search-input');
             searchInput.oninput = (e) => {
-                window.state.searchTerm = e.target.value.toLowerCase();
+                window.state.searchTerm = e.target.value;
                 clearTimeout(window.state.searchTimeout);
                 window.state.searchTimeout = setTimeout(() => {
                     updateSearchAndFeedUI();
@@ -1310,6 +1338,7 @@
 
         window.setGlobalFilter = function(filterName) {
             window.state.currentFilter = filterName;
+            window.state.singlePostFocusId = null; 
             
             if (filterName !== 'elite-ranking') {
                 window.state.currentRankTag = null;
@@ -1322,9 +1351,9 @@
                 const btn = document.getElementById(`filter-btn-${t}`);
                 if (btn) {
                     if (t === filterName) {
-                        btn.className = "shrink-0 text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-full border transition-all duration-300 bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-950/30";
+                        btn.className = "shrink-0 text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-full border transition-all duration-300 bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30";
                     } else {
-                        btn.className = "shrink-0 text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-full border transition-all duration-300 bg-slate-900/50 text-slate-400 border-slate-850 hover:bg-slate-800";
+                        btn.className = "shrink-0 text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-full border transition-all duration-300 bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900";
                     }
                 }
             });
@@ -1343,16 +1372,38 @@
 
         window.setRankingTag = function(kinkTag) {
             window.state.currentRankTag = kinkTag;
+            window.state.singlePostFocusId = null; 
             
             document.querySelectorAll('.sub-rank-btn').forEach(btn => {
                 const dataTag = btn.getAttribute('data-tag');
                 if (dataTag === kinkTag) {
-                    btn.className = "sub-rank-btn shrink-0 text-[10px] font-bold px-3 py-1.5 rounded-full border transition duration-300 bg-violet-600/10 text-violet-400 border-violet-500/30";
+                    btn.className = "sub-rank-btn shrink-0 text-[10px] font-bold px-3 py-1.5 rounded-full border transition duration-300 bg-amber-500/10 text-amber-400 border-amber-500/20";
                 } else {
-                    btn.className = "sub-rank-btn shrink-0 text-[10px] font-bold px-3 py-1.5 rounded-full border border-slate-850 bg-slate-950/30 text-slate-500 transition duration-300";
+                    btn.className = "sub-rank-btn shrink-0 text-[10px] font-bold px-3 py-1.5 rounded-full border border-slate-900 bg-slate-950/30 text-slate-500 transition duration-300";
                 }
             });
 
+            updateSearchAndFeedUI();
+        };
+
+        window.setSearchTab = function(tabName) {
+            window.state.searchTab = tabName;
+            updateSearchAndFeedUI();
+        };
+
+        window.viewSinglePost = function(postId) {
+            window.state.currentTab = 'feed';
+            window.state.singlePostFocusId = postId;
+            window.state.searchTerm = '';
+            const searchInput = document.getElementById('feed-search-input');
+            if (searchInput) searchInput.value = '';
+            const searchOverlay = document.getElementById('search-results-overlay');
+            if (searchOverlay) searchOverlay.classList.add('hidden');
+            renderDashboard(appContainer);
+        };
+
+        window.clearSinglePostFocus = function() {
+            window.state.singlePostFocusId = null;
             updateSearchAndFeedUI();
         };
 
@@ -1360,112 +1411,170 @@
             const listContainer = document.getElementById('feed-posts-list');
             if (!listContainer) return;
 
-            const term = window.state.searchTerm;
+            const term = window.state.searchTerm.toLowerCase().trim();
+            const searchOverlay = document.getElementById('search-results-overlay');
 
-            const searchUsersBox = document.getElementById('search-users-container');
-            if (searchUsersBox) {
+            if (searchOverlay) {
                 if (term) {
+                    searchOverlay.classList.remove('hidden');
+                    
                     const matchedUsers = window.state.activeUsers.filter(u => 
-                        u.id.includes(term) || u.nickname.toLowerCase().includes(term)
+                        u.id.toLowerCase().includes(term) || u.nickname.toLowerCase().includes(term)
                     );
-                    if (matchedUsers.length > 0) {
-                        searchUsersBox.classList.remove('hidden');
-                        searchUsersBox.innerHTML = `
-                            <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest px-1 block mb-1">🔍 搜尋到的相關帳號</span>
-                            ${matchedUsers.map(u => `
-                                <div onclick="viewUserProfile('${u.id}')" class="flex items-center gap-2.5 p-2 bg-slate-950/40 hover:bg-indigo-600/10 rounded-xl cursor-pointer border border-slate-850/40 transition">
-                                    <img src="${u.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-8 h-8 rounded-full object-cover">
-                                    <div class="overflow-hidden">
-                                        <div class="flex items-center gap-1">
-                                            <span class="text-xs font-bold text-slate-200 truncate">${u.nickname}</span>
-                                            ${getBadgeHTML(u)}
+
+                    const matchedPosts = window.state.posts.filter(post => 
+                        (post.text && post.text.toLowerCase().includes(term)) || 
+                        post.authorName.toLowerCase().includes(term) ||
+                        post.userId.toLowerCase().includes(term) ||
+                        (post.kinks && post.kinks.some(k => k.toLowerCase().includes(term)))
+                    );
+
+                    searchOverlay.innerHTML = `
+                        <!-- 搜尋結果雙分頁導航 -->
+                        <div class="flex border-b border-slate-900 pb-2">
+                            <button onclick="setSearchTab('posts')" class="flex-1 text-center py-1.5 text-xs font-bold uppercase tracking-wider transition ${window.state.searchTab === 'posts' ? 'text-amber-500 border-b-2 border-amber-500' : 'text-slate-500 hover:text-slate-300'}">
+                                天菜貼文 (${matchedPosts.length})
+                            </button>
+                            <button onclick="setSearchTab('users')" class="flex-1 text-center py-1.5 text-xs font-bold uppercase tracking-wider transition ${window.state.searchTab === 'users' ? 'text-amber-500 border-b-2 border-amber-500' : 'text-slate-500 hover:text-slate-300'}">
+                                男神帳號 (${matchedUsers.length})
+                            </button>
+                        </div>
+                        
+                        <!-- 搜尋分頁內容 -->
+                        <div class="overflow-y-auto pr-1 flex-1 space-y-2.5 max-h-[350px]">
+                            ${window.state.searchTab === 'posts' ? 
+                                (matchedPosts.length === 0 ? 
+                                    `<div class="text-[10px] text-slate-600 py-6 text-center font-light">未搜尋到相符貼文</div>` :
+                                    matchedPosts.map(post => `
+                                        <div class="p-3 bg-slate-900/60 hover:bg-slate-900 border border-slate-900 rounded-2xl transition cursor-pointer" onclick="viewSinglePost('${post.id}')">
+                                            <div class="flex items-center gap-2 mb-1.5">
+                                                <img src="${post.authorAvatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-6 h-6 rounded-full object-cover">
+                                                <div>
+                                                    <span class="text-[10.5px] font-bold text-slate-300 block leading-tight">${post.authorName}</span>
+                                                    <span class="text-[8.5px] text-slate-500 font-mono block">@${post.userId}</span>
+                                                </div>
+                                            </div>
+                                            <p class="text-[11px] text-slate-400 truncate">${post.text || '(僅發布相片)'}</p>
                                         </div>
-                                        <span class="text-[9px] text-slate-500 block">@${u.id}</span>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        `;
-                    } else {
-                        searchUsersBox.classList.add('hidden');
-                    }
+                                    `).join('')
+                                ) :
+                                (matchedUsers.length === 0 ? 
+                                    `<div class="text-[10px] text-slate-600 py-6 text-center font-light">未搜尋得相符帳號</div>` :
+                                    matchedUsers.map(u => `
+                                        <div onclick="viewUserProfile('${u.id}')" class="flex items-center justify-between p-2.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-900 rounded-2xl transition cursor-pointer">
+                                            <div class="flex items-center gap-2.5 overflow-hidden">
+                                                <img src="${u.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-8 h-8 rounded-full object-cover">
+                                                <div class="overflow-hidden">
+                                                    <div class="flex items-center gap-1">
+                                                        <span class="text-xs font-bold text-slate-200 truncate">${u.nickname}</span>
+                                                        ${getBadgeHTML(u)}
+                                                    </div>
+                                                    <span class="text-[9px] text-slate-500 block">@${u.id}</span>
+                                                </div>
+                                            </div>
+                                            <i class="fa-solid fa-chevron-right text-[10px] text-slate-600"></i>
+                                        </div>
+                                    `).join('')
+                                )
+                            }
+                        </div>
+                    `;
                 } else {
-                    searchUsersBox.classList.add('hidden');
+                    searchOverlay.classList.add('hidden');
                 }
             }
 
             let list = [...window.state.posts];
+            let isFocusedMode = false;
 
-            if (term) {
-                list = list.filter(post => 
-                    post.text.toLowerCase().includes(term) || 
-                    post.authorName.toLowerCase().includes(term) ||
-                    post.userId.includes(term) ||
-                    (post.kinks && post.kinks.some(k => k.toLowerCase().includes(term)))
-                );
-            }
-
-            const f = window.state.currentFilter;
-            
-            if (f === 'highly-rated') {
-                list = list.map(post => {
-                    const ratings = post.ratings ? Object.values(post.ratings) : [];
-                    const avg = ratings.length > 0 ? (ratings.reduce((a,b)=>a+b, 0) / ratings.length) : 0;
-                    return { ...post, tempAvg: avg };
-                }).filter(p => p.tempAvg >= 4.0).sort((a,b) => b.tempAvg - a.tempAvg);
-
-            } else if (f === 'popular') {
-                list = list.sort((a,b) => (b.likeCount || 0) - (a.likeCount || 0));
-
-            } else if (f === 'elite-ranking') {
-                const targetTag = window.state.currentRankTag;
-                if (targetTag) {
-                    list = list.filter(post => {
-                        if (!post.kinks) return false;
-                        return post.kinks.some(pk => pk === targetTag);
-                    });
+            if (window.state.singlePostFocusId) {
+                list = list.filter(post => post.id === window.state.singlePostFocusId);
+                isFocusedMode = true;
+            } else {
+                if (term) {
+                    list = list.filter(post => 
+                        (post.text && post.text.toLowerCase().includes(term)) || 
+                        post.authorName.toLowerCase().includes(term) ||
+                        post.userId.toLowerCase().includes(term) ||
+                        (post.kinks && post.kinks.some(k => k.toLowerCase().includes(term)))
+                    );
                 }
 
-                list = list.map(post => {
-                    const views = post.viewCount || 0;
-                    const likes = post.likeCount || 0;
-                    const ratingSum = post.ratings ? Object.values(post.ratings).reduce((a,b)=>a+b, 0) : 0;
-                    const score = (views * 0.05) + (likes * 0.45) + (ratingSum * 0.5);
-                    return { ...post, rankScore: score };
-                }).sort((a,b) => b.rankScore - a.rankScore);
+                const f = window.state.currentFilter;
+                
+                if (f === 'highly-rated') {
+                    list = list.map(post => {
+                        const ratings = post.ratings ? Object.values(post.ratings) : [];
+                        const avg = ratings.length > 0 ? (ratings.reduce((a,b)=>a+b, 0) / ratings.length) : 0;
+                        return { ...post, tempAvg: avg };
+                    }).filter(p => p.tempAvg >= 4.0).sort((a,b) => b.tempAvg - a.tempAvg);
 
-            } else if (f !== 'recommended' && f) {
-                list = list.filter(post => {
-                    if (!post.kinks) return false;
-                    return post.kinks.some(pk => {
-                        const target = f.split('｜').pop().split('/').pop();
-                        return pk.includes(target);
+                } else if (f === 'popular') {
+                    list = list.sort((a,b) => (b.likeCount || 0) - (a.likeCount || 0));
+
+                } else if (f === 'elite-ranking') {
+                    const targetTag = window.state.currentRankTag;
+                    if (targetTag) {
+                        list = list.filter(post => {
+                            if (!post.kinks) return false;
+                            return post.kinks.some(pk => pk === targetTag);
+                        });
+                    }
+
+                    list = list.map(post => {
+                        const views = post.viewCount || 0;
+                        const likes = post.likeCount || 0;
+                        const ratingSum = post.ratings ? Object.values(post.ratings).reduce((a,b)=>a+b, 0) : 0;
+                        const score = (views * 0.05) + (likes * 0.45) + (ratingSum * 0.5);
+                        return { ...post, rankScore: score };
+                    }).sort((a,b) => b.rankScore - a.rankScore);
+
+                } else if (f !== 'recommended' && f) {
+                    list = list.filter(post => {
+                        if (!post.kinks) return false;
+                        return post.kinks.some(pk => {
+                            const target = f.split('｜').pop().split('/').pop();
+                            return pk.includes(target);
+                        });
                     });
-                });
+                }
             }
 
             const totalCount = list.length;
             const slicedList = list.slice(0, window.state.visiblePostsCount);
 
-            if (slicedList.length === 0) {
-                listContainer.innerHTML = `
-                    <div class="text-center py-16 bg-slate-900/10 border border-slate-900/50 rounded-3xl p-6 flex flex-col items-center justify-center gap-3">
-                        <div class="w-12 h-12 bg-slate-900/60 rounded-full flex items-center justify-center text-slate-600 text-xl">
-                            <i class="fa-solid fa-folder-open"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-slate-400 text-xs">目前尚無任何秘密動態</h4>
-                            <p class="text-[10px] text-slate-600 mt-1">成為第一個分享精采近況的吧！</p>
-                        </div>
-                    </div>
+            listContainer.innerHTML = '';
+
+            if (isFocusedMode) {
+                const backBtnWrapper = document.createElement('div');
+                backBtnWrapper.className = 'mb-4';
+                backBtnWrapper.innerHTML = `
+                    <button onclick="clearSinglePostFocus()" class="bg-slate-900 hover:bg-slate-800 text-amber-500 font-bold text-xs py-2.5 px-4 rounded-xl border border-amber-500/10 flex items-center gap-2 transition shadow-md">
+                        <i class="fa-solid fa-arrow-left"></i> 顯示所有動態
+                    </button>
                 `;
-                return;
+                listContainer.appendChild(backBtnWrapper);
             }
 
-            listContainer.innerHTML = '';
+            if (slicedList.length === 0) {
+                const emptyCard = document.createElement('div');
+                emptyCard.className = 'text-center py-16 bg-slate-900/10 border border-slate-900/50 rounded-3xl p-6 flex flex-col items-center justify-center gap-3';
+                emptyCard.innerHTML = `
+                    <div class="w-12 h-12 bg-slate-900/60 rounded-full flex items-center justify-center text-slate-600 text-xl">
+                        <i class="fa-solid fa-folder-open"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-400 text-xs">目前尚無任何動態</h4>
+                        <p class="text-[10px] text-slate-600 mt-1">成為第一個分享精采近況的帳號吧！</p>
+                    </div>
+                `;
+                listContainer.appendChild(emptyCard);
+                return;
+            }
             
             slicedList.forEach((post, index) => {
                 const card = document.createElement('div');
-                card.className = 'bg-slate-900/40 border border-slate-900/80 rounded-3xl p-5 hover:border-indigo-500/10 transition duration-300 relative space-y-4';
+                card.className = 'bg-slate-900/40 border border-slate-900/85 rounded-3xl p-5 hover:border-amber-500/10 transition duration-300 relative space-y-4';
                 
                 if (!window.state.viewedPostsInSession[post.id]) {
                     window.state.viewedPostsInSession[post.id] = true;
@@ -1473,7 +1582,7 @@
                 }
 
                 let rankingCrownHtml = '';
-                if (f === 'elite-ranking') {
+                if (window.state.currentFilter === 'elite-ranking' && !isFocusedMode) {
                     const rank = index + 1;
                     const colors = {
                         1: 'from-amber-400 via-yellow-500 to-amber-600 shadow-amber-950/20 text-slate-950',
@@ -1539,7 +1648,6 @@
                     `;
                 }
 
-                // 茄子與水蜜桃按讚：向量 SVG 碼
                 const peachEggplantHtml = userLiked ? `
                     <button onclick="toggleLikePost('${post.id}')" class="flex items-center gap-1.5 text-purple-400 font-semibold transition duration-300">
                         <svg class="w-5 h-5 text-purple-400 fill-current" viewBox="0 0 64 64" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
@@ -1583,7 +1691,7 @@
                     ${post.kinks && post.kinks.length > 0 ? `
                         <div class="flex flex-wrap gap-1.5">
                             ${post.kinks.map(k => `
-                                <span class="text-[10px] font-semibold text-indigo-400/80 bg-indigo-500/5 px-2.5 py-1 rounded-full border border-indigo-500/5"># ${k}</span>
+                                <span class="text-[10px] font-semibold text-amber-500/80 bg-amber-500/5 px-2.5 py-1 rounded-full border border-amber-500/5"># ${k}</span>
                             `).join('')}
                         </div>
                     ` : ''}
@@ -1592,7 +1700,7 @@
                         
                         ${peachEggplantHtml}
 
-                        <button onclick="toggleCommentsSection('${post.id}')" class="flex items-center gap-1.5 hover:text-indigo-400 transition">
+                        <button onclick="toggleCommentsSection('${post.id}')" class="flex items-center gap-1.5 hover:text-amber-400 transition">
                             <i class="fa-regular fa-comments"></i>
                             <span>${commentCount} 則留言</span>
                         </button>
@@ -1601,7 +1709,7 @@
                             <div class="flex items-center gap-0.5 text-slate-600">
                                 ${[1, 2, 3, 4, 5].map(star => {
                                     const ratingVal = post.ratings && post.ratings[window.state.applicationId];
-                                    const activeColor = ratingVal && ratingVal >= star ? 'text-yellow-500' : 'text-slate-700 hover:text-yellow-400';
+                                    const activeColor = ratingVal && ratingVal >= star ? 'text-amber-500' : 'text-slate-700 hover:text-amber-400';
                                     return `<i onclick="ratePost('${post.id}', ${star})" class="fa-solid fa-star cursor-pointer transition text-[11px] ${activeColor}"></i>`;
                                 }).join('')}
                             </div>
@@ -1611,8 +1719,8 @@
 
                     <div id="comments-box-${post.id}" class="${window.state.openComments[post.id] ? '' : 'hidden'} mt-4 pt-4 border-t border-slate-900/60 space-y-3">
                         <div class="flex gap-2">
-                            <input type="text" id="comment-input-${post.id}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500" placeholder="真誠留言，打個招呼吧...">
-                            <button onclick="submitComment('${post.id}')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[10px] px-4 rounded-xl transition shrink-0">送出</button>
+                            <input type="text" id="comment-input-${post.id}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500" placeholder="真誠留言，打個招呼吧...">
+                            <button onclick="submitComment('${post.id}')" class="bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-[10px] px-4 rounded-xl transition shrink-0">送出</button>
                         </div>
                         <div class="space-y-2.5 max-h-48 overflow-y-auto pr-1" id="comments-list-${post.id}">
                             ${post.comments ? Object.values(post.comments).map(c => `
@@ -1630,15 +1738,15 @@
                 listContainer.appendChild(card);
             });
 
-            if (totalCount > window.state.visiblePostsCount) {
+            if (totalCount > window.state.visiblePostsCount && !isFocusedMode) {
                 const loadMoreEl = document.createElement('div');
                 loadMoreEl.className = 'text-center py-4 text-[10px] text-slate-600 animate-pulse';
-                loadMoreEl.textContent = '往下滾動載入更多天菜帥哥動態... 🌟';
+                loadMoreEl.textContent = '往下滾動載入更多帳號動態... 🌟';
                 listContainer.appendChild(loadMoreEl);
-            } else {
+            } else if (!isFocusedMode) {
                 const finishedEl = document.createElement('div');
                 finishedEl.className = 'text-center py-6 text-[10px] text-slate-600 border-t border-slate-900/50 mt-4';
-                finishedEl.innerHTML = '已看完目前所有的秘密動態 🔒';
+                finishedEl.innerHTML = '已看完目前所有的最新貼文 🔒';
                 listContainer.appendChild(finishedEl);
             }
         }
@@ -1651,8 +1759,8 @@
                 container.innerHTML = `
                     <div class="text-center py-12 text-slate-500">
                         <i class="fa-solid fa-circle-exclamation text-2xl mb-2 text-rose-500"></i>
-                        <p class="text-xs">無法讀取該會員的個人檔案。</p>
-                        <button onclick="setGlobalFilter('recommended')" class="text-xs text-indigo-400 mt-2 hover:underline">返回首頁</button>
+                        <p class="text-xs">無法讀取該帳號的個人檔案。</p>
+                        <button onclick="backToFeed()" class="text-xs text-amber-500 mt-2 hover:underline">返回首頁</button>
                     </div>
                 `;
                 return;
@@ -1679,8 +1787,8 @@
                     `;
                 } else if (isMe) {
                     specApplyBtnHtml = `
-                        <button onclick="showSpecApplyModal()" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs py-3.5 px-4 rounded-xl shadow-lg shadow-amber-950/15 transition mt-3 flex items-center justify-center gap-1.5">
-                            <i class="fa-solid fa-lock"></i> 申請黃金 Spec 認證勳章
+                        <button onclick="showSpecApplyModal()" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 hover:brightness-110 text-slate-950 font-bold text-xs py-3.5 px-4 rounded-xl shadow-lg shadow-amber-950/15 transition mt-3 flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-lock"></i> 申請黃金 Spec 認證徽章
                         </button>
                     `;
                 }
@@ -1690,14 +1798,14 @@
             if (isMe) {
                 const myVisitors = window.state.visitors || [];
                 visitorsHtml = `
-                    <div class="bg-slate-900/30 border border-slate-900 p-4 rounded-3xl space-y-3.5 animate-fade-in">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block"><i class="fa-regular fa-eye text-indigo-500"></i> 最近誰來看過我 (足跡)：</span>
+                    <div class="bg-[#040409] border border-amber-500/10 p-4 rounded-3xl space-y-3.5 animate-fade-in">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block"><i class="fa-regular fa-eye text-amber-500"></i> 最近誰來看過我 (足跡)：</span>
                         <div class="flex items-center gap-3 overflow-x-auto scrollbar-hide py-1">
                             ${myVisitors.length === 0 ? `
                                 <div class="text-[10px] text-slate-600 py-1 font-light">目前尚無足跡</div>
                             ` : myVisitors.map(v => `
                                 <div onclick="viewUserProfile('${v.from}')" class="flex flex-col items-center shrink-0 cursor-pointer group">
-                                    <img src="${v.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-10 h-10 rounded-full object-cover border border-slate-800 group-hover:border-indigo-500 transition duration-300">
+                                    <img src="${v.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-10 h-10 rounded-full object-cover border border-slate-800 group-hover:border-amber-500 transition duration-300">
                                     <span class="text-[9px] text-slate-500 mt-1.5 truncate max-w-[50px]">@${v.from}</span>
                                 </div>
                             `).join('')}
@@ -1710,8 +1818,8 @@
                 <div class="bg-slate-900/40 border border-slate-900/80 rounded-3xl p-6 relative flex flex-col items-center text-center space-y-4">
                     
                     ${!isMe ? `
-                        <button onclick="setGlobalFilter('recommended')" class="absolute top-5 left-5 text-slate-500 hover:text-white transition text-[11px] font-medium">
-                            <i class="fa-solid fa-arrow-left"></i> 返回動態牆
+                        <button onclick="backToFeed()" class="absolute top-5 left-5 text-slate-500 hover:text-white transition text-[11px] font-medium flex items-center gap-1">
+                            <i class="fa-solid fa-arrow-left"></i> 返回動態首頁
                         </button>
                     ` : ''}
 
@@ -1725,7 +1833,7 @@
                         </h2>
                         <span class="text-xs text-slate-500 block font-mono">@${profileUserId}</span>
                         
-                        <!-- 膠囊微光徽章：已放大且移除了 Hover Tooltip -->
+                        <!-- 膠囊微光徽章：移至大頭照正下方 -->
                         <div class="flex items-center justify-center gap-2 mt-3.5 flex-wrap">
                             ${getBadgeHTML(profileUser, true)}
                         </div>
@@ -1742,14 +1850,14 @@
 
                     ${isMe && profileUser.avatarStatus === 'pending' ? `
                         <div class="w-full p-2.5 bg-purple-500/5 border border-purple-500/10 rounded-xl text-[10px] text-purple-400 font-semibold flex items-center justify-center gap-1.5 select-none animate-pulse">
-                            <i class="fa-solid fa-camera"></i> 新上傳頭像已在人工審核中... (目前展示原頭像)
+                            <i class="fa-solid fa-camera"></i> 新上傳頭像已在背景人工審核中... (目前展示原頭像)
                         </div>
                     ` : ''}
 
                     ${specApplyBtnHtml}
 
                     ${isMe ? `
-                        <button onclick="showEditProfileModal()" class="w-full bg-slate-800 hover:bg-slate-750 text-slate-300 font-semibold text-xs py-3 px-4 rounded-xl border border-slate-700/60 transition duration-300">
+                        <button onclick="showEditProfileModal()" class="w-full bg-slate-900 hover:bg-slate-800 text-slate-300 font-semibold text-xs py-3 px-4 rounded-xl border border-slate-800 transition duration-300">
                             修改個人資料
                         </button>
                     ` : ''}
@@ -1806,6 +1914,13 @@
                 window.state.currentTab = 'other-profile';
                 window.state.viewTargetUserId = targetUserId;
             }
+            renderDashboard(appContainer);
+        };
+
+        window.backToFeed = function() {
+            window.state.currentTab = 'feed';
+            window.state.currentFilter = 'recommended';
+            window.state.singlePostFocusId = null; 
             renderDashboard(appContainer);
         };
 
@@ -1927,25 +2042,25 @@
 
         function showSharePostModal() {
             const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md';
+            modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md';
             modal.innerHTML = `
-                <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl relative overflow-y-auto max-h-[90vh]">
+                <div class="bg-slate-950 border border-amber-500/10 rounded-3xl p-6 max-w-md w-full shadow-2xl relative overflow-y-auto max-h-[90vh]">
                     <button id="close-share" class="absolute top-4 right-4 text-slate-500 hover:text-white text-xl">&times;</button>
                     <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2">
-                        <i class="fa-solid fa-feather-point text-indigo-500"></i> 分享今日近況
+                        <i class="fa-solid fa-feather-point text-amber-500"></i> 分享近況
                     </h3>
                     <p class="text-xs text-slate-400 mb-5 leading-relaxed">上傳近況動態。可選取多個偏好標籤。</p>
 
                     <div class="space-y-4">
                         <div>
                             <label class="block text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">動態內容 (選填)</label>
-                            <textarea id="share-text" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 resize-none" placeholder="分享當下的健美近況 or 私密心境..."></textarea>
+                            <textarea id="share-text" rows="3" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 resize-none" placeholder="分享當下的健美近況 or 私密心境..."></textarea>
                         </div>
 
                         <div>
                             <label class="block text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">上傳照片 (選填)</label>
                             <div class="border border-slate-800 rounded-2xl p-4 flex flex-col items-center justify-center bg-slate-950/40 text-center">
-                                <div id="share-img-trigger" class="relative w-full h-40 rounded-xl border border-dashed border-slate-800 hover:border-indigo-500 flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-slate-950 transition">
+                                <div id="share-img-trigger" class="relative w-full h-40 rounded-xl border border-dashed border-slate-800 hover:border-amber-500 flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-slate-950 transition">
                                     <img id="share-preview" class="absolute inset-0 w-full h-full object-contain hidden" draggable="false" oncontextmenu="return false;">
                                     <div id="share-placeholder" class="text-slate-600 flex flex-col items-center gap-1.5">
                                         <i class="fa-regular fa-image text-2xl"></i>
@@ -1972,15 +2087,15 @@
                             <div class="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto bg-slate-950/40 p-3 border border-slate-850 rounded-2xl" id="share-kinks-container">
                                 ${window.state.kinksOptions.map(k => `
                                     <label class="flex items-center gap-2.5 cursor-pointer p-1 rounded hover:bg-slate-900/60 transition">
-                                        <input type="checkbox" name="share-kink" value="${k}" class="rounded border-slate-800 bg-slate-950 text-indigo-600">
+                                        <input type="checkbox" name="share-kink" value="${k}" class="rounded border-slate-800 bg-slate-950 text-amber-500">
                                         <span class="text-xs text-slate-300 font-medium">${k}</span>
                                     </label>
                                 `).join('')}
                             </div>
                         </div>
 
-                        <button id="btn-submit-post" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-3.5 rounded-xl transition shadow-lg">
-                            發布天菜秘密動態
+                        <button id="btn-submit-post" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-bold text-xs py-3.5 rounded-xl transition shadow-lg tracking-wider">
+                            發布動態
                         </button>
                     </div>
                 </div>
@@ -2091,21 +2206,21 @@
         function showEditProfileModal() {
             const user = window.state.userData;
             const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md';
+            modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md';
             modal.innerHTML = `
-                <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl relative overflow-y-auto max-h-[90vh]">
+                <div class="bg-slate-950 border border-amber-500/10 rounded-3xl p-6 max-w-md w-full shadow-2xl relative overflow-y-auto max-h-[90vh]">
                     <button id="close-edit" class="absolute top-4 right-4 text-slate-500 hover:text-white text-xl">&times;</button>
                     <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2">
-                        <i class="fa-solid fa-user-gear text-indigo-500"></i> 修改個人資料
+                        <i class="fa-solid fa-user-gear text-amber-500"></i> 修改個人資料
                     </h3>
                     <p class="text-xs text-slate-400 mb-5 leading-relaxed">填寫要變更的個人資訊，除頭像變更後需人工審核外，其餘欄位修改儲存後即會自動更新！</p>
 
                     <div class="space-y-4">
                         
-                        <div class="bg-slate-950 p-4 border border-slate-850 rounded-2xl flex items-center justify-between">
+                        <div class="bg-slate-900/60 p-4 border border-slate-800 rounded-2xl flex items-center justify-between">
                             <div class="text-left">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">變更個人頭像</span>
-                                <span class="text-[9px] text-purple-400 font-semibold block mt-1 leading-normal"><i class="fa-solid fa-camera"></i> 變更大頭照需要管理團隊人工二次核定才能替用。</span>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">變更個人頭像 <span class="text-amber-500 block mt-1">(支援最大 10MB 檔案)</span></span>
+                                <span class="text-[9px] text-amber-500/80 font-semibold block mt-1 leading-normal"><i class="fa-solid fa-camera"></i> 變更大頭照需人工審核後才能替換。</span>
                             </div>
                             <div class="relative w-14 h-14 rounded-full border border-slate-800 cursor-pointer overflow-hidden" id="edit-avatar-trigger">
                                 <img src="${user.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" id="edit-avatar-preview" class="w-full h-full object-cover">
@@ -2115,30 +2230,30 @@
 
                         <div>
                             <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">個人暱稱</label>
-                            <input type="text" id="edit-nickname" value="${user.nickname || ''}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
+                            <input type="text" id="edit-nickname" value="${user.nickname || ''}" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">身高 (cm)</label>
-                                <input type="number" id="edit-height" value="${user.height || ''}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
+                                <input type="number" id="edit-height" value="${user.height || ''}" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">體重 (kg)</label>
-                                <input type="number" id="edit-weight" value="${user.weight || ''}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
+                                <input type="number" id="edit-weight" value="${user.weight || ''}" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
                             </div>
                         </div>
 
-                        <div class="p-4 bg-slate-950/40 border border-slate-800 rounded-2xl">
-                            <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block mb-2"><i class="fa-solid fa-lock"></i> 身體私密規格密碼</span>
+                        <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-2xl">
+                            <span class="text-[10px] font-bold text-amber-500 uppercase tracking-widest block mb-2"><i class="fa-solid fa-lock"></i> 身體私密規格密碼</span>
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <label class="block text-[9px] font-bold text-slate-500 mb-1">勃起長度 (cm)</label>
-                                    <input type="number" id="edit-length" value="${user.length || ''}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
+                                    <input type="number" id="edit-length" value="${user.length || ''}" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
                                 </div>
                                 <div>
                                     <label class="block text-[9px] font-bold text-slate-500 mb-1">勃起粗度圍 (cm)</label>
-                                    <input type="number" id="edit-girth" value="${user.girth || ''}" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500" required>
+                                    <input type="number" id="edit-girth" value="${user.girth || ''}" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500" required>
                                 </div>
                             </div>
                         </div>
@@ -2149,14 +2264,14 @@
                             <div class="grid grid-cols-2 gap-2 bg-slate-950/40 p-3.5 border border-slate-850 rounded-2xl">
                                 ${window.state.kinksOptions.map(k => `
                                     <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-900/60 p-2 rounded-xl transition border border-transparent hover:border-slate-800">
-                                        <input type="checkbox" name="edit-kink" value="${k}" ${user.kinks && user.kinks.includes(k) ? 'checked' : ''} class="rounded border-slate-850 bg-slate-950 text-indigo-650 focus:ring-indigo-500 w-3.5 h-3.5">
+                                        <input type="checkbox" name="edit-kink" value="${k}" ${user.kinks && user.kinks.includes(k) ? 'checked' : ''} class="rounded border-slate-850 bg-slate-950 text-amber-500 focus:ring-amber-500 w-3.5 h-3.5">
                                         <span class="text-[10px] text-slate-350 font-medium leading-tight select-none">${k}</span>
                                     </label>
                                 `).join('')}
                             </div>
                         </div>
 
-                        <button id="btn-submit-profile-edit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-3.5 rounded-xl transition">
+                        <button id="btn-submit-profile-edit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-bold text-xs py-3.5 rounded-xl transition tracking-wider">
                             儲存修改與送出
                         </button>
                     </div>
@@ -2175,6 +2290,11 @@
             fileInput.onchange = (e) => {
                 const file = e.target.files[0];
                 if (file) {
+                    if (file.size > 10 * 1024 * 1024) {
+                        showToast('上傳失敗！頭像檔案大小不得超過 10MB。', 'error');
+                        fileInput.value = '';
+                        return;
+                    }
                     const reader = new FileReader();
                     reader.onload = function(evt) {
                         pendingBase64 = evt.target.result;
@@ -2241,9 +2361,9 @@
 
         function showSpecApplyModal() {
             const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md';
+            modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md';
             modal.innerHTML = `
-                <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative">
+                <div class="bg-slate-950 border border-amber-500/10 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative">
                     <button id="close-spec" class="absolute top-4 right-4 text-slate-500 hover:text-white text-xl">&times;</button>
                     <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2">
                         <i class="fa-solid fa-ribbon text-amber-500"></i> 黃金 Spec 認證申請
@@ -2257,7 +2377,7 @@
 
                     <div class="space-y-4">
                         <div class="border border-slate-800 rounded-2xl p-4 flex flex-col items-center justify-center bg-slate-950/40 text-center">
-                            <div id="spec-img-trigger" class="relative w-full h-36 rounded-xl border border-dashed border-slate-800 hover:border-indigo-500 flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-slate-950 transition">
+                            <div id="spec-img-trigger" class="relative w-full h-36 rounded-xl border border-dashed border-slate-800 hover:border-amber-500 flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-slate-950 transition">
                                 <img id="spec-preview" class="absolute inset-0 w-full h-full object-contain hidden" draggable="false" oncontextmenu="return false;">
                                 <div id="spec-placeholder" class="text-slate-600 flex flex-col items-center gap-1">
                                     <i class="fa-solid fa-camera text-xl"></i>
@@ -2267,7 +2387,7 @@
                             <input type="file" id="spec-file" accept="image/*" class="hidden">
                         </div>
 
-                        <button id="btn-submit-spec" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs py-3.5 rounded-xl transition shadow-lg">
+                        <button id="btn-submit-spec" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-bold text-xs py-3.5 rounded-xl transition shadow-lg tracking-wider">
                             上傳資料送審
                         </button>
                     </div>
@@ -2403,7 +2523,6 @@
                 badges.push({ icon: 'fa-shield-halved', color: 'from-amber-600 to-orange-700 text-white shadow-orange-500/10' });
             }
             
-            // Spec Elite 徽章：全新極光皇家金牌
             if (user.isSpecElite) {
                 badges.push({ icon: 'fa-medal', color: 'from-amber-400 via-yellow-500 to-amber-600 text-slate-950 shadow-yellow-500/25 animate-pulse' });
             }
@@ -2446,12 +2565,14 @@
                 badges.push({ icon: 'fa-heart-circle-check', color: 'from-pink-500 to-rose-600 text-white shadow-pink-500/15' });
             }
 
-            // 徹底取消 hover title 懸停提示說明
-            return badges.map(b => `
-                <span class="inline-flex items-center justify-center ${isBig ? 'w-11 h-11 text-base' : 'w-5.5 h-5.5 text-[10px]'} rounded-full bg-gradient-to-r ${b.color} shadow-sm select-none">
-                    <i class="fa-solid ${b.icon}"></i>
-                </span>
-            `).join('');
+            return badges.map(b => {
+                const sizeClasses = isBig ? 'w-11 h-11 text-lg' : 'w-5.5 h-5.5 text-[10px]';
+                return `
+                    <span class="inline-flex items-center justify-center ${sizeClasses} rounded-full bg-gradient-to-r ${b.color} shadow-sm select-none pointer-events-none">
+                        <i class="fa-solid ${b.icon}"></i>
+                    </span>
+                `;
+            }).join('');
         }
 
         function getUserBadgeHTMLForPost(post) {
@@ -2466,13 +2587,13 @@
 
             const toast = document.createElement('div');
             const bgColors = {
-                error: 'bg-red-500/95 border-red-400',
-                success: 'bg-emerald-500/95 border-emerald-400',
-                info: 'bg-indigo-600/95 border-indigo-500/40'
+                error: 'bg-red-950/90 border-red-500/35',
+                success: 'bg-emerald-950/90 border-emerald-500/35',
+                info: 'bg-amber-950/90 border-amber-500/25'
             };
             toast.className = `${bgColors[type] || bgColors.info} text-white px-5 py-3.5 rounded-2xl shadow-xl border text-xs font-semibold transition-all duration-300 opacity-0 transform -translate-y-4 backdrop-blur-xl flex items-center gap-3`;
             const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
-            toast.innerHTML = `<i class="fa-solid ${icon} text-base"></i> <span class="tracking-wide">${message}</span>`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-base text-amber-500"></i> <span class="tracking-wide">${message}</span>`;
             
             container.appendChild(toast);
             
