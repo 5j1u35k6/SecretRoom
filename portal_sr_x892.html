@@ -359,7 +359,10 @@
                             </div>
                         </div>
 
-                        <div class="flex gap-2 shrink-0">
+                        <div class="flex gap-2 shrink-0 flex-wrap">
+                            <button onclick="dismissReports('${post.id}')" class="bg-emerald-600/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/20 text-xs px-4 py-2.5 rounded-xl transition font-semibold flex items-center gap-1.5 shadow-lg shadow-emerald-950/10">
+                                <i class="fa-solid fa-shield-heart"></i> 駁回/反駁檢舉
+                            </button>
                             <button onclick="deleteSinglePost('${post.id}')" class="bg-red-600 hover:bg-red-500 text-white text-xs px-4 py-2.5 rounded-xl transition font-semibold shadow-lg shadow-red-950/20 flex items-center gap-1.5">
                                 <i class="fa-solid fa-trash-can"></i> 下架並刪除貼文
                             </button>
@@ -690,54 +693,18 @@
             }
         }
 
-        async function sendEmailNotification(userData, status, title = "審核通知", customMsg = null) {
-            if (!emailjsConfig.publicKey || emailjsConfig.publicKey === "YOUR_EMAILJS_PUBLIC_KEY") {
-                console.info(`[Email 模擬] 發送郵件給 ${userData.email}`);
-                showToast(`[模擬信件] 已寄送審核通知至 ${userData.email}`, "info");
-                return;
-            }
-
-            const messageText = customMsg || (status === 'approved' 
-                ? `恭喜您！您的 SecretRoom 加入申請已通過審核。\n\n請您點擊下方連結重新進入平台，輸入您的帳號密碼進行登入，並綁定您的 Telegram 帳號：\nhttps://5j1u35k6.github.io/SecretRoom/`
-                : `很抱歉，您的加入申請未通過審核。感謝您的關注。`);
-
+        window.dismissReports = async function(postId) {
+            if (!db) return;
             try {
-                await emailjs.send(emailjsConfig.serviceId, emailjsConfig.templateId, {
-                    to_email: userData.email,
-                    to_name: userData.nickname,
-                    status_text: title,
-                    message: messageText
+                const postDocRef = doc(db, 'secretg_apps', appId, 'posts', postId);
+                await updateDoc(postDocRef, {
+                    reports: [],
+                    reportCount: 0
                 });
-                showToast(`真實審核通知信已寄送至 ${userData.email}`, "success");
-            } catch (error) {
-                console.error("Email 發送失敗:", error);
-                showToast("通知信發送失敗，請確認您的 EmailJS 設定", "error");
-            }
-        }
-
-        window.updateStatus = async function(userId, status) {
-            if (!db) {
-                showToast("目前處於離線模擬，無法儲存狀態", "error");
-                return;
-            }
-
-            try {
-                const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
-                const docSnap = await getDoc(docRef);
-                
-                if (!docSnap.exists()) {
-                    showToast("找不到該筆申請資料", "error");
-                    return;
-                }
-                
-                const userData = docSnap.data();
-                await updateDoc(docRef, { status: status });
-                showToast('已將狀態更新為 ' + (status === 'approved' ? '已核准' : '已拒絕'), 'success');
-                
-                sendEmailNotification(userData, status);
-            } catch (e) {
-                console.error("更新狀態失敗:", e);
-                showToast('更新失敗: ' + e.message, 'error');
+                showToast("已成功駁回檢舉，該貼文已恢復正常安全狀態！", "success");
+            } catch (err) {
+                console.error("駁回檢舉出錯:", err);
+                showToast("駁回失敗，請重試", "error");
             }
         }
 
