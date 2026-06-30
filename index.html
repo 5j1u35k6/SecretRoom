@@ -107,7 +107,7 @@
         let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
         let getFirestore, doc, setDoc, getDoc, collection, query, onSnapshot, updateDoc, getDocs, where, deleteDoc, serverTimestamp;
 
-        const appId = 'secretg-demo-app'; 
+        const appId = 'secretg-production-node-tw'; 
         
         const firebaseConfig = {
             apiKey: "AIzaSyCNgJxYjC90DjtvTSaze5CREJf1Vt32aYQ",
@@ -182,7 +182,7 @@
                 nickname: '', birthYear: '', birthMonth: '', birthDay: '',
                 height: '', weight: '', length: '', girth: '', kinks: [], email: '', avatar: ''
             },
-            // 精選 10 大男同志主題標籤
+            // 精選 10 大男同志主題標籤 (不可更動)
             kinksOptions: [
                 "性愛偏好｜角色定位", "BDSM｜繩縛", "制服愛好｜皮革/膠衣", "心理角色｜Daddy/Boy", "自我管理｜健身/健美", 
                 "友善社交｜約會/派對", "體型美學｜壯碩/熊系", "特殊癖好｜穿戴玩物", "旅遊休閒｜友善旅遊", "數位社交｜交友軟體"
@@ -652,8 +652,8 @@
                         return;
                     }
                 } else {
-                    console.log("[模擬發送] 驗證碼：", generatedCode);
-                    showToast(`[模擬發送] 驗證碼為：${generatedCode}`, 'info');
+                    console.log("[系統通訊調試] 驗證碼：", generatedCode);
+                    showToast(`[系統通訊調試] 驗證碼為：${generatedCode}`, 'info');
                 }
 
                 let countdown = 60;
@@ -763,7 +763,7 @@
                 }
 
                 if (!base64Avatar) {
-                    showToast('請上傳個人頭像供管理團隊審查。', 'error');
+                    showToast('請上傳個人頭像供審核查驗。', 'error');
                     return;
                 }
 
@@ -773,7 +773,7 @@
                 }
 
                 if (selectedKinks.length === 0) {
-                    showToast('請至少勾選一項感興趣的主題與性癖偏好！', 'error');
+                    showToast('請至少勾選一項主題偏好！', 'error');
                     return;
                 }
 
@@ -837,7 +837,7 @@
                         <div class="space-y-2">
                             <h2 class="text-xl font-bold text-white tracking-wide">申請已受理 · 人工審核中</h2>
                             <p class="text-xs text-slate-400 leading-relaxed px-4">
-                                專屬男性的私密生活分享社群，審核極度嚴密。我們將於 24 小時內完成真人相片與規格初核。審查結果會發送至您的通知信箱。
+                                SecretRoom 採手動審核及推薦人引介機制，保障所有男神會員的頂級隱私防護。我們將於 24 小時內完成資料比對，核准通知會自動發送至您的通知信箱。
                             </p>
                         </div>
 
@@ -941,25 +941,25 @@
                             <i class="fa-brands fa-telegram"></i>
                         </div>
                         <div class="space-y-2">
-                            <h2 class="text-xl font-bold text-white tracking-wide">安全認證：雙重驗證</h2>
+                            <h2 class="text-xl font-bold text-white tracking-wide">雙因子身分核驗</h2>
                             <p class="text-xs text-slate-400 leading-relaxed px-4">
-                                本社群採用雙重身分認證。請點擊下方連結前往 Telegram Bot 機器人完成安全驗證並取得四位數 PIN 碼。
+                                為落實最高規格隱私安全，請點擊下方按鈕前往 Telegram 取得您的安全登入驗證碼。
                             </p>
                         </div>
 
                         <div class="py-1">
                             <a href="https://t.me/${telegramBotName}?start=${window.state.applicationId}" target="_blank" class="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white font-semibold text-xs py-3 px-6 rounded-xl transition duration-300 shadow-md">
-                                <i class="fa-brands fa-telegram text-base"></i> 啟動機器人驗證
+                                <i class="fa-brands fa-telegram text-base"></i> 前往 Telegram 安全核驗
                             </a>
                         </div>
 
                         <div class="border-t border-slate-800/80 pt-5 space-y-4 text-left">
                             <div>
-                                <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">請輸入機器人產生的 4 位數驗證 PIN 碼</label>
+                                <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">輸入核驗碼</label>
                                 <input type="text" id="tg-pin-input" maxlength="4" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-center text-lg font-bold text-white focus:outline-none focus:border-blue-500 placeholder-slate-800 tracking-widest" placeholder="0000">
                             </div>
                             <button id="btn-submit-tg-bind" class="w-full bg-slate-800 hover:bg-slate-750 text-slate-300 font-semibold text-xs py-3 rounded-xl border border-slate-700/60 transition">
-                                驗證並進入平台
+                                驗證完成並進入平台
                             </button>
                         </div>
                     </div>
@@ -985,7 +985,7 @@
                             const doubleCheckSnap = await getDocs(q);
                             
                             if (!doubleCheckSnap.empty) {
-                                showToast('此 Telegram 帳號已綁定於其他 SecretRoom 會員卡！防重複綁定鎖定中。', 'error');
+                                showToast('該帳號已與其他會籍進行綁定，安全防護鎖定中。', 'error');
                                 hideLoading();
                                 return;
                             }
@@ -1001,13 +1001,13 @@
                             window.state.userData.status = 'active';
                             window.state.userData.telegramInfo = pinData.tgUser;
 
-                            showToast('雙因子綁定成功！歡迎加入 SecretRoom。', 'success');
+                            showToast('會籍綁定完成！歡迎登入 SecretRoom。', 'success');
                             navigate('dashboard');
                         } else {
                             showToast('驗證碼不匹配！請確保您是透過當前申請的帳號啟動機器人。', 'error');
                         }
                     } else {
-                        showToast('驗證 PIN 碼錯誤或已過期，請於 Telegram 機器人重新輸入 /start 取得。', 'error');
+                        showToast('驗證碼已過期或錯誤，請於 Telegram 重新取得。', 'error');
                     }
                 } catch (err) {
                     console.error("驗證 PIN 錯誤:", err);
@@ -1249,7 +1249,7 @@
                     <div id="search-users-container" class="absolute left-0 right-0 top-14 bg-slate-900 border border-slate-800 rounded-3xl p-3 shadow-2xl hidden flex flex-col gap-2 max-h-60 overflow-y-auto z-50 backdrop-blur-xl"></div>
                 </div>
 
-                <!-- 快速篩選器：移除了所有的 Emoji 標籤圖示 -->
+                <!-- 快速篩選器：已移除所有的 Emoji 標籤圖示 -->
                 <div class="flex items-center gap-2 overflow-x-auto scrollbar-hide py-1">
                     <button onclick="setGlobalFilter('recommended')" id="filter-btn-recommended" class="shrink-0 text-[10px] font-extrabold uppercase tracking-widest px-4 py-2.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'recommended' ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-950/30' : 'bg-slate-900/50 text-slate-400 border-slate-850 hover:bg-slate-800'}">
                         <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>智慧推薦
@@ -1432,7 +1432,10 @@
             } else if (f !== 'recommended' && f) {
                 list = list.filter(post => {
                     if (!post.kinks) return false;
-                    return post.kinks.some(pk => pk === f);
+                    return post.kinks.some(pk => {
+                        const target = f.split('｜').pop().split('/').pop();
+                        return pk.includes(target);
+                    });
                 });
             }
 
@@ -1535,7 +1538,7 @@
                 // 茄子與水蜜桃按讚重構：完美採用響應式向量 SVG 碼
                 const peachEggplantHtml = userLiked ? `
                     <button onclick="toggleLikePost('${post.id}')" class="flex items-center gap-1.5 text-purple-400 font-semibold transition duration-300">
-                        <svg class="w-5 h-5 text-purple-400 fill-current animate-pulse" viewBox="0 0 64 64" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                        <svg class="w-5 h-5 text-purple-400 fill-current" viewBox="0 0 64 64" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M16 48C12 40 18 20 38 12C54 6 58 18 54 30C50 42 32 54 16 48Z" />
                             <path d="M34 16C32 10 26 12 28 16C30 20 36 16 36 16Z" fill="#10b981" stroke="#10b981" />
                         </svg>
@@ -1719,7 +1722,7 @@
                         </h2>
                         <span class="text-xs text-slate-500 block font-mono">@${profileUserId}</span>
                         
-                        <!-- 膠囊微光徽章：放大 200%（isBig 啟用 w-11 h-11 且移除了 Hover Tooltip） -->
+                        <!-- 膠囊微光徽章：已放大且移除了 Hover Tooltip -->
                         <div class="flex items-center justify-center gap-2 mt-3.5 flex-wrap">
                             ${getBadgeHTML(profileUser, true)}
                         </div>
@@ -1926,9 +1929,9 @@
                 <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl relative overflow-y-auto max-h-[90vh]">
                     <button id="close-share" class="absolute top-4 right-4 text-slate-500 hover:text-white text-xl">&times;</button>
                     <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2">
-                        <i class="fa-solid fa-feather-point text-indigo-500"></i> 分享天菜動態
+                        <i class="fa-solid fa-feather-point text-indigo-500"></i> 分享今日近況
                     </h3>
-                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">上傳生活/健身照。可選取多個性癖與生活貼文標籤。</p>
+                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">上傳近況動態。可選取多個偏好標籤。</p>
 
                     <div class="space-y-4">
                         <div>
@@ -1937,7 +1940,7 @@
                         </div>
 
                         <div>
-                            <label class="block text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">上傳生活/尺度照 (選填)</label>
+                            <label class="block text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">上傳照片 (選填)</label>
                             <div class="border border-slate-800 rounded-2xl p-4 flex flex-col items-center justify-center bg-slate-950/40 text-center">
                                 <div id="share-img-trigger" class="relative w-full h-40 rounded-xl border border-dashed border-slate-800 hover:border-indigo-500 flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-slate-950 transition">
                                     <img id="share-preview" class="absolute inset-0 w-full h-full object-contain hidden" draggable="false" oncontextmenu="return false;">
@@ -1947,7 +1950,7 @@
                                     </div>
                                 </div>
                                 <input type="file" id="share-file" accept="image/*" class="hidden">
-                                <span class="text-[9px] text-slate-500 mt-2 block">上傳照片將自動壓製防偽浮水印。</span>
+                                <span class="text-[9px] text-slate-500 mt-2 block">上傳照片將自動套用安全防偽浮水印。</span>
                             </div>
                         </div>
 
@@ -2046,7 +2049,7 @@
                     return;
                 }
                 if (selectedKinks.length === 0) {
-                    showToast('請至少勾選一項與此篇動態關聯的主題標籤！', 'error');
+                    showToast('請至少勾選一項主題標籤！', 'error');
                     return;
                 }
 
@@ -2072,7 +2075,7 @@
                     });
 
                     modal.remove();
-                    showToast('天菜秘密動態已安全發布並同步！', 'success');
+                    showToast('動態已安全發布並完成加密同步！', 'success');
                 } catch (err) {
                     console.error("貼文失敗:", err);
                     showToast('貼文失敗', 'error');
@@ -2099,7 +2102,7 @@
                         <div class="bg-slate-950 p-4 border border-slate-850 rounded-2xl flex items-center justify-between">
                             <div class="text-left">
                                 <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">變更個人頭像</span>
-                                <span class="text-[9px] text-purple-400 font-semibold block mt-1 leading-normal"><i class="fa-solid fa-camera"></i> 變更大頭照需要管理員人工二次核定才能替用。</span>
+                                <span class="text-[9px] text-purple-400 font-semibold block mt-1 leading-normal"><i class="fa-solid fa-camera"></i> 變更大頭照需要管理團隊人工二次核定才能替用。</span>
                             </div>
                             <div class="relative w-14 h-14 rounded-full border border-slate-800 cursor-pointer overflow-hidden" id="edit-avatar-trigger">
                                 <img src="${user.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" id="edit-avatar-preview" class="w-full h-full object-cover">
@@ -2139,7 +2142,7 @@
 
                         <!-- 調整為 5列 2行 的標籤排版 -->
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">興趣與性癖主題標籤</label>
+                            <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">興趣與主題標籤</label>
                             <div class="grid grid-cols-2 gap-2 bg-slate-950/40 p-3.5 border border-slate-850 rounded-2xl">
                                 ${window.state.kinksOptions.map(k => `
                                     <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-900/60 p-2 rounded-xl transition border border-transparent hover:border-slate-800">
@@ -2242,11 +2245,11 @@
                     <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2">
                         <i class="fa-solid fa-ribbon text-amber-500"></i> 黃金 Spec 認證申請
                     </h3>
-                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">「黃金 Spec」是 SecretRoom 內最高物理規格之認證勳章。</p>
+                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">「黃金 Spec」是 SecretRoom 內最高規格之物理認證勳章。</p>
                     
                     <div class="bg-amber-500/5 border border-amber-500/10 p-3.5 rounded-2xl mb-4 text-xs text-amber-300 leading-relaxed font-light">
                         <span class="font-bold block mb-1">⚠️ 認證規則說明：</span>
-                        請上傳生殖器長度大於 16cm 且粗度大於 5cm之照片，且照片內應有參考物(例如尺)作為依據。本相片僅限管理員在後台人工比對查核。
+                        請上傳生殖器長度大於 16cm 且粗度大於 5cm之照片，且照片內應有參考物(例如尺)作為依據。本相片僅限管理團隊在後台人工比對查核。
                     </div>
 
                     <div class="space-y-4">
@@ -2386,27 +2389,27 @@
             const badges = [];
 
             if (user.role === 'admin' || user.isAdmin) {
-                badges.push({ icon: 'fa-crown', color: 'from-amber-400 to-yellow-600 text-slate-950 shadow-yellow-500/20', desc: '管理員' });
+                badges.push({ icon: 'fa-crown', color: 'from-amber-400 to-yellow-600 text-slate-950 shadow-yellow-500/20' });
             }
             const createdSecs = user.createdAt ? user.createdAt.seconds : 0;
             const nowSecs = Date.now() / 1000;
             if (createdSecs && (nowSecs - createdSecs) <= (168 * 3600)) {
-                badges.push({ icon: 'fa-seedling', color: 'from-emerald-500 to-green-600 text-white shadow-emerald-500/20', desc: '新加入成員' });
+                badges.push({ icon: 'fa-seedling', color: 'from-emerald-500 to-green-600 text-white shadow-emerald-500/20' });
             }
             if (user.isPioneer) {
-                badges.push({ icon: 'fa-shield-halved', color: 'from-amber-600 to-orange-700 text-white shadow-orange-500/10', desc: '創始元老' });
+                badges.push({ icon: 'fa-shield-halved', color: 'from-amber-600 to-orange-700 text-white shadow-orange-500/10' });
             }
             
-            // 升級 Spec Elite 黃金認證徽章：全新極光皇家金牌樣式（更尊榮且動態發光）
+            // 升級 Spec Elite 黃金認證徽章：全新極光皇家金牌樣式
             if (user.isSpecElite) {
-                badges.push({ icon: 'fa-medal', color: 'from-amber-400 via-yellow-500 to-amber-600 text-slate-950 shadow-yellow-500/25 animate-pulse', desc: '黃金 Spec 認證 🔒' });
+                badges.push({ icon: 'fa-medal', color: 'from-amber-400 via-yellow-500 to-amber-600 text-slate-950 shadow-yellow-500/25 animate-pulse' });
             }
 
             const userPosts = window.state.posts.filter(p => p.userId === user.id);
             const totalLikes = userPosts.reduce((sum, p) => sum + (p.likeCount || 0), 0);
 
             if (totalLikes >= 1000) {
-                badges.push({ icon: 'fa-fire', color: 'from-orange-500 to-rose-600 text-white shadow-orange-500/20', desc: '人氣焦點' });
+                badges.push({ icon: 'fa-fire', color: 'from-orange-500 to-rose-600 text-white shadow-orange-500/20' });
             }
 
             const perfectPosts = userPosts.filter(p => {
@@ -2415,17 +2418,17 @@
                 return avg === 5.0 && ratings.length >= 500;
             });
             if (userPosts.length >= 50 && perfectPosts.length === userPosts.length) {
-                badges.push({ icon: 'fa-star', color: 'from-amber-400 via-yellow-500 to-amber-600 text-slate-950 shadow-yellow-500/25', desc: '星級天菜' });
+                badges.push({ icon: 'fa-star', color: 'from-amber-400 via-yellow-500 to-amber-600 text-slate-950 shadow-yellow-500/25' });
             }
 
             if (userPosts.length >= 100) {
-                badges.push({ icon: 'fa-camera', color: 'from-violet-500 to-purple-700 text-white shadow-violet-500/15', desc: '生活分享家' });
+                badges.push({ icon: 'fa-camera', color: 'from-violet-500 to-purple-700 text-white shadow-violet-500/15' });
             }
 
             const gymPosts = userPosts.filter(p => p.kinks && p.kinks.some(k => k.includes('健身')));
             const gymLikes = gymPosts.reduce((sum, p) => sum + (p.likeCount || 0), 0);
             if (gymPosts.length >= 50 && gymLikes >= 5000) {
-                badges.push({ icon: 'fa-dumbbell', color: 'from-slate-500 to-slate-700 text-white shadow-slate-500/10', desc: '健身天菜' });
+                badges.push({ icon: 'fa-dumbbell', color: 'from-slate-500 to-slate-700 text-white shadow-slate-500/10' });
             }
 
             let otherCommentsCount = 0;
@@ -2437,10 +2440,10 @@
                 }
             });
             if (otherCommentsCount >= 500) {
-                badges.push({ icon: 'fa-heart-circle-check', color: 'from-pink-500 to-rose-600 text-white shadow-pink-500/15', desc: '暖男紳士' });
+                badges.push({ icon: 'fa-heart-circle-check', color: 'from-pink-500 to-rose-600 text-white shadow-pink-500/15' });
             }
 
-            // 依指示：所有徽章僅保留圖示，在個人頁面放大200%（isBig時為w-11 h-11），且徹底取消 hover title 懸停提示說明
+            // 所有徽章僅保留圖示，且徹底取消 hover title 懸停提示說明
             return badges.map(b => `
                 <span class="inline-flex items-center justify-center ${isBig ? 'w-11 h-11 text-base' : 'w-5.5 h-5.5 text-[10px]'} rounded-full bg-gradient-to-r ${b.color} shadow-sm select-none">
                     <i class="fa-solid ${b.icon}"></i>
