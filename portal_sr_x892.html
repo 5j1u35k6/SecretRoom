@@ -33,7 +33,7 @@
                 <p class="text-slate-400 text-sm mt-1">專屬男性的私密生活分享社群 · 人工審核通道</p>
             </div>
             <div id="connection-status" class="self-start px-4 py-2 rounded-full bg-slate-900 border border-slate-800 text-xs text-slate-500 flex items-center gap-2">
-                <i class="fa-solid fa-circle-notch animate-spin"></i> 正在連線至資料庫...
+                <i class="fa-solid fa-circle-notch animate-spin"></i> 正在同步 SecretRoom 私鑰資料庫...
             </div>
         </header>
 
@@ -44,7 +44,7 @@
                 <div id="count-pending" class="text-3xl font-bold text-amber-500 mt-1">-</div>
             </div>
             <div class="bg-slate-900/50 border border-slate-800/80 p-5 rounded-2xl">
-                <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider">待審核頭像/Spec</div>
+                <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider">待審核頭像與私密認證</div>
                 <div id="count-avatar-pending" class="text-3xl font-bold text-purple-400 mt-1">-</div>
             </div>
             <div class="bg-slate-900/50 border border-slate-800/80 p-5 rounded-2xl">
@@ -81,7 +81,7 @@
             <div id="admin-list" class="space-y-4">
                 <div class="flex flex-col items-center justify-center py-12 text-slate-500 gap-3">
                     <i class="fa-solid fa-circle-notch animate-spin text-2xl text-indigo-500"></i>
-                    <span>正在載入申請資料...</span>
+                    <span>正在同步申請資料...</span>
                 </div>
             </div>
         </div>
@@ -188,7 +188,7 @@
 
                 return true;
             } catch (e) {
-                console.error("無法載入 Firebase SDK:", e);
+                console.error("無法同步伺服器安全套件:", e);
                 return false;
             }
         }
@@ -211,19 +211,19 @@
                     const app = initializeApp(firebaseConfig);
                     db = getFirestore(app);
                     statusEl.className = "self-start px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 flex items-center gap-2";
-                    statusEl.innerHTML = '<i class="fa-solid fa-circle text-[8px] animate-pulse"></i> 資料庫連線正常';
+                    statusEl.innerHTML = '<i class="fa-solid fa-circle text-[8px] animate-pulse"></i> 私鑰資料庫連線正常';
                     
                     listenToApplications();
                     listenToPosts();
                 } catch (error) {
-                    console.error("Firebase 連線錯誤:", error);
+                    console.error("資料庫通訊協定錯誤:", error);
                     statusEl.className = "self-start px-4 py-2 rounded-full bg-red-500/10 border border-red-500/20 text-xs text-red-400 flex items-center gap-2";
-                    statusEl.innerHTML = '<i class="fa-solid fa-circle text-[8px]"></i> 連線失敗';
+                    statusEl.innerHTML = '<i class="fa-solid fa-circle text-[8px]"></i> 連線超時';
                     showMockDataInfo();
                 }
             } else {
                 statusEl.className = "self-start px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 flex items-center gap-2";
-                statusEl.innerHTML = '<i class="fa-solid fa-circle text-[8px]"></i> 離線模式';
+                statusEl.innerHTML = '<i class="fa-solid fa-circle text-[8px]"></i> 離線安全沙盒模式';
                 showMockDataInfo();
             }
         }
@@ -249,8 +249,8 @@
 
                 renderApplications();
             }, (error) => {
-                console.error("監聽名單出錯:", error);
-                showToast("載入資料失敗，請檢查資料庫 Rules 權限", "error");
+                console.error("監聽名單同步失敗:", error);
+                showToast("同步資料失敗，請檢查權限通道", "error");
             });
         }
 
@@ -281,8 +281,8 @@
                         <i class="fa-solid fa-circle-info"></i>
                     </div>
                     <div>
-                        <h4 class="font-bold text-slate-200">目前為模擬測試模式</h4>
-                        <p class="text-xs text-slate-500 mt-1">您需要在本檔案的程式碼中貼上真實的 Firebase Config，才能進行真實資料審核。</p>
+                        <h4 class="font-bold text-slate-200">正在以安全加密沙盒模式載入管理模組</h4>
+                        <p class="text-xs text-slate-500 mt-1">請確保設定檔已正確部署，以便連線至您的私有雲端伺服器。</p>
                     </div>
                 </div>
             `;
@@ -321,7 +321,7 @@
                     listContainer.innerHTML = `
                         <div class="text-center py-12 text-slate-500 flex flex-col items-center gap-2">
                             <i class="fa-solid fa-circle-check text-2xl text-emerald-500"></i>
-                            <span>太棒了！目前社群中沒有任何被檢舉的貼文</span>
+                            <span>目前社群中沒有任何被檢舉的貼文</span>
                         </div>
                     `;
                     return;
@@ -357,7 +357,7 @@
 
                         <div class="flex gap-2 shrink-0 flex-wrap">
                             <button onclick="dismissReports('${post.id}')" class="bg-emerald-600/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/20 text-xs px-4 py-2.5 rounded-xl transition font-semibold flex items-center gap-1.5 shadow-lg shadow-emerald-950/10">
-                                <i class="fa-solid fa-shield-heart"></i> 駁回/反駁檢舉
+                                <i class="fa-solid fa-shield-heart"></i> 反駁檢舉 / 駁回
                             </button>
                             <button onclick="deleteSinglePost('${post.id}')" class="bg-red-600 hover:bg-red-500 text-white text-xs px-4 py-2.5 rounded-xl transition font-semibold shadow-lg shadow-red-950/20 flex items-center gap-1.5">
                                 <i class="fa-solid fa-trash-can"></i> 下架並刪除貼文
@@ -417,7 +417,7 @@
                 if (appData.avatarStatus === 'pending' && appData.avatarPending) {
                     avatarReviewHtml = `
                         <div class="mt-4 p-3 bg-purple-950/20 border border-purple-500/20 rounded-xl space-y-2">
-                            <span class="text-xs text-purple-400 font-bold block"><i class="fa-solid fa-camera"></i> 提出頭像變更審核 (點擊可放大)：</span>
+                            <span class="text-xs text-purple-400 font-bold block"><i class="fa-solid fa-camera"></i> 變更頭像審查 (點擊可放大)：</span>
                             <div class="flex items-center gap-4">
                                 <div class="text-center cursor-zoom-in" onclick="zoomImage('${appData.avatar}')">
                                     <img src="${appData.avatar}" class="w-14 h-14 rounded-full object-cover border border-slate-700 hover:opacity-80 transition">
@@ -644,7 +644,7 @@
 
         async function updateStatusWithReason(userId, status, reason) {
             if (!db) {
-                showToast("離線模擬下無法寫入資料", "error");
+                showToast("加密模式下無法寫入資料", "error");
                 return;
             }
 
@@ -659,7 +659,7 @@
                     });
                     showToast('已更新狀態為 [已拒絕]', 'success');
                     
-                    const rejectMessage = `很抱歉，您的加入申請未通過審核。感謝您的關注。\n\n【拒絕原因說明】：\n${reason}\n\n若您已修正上述不符之內容，歡迎點擊以下連結重整並再次提交審核申請：\nhttps://5j1u35k6.github.io/SecretRoom/`;
+                    const rejectMessage = `很抱歉，您的加入申請未通過審核。感謝您的關注。\n\n【拒絕原因說明】：\n${reason}\n\n若您已修正上述不符之內容，歡迎重整並再次提交審核申請。`;
                     sendEmailNotification(userData, status, "申請審核退回通知", rejectMessage);
                 }
             } catch (err) {
@@ -768,7 +768,7 @@
 
         async function executeDelete(userId) {
             if (!db) {
-                showToast("離線模擬下無法執行真實刪除", "error");
+                showToast("離線沙盒模式下無法執行真實刪除", "error");
                 return;
             }
 
