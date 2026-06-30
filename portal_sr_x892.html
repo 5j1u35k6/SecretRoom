@@ -11,60 +11,60 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0f172a;
+            background-color: #020204;
             color: #f8fafc;
         }
         .glass-panel {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(6, 6, 12, 0.95);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(217, 119, 6, 0.12);
         }
     </style>
 </head>
-<body class="min-h-screen bg-slate-950 p-4 md:p-8">
+<body class="min-h-screen bg-[#020204] p-4 md:p-8">
 
     <div class="max-w-4xl mx-auto">
         <!-- 頂部標頭 -->
-        <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8 pb-6 border-b border-slate-800">
+        <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8 pb-6 border-b border-slate-900">
             <div>
-                <h1 class="text-3xl font-bold tracking-wider text-white flex items-center gap-3">
-                    <i class="fa-solid fa-user-shield text-indigo-500"></i> SecretRoom 總控制台 (v2.5.4)
+                <h1 class="text-3xl font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-amber-300 flex items-center gap-3 font-serif">
+                    <i class="fa-solid fa-user-shield text-amber-500"></i> SecretRoom 總控制台 (v2.5.4)
                 </h1>
-                <p class="text-slate-400 text-sm mt-1">專屬男性的私密生活分享社群 · 人工審核通道</p>
+                <p class="text-slate-500 text-sm mt-1">專屬男性的私密生活分享社群 · 人工審核通道</p>
             </div>
             <div id="connection-status" class="self-start px-4 py-2 rounded-full bg-slate-900 border border-slate-800 text-xs text-slate-500 flex items-center gap-2">
-                <i class="fa-solid fa-circle-notch animate-spin"></i> 端對端加密通道：資料安全同步中...
+                <i class="fa-solid fa-circle-notch animate-spin text-amber-500"></i> 端對端加密通道：資料安全同步中...
             </div>
         </header>
 
         <!-- 統計數據卡片 -->
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
-            <div class="bg-slate-900/50 border border-slate-800/80 p-5 rounded-2xl">
+            <div class="bg-slate-950/60 border border-slate-900 p-5 rounded-2xl">
                 <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider">待審核申請</div>
                 <div id="count-pending" class="text-3xl font-bold text-amber-500 mt-1">-</div>
             </div>
-            <div class="bg-slate-900/50 border border-slate-800/80 p-5 rounded-2xl">
+            <div class="bg-slate-950/60 border border-slate-900 p-5 rounded-2xl">
                 <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider">待審核頭像與身分認證</div>
-                <div id="count-avatar-pending" class="text-3xl font-bold text-purple-400 mt-1">-</div>
+                <div id="count-avatar-pending" class="text-3xl font-bold text-amber-500 mt-1">-</div>
             </div>
-            <div class="bg-slate-900/50 border border-slate-800/80 p-5 rounded-2xl">
+            <div class="bg-slate-950/60 border border-slate-900 p-5 rounded-2xl">
                 <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider">安全通報檢舉件</div>
                 <div id="count-reports" class="text-3xl font-bold text-rose-500 mt-1">-</div>
             </div>
-            <div class="bg-slate-900/50 border border-slate-800/80 p-5 rounded-2xl">
+            <div class="bg-slate-950/60 border border-slate-900 p-5 rounded-2xl">
                 <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider">總註冊人數</div>
-                <div id="count-total" class="text-3xl font-bold text-indigo-400 mt-1">-</div>
+                <div id="count-total" class="text-3xl font-bold text-amber-400 mt-1">-</div>
             </div>
         </div>
 
         <!-- 申請名單區塊 -->
-        <div class="bg-slate-900/40 border border-slate-800/60 rounded-3xl p-6 glass-panel">
+        <div class="bg-slate-950/40 border border-slate-900 rounded-3xl p-6 glass-panel">
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                    <div class="w-1.5 h-5 bg-indigo-500 rounded-full"></div> 會籍准駁與社群內容安全中樞
+                    <div class="w-1.5 h-5 bg-amber-500 rounded-full"></div> 會籍准駁與社群內容安全中樞
                 </h2>
                 <div class="flex gap-2">
-                    <select id="filter-status" onchange="filterApplications()" class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none">
+                    <select id="filter-status" onchange="filterApplications()" class="bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-amber-500 focus:outline-none">
                         <option value="all">顯示全部</option>
                         <option value="pending" selected>待審核帳號</option>
                         <option value="avatar_pending">待審核頭像</option>
@@ -80,7 +80,7 @@
             <!-- 名單容器 -->
             <div id="admin-list" class="space-y-4">
                 <div class="flex flex-col items-center justify-center py-12 text-slate-500 gap-3">
-                    <i class="fa-solid fa-circle-notch animate-spin text-2xl text-indigo-500"></i>
+                    <i class="fa-solid fa-circle-notch animate-spin text-2xl text-amber-500"></i>
                     <span>正在檢索受審會員佇列...</span>
                 </div>
             </div>
@@ -96,42 +96,42 @@
     </div>
 
     <!-- 客製高質感「拒絕原因」彈出選單 -->
-    <div id="reject-reason-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl max-w-sm w-full mx-4 shadow-2xl transform scale-95 transition-transform duration-300" id="reject-reason-content">
+    <div id="reject-reason-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-950 border border-slate-800 p-6 rounded-3xl max-w-sm w-full mx-4 shadow-2xl transform scale-95 transition-transform duration-300" id="reject-reason-content">
             <h3 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
                 <i class="fa-solid fa-circle-question text-amber-500"></i> 選擇審核拒絕原因
             </h3>
             <p class="text-slate-400 text-xs mb-4">這項原因將會自動代入並發送給對方的通知信中。</p>
             
             <div class="space-y-2 mb-6">
-                <label class="flex items-center gap-3 p-2.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40 transition">
-                    <input type="radio" name="rejection-reason" value="註冊大頭照不清晰、未露出五官，或涉嫌冒用他人照片。" class="accent-indigo-500" required checked>
+                <label class="flex items-center gap-3 p-2.5 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800 transition">
+                    <input type="radio" name="rejection-reason" value="註冊大頭照不清晰、未露出五官，或涉嫌冒用他人照片。" class="accent-amber-500" required checked>
                     <span class="text-xs text-slate-300 font-semibold">頭像不合規</span>
                 </label>
-                <label class="flex items-center gap-3 p-2.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40 transition">
-                    <input type="radio" name="rejection-reason" value="經審核填寫之年齡不符，本站僅限滿 18 歲之成年人加入。" class="accent-indigo-500" required>
+                <label class="flex items-center gap-3 p-2.5 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800 transition">
+                    <input type="radio" name="rejection-reason" value="經審核填寫之年齡不符，本站僅限滿 18 歲之成年人加入。" class="accent-amber-500" required>
                     <span class="text-xs text-slate-300 font-semibold">年齡未滿 18 歲</span>
                 </label>
-                <label class="flex items-center gap-3 p-2.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40 transition">
-                    <input type="radio" name="rejection-reason" value="您的身體尺寸、身高體重或通知信箱等欄位資訊填寫不實。" class="accent-indigo-500" required>
+                <label class="flex items-center gap-3 p-2.5 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800 transition">
+                    <input type="radio" name="rejection-reason" value="您的身體尺寸、身高體重或通知信箱等欄位資訊填寫不實。" class="accent-amber-500" required>
                     <span class="text-xs text-slate-300 font-semibold">資料填寫不實</span>
                 </label>
-                <label class="flex items-center gap-3 p-2.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40 transition">
-                    <input type="radio" name="rejection-reason" value="不符本站審核政策。如有任何疑問請聯繫官方管理信箱。" class="accent-indigo-500" required>
+                <label class="flex items-center gap-3 p-2.5 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800 transition">
+                    <input type="radio" name="rejection-reason" value="不符本站審核政策。如有任何疑問請聯繫官方管理信箱。" class="accent-amber-500" required>
                     <span class="text-xs text-slate-300 font-semibold">其他未述原因</span>
                 </label>
             </div>
 
             <div class="flex gap-3 justify-end">
-                <button onclick="closeRejectReasonModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:bg-slate-800 transition text-xs font-semibold">取消</button>
-                <button id="confirm-reject-btn" class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-xl text-white transition text-xs font-semibold">確認拒絕</button>
+                <button onclick="closeRejectReasonModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:bg-slate-900 transition text-xs font-semibold">取消</button>
+                <button id="confirm-reject-btn" class="px-4 py-2 bg-red-650 hover:bg-red-500 rounded-xl text-white transition text-xs font-semibold">確認拒絕</button>
             </div>
         </div>
     </div>
 
     <!-- 客製高質感防誤觸刪除帳號確認模態視窗 -->
-    <div id="delete-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl max-w-sm w-full mx-4 shadow-2xl transform scale-95 transition-transform duration-300" id="delete-modal-content">
+    <div id="delete-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-950 border border-slate-800 p-6 rounded-3xl max-w-sm w-full mx-4 shadow-2xl transform scale-95 transition-transform duration-300" id="delete-modal-content">
             <h3 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
                 <i class="fa-solid fa-triangle-exclamation text-red-500"></i> 確定要刪除該用戶？
             </h3>
@@ -139,13 +139,12 @@
                 這將永久移除此申請人的所有註冊、驗證、帳號密碼，以及他發布過的**所有動態貼文與照片**。此操作無法復原！
             </p>
             <div class="flex gap-3 justify-end">
-                <button onclick="closeDeleteModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:bg-slate-800 transition text-xs font-semibold">取消</button>
-                <button id="confirm-delete-btn" class="px-4 py-2 bg-red-600 hover:bg-red-500 rounded-xl text-white transition text-xs font-semibold">確認刪除</button>
+                <button onclick="closeDeleteModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:bg-slate-900 transition text-xs font-semibold">取消</button>
+                <button id="confirm-delete-btn" class="px-4 py-2 bg-red-650 hover:bg-red-500 rounded-xl text-white transition text-xs font-semibold">確認刪除</button>
             </div>
         </div>
     </div>
 
-    <!-- 浮動提示訊息容器 (Toast) -->
     <div id="toast-container" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col gap-2 w-full max-w-xs px-4"></div>
 
     <script type="module">
@@ -359,7 +358,7 @@
                             <button onclick="dismissReports('${post.id}')" class="bg-emerald-600/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/20 text-xs px-4 py-2.5 rounded-xl transition font-semibold flex items-center gap-1.5 shadow-lg shadow-emerald-950/10">
                                 <i class="fa-solid fa-shield-heart"></i> 反駁檢舉 / 駁回
                             </button>
-                            <button onclick="deleteSinglePost('${post.id}')" class="bg-red-600 hover:bg-red-500 text-white text-xs px-4 py-2.5 rounded-xl transition font-semibold shadow-lg shadow-red-950/20 flex items-center gap-1.5">
+                            <button onclick="deleteSinglePost('${post.id}')" class="bg-red-650 hover:bg-red-500 text-white text-xs px-4 py-2.5 rounded-xl transition font-semibold shadow-lg shadow-red-950/20 flex items-center gap-1.5">
                                 <i class="fa-solid fa-trash-can"></i> 下架並刪除貼文
                             </button>
                         </div>
@@ -488,11 +487,11 @@
                         <span class="text-[10px] text-slate-500 font-bold uppercase"><i class="fa-solid fa-ribbon"></i> 特權徽章手動授予：</span>
                         <div class="flex items-center gap-4">
                             <label class="flex items-center gap-1.5 cursor-pointer">
-                                <input type="checkbox" onchange="toggleManualBadge('${appData.id}', 'isAdmin', this.checked)" ${appData.role === 'admin' || appData.isAdmin ? 'checked' : ''} class="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500">
+                                <input type="checkbox" onchange="toggleManualBadge('${appData.id}', 'isAdmin', this.checked)" ${appData.role === 'admin' || appData.isAdmin ? 'checked' : ''} class="rounded border-slate-700 bg-slate-900 text-amber-500 focus:ring-amber-500">
                                 <span class="text-[11px] text-slate-300">管理員 👑</span>
                             </label>
                             <label class="flex items-center gap-1.5 cursor-pointer">
-                                <input type="checkbox" onchange="toggleManualBadge('${appData.id}', 'isPioneer', this.checked)" ${appData.isPioneer ? 'checked' : ''} class="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500">
+                                <input type="checkbox" onchange="toggleManualBadge('${appData.id}', 'isPioneer', this.checked)" ${appData.isPioneer ? 'checked' : ''} class="rounded border-slate-700 bg-slate-900 text-amber-500 focus:ring-amber-500">
                                 <span class="text-[11px] text-slate-300">創始元老 🛡️</span>
                             </label>
                         </div>
@@ -503,7 +502,7 @@
                 if (appData.status === 'pending') {
                     actionButtons = `
                         <div class="flex gap-2 shrink-0 flex-wrap">
-                            <button onclick="updateStatus('${appData.id}', 'approved')" class="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-xs px-4 py-2.5 rounded-xl transition font-semibold shadow-lg shadow-emerald-950/20">
+                            <button onclick="updateStatus('${appData.id}', 'approved')" class="bg-emerald-605 hover:bg-emerald-500 active:scale-95 text-slate-950 font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-lg shadow-emerald-950/20">
                                 <i class="fa-solid fa-check mr-1"></i> 核准加入
                             </button>
                             <button onclick="openRejectReasonModal('${appData.id}')" class="bg-red-650 hover:bg-red-500 active:scale-95 text-red-400 border border-red-500/20 text-xs px-4 py-2.5 rounded-xl transition font-semibold">
@@ -556,6 +555,32 @@
             renderApplications();
         }
 
+        window.updateStatus = async function(userId, status) {
+            if (!db) {
+                showToast("目前處於本機加密沙盒，無法儲存狀態", "error");
+                return;
+            }
+
+            try {
+                const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+                const docSnap = await getDoc(docRef);
+                
+                if (!docSnap.exists()) {
+                    showToast("找不到該筆申請資料", "error");
+                    return;
+                }
+                
+                const userData = docSnap.data();
+                await updateDoc(docRef, { status: status });
+                showToast('已將狀態更新為 ' + (status === 'approved' ? '已核准' : '已拒絕'), 'success');
+                
+                await sendEmailNotification(userData, status);
+            } catch (e) {
+                console.error("更新狀態失敗:", e);
+                showToast('更新失敗: ' + e.message, 'error');
+            }
+        };
+
         window.toggleManualBadge = async function(userId, badgeField, isChecked) {
             if (!db) return;
             try {
@@ -582,7 +607,7 @@
                         specEliteStatus: 'approved'
                     });
                     showToast("Spec Elite 徽章核准完成！", "success");
-                    sendEmailNotification(data, 'approved', "黃金 Spec 審核通過", "您的 SecretRoom 黃金 Spec Elite 勳章申請已正式核准，已即刻渲染在您的個人暱稱下方！");
+                    await sendEmailNotification(data, 'approved', "黃金 Spec 審核通過", "您的 SecretRoom 黃金 Spec Elite 勳章申請已正式核准，已即刻渲染在您的個人暱稱下方！");
                 }
             } catch (err) {
                 console.error("核發失敗:", err);
@@ -601,7 +626,7 @@
                         specImage: ''
                     });
                     showToast("Spec Elite 申請已被退回。", "info");
-                    sendEmailNotification(data, 'rejected', "黃金 Spec 審核退回", "您申請的 SecretRoom 黃金 Spec Elite 勳章經管理員檢視照片與規格未通過核可。");
+                    await sendEmailNotification(data, 'rejected', "黃金 Spec 審核退回", "您申請的 SecretRoom 黃金 Spec Elite 勳章經管理員檢視照片與規格未通過核可。");
                 }
             } catch (err) {
                 console.error("拒絕出錯:", err);
@@ -664,7 +689,7 @@
                 });
                 showToast('已退回會籍申請', 'success');
                 
-                sendEmailNotification(userData, status, "會籍申請退回通知", `很抱歉，您的 SecretRoom 會籍申請未通過審核。退件理由：${reason}`);
+                await sendEmailNotification(userData, status, "會籍申請退回通知", `很抱歉，您的 SecretRoom 會籍申請未通過審核。退件理由：${reason}`);
             } catch (e) {
                 console.error("更新狀態失敗:", e);
                 showToast('更新失敗: ' + e.message, 'error');
@@ -696,32 +721,6 @@
             }
         }
 
-        window.updateStatus = async function(userId, status) {
-            if (!db) {
-                showToast("目前處於本機加密沙盒，無法儲存狀態", "error");
-                return;
-            }
-
-            try {
-                const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
-                const docSnap = await getDoc(docRef);
-                
-                if (!docSnap.exists()) {
-                    showToast("找不到該筆申請資料", "error");
-                    return;
-                }
-                
-                const userData = docSnap.data();
-                await updateDoc(docRef, { status: status });
-                showToast('已將狀態更新為 ' + (status === 'approved' ? '已核准' : '已拒絕'), 'success');
-                
-                sendEmailNotification(userData, status);
-            } catch (e) {
-                console.error("更新狀態失敗:", e);
-                showToast('更新失敗: ' + e.message, 'error');
-            }
-        }
-
         // 審核大頭照：核准
         window.approveAvatarChange = async function(userId) {
             if (!db) return;
@@ -737,7 +736,7 @@
                         avatarStatus: 'approved'
                     });
                     showToast("頭像變更已核准啟用！", "success");
-                    sendEmailNotification(data, 'approved', "頭像變更審核通過", "您的 SecretRoom 新頭像更換申請已通過管理員審核，已立刻套用！");
+                    await sendEmailNotification(data, 'approved', "頭像變更審核通過", "您的 SecretRoom 新頭像更換申請已通過管理員審核，已立刻套用！");
                 }
             } catch (err) {
                 console.error("核准頭像出錯:", err);
@@ -757,7 +756,7 @@
                         avatarStatus: 'rejected'
                     });
                     showToast("頭像變更申請已拒絕。", "info");
-                    sendEmailNotification(data, 'rejected', "頭像變更審核未通過", "您在 SecretRoom 申請更換的新大頭照，未通過管理員審核，已回復原頭像。");
+                    await sendEmailNotification(data, 'rejected', "頭像變更審核未通過", "您在 SecretRoom 申請更換的新大頭照，未通過管理員審核，已回復原頭像。");
                 }
             } catch (err) {
                 console.error("拒絕頭像出錯:", err);
