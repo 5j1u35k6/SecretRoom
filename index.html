@@ -141,7 +141,7 @@
                 </div>
             </div>
             <p class="text-amber-500/80 font-bold tracking-[0.2em] text-xs font-luxury uppercase animate-pulse">Establishing Secure Channel...</p>
-            <p class="text-slate-550 text-[10px] mt-2 font-light">正在與 SecretRoom 伺服器建立端對端加密通道...</p>
+            <p class="text-slate-550 text-[10px] mt-2 font-light">正在與 SecretRoom 伺服器建立通道...</p>
         </div>
     </div>
 
@@ -388,7 +388,7 @@
                         </div>
                         
                         <h1 class="text-4xl font-black tracking-[0.28em] text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-100 to-amber-500 font-luxury mb-2 select-none italic text-center">SecretRoom</h1>
-                        <p class="text-amber-500/95 text-[10px] font-extrabold uppercase tracking-[0.4em] text-center">紳士式私密生活分享會所</p>
+                        <p class="text-amber-500/95 text-[10px] font-extrabold uppercase tracking-[0.4em] text-center">俱樂部式私密生活分享</p>
                         
                         <!-- 裝飾花紋線 -->
                         <div class="flex items-center gap-2 w-28 my-4">
@@ -403,11 +403,11 @@
 
                         <div class="w-full space-y-4 mt-10">
                             <button id="btn-goto-apply" class="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 hover:brightness-110 active:scale-[0.98] text-slate-950 font-bold text-xs py-4 px-6 rounded-2xl shadow-xl shadow-amber-950/20 transition-all duration-300 tracking-[0.18em] uppercase architectural-border">
-                                解鎖安全通道 / 申請會籍
+                                申請帳號
                             </button>
                             <button id="btn-goto-login" class="w-full bg-slate-950/90 hover:bg-slate-900 active:scale-[0.98] text-amber-500 font-semibold text-xs py-4 px-6 rounded-2xl border border-amber-500/20 transition-all duration-300 tracking-wider flex items-center justify-center gap-2">
                                 <i class="fa-solid fa-key text-[10px] text-amber-500/70"></i>
-                                <span>已授權會員？驗證登入通道</span>
+                                <span>已是會員？點擊登入</span>
                             </button>
                         </div>
 
@@ -437,19 +437,19 @@
                     <h3 class="text-sm font-bold text-white mb-1 flex items-center gap-2 font-luxury tracking-widest">
                         <i class="fa-solid fa-lock text-amber-500"></i> MEMBER VERIFICATION
                     </h3>
-                    <p class="text-[11px] text-slate-400 mb-5 leading-relaxed font-light">請在下方輸入您的設定憑證以解鎖隱密會所通道</p>
+                    <p class="text-[11px] text-slate-400 mb-5 leading-relaxed font-light">請在輸入帳號及密碼登入</p>
                     
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-[9px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">會籍專屬帳號</label>
+                            <label class="block text-[9px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">帳號</label>
                             <input type="text" id="login-username" class="w-full bg-slate-900/60 border border-slate-800 rounded-xl px-3.5 py-3 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
                         </div>
                         <div>
-                            <label class="block text-[9px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">密碼認證</label>
+                            <label class="block text-[9px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">密碼</label>
                             <input type="password" id="login-password" class="w-full bg-slate-900/60 border border-slate-800 rounded-xl px-3.5 py-3 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
                         </div>
                         <button id="btn-login-submit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-bold text-xs py-3.5 rounded-xl transition shadow-lg shadow-amber-950/15 tracking-wider uppercase active:scale-[0.98]">
-                            開通通道並登入
+                            登入
                         </button>
                     </div>
                 </div>
@@ -516,12 +516,12 @@
                 <div class="w-full bg-[#030306] px-4 py-8 flex flex-col items-center h-full overflow-y-auto">
                     <div class="max-w-4xl w-full bg-slate-950/90 border border-amber-500/10 rounded-3xl p-6 md:p-10 shadow-2xl relative mb-12">
                         <button id="btn-back-landing" class="absolute top-6 left-6 text-slate-400 hover:text-white transition text-xs flex items-center gap-2 font-semibold">
-                            <i class="fa-solid fa-arrow-left"></i> 返回起點
+                            <i class="fa-solid fa-arrow-left"></i> 返回
                         </button>
                         
                         <div class="text-center mt-6 mb-10">
                             <h2 class="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-amber-400 tracking-wider font-luxury">SECRETROOM ACQUISITION</h2>
-                            <p class="text-xs text-slate-400 mt-2 leading-relaxed">請仔細填妥以下必要憑證。本會所採實名制與人工審查機制以維護全體會員之極致安全與私密。</p>
+                            <p class="text-xs text-slate-400 mt-2 leading-relaxed">請仔細填妥以下必要憑證。採實名制與人工審查機制以維護全體會員之安全與私密。</p>
                         </div>
 
                         <!-- 雙欄排版，寬螢幕下完美撐滿不擁擠 -->
@@ -652,7 +652,7 @@
                             <!-- 5列2行完全展開標籤清單 - 寬螢幕通欄排版 -->
                             <div class="md:col-span-2 space-y-2 mt-2">
                                 <label class="block text-xs font-bold text-slate-300 mb-1 uppercase tracking-wider"><span class="text-red-500">*</span> 感興趣的主題與性癖偏好 (至少勾選一項)</label>
-                                <span class="text-[10px] text-slate-500 block mb-3 leading-relaxed">我們將依此標籤為您智慧配對符合之同好與合規貼文。</span>
+                                <span class="text-[10px] text-slate-500 block mb-3 leading-relaxed">我們將依此標籤為您配對符合之同好與貼文。</span>
                                 
                                 <div class="grid grid-cols-2 md:grid-cols-5 gap-3 bg-slate-950/40 p-4 border border-slate-900 rounded-2xl" id="register-kinks-box">
                                     ${window.state.kinksOptions.map((k) => `
@@ -741,7 +741,7 @@
                     try {
                         await emailjs.send(emailjsConfig.serviceId, emailjsConfig.templateId, {
                             to_email: email,
-                            to_name: "SecretRoom 新成員",
+                            to_name: "SecretRoom 俱樂部",
                             status_text: "新帳號信箱安全驗證",
                             message: `歡迎申請加入 SecretRoom！您的註冊信箱驗證碼為：【${generatedCode}】。請於 10 分鐘內將此碼填回申請頁面以完成安全查核。`
                         });
@@ -939,12 +939,12 @@
                         <div class="space-y-2">
                             <h2 class="text-xl font-bold text-white tracking-wide font-luxury">APPLICATION PENDING</h2>
                             <p class="text-xs text-slate-400 leading-relaxed px-4">
-                                SecretRoom 採手動審核及推薦人引介機制，保障所有男神會員的頂級隱私防護。我們將於 24 小時內完成資料比對，核准通知會自動發送至您的通知信箱。
+                                SecretRoom 為保障所有帳號的隱私防護，採手動審核。我們將於審核後，將結果發送至您的通知信箱。
                             </p>
                         </div>
 
                         <div class="bg-slate-900/50 border border-slate-900 p-4 rounded-2xl text-left space-y-2">
-                            <span class="text-[9px] font-bold text-amber-500 uppercase tracking-wider block font-luxury">您的會籍概要資訊</span>
+                            <span class="text-[9px] font-bold text-amber-500 uppercase tracking-wider block font-luxury">註冊概要資訊</span>
                             <p class="text-xs text-slate-300"><span class="text-slate-500 font-medium">您的帳號:</span> @${window.state.applicationId}</p>
                             <p class="text-xs text-slate-300"><span class="text-slate-500 font-medium">您的名稱:</span> ${window.state.userData.nickname}</p>
                             <p class="text-xs text-slate-300"><span class="text-slate-500 font-medium">信箱:</span> ${window.state.userData.email}</p>
@@ -1056,15 +1056,15 @@
 
                             <nav class="space-y-2.5">
                                 <button id="aside-tab-feed" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 text-xs transition-all duration-300 font-bold ${window.state.currentTab === 'feed' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
-                                    <i class="fa-solid fa-door-open text-amber-500/80"></i> 會所首頁秘密牆
+                                    <i class="fa-solid fa-door-open text-amber-500/80"></i> 俱樂部首頁
                                 </button>
                                 <button id="aside-tab-profile" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 text-xs transition-all duration-300 font-bold ${window.state.currentTab === 'profile' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
-                                    <i class="fa-solid fa-user-shield text-amber-500/80"></i> 我的私密檔案
+                                    <i class="fa-solid fa-user-shield text-amber-500/80"></i> 我的個人資料
                                 </button>
                             </nav>
 
                             <button id="aside-btn-share" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 hover:brightness-110 active:scale-[0.97] text-slate-950 font-bold text-xs py-3.5 px-4 rounded-2xl transition duration-300 flex items-center justify-center gap-2 shadow-lg shadow-amber-950/25 architectural-border">
-                                <i class="fa-solid fa-circle-plus"></i> 分享今日動態
+                                <i class="fa-solid fa-circle-plus"></i> 分享動態
                             </button>
                         </div>
 
@@ -1081,7 +1081,7 @@
                                 </div>
                             </div>
                             <button id="aside-btn-logout" class="w-full bg-red-950/10 hover:bg-red-950/30 text-red-400 border border-red-500/10 hover:border-red-500/25 active:scale-[0.97] font-bold text-xs py-3.5 px-4 rounded-2xl transition flex items-center justify-center gap-2 shadow-sm">
-                                <i class="fa-solid fa-power-off"></i> 安全登出會所
+                                <i class="fa-solid fa-power-off"></i> 登出俱樂部
                             </button>
                         </div>
                     </aside>
