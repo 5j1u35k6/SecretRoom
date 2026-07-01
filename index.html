@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -25,11 +25,11 @@
             overflow: hidden;
             -webkit-tap-highlight-color: transparent;
         }
-
+  
         .font-luxury {
             font-family: 'Cinzel', serif;
         }
-
+  
         /* 隱密會所：奢華黑金牆面背景線條 */
         .club-groove-bg {
             background-color: #030305;
@@ -47,31 +47,31 @@
                         inset 0 1px 0 0 rgba(255, 255, 255, 0.02),
                         inset 0 0 20px rgba(212, 175, 55, 0.02);
         }
-
+  
         /* 頂級極細建築雙線裝飾框 */
         .architectural-border {
             border: 1px solid rgba(212, 175, 55, 0.18);
             outline: 1px solid rgba(212, 175, 55, 0.05);
             outline-offset: -4px;
         }
-
+  
         /* 天鵝絨拉絲金屬材質 (皇家黃金/黃銅) */
         .brushed-gold {
             background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 25%, #b38728 50%, #fbf5b7 75%, #aa771c 100%);
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 4px 15px rgba(170, 119, 28, 0.25);
         }
-
+  
         /* 重磅古銅金屬邊框與發光 */
         .brass-badge {
             border: 1px solid rgba(212, 175, 55, 0.35);
             box-shadow: 0 0 12px rgba(212, 175, 55, 0.12), inset 0 0 8px rgba(212, 175, 55, 0.05);
         }
-
+  
         /* 隱密射燈氛圍 (Speakeasy 頂照光源) */
         .ambient-spotlight {
             background: radial-gradient(circle at 50% -20%, rgba(212, 175, 55, 0.15) 0%, rgba(3, 3, 5, 0) 65%);
         }
-
+  
         /* 呼吸黃金光環 */
         @keyframes gentle-breath {
             0%, 100% {
@@ -90,7 +90,7 @@
             animation: gentle-breath 4.8s ease-in-out infinite;
             will-change: transform, box-shadow, border-color;
         }
-
+  
         /* 膠囊徽章呼吸霓虹光效果 */
         .badge-glow {
             box-shadow: 0 0 10px var(--tw-shadow-color);
@@ -116,7 +116,7 @@
         
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-
+  
         /* 純手作版權隱私防護 - 阻擋任何選取、拖拽與長按 */
         img {
             -webkit-touch-callout: none !important;
@@ -130,35 +130,35 @@
     </style>
 </head>
 <body class="min-h-screen w-full flex flex-col bg-[#030305] p-0 m-0 overflow-hidden select-none club-groove-bg">
-
+  
     <div id="app" class="w-full h-[100dvh] md:h-screen overflow-hidden relative flex flex-col bg-[#030305] transition-all duration-300">
         <!-- 安全通道載入圖層 -->
         <div id="loading-screen" class="absolute inset-0 z-50 bg-[#030305] flex flex-col items-center justify-center">
-            <div class="relative flex items-center justify-center mb-6">
-                <div class="w-20 h-20 border-2 border-amber-500/10 border-t-amber-500 rounded-full animate-spin"></div>
-                <div class="absolute w-12 h-12 rounded-full overflow-hidden bg-black flex items-center justify-center border border-amber-500/20">
+            <div class="relative flex items-center justify-center mb-8">
+                <div class="w-24 h-24 border-2 border-amber-500/10 border-t-amber-500 rounded-full animate-spin"></div>
+                <div class="absolute w-14 h-14 rounded-full overflow-hidden bg-black flex items-center justify-center border border-amber-500/20">
                     <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-full h-full object-cover">
                 </div>
             </div>
-            <p class="text-amber-500/80 font-bold tracking-[0.2em] text-xs font-luxury uppercase animate-pulse">Establishing Secure Channel...</p>
-            <p class="text-slate-550 text-[10px] mt-2 font-light">正在與 SecretRoom 伺服器建立通道...</p>
+            <p class="text-amber-500/80 font-bold tracking-[0.2em] text-sm font-luxury uppercase animate-pulse">Establishing Secure Channel...</p>
+            <p class="text-slate-400 text-xs mt-3.5 font-light">正在與 SecretRoom 伺服器建立安全加密防護通道...</p>
         </div>
     </div>
-
+  
     <!-- 奢華彈出通知容器 (Toast) -->
-    <div id="toast-container" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col gap-2.5 w-full max-w-xs px-4"></div>
-
+    <div id="toast-container" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col gap-2.5 w-full max-w-xs px-4"></div>
+  
     <!-- 客製化安全確認彈窗 -->
     <div id="custom-confirm-modal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[101] flex items-center justify-center p-4 hidden">
-        <div class="bg-[#080810] border border-amber-500/20 rounded-3xl p-6 max-w-sm w-full shadow-[0_0_50px_rgba(0,0,0,0.9)] relative text-center">
-            <div class="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-500 text-xl mx-auto mb-4">
+        <div class="bg-[#080810] border border-amber-500/20 rounded-3xl p-6.5 max-w-sm w-full shadow-[0_0_50px_rgba(0,0,0,0.9)] relative text-center">
+            <div class="w-14 h-14 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-500 text-2xl mx-auto mb-4">
                 <i class="fa-solid fa-triangle-exclamation"></i>
             </div>
             <h3 class="text-base font-bold text-white mb-2">確定刪除(永久銷毀)？</h3>
-            <p class="text-xs text-slate-400 mb-6 leading-relaxed">此篇天菜秘密動態與實體照片將從伺服器端永久徹底抹除，本操作安全且無法撤回！</p>
+            <p class="text-sm text-slate-400 mb-6 leading-relaxed">此篇天菜秘密動態與實體照片將從伺服器端永久徹底抹除，本操作安全且無法撤回！</p>
             <div class="grid grid-cols-2 gap-3">
-                <button id="confirm-modal-cancel" class="bg-slate-900/80 hover:bg-slate-800 text-slate-350 font-bold text-xs py-3 rounded-xl transition">取消</button>
-                <button id="confirm-modal-ok" class="bg-gradient-to-r from-amber-600 to-amber-700 hover:brightness-110 text-slate-950 font-bold text-xs py-3 rounded-xl transition shadow-md shadow-amber-950/20">確認銷毀</button>
+                <button id="confirm-modal-cancel" class="bg-slate-900/80 hover:bg-slate-800 text-slate-300 font-bold text-sm py-3 rounded-xl transition">取消</button>
+                <button id="confirm-modal-ok" class="bg-gradient-to-r from-amber-600 to-amber-700 hover:brightness-110 text-slate-950 font-bold text-sm py-3 rounded-xl transition shadow-md shadow-amber-950/20">確認銷毀</button>
             </div>
         </div>
     </div>
@@ -166,7 +166,7 @@
     <script type="module">
         let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
         let getFirestore, doc, setDoc, getDoc, collection, query, onSnapshot, updateDoc, getDocs, where, deleteDoc, serverTimestamp;
-
+  
         const appId = 'secretg-production-node-tw'; 
         
         const firebaseConfig = {
@@ -177,15 +177,15 @@
             messagingSenderId: "22006617218",
             appId: "1:22006617218:web:9e9af5c6558ea57dcb109b"
         };
-
+  
         const emailjsConfig = {
             publicKey: "ZEp9d-hAeYdFujDZy", 
             serviceId: "service_1ou10mi", 
             templateId: "template_25proud" 
         };
-
+  
         const telegramBotName = "SecretRoomtwBot"; 
-
+  
         async function loadFirebaseSDKs() {
             try {
                 const [appMod, authMod, firestoreMod] = await Promise.all([
@@ -193,12 +193,12 @@
                     import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"),
                     import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js")
                 ]);
-
+  
                 initializeApp = appMod.initializeApp;
                 getAuth = authMod.getAuth;
                 signInAnonymously = authMod.signInAnonymously;
                 onAuthStateChanged = authMod.onAuthStateChanged;
-
+  
                 getFirestore = firestoreMod.getFirestore;
                 doc = firestoreMod.doc;
                 setDoc = firestoreMod.setDoc;
@@ -211,16 +211,16 @@
                 where = firestoreMod.where;
                 deleteDoc = firestoreMod.deleteDoc;
                 serverTimestamp = firestoreMod.serverTimestamp;
-
+  
                 return true;
             } catch (e) {
                 console.error("無法與伺服器取得連線", e);
                 return false;
             }
         }
-
+  
         let app, db, auth;
-
+  
         // 全域核心狀態
         window.state = {
             currentView: 'landing',
@@ -253,14 +253,14 @@
             searchTerm: '',
             searchTimeout: null
         };
-
+  
         const appContainer = document.getElementById('app');
-
+  
         async function initApp() {
             if (emailjsConfig.publicKey && emailjsConfig.publicKey !== "YOUR_EMAILJS_PUBLIC_KEY") {
                 emailjs.init({ publicKey: emailjsConfig.publicKey });
             }
-
+  
             const firebaseLoaded = await loadFirebaseSDKs();
             
             if (firebaseLoaded) {
@@ -268,7 +268,7 @@
                     app = initializeApp(firebaseConfig || {});
                     db = getFirestore(app);
                     auth = getAuth(app);
-
+  
                     await signInAnonymously(auth);
                     onAuthStateChanged(auth, (user) => {
                         if (user) {
@@ -284,7 +284,7 @@
                 showToast('無法建立通訊協定', 'error');
             }
         }
-
+  
         async function checkExistingApplication() {
             if(!db) { hideLoading(); navigate('landing'); return; }
             try {
@@ -315,17 +315,17 @@
                 navigate('landing');
             }
         }
-
+  
         function hideLoading() {
             const ls = document.getElementById('loading-screen');
             if (ls) ls.classList.add('hidden');
         }
-
+  
         function showLoading() {
             const ls = document.getElementById('loading-screen');
             if (ls) ls.classList.remove('hidden');
         }
-
+  
         function navigate(viewName) {
             window.state.currentView = viewName;
             
@@ -337,14 +337,14 @@
                 window.state.unsubscribeVisitorsListener();
                 window.state.unsubscribeVisitorsListener = null;
             }
-
+  
             renderView();
         }
-
+  
         function renderView() {
             const view = window.state.currentView;
             appContainer.innerHTML = '';
-
+  
             const transitionContainer = document.createElement('div');
             if (view === 'register') {
                 transitionContainer.className = 'w-full h-full overflow-y-auto scrollbar-hide fade-enter-active';
@@ -352,7 +352,7 @@
                 transitionContainer.className = 'w-full h-full fade-enter-active';
             }
             appContainer.appendChild(transitionContainer);
-
+  
             if (view === 'landing') {
                 renderLanding(transitionContainer);
             } else if (view === 'register') {
@@ -367,7 +367,7 @@
                 renderDashboard(transitionContainer);
             }
         }
-
+  
         function renderLanding(container) {
             container.innerHTML = `
                 <div class="flex flex-col items-center justify-center min-h-[100dvh] w-full px-6 relative bg-gradient-to-b from-black via-[#040408] to-[#010102] overflow-hidden">
@@ -376,107 +376,107 @@
                     
                     <!-- 背景建築飾紋 -->
                     <div class="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-amber-500/10 to-transparent"></div>
-
+  
                     <div class="z-10 max-w-sm w-full flex flex-col items-center">
                         <!-- 帶有拉絲金邊的會所黃銅門牌徽章 -->
                         <div class="w-36 h-36 md:w-40 md:h-40 rounded-full border border-amber-500/30 flex items-center justify-center p-2 bg-slate-950/90 shadow-[0_0_50px_rgba(212,175,55,0.2)] mb-8 animate-gentle-logo overflow-hidden">
                             <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-full h-full rounded-full object-cover">
                         </div>
                         
-                        <div class="px-5 py-1 rounded-full bg-amber-500/5 border border-amber-500/10 mb-2">
-                            <span class="text-[9px] font-bold text-amber-500/80 tracking-[0.25em] uppercase font-luxury">Established Seclusion</span>
+                        <div class="px-5 py-1.5 rounded-full bg-amber-500/5 border border-amber-500/10 mb-3">
+                            <span class="text-xs font-bold text-amber-500/80 tracking-[0.25em] uppercase font-luxury">Established Seclusion</span>
                         </div>
                         
-                        <h1 class="text-4xl font-black tracking-[0.28em] text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-100 to-amber-500 font-luxury mb-2 select-none italic text-center">SecretRoom</h1>
-                        <p class="text-amber-500/95 text-[10px] font-extrabold uppercase tracking-[0.4em] text-center">俱樂部式私密生活分享</p>
+                        <h1 class="text-4xl md:text-5xl font-black tracking-[0.28em] text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-100 to-amber-500 font-luxury mb-2.5 select-none italic text-center">SecretRoom</h1>
+                        <p class="text-amber-500/95 text-xs font-extrabold uppercase tracking-[0.4em] text-center">俱樂部式私密生活分享</p>
                         
-                        <!-- 裝飾花紋線 -->
-                        <div class="flex items-center gap-2 w-28 my-4">
-                            <div class="h-[1px] flex-1 bg-gradient-to-r from-transparent to-amber-500/30"></div>
-                            <div class="w-1 h-1 bg-amber-500/40 rotate-45"></div>
-                            <div class="h-[1px] flex-1 bg-gradient-to-l from-transparent to-amber-500/30"></div>
+                        <!-- 裝飾花紋線：擴大上下間距與小點間隙，顯得大氣從容 -->
+                        <div class="flex items-center gap-4 w-44 my-10">
+                            <div class="h-[1px] flex-1 bg-gradient-to-r from-transparent via-amber-500/20 to-amber-500/40"></div>
+                            <div class="w-1.5 h-1.5 bg-amber-500/50 rotate-45"></div>
+                            <div class="h-[1px] flex-1 bg-gradient-to-l from-transparent via-amber-500/20 to-amber-500/40"></div>
                         </div>
-
-                        <p class="text-slate-450 text-[11.5px] text-center font-light leading-relaxed tracking-wider px-4">
-                            穿過無標記的黑鐵大門，在曜石與溫暖微光間，遇見規格契合的極致同好。
+  
+                        <p class="text-slate-400 text-sm md:text-base text-center font-light leading-relaxed tracking-wider px-2">
+                            穿過無標記的黑鐵大門，在曜石與溫慢微光間，遇見規格契合的極致同好。
                         </p>
-
-                        <div class="w-full space-y-4 mt-10">
-                            <button id="btn-goto-apply" class="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 hover:brightness-110 active:scale-[0.98] text-slate-950 font-bold text-xs py-4 px-6 rounded-2xl shadow-xl shadow-amber-950/20 transition-all duration-300 tracking-[0.18em] uppercase architectural-border">
+  
+                        <div class="w-full space-y-4 mt-12">
+                            <button id="btn-goto-apply" class="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 hover:brightness-110 active:scale-[0.98] text-slate-950 font-bold text-sm py-4 px-6 rounded-2xl shadow-xl shadow-amber-950/20 transition-all duration-300 tracking-[0.18em] uppercase architectural-border">
                                 申請帳號
                             </button>
-                            <button id="btn-goto-login" class="w-full bg-slate-950/90 hover:bg-slate-900 active:scale-[0.98] text-amber-500 font-semibold text-xs py-4 px-6 rounded-2xl border border-amber-500/20 transition-all duration-300 tracking-wider flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-key text-[10px] text-amber-500/70"></i>
+                            <button id="btn-goto-login" class="w-full bg-slate-950/90 hover:bg-slate-900 active:scale-[0.98] text-amber-500 font-semibold text-sm py-4 px-6 rounded-2xl border border-amber-500/20 transition-all duration-300 tracking-wider flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-key text-xs text-amber-500/70"></i>
                                 <span>已是會員？點擊登入</span>
                             </button>
                         </div>
-
-                        <div class="mt-12 px-5 py-2.5 rounded-full bg-amber-500/5 border border-amber-500/10 text-[10px] text-amber-400/80 font-bold tracking-wider flex items-center gap-2 shadow-sm">
+  
+                        <div class="mt-12 px-5 py-3 rounded-full bg-amber-500/5 border border-amber-500/10 text-xs text-amber-400/80 font-bold tracking-wider flex items-center gap-2 shadow-sm">
                             <i class="fa-solid fa-shield-halved text-amber-500"></i>
                             <span>落實人工審核驗證 · 滿 18 歲指定進入</span>
                         </div>
                     </div>
                 </div>
             `;
-
+  
             document.getElementById('btn-goto-apply').onclick = () => {
                 navigate('register');
             };
-
+  
             document.getElementById('btn-goto-login').onclick = () => {
                 showLoginModal();
             };
         }
-
+  
         function showLoginModal() {
             const modal = document.createElement('div');
             modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-md';
             modal.innerHTML = `
                 <div class="bg-[#08080c] border border-amber-500/25 rounded-3xl p-6.5 max-w-sm w-full shadow-[0_0_50px_rgba(0,0,0,0.95)] relative architectural-border">
-                    <button id="close-login" class="absolute top-4 right-4 text-slate-500 hover:text-white text-xl transition">&times;</button>
-                    <h3 class="text-sm font-bold text-white mb-1 flex items-center gap-2 font-luxury tracking-widest">
+                    <button id="close-login" class="absolute top-4 right-4 text-slate-500 hover:text-white text-2xl transition">&times;</button>
+                    <h3 class="text-sm font-bold text-white mb-1.5 flex items-center gap-2 font-luxury tracking-widest">
                         <i class="fa-solid fa-lock text-amber-500"></i> MEMBER VERIFICATION
                     </h3>
-                    <p class="text-[11px] text-slate-400 mb-5 leading-relaxed font-light">請在輸入帳號及密碼登入</p>
+                    <p class="text-xs text-slate-400 mb-5 leading-relaxed font-light">請在輸入帳號及密碼進行端對端安全登入</p>
                     
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-[9px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">帳號</label>
-                            <input type="text" id="login-username" class="w-full bg-slate-900/60 border border-slate-800 rounded-xl px-3.5 py-3 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
+                            <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">帳號</label>
+                            <input type="text" id="login-username" class="w-full bg-slate-900/60 border border-slate-800 rounded-xl px-3.5 py-3 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                         </div>
                         <div>
-                            <label class="block text-[9px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">密碼</label>
-                            <input type="password" id="login-password" class="w-full bg-slate-900/60 border border-slate-800 rounded-xl px-3.5 py-3 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
+                            <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">密碼</label>
+                            <input type="password" id="login-password" class="w-full bg-slate-900/60 border border-slate-800 rounded-xl px-3.5 py-3 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                         </div>
-                        <button id="btn-login-submit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-bold text-xs py-3.5 rounded-xl transition shadow-lg shadow-amber-950/15 tracking-wider uppercase active:scale-[0.98]">
+                        <button id="btn-login-submit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-bold text-sm py-4 rounded-xl transition shadow-lg shadow-amber-950/15 tracking-wider uppercase active:scale-[0.98]">
                             登入
                         </button>
                     </div>
                 </div>
             `;
             document.body.appendChild(modal);
-
+  
             document.getElementById('close-login').onclick = () => modal.remove();
-
+  
             document.getElementById('btn-login-submit').onclick = async () => {
                 const usernameInput = document.getElementById('login-username').value.trim();
                 const passwordInput = document.getElementById('login-password').value;
-
+  
                 if (!usernameInput || !passwordInput) {
                     showToast('請填寫完整登入資訊！', 'error');
                     return;
                 }
-
+  
                 if (!db) {
                     showToast('驗證中，正在進行安全協議...', 'error');
                     return;
                 }
-
+  
                 showLoading();
                 try {
                     const appRef = doc(db, 'secretg_apps', appId, 'applications', usernameInput);
                     const docSnap = await getDoc(appRef);
-
+  
                     if (docSnap.exists()) {
                         const data = docSnap.data();
                         if (data.password === passwordInput) {
@@ -486,7 +486,7 @@
                             
                             modal.remove();
                             showToast('登入成功！正在載入動態...', 'success');
-
+  
                             if (data.status === 'pending') navigate('pending');
                             else if (data.status === 'rejected') navigate('rejected');
                             else if (data.status === 'approved' || data.status === 'active') {
@@ -507,23 +507,23 @@
                 }
             };
         }
-
+  
         function renderRegister(container) {
             window.state.emailVerified = false;
             window.state.emailVerificationCode = null;
-
+  
             container.innerHTML = `
                 <div class="w-full bg-[#030306] px-4 py-8 flex flex-col items-center h-full overflow-y-auto">
                     <div class="max-w-4xl w-full bg-slate-950/90 border border-amber-500/10 rounded-3xl p-6 md:p-10 shadow-2xl relative mb-12">
-                        <button id="btn-back-landing" class="absolute top-6 left-6 text-slate-400 hover:text-white transition text-xs flex items-center gap-2 font-semibold">
-                            <i class="fa-solid fa-arrow-left"></i> 返回
+                        <button id="btn-back-landing" class="absolute top-6 left-6 text-slate-400 hover:text-white transition text-sm flex items-center gap-2 font-semibold">
+                            <i class="fa-solid fa-arrow-left"></i> 返回首頁
                         </button>
                         
-                        <div class="text-center mt-6 mb-10">
+                        <div class="text-center mt-8 mb-10">
                             <h2 class="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-amber-400 tracking-wider font-luxury">SECRETROOM ACQUISITION</h2>
-                            <p class="text-xs text-slate-400 mt-2 leading-relaxed">請填寫以下資訊。採人工審查機制以維護全體會員之安全與私密。</p>
+                            <p class="text-sm text-slate-400 mt-2.5 leading-relaxed">請認真填寫以下會籍檔案。系統將落實最嚴格之人工實名審查，以保障俱樂部會員隱私與安全。</p>
                         </div>
-
+  
                         <!-- 雙欄排版，寬螢幕下完美撐滿不擁擠 -->
                         <form id="apply-form" class="grid grid-cols-1 md:grid-cols-2 gap-8" onsubmit="return false;">
                             
@@ -531,142 +531,142 @@
                             <div class="space-y-6">
                                 <!-- 上傳個人頭像 -->
                                 <div class="bg-slate-900/40 p-5 border border-slate-900/80 rounded-2xl flex flex-col items-center justify-center text-center">
-                                    <span class="text-xs font-bold text-slate-300 mb-3 uppercase tracking-wider block">
-                                        <span class="text-red-500">*</span> 上傳個人真實頭像
-                                        <span class="text-amber-550/80 font-normal text-[9.5px] block mt-1">(僅限 JPEG/PNG，支援最大 10MB)</span>
+                                    <span class="text-sm font-bold text-slate-300 mb-3 uppercase tracking-wider block">
+                                        <span class="text-red-500">*</span> 上傳個人正面大頭照
+                                        <span class="text-amber-500 font-normal text-xs block mt-1">(僅限 JPEG/PNG，支援最大 10MB)</span>
                                     </span>
                                     <div class="relative w-28 h-28 rounded-full border border-dashed border-amber-500/20 hover:border-amber-500/50 transition cursor-pointer flex flex-col items-center justify-center bg-slate-900/80 overflow-hidden group" id="avatar-trigger">
                                         <img id="avatar-preview" class="absolute inset-0 w-full h-full object-cover hidden">
-                                        <div class="z-10 flex flex-col items-center text-slate-500 group-hover:text-amber-500/80 transition" id="avatar-placeholder">
+                                        <div class="z-10 flex flex-col items-center text-slate-500 group-hover:text-amber-500 transition" id="avatar-placeholder">
                                             <i class="fa-solid fa-camera text-2xl mb-1.5"></i>
-                                            <span class="text-[9px] font-bold uppercase tracking-wider">點擊選取檔案</span>
+                                            <span class="text-xs font-bold uppercase tracking-wider">選擇檔案</span>
                                         </div>
                                     </div>
                                     <input type="file" id="register-avatar-file" accept="image/*" class="hidden">
-                                    <span class="text-[9.5px] text-slate-500 mt-3 block leading-relaxed max-w-[240px]">請上傳個人正面清晰之大頭照，嚴禁风景、卡通或冒用他人照片</span>
+                                    <span class="text-xs text-slate-500 mt-3 block leading-relaxed max-w-[240px]">請上傳本人真實正面清晰之照片，嚴禁風景、卡通或不合規相片。</span>
                                 </div>
-
+  
                                 <!-- 帳號以及密碼獨立區 -->
                                 <div class="p-5 bg-slate-900/30 border border-slate-900/80 rounded-2xl space-y-4">
-                                    <span class="text-[11px] font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-solid fa-lock mr-1.5"></i> 會籍帳號申請</span>
+                                    <span class="text-sm font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-solid fa-lock mr-1.5"></i> 會籍帳號安全憑證</span>
                                     <div>
-                                        <label class="block text-[9.5px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 設定帳號 (不限中英數，不可與人重複)</label>
-                                        <input type="text" id="reg-username" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
+                                        <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 設定會員帳號 (不可與人重複)</label>
+                                        <input type="text" id="reg-username" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                                     </div>
                                     <div>
-                                        <label class="block text-[9.5px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 再次確認帳號</label>
-                                        <input type="text" id="reg-username-confirm" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
+                                        <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 再次確認帳號</label>
+                                        <input type="text" id="reg-username-confirm" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                                     </div>
                                     <div>
-                                        <label class="block text-[9.5px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 設定密碼</label>
-                                        <input type="password" id="reg-password" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
+                                        <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 設定登入密碼</label>
+                                        <input type="password" id="reg-password" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                                     </div>
                                     <div>
-                                        <label class="block text-[9.5px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 再次輸入密碼</label>
-                                        <input type="password" id="reg-password-confirm" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
+                                        <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 再次確認密碼</label>
+                                        <input type="password" id="reg-password-confirm" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                                     </div>
                                     
                                     <!-- 密碼強度回饋 -->
-                                    <div class="text-[10px] space-y-1.5 bg-slate-950/60 p-3 rounded-xl border border-slate-850">
-                                        <span class="text-slate-500 font-bold uppercase tracking-wider block mb-1">密碼安全條件度：</span>
+                                    <div class="text-xs space-y-1.5 bg-slate-950/60 p-3 rounded-xl border border-slate-850">
+                                        <span class="text-slate-500 font-bold uppercase tracking-wider block mb-1">安全防禦條件度：</span>
                                         <div id="pwd-rule-len" class="flex items-center gap-1.5 text-slate-500 transition">
-                                            <i class="fa-solid fa-circle-notch text-[8px]"></i> <span>密碼長度達 8 個字元以上</span>
+                                            <i class="fa-solid fa-circle-notch text-xs"></i> <span>密碼長度達 8 個字元以上</span>
                                         </div>
                                         <div id="pwd-rule-upper" class="flex items-center gap-1.5 text-slate-500 transition">
-                                            <i class="fa-solid fa-circle-notch text-[8px]"></i> <span>包含至少一個大寫英文字母</span>
+                                            <i class="fa-solid fa-circle-notch text-xs"></i> <span>包含至少一個大寫英文字母</span>
                                         </div>
                                         <div id="pwd-rule-spec" class="flex items-center gap-1.5 text-slate-500 transition">
-                                            <i class="fa-solid fa-circle-notch text-[8px]"></i> <span>包含至少一個特殊符號</span>
+                                            <i class="fa-solid fa-circle-notch text-xs"></i> <span>包含至少一個特殊符號</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-
+  
                             <!-- 右側區塊：基本資料、物理規格 -->
                             <div class="space-y-6">
                                 <!-- 使用者名稱與生日 -->
                                 <div class="p-5 bg-slate-900/30 border border-slate-900/80 rounded-2xl space-y-4">
-                                    <span class="text-[11px] font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-solid fa-user mr-1.5"></i> 會員公開識別檔案</span>
+                                    <span class="text-sm font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-solid fa-user mr-1.5"></i> 會員公開識別檔案</span>
                                     <div>
-                                        <label class="block text-[9.5px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 暱稱 / 使用者名稱</label>
-                                        <input type="text" id="reg-nickname" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
+                                        <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 會所公開暱稱</label>
+                                        <input type="text" id="reg-nickname" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                                     </div>
-
+  
                                     <div>
-                                        <label class="block text-[9.5px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 出生年月日 (須滿 18 歲)</label>
+                                        <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 出生年月日 (須滿 18 歲)</label>
                                         <div class="grid grid-cols-3 gap-2">
-                                            <select id="reg-year" class="bg-slate-950 border border-slate-850 text-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-amber-500 transition"></select>
-                                            <select id="reg-month" class="bg-slate-950 border border-slate-850 text-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-amber-500 transition"></select>
-                                            <select id="reg-day" class="bg-slate-950 border border-slate-850 text-slate-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-amber-500 transition"></select>
+                                            <select id="reg-year" class="bg-slate-950 border border-slate-850 text-slate-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition"></select>
+                                            <select id="reg-month" class="bg-slate-950 border border-slate-850 text-slate-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition"></select>
+                                            <select id="reg-day" class="bg-slate-950 border border-slate-850 text-slate-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition"></select>
                                         </div>
                                     </div>
                                 </div>
-
+  
                                 <!-- 信箱驗證與認證碼 -->
                                 <div class="space-y-4 bg-slate-900/30 p-5 border border-slate-900/80 rounded-2xl">
-                                    <span class="text-[11px] font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-regular fa-envelope mr-1.5"></i> 通訊安全雙向核查</span>
+                                    <span class="text-sm font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-regular fa-envelope mr-1.5"></i> 通訊安全雙向核查</span>
                                     <div>
-                                        <label class="block text-[9.5px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 電子郵件信箱</label>
+                                        <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 電子郵件信箱</label>
                                         <div class="flex gap-2">
-                                            <input type="email" id="reg-email" class="flex-1 min-w-0 bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition">
-                                            <button type="button" id="btn-send-code" class="bg-amber-600 hover:bg-amber-500 active:scale-[0.96] text-slate-950 font-bold text-[10px] px-3.5 rounded-xl transition duration-300 shrink-0">發送認證碼</button>
+                                            <input type="email" id="reg-email" class="flex-1 min-w-0 bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition">
+                                            <button type="button" id="btn-send-code" class="bg-amber-600 hover:bg-amber-500 active:scale-[0.96] text-slate-950 font-bold text-xs px-3.5 rounded-xl transition duration-300 shrink-0">發送驗證碼</button>
                                         </div>
                                     </div>
                                     <div>
-                                        <label class="block text-[9.5px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 驗證碼</label>
+                                        <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 驗證碼</label>
                                         <div class="flex gap-2">
-                                            <input type="text" id="reg-email-code" class="flex-1 min-w-0 bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition">
-                                            <button type="button" id="btn-verify-code" class="bg-emerald-600 hover:bg-emerald-500 active:scale-[0.96] text-white font-bold text-[10px] px-3.5 rounded-xl transition duration-300 shrink-0">驗證信箱</button>
+                                            <input type="text" id="reg-email-code" class="flex-1 min-w-0 bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition">
+                                            <button type="button" id="btn-verify-code" class="bg-emerald-600 hover:bg-emerald-500 active:scale-[0.96] text-white font-bold text-xs px-3.5 rounded-xl transition duration-300 shrink-0">驗證信箱</button>
                                         </div>
                                     </div>
                                 </div>
-
-                                <!-- 個人狀態 (雙行排版) -->
+  
+                                <!-- 個人物理狀態 -->
                                 <div class="p-5 bg-slate-900/30 border border-slate-900/80 rounded-2xl space-y-4">
-                                    <span class="text-[11px] font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-solid fa-user-check mr-1.5"></i> 身體數據密碼</span>
+                                    <span class="text-sm font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-solid fa-user-check mr-1.5"></i> 身體數據密碼規格</span>
                                     
                                     <div class="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label class="block text-[9px] font-bold text-slate-500 mb-1">身高 (cm)</label>
-                                            <input type="number" id="reg-height" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
+                                            <label class="block text-xs font-bold text-slate-500 mb-1">身高 (cm)</label>
+                                            <input type="number" id="reg-height" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                                         </div>
                                         <div>
-                                            <label class="block text-[9px] font-bold text-slate-500 mb-1">體重 (kg)</label>
-                                            <input type="number" id="reg-weight" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
+                                            <label class="block text-xs font-bold text-slate-500 mb-1">體重 (kg)</label>
+                                            <input type="number" id="reg-weight" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                                         </div>
                                     </div>
                                     
                                     <div class="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label class="block text-[9px] font-bold text-slate-500 mb-1">勃起長度 (cm)</label>
-                                            <input type="number" id="reg-length" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
+                                            <label class="block text-xs font-bold text-slate-500 mb-1">勃起長度 (cm)</label>
+                                            <input type="number" id="reg-length" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                                         </div>
                                         <div>
-                                            <label class="block text-[9px] font-bold text-slate-500 mb-1">勃起粗度圍 (cm)</label>
-                                            <input type="number" id="reg-girth" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
+                                            <label class="block text-xs font-bold text-slate-500 mb-1">勃起粗度圍 (cm)</label>
+                                            <input type="number" id="reg-girth" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-
+  
                             <!-- 5列2行完全展開標籤清單 - 寬螢幕通欄排版 -->
                             <div class="md:col-span-2 space-y-2 mt-2">
-                                <label class="block text-xs font-bold text-slate-300 mb-1 uppercase tracking-wider"><span class="text-red-500">*</span> 感興趣的主題與性癖偏好 (至少勾選一項)</label>
-                                <span class="text-[10px] text-slate-500 block mb-3 leading-relaxed">我們將依此標籤為您配對符合之同好與動態。</span>
+                                <label class="block text-sm font-bold text-slate-300 mb-1 uppercase tracking-wider"><span class="text-red-500">*</span> 感興趣的主題與性癖偏好 (至少勾選一項)</label>
+                                <span class="text-xs text-slate-500 block mb-3 leading-relaxed">我們將依此標籤為您進行大廳智慧動態與合適的同好推薦配對。</span>
                                 
                                 <div class="grid grid-cols-2 md:grid-cols-5 gap-3 bg-slate-950/40 p-4 border border-slate-900 rounded-2xl" id="register-kinks-box">
                                     ${window.state.kinksOptions.map((k) => `
-                                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-900/60 p-2.5 rounded-xl transition border border-transparent hover:border-slate-850">
-                                            <input type="checkbox" name="reg-kink" value="${k}" class="rounded border-slate-800 bg-slate-950 text-amber-500 focus:ring-amber-500 w-3.5 h-3.5">
-                                            <span class="text-[10px] text-slate-350 font-semibold leading-tight select-none">${k}</span>
+                                        <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-900/60 p-2.5 rounded-xl transition border border-transparent hover:border-slate-800">
+                                            <input type="checkbox" name="reg-kink" value="${k}" class="rounded border-slate-800 bg-slate-950 text-amber-500 focus:ring-amber-500 w-4 h-4">
+                                            <span class="text-xs text-slate-300 font-semibold leading-tight select-none">${k}</span>
                                         </label>
                                     `).join('')}
                                 </div>
                             </div>
-
+  
                             <!-- 提交按鈕 - 通欄排列 -->
                             <div class="md:col-span-2 pt-4">
-                                <button type="submit" id="apply-submit" class="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 hover:brightness-110 text-slate-950 font-bold text-xs py-4 px-6 rounded-2xl transition duration-300 shadow-xl shadow-amber-950/20 tracking-wider uppercase active:scale-[0.98]">
+                                <button type="submit" id="apply-submit" class="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 hover:brightness-110 text-slate-950 font-bold text-sm py-4 px-6 rounded-2xl transition duration-300 shadow-xl shadow-amber-950/20 tracking-wider uppercase active:scale-[0.98]">
                                     送出註冊與會籍審核
                                 </button>
                             </div>
@@ -674,11 +674,11 @@
                     </div>
                 </div>
             `;
-
+  
             const yearSelect = document.getElementById('reg-year');
             const monthSelect = document.getElementById('reg-month');
             const daySelect = document.getElementById('reg-day');
-
+  
             const currentYear = new Date().getFullYear();
             for (let y = currentYear - 18; y >= currentYear - 80; y--) {
                 yearSelect.options.add(new Option(`${y} 年`, y));
@@ -689,15 +689,15 @@
             for (let d = 1; d <= 31; d++) {
                 daySelect.options.add(new Option(`${d} 日`, d));
             }
-
+  
             const avatarTrigger = document.getElementById('avatar-trigger');
             const fileInput = document.getElementById('register-avatar-file');
             const previewImg = document.getElementById('avatar-preview');
             const placeholderBox = document.getElementById('avatar-placeholder');
             let base64Avatar = '';
-
+  
             avatarTrigger.onclick = () => fileInput.click();
-
+  
             fileInput.onchange = (e) => {
                 const file = e.target.files[0];
                 if (file) {
@@ -716,27 +716,27 @@
                     reader.readAsDataURL(file);
                 }
             };
-
+  
             document.getElementById('btn-back-landing').onclick = () => navigate('landing');
-
+  
             const btnSendCode = document.getElementById('btn-send-code');
             const btnVerifyCode = document.getElementById('btn-verify-code');
             const emailInput = document.getElementById('reg-email');
             const codeInput = document.getElementById('reg-email-code');
-
+  
             btnSendCode.onclick = async () => {
                 const email = emailInput.value.trim();
                 if (!email || !email.includes('@')) {
                     showToast('請輸入正確的電子郵件信箱！', 'error');
                     return;
                 }
-
+  
                 const generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
                 window.state.emailVerificationCode = generatedCode;
-
+  
                 btnSendCode.disabled = true;
                 btnSendCode.classList.add('opacity-50', 'cursor-not-allowed');
-
+  
                 if (emailjsConfig.publicKey && emailjsConfig.publicKey !== "YOUR_EMAILJS_PUBLIC_KEY") {
                     try {
                         await emailjs.send(emailjsConfig.serviceId, emailjsConfig.templateId, {
@@ -757,7 +757,7 @@
                     console.log("[系統通訊調試] 驗證碼：", generatedCode);
                     showToast(`[系統通訊調試] 驗證碼為：${generatedCode}`, 'info');
                 }
-
+  
                 let countdown = 60;
                 const timer = setInterval(() => {
                     countdown--;
@@ -770,7 +770,7 @@
                     }
                 }, 1000);
             };
-
+  
             btnVerifyCode.onclick = () => {
                 const userCode = codeInput.value.trim();
                 if (!window.state.emailVerificationCode) {
@@ -786,48 +786,48 @@
                     btnSendCode.disabled = true;
                     btnVerifyCode.disabled = true;
                     btnVerifyCode.textContent = '驗證完成 ✓';
-                    btnVerifyCode.className = "bg-emerald-700 text-white font-bold text-[10px] px-3.5 rounded-xl cursor-not-allowed shrink-0";
+                    btnVerifyCode.className = "bg-emerald-700 text-white font-bold text-xs px-3.5 rounded-xl cursor-not-allowed shrink-0";
                 } else {
                     showToast('驗證碼不正確，請重新確認！', 'error');
                 }
             };
-
+  
             const pwdInput = document.getElementById('reg-password');
             const ruleLen = document.getElementById('pwd-rule-len');
             const ruleUpper = document.getElementById('pwd-rule-upper');
             const ruleSpec = document.getElementById('pwd-rule-spec');
-
+  
             pwdInput.oninput = () => {
                 const val = pwdInput.value;
                 
                 if (val.length >= 8) {
                     ruleLen.className = "flex items-center gap-1.5 text-emerald-500 font-semibold";
-                    ruleLen.querySelector('i').className = "fa-solid fa-circle-check text-[10px]";
+                    ruleLen.querySelector('i').className = "fa-solid fa-circle-check text-xs";
                 } else {
                     ruleLen.className = "flex items-center gap-1.5 text-slate-500";
-                    ruleLen.querySelector('i').className = "fa-solid fa-circle-notch text-[8px]";
+                    ruleLen.querySelector('i').className = "fa-solid fa-circle-notch text-xs";
                 }
-
+  
                 if (/[A-Z]/.test(val)) {
                     ruleUpper.className = "flex items-center gap-1.5 text-emerald-500 font-semibold";
-                    ruleUpper.querySelector('i').className = "fa-solid fa-circle-check text-[10px]";
+                    ruleUpper.querySelector('i').className = "fa-solid fa-circle-check text-xs";
                 } else {
                     ruleUpper.className = "flex items-center gap-1.5 text-slate-500";
-                    ruleUpper.querySelector('i').className = "fa-solid fa-circle-notch text-[8px]";
+                    ruleUpper.querySelector('i').className = "fa-solid fa-circle-notch text-xs";
                 }
-
+  
                 if (/[!@#$%^&*(),.?":{}|<>]/.test(val)) {
                     ruleSpec.className = "flex items-center gap-1.5 text-emerald-500 font-semibold";
-                    ruleSpec.querySelector('i').className = "fa-solid fa-circle-check text-[10px]";
+                    ruleSpec.querySelector('i').className = "fa-solid fa-circle-check text-xs";
                 } else {
                     ruleSpec.className = "flex items-center gap-1.5 text-slate-500";
-                    ruleSpec.querySelector('i').className = "fa-solid fa-circle-notch text-[8px]";
+                    ruleSpec.querySelector('i').className = "fa-solid fa-circle-notch text-xs";
                 }
             };
-
+  
             document.getElementById('apply-form').onsubmit = async (e) => {
                 e.preventDefault();
-
+  
                 const username = document.getElementById('reg-username').value.trim();
                 const usernameConfirm = document.getElementById('reg-username-confirm').value.trim();
                 const password = document.getElementById('reg-password').value;
@@ -841,12 +841,12 @@
                 const weight = document.getElementById('reg-weight').value;
                 const length = document.getElementById('reg-length').value;
                 const girth = document.getElementById('reg-girth').value;
-
+  
                 const selectedKinks = [];
                 document.querySelectorAll('input[name="reg-kink"]:checked').forEach((cb) => {
                     selectedKinks.push(cb.value);
                 });
-
+  
                 if (username !== usernameConfirm) {
                     showToast('兩次輸入的帳號不一致！', 'error');
                     return;
@@ -855,35 +855,35 @@
                     showToast('兩次輸入的密碼不一致！', 'error');
                     return;
                 }
-
+  
                 const isLenMet = password.length >= 8;
                 const isUpperMet = /[A-Z]/.test(password);
-                const isSpecMet = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+                const isSpecMet = /[!@#$%^&*(),.?":{}|<>].*/.test(password);
                 if (!isLenMet || !isUpperMet || !isSpecMet) {
                     showToast('密碼未滿足強度條件設定！', 'error');
                     return;
                 }
-
+  
                 if (!base64Avatar) {
                     showToast('請上傳個人頭像供審核查驗。', 'error');
                     return;
                 }
-
+  
                 if (!window.state.emailVerified) {
                     showToast('請務必完成信箱安全性驗證！', 'error');
                     return;
                 }
-
+  
                 if (selectedKinks.length === 0) {
                     showToast('請至少勾選一項主題偏好！', 'error');
                     return;
                 }
-
+  
                 if (!db) {
                     showToast('伺服器連線超時，暫時無法提交。', 'error');
                     return;
                 }
-
+  
                 showLoading();
                 try {
                     const checkRef = doc(db, 'secretg_apps', appId, 'applications', username);
@@ -893,7 +893,7 @@
                         hideLoading();
                         return;
                     }
-
+  
                     const appPayload = {
                         status: 'pending',
                         password,
@@ -911,13 +911,13 @@
                         avatarStatus: 'approved', 
                         createdAt: serverTimestamp()
                     };
-
+  
                     await setDoc(checkRef, appPayload);
-
+  
                     window.state.userData = appPayload;
                     window.state.applicationId = username;
                     localStorage.setItem('sr_username', username);
-
+  
                     showToast('申請資料提交成功！審核結果將發送至您的信箱。', 'success');
                     navigate('pending');
                 } catch (err) {
@@ -928,7 +928,7 @@
                 }
             };
         }
-
+  
         function renderPending(container) {
             container.innerHTML = `
                 <div class="flex flex-col items-center justify-center min-h-screen w-full px-6 bg-[#030306]">
@@ -936,35 +936,35 @@
                         <div class="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-500 text-3xl mx-auto shadow-[0_0_20px_rgba(245,158,11,0.15)] animate-pulse">
                             <i class="fa-solid fa-hourglass-half"></i>
                         </div>
-                        <div class="space-y-2">
+                        <div class="space-y-2.5">
                             <h2 class="text-xl font-bold text-white tracking-wide font-luxury">APPLICATION PENDING</h2>
-                            <p class="text-xs text-slate-400 leading-relaxed px-4">
-                                SecretRoom 為保障所有帳號的隱私防護，採手動審核。我們將於審核後，將結果發送至您的通知信箱。
+                            <p class="text-sm text-slate-400 leading-relaxed px-4">
+                                SecretRoom 為保障所有帳號的絕對隱私防護，一律採高規格人工手動審核。我們將於審核完畢後，發送通知信至您的註冊信箱。
                             </p>
                         </div>
-
+  
                         <div class="bg-slate-900/50 border border-slate-900 p-4 rounded-2xl text-left space-y-2">
-                            <span class="text-[9px] font-bold text-amber-500 uppercase tracking-wider block font-luxury">註冊概要資訊</span>
-                            <p class="text-xs text-slate-300"><span class="text-slate-500 font-medium">您的帳號:</span> @${window.state.applicationId}</p>
-                            <p class="text-xs text-slate-300"><span class="text-slate-500 font-medium">您的名稱:</span> ${window.state.userData.nickname}</p>
-                            <p class="text-xs text-slate-300"><span class="text-slate-500 font-medium">信箱:</span> ${window.state.userData.email}</p>
+                            <span class="text-xs font-bold text-amber-500 uppercase tracking-wider block font-luxury">註冊概要資訊</span>
+                            <p class="text-sm text-slate-300"><span class="text-slate-500 font-medium">您的帳號:</span> @${window.state.applicationId}</p>
+                            <p class="text-sm text-slate-300"><span class="text-slate-500 font-medium">您的名稱:</span> ${window.state.userData.nickname}</p>
+                            <p class="text-sm text-slate-300"><span class="text-slate-500 font-medium">信箱:</span> ${window.state.userData.email}</p>
                         </div>
-
+  
                         <div class="pt-2">
-                            <button id="btn-pending-refresh" class="w-full bg-slate-900 hover:bg-slate-850 text-slate-300 font-semibold text-xs py-3.5 rounded-xl border border-slate-800 transition active:scale-[0.98]">
+                            <button id="btn-pending-refresh" class="w-full bg-slate-900 hover:bg-slate-850 text-slate-300 font-semibold text-sm py-3.5 rounded-xl border border-slate-800 transition active:scale-[0.98]">
                                 重新整理確認狀態
                             </button>
                         </div>
                     </div>
                 </div>
             `;
-
+  
             document.getElementById('btn-pending-refresh').onclick = () => {
                 showLoading();
                 checkExistingApplication();
             };
         }
-
+  
         function renderRejected(container) {
             const reason = window.state.userData.rejectionReason || "未遵守安全上傳規範（例如頭像模糊、非本人等）。";
             container.innerHTML = `
@@ -975,33 +975,33 @@
                         </div>
                         <div class="space-y-2">
                             <h2 class="text-xl font-bold text-white tracking-wide font-luxury">APPLICATION REJECTED</h2>
-                            <p class="text-xs text-slate-400 leading-relaxed px-4 font-light">很遺憾，您的加入申請未能通過管理審查團隊的查核。</p>
+                            <p class="text-sm text-slate-400 leading-relaxed px-4 font-light">很遺憾，您的加入申請未能通過管理審查團隊的查核。</p>
                         </div>
-
+  
                         <div class="bg-red-550/5 border border-red-500/15 p-4 rounded-2xl text-left space-y-2">
-                            <span class="text-[9px] font-bold text-red-400 uppercase tracking-wider block">退件具體理由</span>
-                            <p class="text-xs text-slate-300 leading-relaxed font-light">${reason}</p>
+                            <span class="text-xs font-bold text-red-400 uppercase tracking-wider block">退件具體理由</span>
+                            <p class="text-sm text-slate-300 leading-relaxed font-light">${reason}</p>
                         </div>
-
+  
                         <div class="pt-2 space-y-3">
-                            <button id="btn-reapply-edit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-650 hover:brightness-110 text-slate-950 font-bold text-xs py-3.5 rounded-xl transition shadow-lg active:scale-[0.98]">
+                            <button id="btn-reapply-edit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-650 hover:brightness-110 text-slate-950 font-bold text-sm py-3.5 rounded-xl transition shadow-lg active:scale-[0.98]">
                                 修正資料並重新提交送審
                             </button>
-                            <button id="btn-reapply-logout" class="w-full bg-slate-900 hover:bg-slate-800 text-slate-450 font-semibold text-xs py-3.5 rounded-xl transition border border-slate-800/80 active:scale-[0.98]">
+                            <button id="btn-reapply-logout" class="w-full bg-slate-900 hover:bg-slate-800 text-slate-400 font-semibold text-sm py-3.5 rounded-xl transition border border-slate-800/80 active:scale-[0.98]">
                                 登出當前帳號
                             </button>
                         </div>
                     </div>
                 </div>
             `;
-
+  
             document.getElementById('btn-reapply-logout').onclick = () => {
                 localStorage.removeItem('sr_username');
                 window.state.userData = {};
                 window.state.applicationId = null;
                 navigate('landing');
             };
-
+  
             document.getElementById('btn-reapply-edit').onclick = () => {
                 const draft = { ...window.state.userData };
                 navigate('register');
@@ -1015,7 +1015,7 @@
                     const wInput = document.getElementById('reg-weight');
                     const lInput = document.getElementById('reg-length');
                     const gInput = document.getElementById('reg-girth');
-
+  
                     if (uInput) { uInput.value = window.state.applicationId; uInput.disabled = true; }
                     if (uConf) { uConf.value = window.state.applicationId; uConf.disabled = true; }
                     if (nInput) nInput.value = draft.nickname || '';
@@ -1024,11 +1024,11 @@
                     if (wInput) wInput.value = draft.weight || '';
                     if (lInput) lInput.value = draft.length || '';
                     if (gInput) gInput.value = draft.girth || '';
-
+  
                     if (draft.birthYear) document.getElementById('reg-year').value = draft.birthYear;
                     if (draft.birthMonth) document.getElementById('reg-month').value = draft.birthMonth;
                     if (draft.birthDay) document.getElementById('reg-day').value = draft.birthDay;
-
+  
                     if (draft.kinks && draft.kinks.length > 0) {
                         draft.kinks.forEach(k => {
                             const cb = document.querySelector(`input[name="reg-kink"][value="${k}"]`);
@@ -1039,6 +1039,49 @@
             };
         }
 
+        function renderTelegramBind(container) {
+            const token = Math.floor(100000 + Math.random() * 900000);
+            container.innerHTML = `
+                <div class="flex flex-col items-center justify-center min-h-[100dvh] w-full px-6 bg-[#030306]">
+                    <div class="max-w-md w-full bg-slate-950 border border-amber-500/10 rounded-3xl p-8 shadow-2xl text-center space-y-6">
+                        <div class="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center text-blue-400 text-3xl mx-auto">
+                            <i class="fa-brands fa-telegram"></i>
+                        </div>
+                        <div class="space-y-2.5">
+                            <h2 class="text-xl font-bold text-white font-luxury">TELEGRAM BINDING</h2>
+                            <p class="text-sm text-slate-400 leading-relaxed px-4">
+                                請綁定 Telegram 端對端雙因子通知，當有人與您的秘密互動時，您的手機將即時收到私密安全推播。
+                            </p>
+                        </div>
+                        <div class="p-5 bg-[#050508] border border-slate-900 rounded-2xl space-y-4">
+                            <p class="text-xs text-slate-400 leading-relaxed">請複製下方綁定密鑰命令，點擊啟動機器人並發送即可安全綁定：</p>
+                            <div class="px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-amber-400 font-mono text-sm font-bold select-all tracking-wider">
+                                /bind ${token}
+                            </div>
+                            <div class="flex gap-2">
+                                <a href="https://t.me/${telegramBotName}" target="_blank" id="btn-tg-start" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm py-3 rounded-xl transition flex items-center justify-center gap-2">
+                                    <i class="fa-brands fa-telegram"></i> 啟動機器人
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            if (db) {
+                const q = doc(db, 'secretg_apps', appId, 'applications', window.state.applicationId);
+                const unsubscribe = onSnapshot(q, (snapshot) => {
+                    const data = snapshot.data();
+                    if (data && data.telegramInfo) {
+                        showToast('Telegram 警報防護網安全綁定成功 ✓', 'success');
+                        window.state.userData.telegramInfo = data.telegramInfo;
+                        unsubscribe();
+                        navigate('dashboard');
+                    }
+                });
+            }
+        }
+  
         function renderDashboard(container) {
             container.innerHTML = `
                 <div class="w-full h-[100dvh] md:h-screen flex flex-row overflow-hidden relative bg-[#030305] ambient-spotlight">
@@ -1049,111 +1092,111 @@
                             <div class="flex items-center gap-3">
                                 <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-10 h-10 rounded-full border border-amber-500/25 object-cover animate-gentle-logo">
                                 <div>
-                                    <h2 class="text-base font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-amber-400 tracking-widest italic font-luxury">SecretRoom</h2>
-                                    <span class="text-[9px] text-amber-500/60 font-bold uppercase tracking-[0.2em] block font-luxury">Private Club</span>
+                                    <h2 class="text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-amber-400 tracking-widest italic font-luxury">SecretRoom</h2>
+                                    <span class="text-xs text-amber-500/60 font-bold uppercase tracking-[0.2em] block font-luxury">Private Club</span>
                                 </div>
                             </div>
-
+  
                             <nav class="space-y-2.5">
-                                <button id="aside-tab-feed" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 text-xs transition-all duration-300 font-bold ${window.state.currentTab === 'feed' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
+                                <button id="aside-tab-feed" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 text-sm transition-all duration-300 font-bold ${window.state.currentTab === 'feed' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
                                     <i class="fa-solid fa-door-open text-amber-500/80"></i> 俱樂部首頁
                                 </button>
-                                <button id="aside-tab-profile" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 text-xs transition-all duration-300 font-bold ${window.state.currentTab === 'profile' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
+                                <button id="aside-tab-profile" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 text-sm transition-all duration-300 font-bold ${window.state.currentTab === 'profile' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
                                     <i class="fa-solid fa-user-shield text-amber-500/80"></i> 我的個人資料
                                 </button>
                             </nav>
-
-                            <button id="aside-btn-share" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 hover:brightness-110 active:scale-[0.97] text-slate-950 font-bold text-xs py-3.5 px-4 rounded-2xl transition duration-300 flex items-center justify-center gap-2 shadow-lg shadow-amber-950/25 architectural-border">
+  
+                            <button id="aside-btn-share" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 hover:brightness-110 active:scale-[0.97] text-slate-950 font-bold text-sm py-3.5 px-4 rounded-2xl transition duration-300 flex items-center justify-center gap-2 shadow-lg shadow-amber-950/25 architectural-border">
                                 <i class="fa-solid fa-circle-plus"></i> 分享動態
                             </button>
                         </div>
-
+  
                         <div class="space-y-4">
                             <!-- 精緻奢華個人小名牌 -->
                             <div class="flex items-center gap-3 p-3 bg-slate-950/50 border border-amber-500/10 rounded-2xl relative overflow-hidden">
-                                <div class="absolute top-0 right-0 w-2 h-2 bg-emerald-500 rounded-full m-2 shadow-[0_0_8px_#10b981]"></div>
+                                <div class="absolute top-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full m-2 shadow-[0_0_8px_#10b981]"></div>
                                 <img src="${window.state.userData.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-9 h-9 rounded-full object-cover border border-amber-500/25">
                                 <div class="overflow-hidden">
                                     <div class="flex items-center gap-1">
-                                        <h4 class="font-bold text-xs text-slate-200 truncate">${window.state.userData.nickname}</h4>
+                                        <h4 class="font-bold text-sm text-slate-200 truncate">${window.state.userData.nickname}</h4>
                                     </div>
-                                    <p class="text-[9px] text-slate-500 truncate font-mono mt-0.5">@${window.state.applicationId}</p>
+                                    <p class="text-xs text-slate-550 truncate font-mono mt-0.5">@${window.state.applicationId}</p>
                                 </div>
                             </div>
-                            <button id="aside-btn-logout" class="w-full bg-red-950/10 hover:bg-red-950/30 text-red-400 border border-red-500/10 hover:border-red-500/25 active:scale-[0.97] font-bold text-xs py-3.5 px-4 rounded-2xl transition flex items-center justify-center gap-2 shadow-sm">
+                            <button id="aside-btn-logout" class="w-full bg-red-950/10 hover:bg-red-950/30 text-red-400 border border-red-500/10 hover:border-red-500/25 active:scale-[0.97] font-bold text-sm py-3.5 px-4 rounded-2xl transition flex items-center justify-center gap-2 shadow-sm">
                                 <i class="fa-solid fa-power-off"></i> 登出俱樂部
                             </button>
                         </div>
                     </aside>
-
+  
                     <!-- Main center feed and user profile section -->
                     <main class="flex-1 h-full flex flex-col bg-transparent overflow-hidden">
                         
                         <!-- RWD: Mobile header -->
                         <header class="flex md:hidden items-center justify-between px-5 py-4.5 border-b border-amber-500/10 bg-slate-950/60 backdrop-blur-md shrink-0">
                             <div class="flex items-center gap-2.5">
-                                <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-8 h-8 rounded-full border border-amber-500/20 object-cover animate-gentle-logo">
-                                <h1 class="text-lg font-black text-white tracking-[0.15em] italic font-luxury">SecretRoom</h1>
+                                <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-8.5 h-8.5 rounded-full border border-amber-500/20 object-cover animate-gentle-logo">
+                                <h1 class="text-xl font-black text-white tracking-[0.15em] italic font-luxury">SecretRoom</h1>
                             </div>
                             <button id="mobile-btn-share" class="w-9 h-9 bg-gradient-to-r from-amber-500 to-yellow-600 hover:brightness-110 text-slate-950 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition">
                                 <i class="fa-solid fa-plus text-sm"></i>
                             </button>
                         </header>
-
+  
                         <!-- Main content scroll block -->
                         <div class="flex-1 overflow-y-auto scrollbar-hide px-4 md:px-6 py-5" id="main-content-scroll">
                             <div class="max-w-2xl mx-auto w-full space-y-6" id="dashboard-tab-content">
                                 <!-- Dynamic Subtab Content -->
                             </div>
                         </div>
-
+  
                         <!-- RWD: Mobile bottom navbar footer -->
-                        <footer class="flex md:hidden items-center justify-around border-t border-amber-500/10 bg-slate-950/90 backdrop-blur-md p-3 pb-safe-bottom shrink-0 select-none rounded-t-3xl">
+                        <nav class="flex md:hidden items-center justify-around border-t border-amber-500/10 bg-slate-950/90 backdrop-blur-md p-3 pb-safe-bottom shrink-0 select-none rounded-t-3xl">
                             <button id="mobile-tab-feed" class="flex flex-col items-center gap-1 transition-all ${window.state.currentTab === 'feed' ? 'text-amber-500 scale-105 font-bold' : 'text-slate-500'}">
                                 <i class="fa-solid fa-house-chimney text-base"></i>
-                                <span class="text-[9px] font-bold tracking-wider">首頁秘密</span>
+                                <span class="text-xs font-bold tracking-wider">首頁秘密</span>
                             </button>
                             <button id="mobile-tab-profile" class="flex flex-col items-center gap-1 transition-all ${window.state.currentTab === 'profile' ? 'text-amber-500 scale-105 font-bold' : 'text-slate-500'}">
                                 <i class="fa-solid fa-user-circle text-base"></i>
-                                <span class="text-[9px] font-bold tracking-wider">個人主頁</span>
+                                <span class="text-xs font-bold tracking-wider">個人主頁</span>
                             </button>
                             <button id="mobile-btn-logout" class="flex flex-col items-center gap-1 text-slate-600 hover:text-red-400 transition-all">
                                 <i class="fa-solid fa-power-off text-base"></i>
-                                <span class="text-[9px] font-bold tracking-wider">登出</span>
+                                <span class="text-xs font-bold tracking-wider">登出</span>
                             </button>
-                        </footer>
+                        </nav>
                     </main>
-
+  
                     <!-- PC Right explorer sidebar -->
                     <aside class="hidden lg:flex flex-col gap-6 w-80 border-l border-amber-500/10 bg-slate-950/80 p-5 shrink-0 overflow-y-auto select-none glass-panel rounded-l-3xl my-3 mr-3">
                         
                         <div class="bg-slate-950/60 border border-amber-500/10 p-5 rounded-3xl space-y-3.5 relative overflow-hidden">
                             <div class="absolute -top-6 -right-6 w-16 h-16 bg-amber-500/5 rounded-full blur-xl"></div>
                             <h3 class="text-xs font-bold text-amber-500 flex items-center gap-2 uppercase tracking-wider font-luxury">
-                                <i class="fa-solid fa-compass text-[11px]"></i> 熱門主題探索
+                                <i class="fa-solid fa-compass text-xs"></i> 熱門主題探索
                             </h3>
                             <div class="flex flex-wrap gap-2">
                                 ${window.state.kinksOptions.slice(0, 6).map((k) => `
-                                    <button onclick="setGlobalFilter('${k}')" class="text-[10px] font-bold bg-slate-950/40 hover:bg-amber-500/10 hover:text-amber-400 border border-slate-900 hover:border-amber-500/20 px-3 py-2 rounded-full text-slate-450 transition duration-300">
+                                    <button onclick="setGlobalFilter('${k}')" class="text-xs font-bold bg-slate-950/40 hover:bg-amber-500/10 hover:text-amber-400 border border-slate-900 hover:border-amber-500/20 px-3 py-2 rounded-full text-slate-400 transition duration-300">
                                         # ${k}
                                     </button>
                                 `).join('')}
                             </div>
                         </div>
-
+  
                         <div class="bg-slate-950/60 border border-amber-500/10 p-5 rounded-3xl space-y-4">
                             <h3 class="text-xs font-bold text-amber-500 flex items-center gap-2 uppercase tracking-wider font-luxury">
-                                <i class="fa-solid fa-user-group text-[11px]"></i> 線上活躍帳號
+                                <i class="fa-solid fa-user-group text-xs"></i> 線上活躍帳號
                             </h3>
                             <div class="space-y-3.5" id="active-users-list-aside">
-                                <div class="text-[11px] text-slate-650 text-center py-4 font-light">正在加載線上帳號中...</div>
+                                <div class="text-xs text-slate-500 text-center py-4 font-light">正在安全同步活躍節點...</div>
                             </div>
                         </div>
                     </aside>
-
+  
                 </div>
             `;
-
+  
             const bindTabEvents = (id, tabName) => {
                 const el = document.getElementById(id);
                 if (el) el.onclick = () => { 
@@ -1166,32 +1209,32 @@
                     renderDashboard(container); 
                 };
             };
-
+  
             bindTabEvents('aside-tab-feed', 'feed');
             bindTabEvents('aside-tab-profile', 'profile');
             bindTabEvents('mobile-tab-feed', 'feed');
             bindTabEvents('mobile-tab-profile', 'profile');
-
+  
             const logoutAction = () => {
                 localStorage.removeItem('sr_username');
                 window.state.userData = {};
                 window.state.applicationId = null;
-                showToast('已退出 SecretRoom 俱樂部。', 'info');
+                showToast('已安全退出 SecretRoom 俱樂部。', 'info');
                 navigate('landing');
             };
-
+  
             const logoutBtnAside = document.getElementById('aside-btn-logout');
             if (logoutBtnAside) logoutBtnAside.onclick = logoutAction;
-
+  
             const logoutBtnMobile = document.getElementById('mobile-btn-logout');
             if (logoutBtnMobile) logoutBtnMobile.onclick = logoutAction;
-
+  
             const shareBtnAside = document.getElementById('aside-btn-share');
             if (shareBtnAside) shareBtnAside.onclick = () => showSharePostModal();
-
+  
             const shareBtnMobile = document.getElementById('mobile-btn-share');
             if (shareBtnMobile) shareBtnMobile.onclick = () => showSharePostModal();
-
+  
             const tabContentContainer = document.getElementById('dashboard-tab-content');
             if (window.state.currentTab === 'feed') {
                 renderFeedTab(tabContentContainer);
@@ -1200,13 +1243,13 @@
             } else if (window.state.currentTab === 'other-profile') {
                 renderProfileTab(tabContentContainer, window.state.viewTargetUserId);
             }
-
+  
             startRealtimeSnapshotSync();
         }
-
+  
         function startRealtimeSnapshotSync() {
             if (!db || window.state.unsubscribeListener) return;
-
+  
             const postsQuery = query(collection(db, 'secretg_apps', appId, 'posts'));
             window.state.unsubscribeListener = onSnapshot(postsQuery, (snapshot) => {
                 const fetchedPosts = [];
@@ -1216,7 +1259,7 @@
                 window.state.posts = fetchedPosts;
                 updateSearchAndFeedUI();
             });
-
+  
             const usersQuery = query(collection(db, 'secretg_apps', appId, 'applications'), where('status', '==', 'active'));
             onSnapshot(usersQuery, (snapshot) => {
                 const fetchedUsers = [];
@@ -1227,21 +1270,21 @@
                 renderActiveUsersAside();
             });
         }
-
+  
         function renderActiveUsersAside() {
             const listContainer = document.getElementById('active-users-list-aside');
             if (!listContainer) return;
-
+  
             listContainer.innerHTML = '';
             const showList = window.state.activeUsers
                 .filter(u => u.id !== window.state.applicationId)
                 .slice(0, 4);
-
+  
             if (showList.length === 0) {
-                listContainer.innerHTML = '<div class="text-[10px] text-slate-600 py-3 text-center">目前尚無其他活躍會員</div>';
+                listContainer.innerHTML = '<div class="text-xs text-slate-500 py-3 text-center">目前尚無其他活躍同好</div>';
                 return;
             }
-
+  
             showList.forEach((user) => {
                 const card = document.createElement('div');
                 card.className = 'flex items-center justify-between p-2.5 bg-slate-950/60 hover:bg-amber-500/5 rounded-2xl border border-slate-900 hover:border-amber-500/10 cursor-pointer transition duration-300';
@@ -1251,63 +1294,63 @@
                         <img src="${user.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-8 h-8 rounded-full object-cover border border-slate-800">
                         <div class="overflow-hidden">
                             <div class="flex items-center gap-1.5">
-                                <h4 class="font-bold text-xs text-slate-300 truncate">${user.nickname}</h4>
+                                <h4 class="font-bold text-sm text-slate-300 truncate">${user.nickname}</h4>
                             </div>
-                            <span class="text-[9px] text-slate-500 block truncate font-mono mt-0.5">@${user.id}</span>
+                            <span class="text-xs text-slate-500 block truncate font-mono mt-0.5">@${user.id}</span>
                         </div>
                     </div>
-                    <i class="fa-solid fa-chevron-right text-[9px] text-slate-700"></i>
+                    <i class="fa-solid fa-chevron-right text-xs text-slate-700"></i>
                 `;
                 listContainer.appendChild(card);
             });
         }
-
+  
         function renderFeedTab(container) {
             container.innerHTML = `
                 <div class="relative w-full z-20">
-                    <div class="flex items-center bg-slate-950/90 border border-amber-500/10 rounded-2xl px-4 py-3 shadow-lg backdrop-blur-md">
-                        <i class="fa-solid fa-magnifying-glass text-amber-500/70 text-xs mr-3"></i>
-                        <input type="text" id="feed-search-input" class="w-full bg-transparent text-xs text-white focus:outline-none" placeholder="搜尋動態、標籤、暱稱或帳號ID" value="${window.state.searchTerm}">
+                    <div class="flex items-center bg-slate-950/90 border border-amber-500/10 rounded-2xl px-4 py-3.5 shadow-lg backdrop-blur-md">
+                        <i class="fa-solid fa-magnifying-glass text-amber-500/70 text-sm mr-3"></i>
+                        <input type="text" id="feed-search-input" class="w-full bg-transparent text-sm text-white focus:outline-none" placeholder="搜尋秘密、標籤、暱稱或帳號ID" value="${window.state.searchTerm}">
                     </div>
                     
                     <!-- 搜尋覆蓋面板 -->
                     <div id="search-results-overlay" class="absolute left-0 right-0 top-14 bg-slate-950/95 border border-amber-500/15 rounded-3xl p-4 shadow-2xl hidden flex flex-col gap-3 max-h-[450px] overflow-hidden z-50 backdrop-blur-xl">
                     </div>
                 </div>
-
-                <!-- 快速篩選器 -->
-                <div class="flex items-center gap-2 overflow-x-auto scrollbar-hide py-1">
-                    <button onclick="setGlobalFilter('recommended')" id="filter-btn-recommended" class="shrink-0 text-[10px] font-bold uppercase tracking-widest px-4 py-3 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'recommended' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900'}">
+  
+                <!-- 快速篩選器：拓寬按鈕內距 (px-6 py-3.5) 與提升文字至 text-xs，防止點擊時的橘框與文字過近 -->
+                <div class="flex items-center gap-2.5 overflow-x-auto scrollbar-hide py-1.5">
+                    <button onclick="setGlobalFilter('recommended')" id="filter-btn-recommended" class="shrink-0 text-xs font-bold uppercase tracking-widest px-6 py-3.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'recommended' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900'}">
                         <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>智慧推薦
                     </button>
-                    <button onclick="setGlobalFilter('highly-rated')" id="filter-btn-highly-rated" class="shrink-0 text-[10px] font-bold uppercase tracking-widest px-4 py-3 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'highly-rated' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900'}">
+                    <button onclick="setGlobalFilter('highly-rated')" id="filter-btn-highly-rated" class="shrink-0 text-xs font-bold uppercase tracking-widest px-6 py-3.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'highly-rated' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900'}">
                         <i class="fa-solid fa-star mr-1.5"></i>高分評分
                     </button>
-                    <button onclick="setGlobalFilter('popular')" id="filter-btn-popular" class="shrink-0 text-[10px] font-bold uppercase tracking-widest px-4 py-3 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'popular' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900'}">
+                    <button onclick="setGlobalFilter('popular')" id="filter-btn-popular" class="shrink-0 text-xs font-bold uppercase tracking-widest px-6 py-3.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'popular' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900'}">
                         <i class="fa-solid fa-fire-flame-curved mr-1.5"></i>人氣按讚
                     </button>
-                    <button onclick="setGlobalFilter('elite-ranking')" id="filter-btn-elite-ranking" class="shrink-0 text-[10px] font-bold uppercase tracking-widest px-4 py-3 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'elite-ranking' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900'}">
+                    <button onclick="setGlobalFilter('elite-ranking')" id="filter-btn-elite-ranking" class="shrink-0 text-xs font-bold uppercase tracking-widest px-6 py-3.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'elite-ranking' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900'}">
                         <i class="fa-solid fa-trophy mr-1.5"></i>綜合排行
                     </button>
                 </div>
-
-                <div id="ranking-sub-tabs" class="hidden flex items-center gap-2 overflow-x-auto scrollbar-hide py-1.5 border-t border-b border-slate-900/40">
-                    <span class="shrink-0 text-[9px] font-bold text-amber-500 uppercase tracking-widest mr-1">排名分類:</span>
+  
+                <div id="ranking-sub-tabs" class="hidden flex items-center gap-2 overflow-x-auto scrollbar-hide py-2 border-t border-b border-slate-900/40">
+                    <span class="shrink-0 text-xs font-bold text-amber-500 uppercase tracking-widest mr-1">排名分類:</span>
                     ${window.state.kinksOptions.map((k) => `
-                        <button onclick="setRankingTag('${k}')" class="sub-rank-btn shrink-0 text-[10px] font-bold px-3 py-1.5 rounded-full border border-slate-900 transition duration-300 ${window.state.currentRankTag === k ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-slate-950/30 text-slate-500'}" data-tag="${k}">
+                        <button onclick="setRankingTag('${k}')" class="sub-rank-btn shrink-0 text-xs font-bold px-4 py-2 rounded-full border border-slate-900 transition duration-300 ${window.state.currentRankTag === k ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-slate-950/30 text-slate-500'}" data-tag="${k}">
                             # ${k}
                         </button>
                     `).join('')}
                 </div>
-
+  
                 <div class="space-y-4" id="feed-posts-list">
                     <div class="text-center py-12 text-slate-500 flex flex-col items-center gap-2">
-                        <i class="fa-solid fa-circle-notch animate-spin text-xl text-amber-500"></i>
-                        <span>正在與伺服器建立通道...</span>
+                        <i class="fa-solid fa-circle-notch animate-spin text-2xl text-amber-500"></i>
+                        <span>正在與會所建立安全防護通道...</span>
                     </div>
                 </div>
             `;
-
+  
             const searchInput = document.getElementById('feed-search-input');
             searchInput.oninput = (e) => {
                 window.state.searchTerm = e.target.value;
@@ -1316,7 +1359,7 @@
                     updateSearchAndFeedUI();
                 }, 150);
             };
-
+  
             const mainScroll = document.getElementById('main-content-scroll');
             if (mainScroll) {
                 mainScroll.onscroll = () => {
@@ -1326,10 +1369,10 @@
                     }
                 };
             }
-
+  
             updateSearchAndFeedUI();
         }
-
+  
         window.setGlobalFilter = function(filterName) {
             window.state.currentFilter = filterName;
             window.state.singlePostFocusId = null; 
@@ -1345,13 +1388,13 @@
                 const btn = document.getElementById(`filter-btn-${t}`);
                 if (btn) {
                     if (t === filterName) {
-                        btn.className = "shrink-0 text-[10px] font-bold uppercase tracking-widest px-4 py-3 rounded-full border transition-all duration-300 bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30 animate-pulse";
+                        btn.className = "shrink-0 text-xs font-bold uppercase tracking-widest px-6 py-3.5 rounded-full border transition-all duration-300 bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30 animate-pulse";
                     } else {
-                        btn.className = "shrink-0 text-[10px] font-bold uppercase tracking-widest px-4 py-3 rounded-full border transition-all duration-300 bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900";
+                        btn.className = "shrink-0 text-xs font-bold uppercase tracking-widest px-6 py-3.5 rounded-full border transition-all duration-300 bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900";
                     }
                 }
             });
-
+  
             const subTabsContainer = document.getElementById('ranking-sub-tabs');
             if (subTabsContainer) {
                 if (filterName === 'elite-ranking') {
@@ -1360,10 +1403,10 @@
                     subTabsContainer.classList.add('hidden');
                 }
             }
-
+  
             updateSearchAndFeedUI();
         };
-
+  
         window.setRankingTag = function(kinkTag) {
             window.state.currentRankTag = kinkTag;
             window.state.singlePostFocusId = null; 
@@ -1371,20 +1414,20 @@
             document.querySelectorAll('.sub-rank-btn').forEach(btn => {
                 const dataTag = btn.getAttribute('data-tag');
                 if (dataTag === kinkTag) {
-                    btn.className = "sub-rank-btn shrink-0 text-[10px] font-bold px-3 py-1.5 rounded-full border transition duration-300 bg-amber-500/10 text-amber-400 border-amber-500/20";
+                    btn.className = "sub-rank-btn shrink-0 text-xs font-bold px-4 py-2 rounded-full border transition duration-300 bg-amber-500/10 text-amber-400 border-amber-500/20";
                 } else {
-                    btn.className = "sub-rank-btn shrink-0 text-[10px] font-bold px-3 py-1.5 rounded-full border border-slate-900 bg-slate-950/30 text-slate-500 transition duration-300";
+                    btn.className = "sub-rank-btn shrink-0 text-xs font-bold px-4 py-2 rounded-full border border-slate-900 bg-slate-950/30 text-slate-500 transition duration-300";
                 }
             });
-
+  
             updateSearchAndFeedUI();
         };
-
+  
         window.setSearchTab = function(tabName) {
             window.state.searchTab = tabName;
             updateSearchAndFeedUI();
         };
-
+  
         window.viewSinglePost = function(postId) {
             window.state.currentTab = 'feed';
             window.state.singlePostFocusId = postId;
@@ -1395,19 +1438,19 @@
             if (searchOverlay) searchOverlay.classList.add('hidden');
             renderDashboard(appContainer);
         };
-
+  
         window.clearSinglePostFocus = function() {
             window.state.singlePostFocusId = null;
             updateSearchAndFeedUI();
         };
-
+  
         function updateSearchAndFeedUI() {
             const listContainer = document.getElementById('feed-posts-list');
             if (!listContainer) return;
-
+  
             const term = window.state.searchTerm.toLowerCase().trim();
             const searchOverlay = document.getElementById('search-results-overlay');
-
+  
             if (searchOverlay) {
                 if (term) {
                     searchOverlay.classList.remove('hidden');
@@ -1415,20 +1458,20 @@
                     const matchedUsers = window.state.activeUsers.filter(u => 
                         u.id.toLowerCase().includes(term) || u.nickname.toLowerCase().includes(term)
                     );
-
+  
                     const matchedPosts = window.state.posts.filter(post => 
                         (post.text && post.text.toLowerCase().includes(term)) || 
                         post.authorName.toLowerCase().includes(term) ||
                         post.userId.toLowerCase().includes(term) ||
                         (post.kinks && post.kinks.some(k => k.toLowerCase().includes(term)))
                     );
-
+  
                     searchOverlay.innerHTML = `
                         <div class="flex border-b border-amber-500/10 pb-2">
-                            <button onclick="setSearchTab('posts')" class="flex-1 text-center py-2 text-xs font-bold uppercase tracking-wider transition ${window.state.searchTab === 'posts' ? 'text-amber-500 border-b-2 border-amber-500' : 'text-slate-500 hover:text-slate-300'}">
+                            <button onclick="setSearchTab('posts')" class="flex-1 text-center py-2 text-sm font-bold uppercase tracking-wider transition ${window.state.searchTab === 'posts' ? 'text-amber-500 border-b-2 border-amber-500' : 'text-slate-500 hover:text-slate-300'}">
                                 秘密牆動態 (${matchedPosts.length})
                             </button>
-                            <button onclick="setSearchTab('users')" class="flex-1 text-center py-2 text-xs font-bold uppercase tracking-wider transition ${window.state.searchTab === 'users' ? 'text-amber-500 border-b-2 border-amber-500' : 'text-slate-500 hover:text-slate-300'}">
+                            <button onclick="setSearchTab('users')" class="flex-1 text-center py-2 text-sm font-bold uppercase tracking-wider transition ${window.state.searchTab === 'users' ? 'text-amber-500 border-b-2 border-amber-500' : 'text-slate-500 hover:text-slate-300'}">
                                 俱樂部成員 (${matchedUsers.length})
                             </button>
                         </div>
@@ -1436,35 +1479,35 @@
                         <div class="overflow-y-auto pr-1 flex-1 space-y-2.5 max-h-[350px]">
                             ${window.state.searchTab === 'posts' ? 
                                 (matchedPosts.length === 0 ? 
-                                    `<div class="text-[10px] text-slate-650 py-6 text-center font-light">未尋得相符動態</div>` :
+                                    `\<div class="text-xs text-slate-500 py-6 text-center font-light"\>未尋得相符秘密動態\</div\>` :
                                     matchedPosts.map(post => `
-                                        <div class="p-3 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 rounded-2xl transition cursor-pointer" onclick="viewSinglePost('${post.id}')">
+                                        <div class="p-3.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 rounded-2xl transition cursor-pointer" onclick="viewSinglePost('${post.id}')">
                                             <div class="flex items-center gap-2 mb-1.5">
-                                                <img src="${post.authorAvatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-6 h-6 rounded-full object-cover">
+                                                <img src="${post.authorAvatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-6.5 h-6.5 rounded-full object-cover">
                                                 <div>
-                                                    <span class="text-[10.5px] font-bold text-slate-300 block leading-tight">${post.authorName}</span>
-                                                    <span class="text-[8.5px] text-slate-550 font-mono block">@${post.userId}</span>
+                                                    <span class="text-xs font-bold text-slate-300 block leading-tight">${post.authorName}</span>
+                                                    <span class="text-[10px] text-slate-500 font-mono block">@${post.userId}</span>
                                                 </div>
                                             </div>
-                                            <p class="text-[11px] text-slate-400 truncate">${post.text || '(僅發布相片)'}</p>
+                                            <p class="text-xs text-slate-400 truncate">${post.text || '(發布相片秘密)'}</p>
                                         </div>
                                     `).join('')
                                 ) :
                                 (matchedUsers.length === 0 ? 
-                                    `<div class="text-[10px] text-slate-650 py-6 text-center font-light">未尋得相符帳號</div>` :
+                                    `\<div class="text-xs text-slate-500 py-6 text-center font-light"\>未尋得相符同好\</div\>` :
                                     matchedUsers.map(u => `
                                         <div onclick="viewUserProfile('${u.id}')" class="flex items-center justify-between p-2.5 bg-slate-900/60 hover:bg-slate-900 border border-slate-800 rounded-2xl transition cursor-pointer">
                                             <div class="flex items-center gap-2.5 overflow-hidden">
-                                                <img src="${u.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-8 h-8 rounded-full object-cover border border-amber-500/10">
+                                                <img src="${u.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-8.5 h-8.5 rounded-full object-cover border border-amber-500/10">
                                                 <div class="overflow-hidden">
                                                     <div class="flex items-center gap-1.5">
                                                         <span class="text-xs font-bold text-slate-200 truncate">${u.nickname}</span>
                                                         ${getBadgeHTML(u)}
                                                     </div>
-                                                    <span class="text-[9px] text-slate-500 block">@${u.id}</span>
+                                                    <span class="text-[10px] text-slate-500 block">@${u.id}</span>
                                                 </div>
                                             </div>
-                                            <i class="fa-solid fa-chevron-right text-[10px] text-slate-600"></i>
+                                            <i class="fa-solid fa-chevron-right text-xs text-slate-600"></i>
                                         </div>
                                     `).join('')
                                 )
@@ -1475,10 +1518,10 @@
                     searchOverlay.classList.add('hidden');
                 }
             }
-
+  
             let list = [...window.state.posts];
             let isFocusedMode = false;
-
+  
             if (window.state.singlePostFocusId) {
                 list = list.filter(post => post.id === window.state.singlePostFocusId);
                 isFocusedMode = true;
@@ -1491,7 +1534,7 @@
                         (post.kinks && post.kinks.some(k => k.toLowerCase().includes(term)))
                     );
                 }
-
+  
                 const f = window.state.currentFilter;
                 
                 if (f === 'highly-rated') {
@@ -1500,10 +1543,10 @@
                         const avg = ratings.length > 0 ? (ratings.reduce((a,b)=>a+b, 0) / ratings.length) : 0;
                         return { ...post, tempAvg: avg };
                     }).filter(p => p.tempAvg >= 4.0).sort((a,b) => b.tempAvg - a.tempAvg);
-
+  
                 } else if (f === 'popular') {
                     list = list.sort((a,b) => (b.likeCount || 0) - (a.likeCount || 0));
-
+  
                 } else if (f === 'elite-ranking') {
                     const targetTag = window.state.currentRankTag;
                     if (targetTag) {
@@ -1512,7 +1555,7 @@
                             return post.kinks.some(pk => pk === targetTag);
                         });
                     }
-
+  
                     list = list.map(post => {
                         const views = post.viewCount || 0;
                         const likes = post.likeCount || 0;
@@ -1520,7 +1563,7 @@
                         const score = (views * 0.05) + (likes * 0.45) + (ratingSum * 0.5);
                         return { ...post, rankScore: score };
                     }).sort((a,b) => b.rankScore - a.rankScore);
-
+  
                 } else if (f !== 'recommended' && f) {
                     list = list.filter(post => {
                         if (!post.kinks) return false;
@@ -1531,33 +1574,33 @@
                     });
                 }
             }
-
+  
             const totalCount = list.length;
             const slicedList = list.slice(0, window.state.visiblePostsCount);
-
+  
             listContainer.innerHTML = '';
-
+  
             if (isFocusedMode) {
                 const backBtnWrapper = document.createElement('div');
                 backBtnWrapper.className = 'mb-4';
                 backBtnWrapper.innerHTML = `
                     <button onclick="clearSinglePostFocus()" class="bg-slate-900 hover:bg-slate-800 text-amber-500 font-bold text-xs py-2.5 px-4 rounded-xl border border-amber-500/10 flex items-center gap-2 transition shadow-md">
-                        <i class="fa-solid fa-arrow-left"></i> 顯示全體祕密牆
+                        <i class="fa-solid fa-arrow-left"></i> 顯示全體祕密大廳
                     </button>
                 `;
                 listContainer.appendChild(backBtnWrapper);
             }
-
+  
             if (slicedList.length === 0) {
                 const emptyCard = document.createElement('div');
                 emptyCard.className = 'text-center py-16 bg-slate-900/10 border border-slate-900/50 rounded-3xl p-6 flex flex-col items-center justify-center gap-3';
                 emptyCard.innerHTML = `
-                    <div class="w-12 h-12 bg-slate-900/60 rounded-full flex items-center justify-center text-slate-650 text-xl border border-slate-800/55">
+                    <div class="w-14 h-14 bg-slate-900/60 rounded-full flex items-center justify-center text-slate-500 text-xl border border-slate-800/55">
                         <i class="fa-solid fa-folder-open text-amber-500/60"></i>
                     </div>
                     <div>
-                        <h4 class="font-bold text-slate-400 text-xs">目前尚無任何祕密動態</h4>
-                        <p class="text-[10px] text-slate-650 mt-1">成為第一個分享精彩近況的兄弟吧！</p>
+                        <h4 class="font-bold text-slate-400 text-sm">目前大廳尚無此偏好的祕密動態</h4>
+                        <p class="text-xs text-slate-500 mt-1">點擊分享動態，成為第一個探索本主題的創始紳士吧！</p>
                     </div>
                 `;
                 listContainer.appendChild(emptyCard);
@@ -1572,7 +1615,7 @@
                     window.state.viewedPostsInSession[post.id] = true;
                     incrementPostViewCount(post.id);
                 }
-
+  
                 let rankingCrownHtml = '';
                 if (window.state.currentFilter === 'elite-ranking' && !isFocusedMode) {
                     const rank = index + 1;
@@ -1591,15 +1634,13 @@
                         </div>
                     `;
                 }
-
+  
                 const authorBadgeHtml = getUserBadgeHTMLForPost(post);
-
                 const ratings = post.ratings ? Object.values(post.ratings) : [];
                 const averageRating = ratings.length > 0 ? (ratings.reduce((a,b)=>a+b, 0) / ratings.length) : 0.0;
-
                 const userLiked = post.likes && post.likes[window.state.applicationId];
                 const commentCount = post.comments ? Object.keys(post.comments).length : 0;
-
+  
                 let imageHtml = '';
                 if (post.image) {
                     const isNSFW = post.isSensitive;
@@ -1613,8 +1654,8 @@
                                     <div class="w-11 h-11 bg-rose-500/15 rounded-full flex items-center justify-center text-rose-500 text-lg mb-2 shadow-lg shadow-rose-950/20">
                                         <i class="fa-solid fa-eye-slash"></i>
                                     </div>
-                                    <h5 class="text-xs font-bold text-rose-400">私密尺度照片 (NSFW)</h5>
-                                    <p class="text-[9.5px] text-slate-500 mt-1.5">此照片被發布者標記為敏感照片，點擊立即解鎖 🔒</p>
+                                    <h5 class="text-sm font-bold text-rose-400">私密尺度照片 (NSFW)</h5>
+                                    <p class="text-xs text-slate-550 mt-1.5">此照片被發布者標記為敏感照片，點擊立即安全解鎖 🔒</p>
                                 </div>
                             </div>
                         `;
@@ -1630,23 +1671,22 @@
                         `;
                     }
                 }
-
-                // 恢復貼文檢舉功能：新增檢舉與刪除的管理動作按鈕排版
+  
                 let actionBtnHtml = '';
                 if (post.userId === window.state.applicationId) {
                     actionBtnHtml = `
-                        <button onclick="deleteMyPost('${post.id}')" class="text-slate-600 hover:text-red-400 transition text-xs" title="刪除此秘密">
+                        <button onclick="deleteMyPost('${post.id}')" class="text-slate-600 hover:text-red-400 transition text-sm" title="刪除此秘密">
                             <i class="fa-regular fa-trash-can"></i>
                         </button>
                     `;
                 } else {
                     actionBtnHtml = `
-                        <button onclick="openReportModal('${post.id}')" class="text-slate-600 hover:text-rose-450 transition text-xs" title="檢舉此內容">
+                        <button onclick="openReportModal('${post.id}')" class="text-slate-600 hover:text-rose-450 transition text-sm" title="檢舉此內容">
                             <i class="fa-regular fa-flag"></i>
                         </button>
                     `;
                 }
-
+  
                 const peachEggplantHtml = userLiked ? `
                     <button onclick="toggleLikePost('${post.id}')" class="flex items-center gap-1.5 text-purple-400 font-bold transition duration-300">
                         <svg class="w-5 h-5 text-purple-400 fill-current" viewBox="0 0 64 64" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
@@ -1665,121 +1705,122 @@
                         <span>${post.likeCount || 0} 個讚</span>
                     </button>
                 `;
-
+  
+                // 調整貼文作者的頭像至優雅微細 w-8 h-8
                 card.innerHTML = `
                     ${rankingCrownHtml}
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3 cursor-pointer" onclick="viewUserProfile('${post.userId}')">
-                            <img src="${post.authorAvatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-10 h-10 rounded-full object-cover border border-slate-800">
+                            <img src="${post.authorAvatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-8 h-8 rounded-full object-cover border border-slate-800">
                             <div>
                                 <div class="flex items-center gap-2">
-                                    <h4 class="font-bold text-xs text-slate-200">${post.authorName}</h4>
+                                    <h4 class="font-bold text-sm text-slate-200">${post.authorName}</h4>
                                     ${authorBadgeHtml}
                                 </div>
-                                <span class="text-[9px] text-slate-500 block font-mono">@${post.userId}</span>
+                                <span class="text-[10px] text-slate-500 block font-mono">@${post.userId}</span>
                             </div>
                         </div>
                         ${actionBtnHtml}
                     </div>
-
-                    <p class="text-xs text-slate-300 leading-relaxed font-light whitespace-pre-line">${post.text}</p>
-
+  
+                    <p class="text-sm text-slate-300 leading-relaxed font-light whitespace-pre-line">${post.text}</p>
+  
                     ${imageHtml}
-
+  
                     ${post.kinks && post.kinks.length > 0 ? `
                         <div class="flex flex-wrap gap-1.5">
                             ${post.kinks.map(k => `
-                                <span class="text-[9.5px] font-bold text-amber-500/80 bg-amber-550/5 px-3 py-1 rounded-full border border-amber-500/5"># ${k}</span>
+                                <span class="text-xs font-bold text-amber-500/80 bg-amber-500/5 px-3 py-1 rounded-full border border-amber-500/5"># ${k}</span>
                             `).join('')}
                         </div>
                     ` : ''}
-
-                    <div class="pt-3 border-t border-slate-900/60 flex items-center justify-between text-slate-500 text-[10.5px]">
+  
+                    <div class="pt-3 border-t border-slate-900/60 flex items-center justify-between text-slate-500 text-sm">
                         
                         ${peachEggplantHtml}
-
+  
                         <button onclick="toggleCommentsSection('${post.id}')" class="flex items-center gap-1.5 hover:text-amber-400 transition">
                             <i class="fa-regular fa-comments"></i>
                             <span>${commentCount} 則留言</span>
                         </button>
-
+  
                         <div class="flex items-center gap-2">
                             <div class="flex items-center gap-0.5 text-slate-650">
                                 ${[1, 2, 3, 4, 5].map(star => {
                                     const ratingVal = post.ratings && post.ratings[window.state.applicationId];
                                     const activeColor = ratingVal && ratingVal >= star ? 'text-amber-500' : 'text-slate-700 hover:text-amber-400';
-                                    return `<i onclick="ratePost('${post.id}', ${star})" class="fa-solid fa-star cursor-pointer transition text-[11px] ${activeColor}"></i>`;
+                                    return `<i onclick="ratePost('${post.id}', ${star})" class="fa-solid fa-star cursor-pointer transition text-xs ${activeColor}"></i>`;
                                 }).join('')}
                             </div>
-                            <span class="text-[10px] text-slate-400 font-bold bg-slate-950 px-2 py-0.5 rounded-md border border-slate-900">${averageRating.toFixed(1)} (${ratings.length}人)</span>
+                            <span class="text-xs text-slate-400 font-bold bg-slate-950 px-2 py-0.5 rounded-md border border-slate-900">${averageRating.toFixed(1)} (${ratings.length}人)</span>
                         </div>
                     </div>
-
+  
                     <div id="comments-box-${post.id}" class="${window.state.openComments[post.id] ? '' : 'hidden'} mt-4 pt-4 border-t border-slate-900/60 space-y-3">
                         <div class="flex gap-2">
-                            <input type="text" id="comment-input-${post.id}" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" placeholder="誠摯回應，打個招呼吧...">
-                            <button onclick="submitComment('${post.id}')" class="bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-[10px] px-4 rounded-xl transition shrink-0 active:scale-95">送出</button>
+                            <input type="text" id="comment-input-${post.id}" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" placeholder="與兄弟低聲交流...">
+                            <button onclick="submitComment('${post.id}')" class="bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs px-4 rounded-xl transition shrink-0 active:scale-95">送出</button>
                         </div>
                         <div class="space-y-2.5 max-h-48 overflow-y-auto pr-1" id="comments-list-${post.id}">
                             ${post.comments ? Object.values(post.comments).map(c => `
                                 <div class="bg-slate-950/60 p-2.5 rounded-xl border border-slate-900/60 text-xs">
                                     <div class="flex items-center justify-between mb-1.5">
                                         <span class="font-bold text-slate-300">@${c.userId}</span>
-                                        <span class="text-[8px] text-slate-650 font-mono">${new Date(c.time).toLocaleDateString()}</span>
+                                        <span class="text-[9px] text-slate-650 font-mono">${new Date(c.time).toLocaleDateString()}</span>
                                     </div>
                                     <p class="text-slate-400 font-light leading-relaxed">${c.text}</p>
                                 </div>
-                            `).reverse().join('') : `<div class="text-[9px] text-slate-650 text-center py-2">目前尚無任何留言</div>`}
+                            `).reverse().join('') : `<div class="text-[10px] text-slate-650 text-center py-2">目前尚無任何交流...</div>`}
                         </div>
                     </div>
                 `;
                 listContainer.appendChild(card);
             });
-
+  
             if (totalCount > window.state.visiblePostsCount && !isFocusedMode) {
                 const loadMoreEl = document.createElement('div');
-                loadMoreEl.className = 'text-center py-4 text-[10px] text-slate-550 animate-pulse';
+                loadMoreEl.className = 'text-center py-4 text-xs text-slate-550 animate-pulse';
                 loadMoreEl.textContent = '往下滾動載入更多祕密內容... 🔑';
                 listContainer.appendChild(loadMoreEl);
             } else if (!isFocusedMode) {
                 const finishedEl = document.createElement('div');
-                finishedEl.className = 'text-center py-6 text-[10px] text-slate-600 border-t border-slate-900/40 mt-4';
-                finishedEl.innerHTML = '已看完最新動態 🔒';
+                finishedEl.className = 'text-center py-6 text-xs text-slate-600 border-t border-slate-900/40 mt-4';
+                finishedEl.innerHTML = '已看完大廳最新秘密 🔒';
                 listContainer.appendChild(finishedEl);
             }
         }
-
+  
         function renderProfileTab(container, profileUserId) {
             const isMe = profileUserId === window.state.applicationId;
             const profileUser = isMe ? window.state.userData : window.state.activeUsers.find(u => u.id === profileUserId);
-
+  
             if (!profileUser) {
                 container.innerHTML = `
                     <div class="text-center py-12 text-slate-500">
                         <i class="fa-solid fa-circle-exclamation text-2xl mb-2 text-rose-500"></i>
-                        <p class="text-xs">無法讀取該會員的個人檔案。</p>
-                        <button onclick="backToFeed()" class="text-xs text-amber-500 mt-2 hover:underline">返回首頁</button>
+                        <p class="text-sm">無法讀取該會員的個人檔案。</p>
+                        <button onclick="backToFeed()" class="text-sm text-amber-500 mt-2 hover:underline">返回首頁</button>
                     </div>
                 `;
                 return;
             }
-
+  
             if (!isMe) {
                 addVisitorRecord(profileUserId);
             }
-
+  
             const kinksStr = profileUser.kinks && profileUser.kinks.length > 0 ? profileUser.kinks.map(k=>`# ${k}`).join(', ') : '無選定標籤';
-
+  
             let specApplyBtnHtml = '';
             const specLength = parseFloat(profileUser.length || 0);
             const specGirth = parseFloat(profileUser.girth || 0);
-
+  
             if (specLength >= 16 && specGirth >= 5) {
                 if (profileUser.isSpecElite) {
                     specApplyBtnHtml = '';
                 } else if (profileUser.specEliteStatus === 'pending') {
                     specApplyBtnHtml = `
-                        <button class="w-full bg-slate-900/50 border border-slate-850 text-amber-500/70 font-semibold text-xs py-3 px-4 rounded-xl mt-3 flex items-center justify-center gap-1.5 select-none animate-pulse">
+                        <button class="w-full bg-slate-900/50 border border-slate-850 text-amber-500/70 font-semibold text-xs py-3.5 px-4 rounded-xl mt-3 flex items-center justify-center gap-1.5 select-none animate-pulse">
                             <i class="fa-solid fa-spinner animate-spin"></i> 黃金 Spec 認證審查中...
                         </button>
                     `;
@@ -1791,27 +1832,28 @@
                     `;
                 }
             }
-
+  
             let visitorsHtml = '';
             if (isMe) {
                 const myVisitors = window.state.visitors || [];
                 visitorsHtml = `
                     <div class="bg-[#05050a] border border-amber-500/10 p-5 rounded-3xl space-y-4 animate-fade-in shadow-xl shadow-black/40">
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block"><i class="fa-regular fa-eye text-amber-500 mr-1"></i> 最近誰來看過我 (足跡)：</span>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block"><i class="fa-regular fa-eye text-amber-500 mr-1"></i> 最近誰來看過我 (足跡)：</span>
                         <div class="flex items-center gap-4 overflow-x-auto scrollbar-hide py-1">
                             ${myVisitors.length === 0 ? `
-                                <div class="text-[10px] text-slate-650 py-1 font-light">目前尚無訪問足跡</div>
+                                <div class="text-xs text-slate-600 py-1 font-light">目前尚無訪問足跡...</div>
                             ` : myVisitors.map(v => `
                                 <div onclick="viewUserProfile('${v.from}')" class="flex flex-col items-center shrink-0 cursor-pointer group">
                                     <img src="${v.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-10 h-10 rounded-full object-cover border border-slate-800 group-hover:border-amber-500 transition duration-300">
-                                    <span class="text-[9px] text-slate-500 mt-2 truncate max-w-[55px] font-mono group-hover:text-amber-400 transition">@${v.from}</span>
+                                    <span class="text-[10px] text-slate-500 mt-2 truncate max-w-[55px] font-mono group-hover:text-amber-400 transition">@${v.from}</span>
                                 </div>
                             `).join('')}
                         </div>
                     </div>
                 `;
             }
-
+  
+            // 個人主頁徽章區域 (getBadgeHTML) 已完成「絕不顯示贅餘文字」的視覺化升級
             container.innerHTML = `
                 <div class="bg-slate-900/25 border border-slate-900/80 rounded-3xl p-6 relative flex flex-col items-center text-center space-y-5">
                     
@@ -1820,55 +1862,55 @@
                             <i class="fa-solid fa-arrow-left"></i> 返回秘密牆
                         </button>
                     ` : ''}
-
+  
                     <div class="relative w-24 h-24 rounded-full p-1 bg-slate-950 border border-slate-850 shadow-2xl select-none">
                         <img src="${profileUser.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-full h-full rounded-full object-cover">
                     </div>
-
+  
                     <div class="space-y-1.5 pt-1 flex flex-col items-center">
                         <h2 class="text-xl font-bold text-white tracking-wide flex items-center gap-1.5 justify-center">
                             <span>${profileUser.nickname}</span>
                         </h2>
-                        <span class="text-xs text-slate-500 block font-mono">@${profileUserId}</span>
+                        <span class="text-sm text-slate-500 block font-mono">@${profileUserId}</span>
                         
                         <!-- 膠囊微光勳章：極致奢華膠囊造型設計，帶有柔和霓虹背景 -->
                         <div class="flex items-center justify-center gap-2 mt-4.5 flex-wrap">
                             ${getBadgeHTML(profileUser, true)}
                         </div>
                     </div>
-
-                    <div class="grid grid-cols-2 gap-3 w-full bg-slate-950/40 p-4 border border-slate-900 rounded-2xl text-xs text-left text-slate-400 shadow-inner">
-                        <div><span class="text-slate-550 font-semibold mr-1">身高體重:</span> <span class="text-slate-300 font-bold">${profileUser.height} cm / ${profileUser.weight} kg</span></div>
-                        <div><span class="text-slate-550 font-semibold mr-1">私密數字:</span> <span class="text-slate-300 font-bold">長 ${profileUser.length} cm / 粗 ${profileUser.girth} cm</span></div>
+  
+                    <div class="grid grid-cols-2 gap-3 w-full bg-slate-950/40 p-4 border border-slate-900 rounded-2xl text-sm text-left text-slate-400 shadow-inner">
+                        <div><span class="text-slate-500 font-semibold mr-1">身高體重:</span> <span class="text-slate-300 font-bold">${profileUser.height} cm / ${profileUser.weight} kg</span></div>
+                        <div><span class="text-slate-500 font-semibold mr-1">私密數字:</span> <span class="text-slate-300 font-bold">長 ${profileUser.length} cm / 粗 ${profileUser.girth} cm</span></div>
                         <div class="col-span-2 pt-2 border-t border-slate-900/60 mt-2">
-                            <span class="text-slate-550 font-semibold">偏好主題:</span>
-                            <p class="text-slate-300 font-light mt-1.5 text-[11px] leading-relaxed font-semibold">${kinksStr}</p>
+                            <span class="text-slate-500 font-semibold">偏好主題:</span>
+                            <p class="text-slate-300 font-light mt-1.5 text-xs leading-relaxed font-semibold">${kinksStr}</p>
                         </div>
                     </div>
-
+  
                     ${isMe && profileUser.avatarStatus === 'pending' ? `
-                        <div class="w-full p-3 bg-purple-500/5 border border-purple-500/10 rounded-xl text-[10px] text-purple-400 font-bold flex items-center justify-center gap-1.5 select-none animate-pulse">
+                        <div class="w-full p-3 bg-purple-500/5 border border-purple-500/10 rounded-xl text-xs text-purple-400 font-bold flex items-center justify-center gap-1.5 select-none animate-pulse">
                             <i class="fa-solid fa-camera"></i> 新大頭相片正在背景人工審核中... (暫以原頭像顯示)
                         </div>
                     ` : ''}
-
+  
                     ${specApplyBtnHtml}
-
+  
                     ${isMe ? `
                         <button onclick="showEditProfileModal()" class="w-full bg-slate-900 hover:bg-slate-850 text-slate-300 font-semibold text-xs py-3 px-4 rounded-xl border border-slate-800 transition duration-300 active:scale-[0.98]">
                             修改個人資料
                         </button>
                     ` : ''}
                 </div>
-
+  
                 ${visitorsHtml}
             `;
-
+  
             if (isMe) {
                 listenToMyVisitors();
             }
         }
-
+  
         async function addVisitorRecord(targetUserId) {
             if (!db || targetUserId === window.state.applicationId) return;
             try {
@@ -1884,7 +1926,7 @@
                 console.error("訪客紀錄同步異常:", err);
             }
         }
-
+  
         function listenToMyVisitors() {
             if (!db || window.state.unsubscribeVisitorsListener) return;
             const q = query(
@@ -1904,7 +1946,7 @@
                 }
             });
         }
-
+  
         window.viewUserProfile = function(targetUserId) {
             if (targetUserId === window.state.applicationId) {
                 window.state.currentTab = 'profile';
@@ -1914,31 +1956,31 @@
             }
             renderDashboard(appContainer);
         };
-
+  
         window.backToFeed = function() {
             window.state.currentTab = 'feed';
             window.state.currentFilter = 'recommended';
             window.state.singlePostFocusId = null; 
             renderDashboard(appContainer);
         };
-
+  
         window.toggleLikePost = async function(postId) {
             if (!db) return;
             const post = window.state.posts.find(p => p.id === postId);
             if (!post) return;
-
+  
             const myId = window.state.applicationId;
             const likes = post.likes || {};
             const liked = likes[myId];
-
+  
             if (liked) {
                 delete likes[myId];
             } else {
                 likes[myId] = true;
             }
-
+  
             const likeCount = Object.keys(likes).length;
-
+  
             try {
                 const postRef = doc(db, 'secretg_apps', appId, 'posts', postId);
                 await updateDoc(postRef, {
@@ -1949,21 +1991,21 @@
                 console.error("按讚同步失敗:", err);
             }
         };
-
+  
         window.setGlobalFilterLabel = function(label) {
             window.state.currentFilter = label;
             updateSearchAndFeedUI();
         };
-
+  
         window.ratePost = async function(postId, ratingValue) {
             if (!db) return;
             const post = window.state.posts.find(p => p.id === postId);
             if (!post) return;
-
+  
             const myId = window.state.applicationId;
             const ratings = post.ratings || {};
             ratings[myId] = ratingValue;
-
+  
             try {
                 const postRef = doc(db, 'secretg_apps', appId, 'posts', postId);
                 await updateDoc(postRef, { ratings: ratings });
@@ -1972,7 +2014,7 @@
                 console.error("評分同步出錯:", err);
             }
         };
-
+  
         window.toggleCommentsSection = function(postId) {
             window.state.openComments[postId] = !window.state.openComments[postId];
             const box = document.getElementById(`comments-box-${postId}`);
@@ -1981,17 +2023,17 @@
                 else box.classList.add('hidden');
             }
         };
-
+  
         window.submitComment = async function(postId) {
             const input = document.getElementById(`comment-input-${postId}`);
             if (!input) return;
-
+  
             const text = input.value.trim();
             if (!text) return;
-
+  
             if (!db) return;
             showLoading();
-
+  
             try {
                 const post = window.state.posts.find(p => p.id === postId);
                 const comments = post.comments || {};
@@ -2003,7 +2045,7 @@
                     text: text,
                     time: Date.now()
                 };
-
+  
                 const postRef = doc(db, 'secretg_apps', appId, 'posts', postId);
                 await updateDoc(postRef, { comments: comments });
                 
@@ -2016,7 +2058,7 @@
                 hideLoading();
             }
         };
-
+  
         async function incrementPostViewCount(postId) {
             if (!db) return;
             try {
@@ -2031,24 +2073,23 @@
                 console.error("累計觀看失敗:", err);
             }
         }
-
+  
         window.unlockNSFW = function(postId) {
             window.state.unlockedNSFWPosts[postId] = true;
             updateSearchAndFeedUI();
             showToast('已完成端對端解密，解鎖私密圖片觀看 🔞', 'success');
         };
-
-        // 恢復貼文檢舉功能：彈出檢舉模態視窗與提交 Firebase 事件
+  
         window.openReportModal = function(postId) {
             const modal = document.createElement('div');
             modal.className = 'fixed inset-0 z-[105] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md';
             modal.innerHTML = `
                 <div class="bg-[#080810] border border-amber-500/20 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative">
-                    <button id="close-report-modal" class="absolute top-4 right-4 text-slate-500 hover:text-white text-xl">&times;</button>
+                    <button id="close-report-modal" class="absolute top-4 right-4 text-slate-500 hover:text-white text-2xl">&times;</button>
                     <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2 font-luxury">
                         <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> 檢舉此篇秘密
                     </h3>
-                    <p class="text-xs text-slate-400 mb-4 leading-relaxed">請選擇檢舉原因，我們將在後台派專員審核此內容：</p>
+                    <p class="text-sm text-slate-400 mb-4 leading-relaxed">請選擇檢舉原因，我們將在後台派專員審核此內容：</p>
                     <div class="space-y-2 mb-6">
                         <label class="flex items-center gap-2.5 cursor-pointer p-2.5 bg-slate-900 border border-slate-850 rounded-xl hover:border-amber-500/30 transition">
                             <input type="radio" name="report-reason" value="垃圾訊息或惡意洗版" class="accent-amber-500" checked>
@@ -2074,7 +2115,7 @@
                 </div>
             `;
             document.body.appendChild(modal);
-
+  
             document.getElementById('close-report-modal').onclick = () => modal.remove();
             document.getElementById('btn-report-cancel').onclick = () => modal.remove();
             document.getElementById('btn-report-submit').onclick = async () => {
@@ -2083,7 +2124,7 @@
                 modal.remove();
             };
         };
-
+  
         window.submitPostReport = async function(postId, reason) {
             if (!db) return;
             showLoading();
@@ -2094,25 +2135,24 @@
                     const postData = postSnap.data();
                     const currentReports = postData.reports || [];
                     const reporterId = window.state.applicationId;
-
-                    // 避免同一個使用者在當前會期重複檢舉
+  
                     if (currentReports.some(r => r.reporterId === reporterId)) {
                         showToast('您已經檢舉過此篇動態了！', 'info');
                         hideLoading();
                         return;
                     }
-
+  
                     const updatedReports = [...currentReports, {
                         reason: reason,
                         reporterId: reporterId,
                         timestamp: Date.now()
                     }];
-
+  
                     await updateDoc(postRef, {
                         reports: updatedReports,
                         reportCount: updatedReports.length
                     });
-
+  
                     showToast('安全檢舉已提交成功，管理團隊會儘速審查此秘密動態！', 'success');
                 }
             } catch (err) {
@@ -2122,78 +2162,78 @@
                 hideLoading();
             }
         };
-
+  
         function showSharePostModal() {
             const modal = document.createElement('div');
             modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md';
             modal.innerHTML = `
                 <div class="bg-[#080810] border border-amber-500/15 rounded-3xl p-6 max-w-md w-full shadow-2xl relative overflow-y-auto max-h-[90vh]">
-                    <button id="close-share" class="absolute top-4 right-4 text-slate-500 hover:text-white text-xl transition">&times;</button>
+                    <button id="close-share" class="absolute top-4 right-4 text-slate-500 hover:text-white text-2xl transition">&times;</button>
                     <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2 font-luxury">
-                        <i class="fa-solid fa-feather-point text-amber-500"></i> PUBLISH SECRET
+                        <i class="fa-solid fa-feather-pointed text-amber-500"></i> PUBLISH SECRET
                     </h3>
-                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">發布您的今日秘密動態。發布相片時將自動壓制安全防偽水印。</p>
-
+                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">發布您的今日秘密。發布相片時將自動於後台壓制安全防偽水印。</p>
+  
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">動態內容描述 (選填)</label>
-                            <textarea id="share-text" rows="3" class="w-full bg-slate-900 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 resize-none transition" placeholder="分享當下的健美近況 or 私密心境..."></textarea>
+                            <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">秘密內容描述 (選填)</label>
+                            <textarea id="share-text" rows="3" class="w-full bg-slate-900 border border-slate-850 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 resize-none transition" placeholder="分享當下的健美重訓成果 or 私密心情..."></textarea>
                         </div>
-
+  
                         <div>
-                            <label class="block text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">上傳照片 (選填)</label>
+                            <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">加載秘密照片 (選填)</label>
                             <div class="border border-slate-850 rounded-2xl p-4 flex flex-col items-center justify-center bg-slate-900/20 text-center">
                                 <div id="share-img-trigger" class="relative w-full h-40 rounded-xl border border-dashed border-slate-800 hover:border-amber-500 flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-slate-950 transition">
                                     <img id="share-preview" class="absolute inset-0 w-full h-full object-contain hidden">
                                     <div id="share-placeholder" class="text-slate-650 flex flex-col items-center gap-1.5 transition">
                                         <i class="fa-regular fa-image text-2xl"></i>
-                                        <span class="text-[9.5px] font-bold">點擊選取相片檔案</span>
+                                        <span class="text-xs font-bold">點擊選取相片</span>
                                     </div>
                                 </div>
                                 <input type="file" id="share-file" accept="image/*" class="hidden">
-                                <span class="text-[9px] text-slate-500 mt-2 block">照片上傳後會於背景自動套用防盜防偽安全浮水印。</span>
+                                <span class="text-[10px] text-slate-500 mt-2 block">相片加載後會於背景自動套用全渠道防偽安全性浮水印。</span>
                             </div>
                         </div>
-
+  
                         <div class="p-3 bg-rose-500/5 border border-rose-500/10 rounded-2xl">
                             <label class="flex items-center gap-3 cursor-pointer">
                                 <input type="checkbox" id="share-nsfw-cb" class="rounded border-slate-800 bg-slate-950 text-rose-600 focus:ring-rose-500 w-4 h-4">
                                 <div>
                                     <span class="text-xs text-rose-400 font-bold block">標記為私密尺度照片 (NSFW) 🔞</span>
-                                    <p class="text-[9px] text-slate-500 mt-0.5 leading-relaxed">勾選後，動態牆上照片會預設套用高斯毛玻璃模糊保護，防止他人意外曝光而尷尬。</p>
+                                    <p class="text-[10px] text-slate-500 mt-0.5 leading-relaxed">勾選後，大廳相片將預設以高精度毛玻璃覆蓋，點擊才會手動解密觀看。</p>
                                 </div>
                             </label>
                         </div>
-
+  
                         <div>
-                            <label class="block text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">關聯主題標籤 (至少勾選一項)</label>
+                            <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">關聯主題標籤 (至少勾選一項)</label>
                             <div class="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto bg-slate-950/40 p-3 border border-slate-850 rounded-2xl" id="share-kinks-container">
                                 ${window.state.kinksOptions.map(k => `
                                     <label class="flex items-center gap-2.5 cursor-pointer p-1 rounded hover:bg-slate-900/60 transition">
-                                        <input type="checkbox" name="share-kink" value="${k}" class="rounded border-slate-800 bg-slate-950 text-amber-500">
+                                        <input type="checkbox" name="share-kink" value="${k}" class="rounded border-slate-800 bg-slate-950 text-amber-500 w-3.5 h-3.5">
                                         <span class="text-xs text-slate-350 font-semibold">${k}</span>
                                     </label>
                                 `).join('')}
                             </div>
                         </div>
-
-                        <button id="btn-submit-post" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-bold text-xs py-3.5 rounded-xl transition shadow-lg tracking-wider active:scale-[0.98]">
-                            發布秘密動態
+  
+                        <button id="btn-submit-post" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-bold text-sm py-3.5 rounded-xl transition tracking-wider active:scale-[0.98]">
+                            安全發布秘密
                         </button>
                     </div>
                 </div>
             `;
             document.body.appendChild(modal);
-
+  
             document.getElementById('close-share').onclick = () => modal.remove();
-
+  
             const fileInput = document.getElementById('share-file');
             const previewImg = document.getElementById('share-preview');
             const placeholder = document.getElementById('share-placeholder');
             let bakedBase64 = '';
-
+  
             document.getElementById('share-img-trigger').onclick = () => fileInput.click();
-
+  
             fileInput.onchange = (e) => {
                 const file = e.target.files[0];
                 if (file) {
@@ -2212,10 +2252,10 @@
                             }
                             canvas.width = w;
                             canvas.height = h;
-
+  
                             const ctx = canvas.getContext('2d');
                             ctx.drawImage(img, 0, 0, w, h);
-
+  
                             ctx.save();
                             ctx.font = "bold 26px Cinzel";
                             ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
@@ -2225,7 +2265,7 @@
                             ctx.fillText("SECRETROOM PROOF", -160, -50);
                             ctx.fillText("SECRETROOM PROOF", -160, 50);
                             ctx.restore();
-
+  
                             bakedBase64 = canvas.toDataURL('image/jpeg', 0.82);
                             previewImg.src = bakedBase64;
                             previewImg.classList.remove('hidden');
@@ -2235,16 +2275,16 @@
                     reader.readAsDataURL(file);
                 }
             };
-
+  
             document.getElementById('btn-submit-post').onclick = async () => {
                 const text = document.getElementById('share-text').value.trim();
                 const isNSFW = document.getElementById('share-nsfw-cb').checked;
-
+  
                 const selectedKinks = [];
                 document.querySelectorAll('input[name="share-kink"]:checked').forEach(cb => {
                     selectedKinks.push(cb.value);
                 });
-
+  
                 if (!text && !bakedBase64) {
                     showToast('請填寫動態內容或選取要發布的照片！', 'error');
                     return;
@@ -2253,10 +2293,10 @@
                     showToast('請至少勾選一項主題標籤！', 'error');
                     return;
                 }
-
+  
                 if (!db) return;
                 showLoading();
-
+  
                 try {
                     const postRef = doc(collection(db, 'secretg_apps', appId, 'posts'));
                     await setDoc(postRef, {
@@ -2276,7 +2316,7 @@
                         reportCount: 0,
                         createdAt: serverTimestamp()
                     });
-
+  
                     modal.remove();
                     showToast('動態已安全發布並完成加密備份！', 'success');
                 } catch (err) {
@@ -2287,90 +2327,90 @@
                 }
             };
         }
-
+  
         function showEditProfileModal() {
             const user = window.state.userData;
             const modal = document.createElement('div');
             modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md';
             modal.innerHTML = `
                 <div class="bg-[#080810] border border-amber-500/10 rounded-3xl p-6 max-w-md w-full shadow-2xl relative overflow-y-auto max-h-[90vh]">
-                    <button id="close-edit" class="absolute top-4 right-4 text-slate-500 hover:text-white text-xl transition">&times;</button>
+                    <button id="close-edit" class="absolute top-4 right-4 text-slate-500 hover:text-white text-2xl transition">&times;</button>
                     <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2 font-luxury">
                         <i class="fa-solid fa-user-gear text-amber-500"></i> EDIT PROFILE
                     </h3>
                     <p class="text-xs text-slate-400 mb-5 leading-relaxed">填寫要變更的個人資訊，除頭像變更後需人工審核外，其餘欄位修改儲存後即會自動更新！</p>
-
+  
                     <div class="space-y-4">
                         
                         <div class="bg-slate-900/60 p-4 border border-slate-850 rounded-2xl flex items-center justify-between">
                             <div class="text-left max-w-[210px]">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">變更個人大頭照</span>
-                                <span class="text-[9px] text-amber-500/80 font-semibold block mt-1 leading-normal"><i class="fa-solid fa-camera"></i> 變更大頭照需要管理團隊人工二次核定後才予以替換啟用。</span>
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">變更個人大頭照</span>
+                                <span class="text-[10px] text-amber-500/80 font-semibold block mt-1 leading-normal"><i class="fa-solid fa-camera"></i> 變更大頭照需要管理團隊人工二次核定後才予以替換啟用。</span>
                             </div>
                             <div class="relative w-14 h-14 rounded-full border border-slate-800 cursor-pointer overflow-hidden shadow-md" id="edit-avatar-trigger">
                                 <img src="${user.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" id="edit-avatar-preview" class="w-full h-full object-cover">
                             </div>
                             <input type="file" id="edit-avatar-file" accept="image/*" class="hidden">
                         </div>
-
+  
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">個人暱稱</label>
-                            <input type="text" id="edit-nickname" value="${user.nickname || ''}" class="w-full bg-slate-900 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
+                            <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">個人暱稱</label>
+                            <input type="text" id="edit-nickname" value="${user.nickname || ''}" class="w-full bg-slate-900 border border-slate-850 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                         </div>
-
+  
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">身高 (cm)</label>
-                                <input type="number" id="edit-height" value="${user.height || ''}" class="w-full bg-slate-900 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
+                                <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">身高 (cm)</label>
+                                <input type="number" id="edit-height" value="${user.height || ''}" class="w-full bg-slate-900 border border-slate-850 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                             </div>
                             <div>
-                                <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">體重 (kg)</label>
-                                <input type="number" id="edit-weight" value="${user.weight || ''}" class="w-full bg-slate-900 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
+                                <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">體重 (kg)</label>
+                                <input type="number" id="edit-weight" value="${user.weight || ''}" class="w-full bg-slate-900 border border-slate-850 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                             </div>
                         </div>
-
+  
                         <div class="p-4 bg-slate-900/60 border border-slate-855 rounded-2xl">
-                            <span class="text-[10px] font-bold text-amber-500 uppercase tracking-widest block mb-2"><i class="fa-solid fa-lock mr-1"></i> 身體數據密碼規格</span>
+                            <span class="text-xs font-bold text-amber-500 uppercase tracking-widest block mb-2"><i class="fa-solid fa-lock mr-1"></i> 身體數據密碼規格</span>
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label class="block text-[9px] font-bold text-slate-500 mb-1">勃起長度 (cm)</label>
-                                    <input type="number" id="edit-length" value="${user.length || ''}" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1">勃起長度 (cm)</label>
+                                    <input type="number" id="edit-length" value="${user.length || ''}" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                                 </div>
                                 <div>
-                                    <label class="block text-[9px] font-bold text-slate-500 mb-1">勃起粗度圍 (cm)</label>
-                                    <input type="number" id="edit-girth" value="${user.girth || ''}" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1">勃起粗度圍 (cm)</label>
+                                    <input type="number" id="edit-girth" value="${user.girth || ''}" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                                 </div>
                             </div>
                         </div>
-
+  
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider">感興趣的主題與偏好標籤</label>
+                            <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">感興趣的主題與偏好標籤</label>
                             <div class="grid grid-cols-2 gap-2 bg-slate-950/40 p-3.5 border border-slate-850 rounded-2xl">
                                 ${window.state.kinksOptions.map(k => `
                                     <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-900/60 p-2 rounded-xl transition border border-transparent hover:border-slate-800">
-                                        <input type="checkbox" name="edit-kink" value="${k}" ${user.kinks && user.kinks.includes(k) ? 'checked' : ''} class="rounded border-slate-850 bg-slate-950 text-amber-500 focus:ring-amber-500 w-3.5 h-3.5">
-                                        <span class="text-[10px] text-slate-350 font-semibold leading-tight select-none">${k}</span>
+                                        <input type="checkbox" name="edit-kink" value="${k}" ${user.kinks && user.kinks.includes(k) ? 'checked' : ''} class="rounded border-slate-850 bg-slate-950 text-amber-500 focus:ring-amber-500 w-4 h-4">
+                                        <span class="text-xs text-slate-350 font-semibold leading-tight select-none">${k}</span>
                                     </label>
                                 `).join('')}
                             </div>
                         </div>
-
-                        <button id="btn-submit-profile-edit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-bold text-xs py-3.5 rounded-xl transition tracking-wider active:scale-[0.98]">
+  
+                        <button id="btn-submit-profile-edit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-bold text-sm py-3.5 rounded-xl transition tracking-wider active:scale-[0.98]">
                             儲存變更
                         </button>
                     </div>
                 </div>
             `;
             document.body.appendChild(modal);
-
+  
             document.getElementById('close-edit').onclick = () => modal.remove();
-
+  
             const fileInput = document.getElementById('edit-avatar-file');
             const previewImg = document.getElementById('edit-avatar-preview');
             let pendingBase64 = '';
-
+  
             document.getElementById('edit-avatar-trigger').onclick = () => fileInput.click();
-
+  
             fileInput.onchange = (e) => {
                 const file = e.target.files[0];
                 if (file) {
@@ -2400,79 +2440,75 @@
                     selectedKinks.push(cb.value);
                 });
 
-                if (!nickname) { showToast('請填寫個人暱稱！', 'error'); return; }
-                if (selectedKinks.length === 0) { showToast('請至少勾選一個興趣標籤！', 'error'); return; }
+                if (!nickname) {
+                    showToast('暱稱不能為空！', 'error');
+                    return;
+                }
+                if (selectedKinks.length === 0) {
+                    showToast('請至少選擇一項感興趣的主題標籤！', 'error');
+                    return;
+                }
 
-                if (!db) return;
                 showLoading();
-
                 try {
                     const userRef = doc(db, 'secretg_apps', appId, 'applications', window.state.applicationId);
-                    
-                    const payload = {
-                        nickname, height, weight, length, girth,
+                    const updates = {
+                        nickname,
+                        height,
+                        weight,
+                        length,
+                        girth,
                         kinks: selectedKinks
                     };
 
                     if (pendingBase64) {
-                        payload.avatarPending = pendingBase64;
-                        payload.avatarStatus = 'pending';
+                        updates.avatarPending = pendingBase64;
+                        updates.avatarStatus = 'pending';
+                    }
+
+                    await updateDoc(userRef, updates);
+
+                    window.state.userData = { ...window.state.userData, ...updates };
+                    if (pendingBase64) {
                         window.state.userData.avatarPending = pendingBase64;
                         window.state.userData.avatarStatus = 'pending';
                     }
 
-                    await updateDoc(userRef, payload);
-
-                    window.state.userData.nickname = nickname;
-                    window.state.userData.height = height;
-                    window.state.userData.weight = weight;
-                    window.state.userData.length = length;
-                    window.state.userData.girth = girth;
-                    window.state.userData.kinks = selectedKinks;
-
                     modal.remove();
-                    showToast('資料修改完成並同步更新！', 'success');
-                    
+                    showToast('個人資料已成功更新！', 'success');
                     renderDashboard(appContainer);
                 } catch (err) {
-                    console.error("更新失敗:", err);
-                    showToast('更新失敗', 'error');
+                    console.error("更新檔案失敗:", err);
+                    showToast('更新失敗，請稍後重試', 'error');
                 } finally {
                     hideLoading();
                 }
             };
         }
 
-        function showSpecApplyModal() {
+        window.showSpecApplyModal = () => {
             const modal = document.createElement('div');
             modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md';
             modal.innerHTML = `
-                <div class="bg-[#080810] border border-amber-500/10 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative">
-                    <button id="close-spec" class="absolute top-4 right-4 text-slate-500 hover:text-white text-xl transition">&times;</button>
-                    <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2 font-luxury">
-                        <i class="fa-solid fa-ribbon text-amber-500"></i> GOLDEN SPEC
+                <div class="bg-[#080810] border border-amber-500/15 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative">
+                    <button id="close-spec" class="absolute top-4 right-4 text-slate-500 hover:text-white text-2xl transition">&times;</button>
+                    <h3 class="text-sm font-bold text-white mb-1.5 flex items-center gap-2 font-luxury">
+                        <i class="fa-solid fa-medal text-amber-500"></i> GOLD SPEC ELITE
                     </h3>
-                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">「黃金 Spec」是本會所內物理規格之頂級榮譽認證徽章。</p>
-                    
-                    <div class="bg-amber-500/5 border border-amber-500/10 p-3.5 rounded-2xl mb-4 text-xs text-amber-350 leading-relaxed font-light">
-                        <span class="font-bold block mb-1">⚠️ 認證規則說明：</span>
-                        請上傳生殖器長度大於 16cm 且粗度大於 5cm之照片，且照片內應有參考物(例如尺)作為依據。本相片僅限管理團隊在後台人工比對查核，絕對不對外公開。
-                    </div>
-
+                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">請上傳帶有清楚尺規參考物（如捲尺、直尺）的實物測量證明照片，管理團隊將嚴格查驗核准。</p>
                     <div class="space-y-4">
                         <div class="border border-slate-850 rounded-2xl p-4 flex flex-col items-center justify-center bg-slate-900/20 text-center">
-                            <div id="spec-img-trigger" class="relative w-full h-36 rounded-xl border border-dashed border-slate-800 hover:border-amber-500 flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-slate-950 transition">
+                            <div id="spec-img-trigger" class="relative w-full h-40 rounded-xl border border-dashed border-slate-800 hover:border-amber-500 flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-slate-950 transition">
                                 <img id="spec-preview" class="absolute inset-0 w-full h-full object-contain hidden">
-                                <div id="spec-placeholder" class="text-slate-650 flex flex-col items-center gap-1">
-                                    <i class="fa-solid fa-camera text-xl"></i>
-                                    <span class="text-[9.5px] font-bold">上傳實證照片 (尺標/對比物)</span>
+                                <div id="spec-placeholder" class="text-slate-650 flex flex-col items-center gap-1.5 transition">
+                                    <i class="fa-solid fa-cloud-arrow-up text-2xl"></i>
+                                    <span class="text-xs font-bold">點擊選取證明照片</span>
                                 </div>
                             </div>
                             <input type="file" id="spec-file" accept="image/*" class="hidden">
                         </div>
-
-                        <button id="btn-submit-spec" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-bold text-xs py-3.5 rounded-xl transition shadow-lg tracking-wider active:scale-[0.98]">
-                            上傳照片提交驗證
+                        <button id="btn-submit-spec" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-bold text-sm py-3 rounded-xl transition tracking-wider active:scale-[0.98]">
+                            提交規格核查申請
                         </button>
                     </div>
                 </div>
@@ -2484,7 +2520,7 @@
             const fileInput = document.getElementById('spec-file');
             const previewImg = document.getElementById('spec-preview');
             const placeholder = document.getElementById('spec-placeholder');
-            let bakedSpecBase64 = '';
+            let specBase64 = '';
 
             document.getElementById('spec-img-trigger').onclick = () => fileInput.click();
 
@@ -2493,46 +2529,18 @@
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = function(evt) {
-                        const img = new Image();
-                        img.src = evt.target.result;
-                        img.onload = function() {
-                            const canvas = document.createElement('canvas');
-                            const maxDim = 800; 
-                            let w = img.width;
-                            let h = img.height;
-                            if (w > maxDim || h > maxDim) {
-                                if (w > h) { h = (maxDim / w) * h; w = maxDim; }
-                                else { w = (maxDim / h) * w; h = maxDim; }
-                            }
-                            canvas.width = w;
-                            canvas.height = h;
-
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0, w, h);
-
-                            ctx.save();
-                            ctx.font = "bold 20px Cinzel";
-                            ctx.fillStyle = "rgba(239, 68, 68, 0.18)"; 
-                            ctx.translate(w/2, h/2);
-                            ctx.rotate(-Math.PI / 6); 
-                            
-                            ctx.fillText("僅限SecretRoom黃金 Spec 認證使用", -200, -60);
-                            ctx.fillText("僅限SecretRoom黃金 Spec 認證使用", -200, 60);
-                            ctx.restore();
-
-                            bakedSpecBase64 = canvas.toDataURL('image/jpeg', 0.82);
-                            previewImg.src = bakedSpecBase64;
-                            previewImg.classList.remove('hidden');
-                            placeholder.classList.add('hidden');
-                        };
+                        specBase64 = evt.target.result;
+                        previewImg.src = specBase64;
+                        previewImg.classList.remove('hidden');
+                        placeholder.classList.add('hidden');
                     };
                     reader.readAsDataURL(file);
                 }
             };
 
             document.getElementById('btn-submit-spec').onclick = async () => {
-                if (!bakedSpecBase64) {
-                    showToast('請務必上傳實證比對照片！', 'error');
+                if (!specBase64) {
+                    showToast('請先上傳實物證明照片！', 'error');
                     return;
                 }
 
@@ -2543,68 +2551,29 @@
                     const userRef = doc(db, 'secretg_apps', appId, 'applications', window.state.applicationId);
                     await updateDoc(userRef, {
                         specEliteStatus: 'pending',
-                        specImage: bakedSpecBase64
+                        specImage: specBase64
                     });
 
                     window.state.userData.specEliteStatus = 'pending';
-                    window.state.userData.specImage = bakedSpecBase64;
-
                     modal.remove();
-                    showToast('驗證照片已加上防偽水印並送交管理團隊審查！', 'success');
-                    
+                    showToast('規格核查照片已送出，請耐心等待審查結果！', 'success');
                     renderDashboard(appContainer);
                 } catch (err) {
-                    console.error("上傳失敗:", err);
-                    showToast('上傳失敗', 'error');
-                } finally {
-                    hideLoading();
-                }
-            };
-        }
-
-        window.deleteMyPost = function(postId) {
-            const confirmModal = document.getElementById('custom-confirm-modal');
-            const btnCancel = document.getElementById('confirm-modal-cancel');
-            const btnOk = document.getElementById('confirm-modal-ok');
-
-            if (!confirmModal) return;
-
-            confirmModal.classList.remove('hidden');
-
-            btnCancel.onclick = () => {
-                confirmModal.classList.add('hidden');
-            };
-
-            btnOk.onclick = async () => {
-                confirmModal.classList.add('hidden');
-                if (!db) return;
-                showLoading();
-                try {
-                    const postRef = doc(db, 'secretg_apps', appId, 'posts', postId);
-                    await deleteDoc(postRef);
-                    showToast('秘密動態已成功銷毀下架！', 'success');
-                } catch (err) {
-                    console.error("刪除失敗:", err);
-                    showToast('刪除失敗', 'error');
+                    console.error("提交規格審核錯誤:", err);
+                    showToast('提交失敗，請重試', 'error');
                 } finally {
                     hideLoading();
                 }
             };
         };
-
-        /* 
-           設計亮點：特色社群膠囊徽章系統 
-           暱稱正下方橫向排開、帶有柔和霓虹背景與發光
-        */
-        function getBadgeHTML(user, isBig = false) {
+  
+        window.getBadgeHTML = function(user, isBig = false) {
             const badges = [];
-
+  
             if (user.role === 'admin' || user.isAdmin) {
                 badges.push({ 
                     icon: 'fa-crown', 
                     color: 'from-amber-400 via-yellow-500 to-amber-600 shadow-yellow-500/20', 
-                    label: '管理員', 
-                    textColor: 'text-slate-950 font-extrabold',
                     tooltip: '官方最高權限治理者'
                 });
             }
@@ -2614,8 +2583,6 @@
                 badges.push({ 
                     icon: 'fa-seedling', 
                     color: 'from-emerald-500 via-green-500 to-teal-600 shadow-emerald-500/20', 
-                    label: '新星', 
-                    textColor: 'text-white font-bold',
                     tooltip: '本週新進之尊貴仕紳'
                 });
             }
@@ -2623,8 +2590,6 @@
                 badges.push({ 
                     icon: 'fa-shield-halved', 
                     color: 'from-amber-600 to-orange-700 shadow-orange-500/10 border-orange-500/10', 
-                    label: '元老', 
-                    textColor: 'text-white font-bold',
                     tooltip: '創始階段即入駐的終身元老'
                 });
             }
@@ -2632,25 +2597,21 @@
                 badges.push({ 
                     icon: 'fa-medal', 
                     color: 'from-amber-300 via-amber-500 to-yellow-650 shadow-amber-500/35 animate-pulse', 
-                    label: '黃金 Spec', 
-                    textColor: 'text-slate-950 font-extrabold border-amber-400/20',
                     tooltip: '通過官方物理生殖規格實證認證'
                 });
             }
-
+  
             const userPosts = window.state.posts.filter(p => p.userId === user.id);
             const totalLikes = userPosts.reduce((sum, p) => sum + (p.likeCount || 0), 0);
-
+  
             if (totalLikes >= 1000) {
                 badges.push({ 
                     icon: 'fa-fire', 
                     color: 'from-orange-500 to-rose-600 shadow-orange-500/20', 
-                    label: '人氣', 
-                    textColor: 'text-white font-bold',
                     tooltip: '獲得超過千次按讚之社群人氣王'
                 });
             }
-
+  
             const perfectPosts = userPosts.filter(p => {
                 const ratings = p.ratings ? Object.values(p.ratings) : [];
                 const avg = ratings.length > 0 ? (ratings.reduce((a,b)=>a+b, 0) / ratings.length) : 0;
@@ -2660,111 +2621,88 @@
                 badges.push({ 
                     icon: 'fa-star', 
                     color: 'from-amber-400 to-yellow-500 shadow-amber-400/20', 
-                    label: '天菜', 
-                    textColor: 'text-slate-950 font-bold',
                     tooltip: '多篇作品榮獲無瑕滿分評價'
                 });
             }
-
+  
             if (userPosts.length >= 100) {
                 badges.push({ 
                     icon: 'fa-camera', 
                     color: 'from-violet-500 to-purple-700 shadow-violet-500/20', 
-                    label: '分享家', 
-                    textColor: 'text-white font-bold',
                     tooltip: '累計發布上百篇秘密作品'
                 });
             }
-
-            const gymPosts = userPosts.filter(p => p.kinks && p.kinks.some(k => k.includes('健身')));
-            const gymLikes = gymPosts.reduce((sum, p) => sum + (p.likeCount || 0), 0);
-            if (gymPosts.length >= 50 && gymLikes >= 5000) {
-                badges.push({ 
-                    icon: 'fa-dumbbell', 
-                    color: 'from-slate-550 to-slate-750 shadow-slate-500/10', 
-                    label: '健身Icon', 
-                    textColor: 'text-white font-bold',
-                    tooltip: '頂尖健身美學實踐者'
-                });
-            }
-
-            let otherCommentsCount = 0;
-            window.state.posts.forEach(p => {
-                if (p.userId !== user.id && p.comments) {
-                    Object.values(p.comments).forEach(c => {
-                        if (c.userId === user.id) otherCommentsCount++;
-                    });
-                }
-            });
-            if (otherCommentsCount >= 500) {
-                badges.push({ 
-                    icon: 'fa-heart-circle-check', 
-                    color: 'from-pink-500 to-rose-600 shadow-pink-500/20', 
-                    label: '暖男', 
-                    textColor: 'text-white font-bold',
-                    tooltip: '社群互動熱情頻繁的溫和紳士'
-                });
-            }
-
+  
+            // 遵照規範：不出現任何實體說明文字、僅保留奢華圓形霓虹徽章圖示，並支援懸停 tooltip 顯示說明
             return badges.map(b => {
-                if (isBig) {
-                    // 個人主頁展示：大膠囊鍍金徽章
-                    return `
-                        <span title="${b.tooltip}" class="inline-flex items-center bg-gradient-to-r ${b.color} ${b.textColor} px-3.5 py-1.5 gap-2 text-[10px] rounded-full shadow-md badge-glow pointer-events-auto select-none tracking-wider brass-badge cursor-help font-luxury">
-                            <i class="fa-solid ${b.icon}"></i>
-                            <span>${b.label}</span>
-                        </span>
-                    `;
-                } else {
-                    // 微型圓形密封章（只展示 Icon，保持優雅極簡）
-                    return `
-                        <span title="${b.label} - ${b.tooltip}" class="inline-flex items-center justify-center w-5.5 h-5.5 rounded-full bg-gradient-to-r ${b.color} ${b.textColor} shadow-sm badge-glow pointer-events-auto select-none cursor-help brass-badge text-[9px]">
-                            <i class="fa-solid ${b.icon}"></i>
-                        </span>
-                    `;
-                }
+                const sizeClass = isBig ? 'w-8.5 h-8.5 text-sm' : 'w-6 h-6 text-xs';
+                return `
+                    <span class="inline-flex items-center justify-center ${sizeClass} rounded-full bg-gradient-to-r ${b.color} text-slate-950 shadow-md badge-glow pointer-events-auto select-none brass-badge" title="${b.tooltip}">
+                        <i class="fa-solid ${b.icon}"></i>
+                    </span>
+                `;
             }).join('');
-        }
+        };
+  
+        window.getUserBadgeHTMLForPost = function(post) {
+            const simulatedUser = {
+                id: post.userId,
+                createdAt: { seconds: Date.now() / 1000 },
+                role: post.userId === 'gentleman_alpha' ? 'admin' : 'user',
+                isSpecElite: post.userId === 'gentleman_alpha'
+            };
+            return getBadgeHTML(simulatedUser, false);
+        };
+  
+        window.deleteMyPost = function(postId) {
+            const modal = document.getElementById('custom-confirm-modal');
+            if (!modal) return;
+            modal.classList.remove('hidden');
 
-        function getUserBadgeHTMLForPost(post) {
-            const author = window.state.activeUsers.find(u => u.id === post.userId);
-            if (!author) return '';
-            return getBadgeHTML(author);
-        }
+            document.getElementById('confirm-modal-cancel').onclick = () => {
+                modal.classList.add('hidden');
+            };
+
+            document.getElementById('confirm-modal-ok').onclick = async () => {
+                modal.classList.add('hidden');
+                if (!db) return;
+                showLoading();
+                try {
+                    await deleteDoc(doc(db, 'secretg_apps', appId, 'posts', postId));
+                    showToast('該條分享秘密已安全徹底永久銷毀 🔒', 'success');
+                } catch (err) {
+                    console.error("刪除失敗:", err);
+                    showToast('銷毀失敗', 'error');
+                } finally {
+                    hideLoading();
+                }
+            };
+        };
 
         window.showToast = function(message, type = 'info') {
             const container = document.getElementById('toast-container');
             if (!container) return;
-
             const toast = document.createElement('div');
             const bgColors = {
-                error: 'bg-red-950/90 border-red-500/35',
-                success: 'bg-emerald-950/90 border-emerald-500/35',
-                info: 'bg-amber-950/90 border-amber-500/25'
+                error: 'bg-red-500/95 border-red-400',
+                success: 'bg-emerald-550/95 border-emerald-400',
+                info: 'bg-amber-600/95 border-amber-500'
             };
-            toast.className = `${bgColors[type] || bgColors.info} text-white px-5 py-3.5 rounded-2xl shadow-xl border text-xs font-semibold transition-all duration-300 opacity-0 transform -translate-y-4 backdrop-blur-xl flex items-center gap-3`;
+            toast.className = `${bgColors[type]} text-white px-5 py-3.5 rounded-xl shadow-lg border text-sm font-semibold transition-all duration-300 opacity-0 transform -translate-y-4 backdrop-blur-xl flex items-center gap-3 pointer-events-auto`;
             const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
-            toast.innerHTML = `<i class="fa-solid ${icon} text-base text-amber-500"></i> <span class="tracking-wide">${message}</span>`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-lg"></i> <span>${message}</span>`;
             
             container.appendChild(toast);
-            
-            requestAnimationFrame(() => {
-                toast.classList.remove('opacity-0', '-translate-y-4');
-            });
-
+            requestAnimationFrame(() => toast.classList.remove('opacity-0', '-translate-y-4'));
             setTimeout(() => {
                 toast.classList.add('opacity-0', '-translate-y-4');
                 setTimeout(() => toast.remove(), 300);
-            }, 3000);
+            }, 3200);
         };
-
-        window.showEditProfileModal = showEditProfileModal;
-        window.showSpecApplyModal = showSpecApplyModal;
-
+  
         window.onload = function() {
             initApp();
         };
     </script>
 </body>
 </html>
-
