@@ -485,7 +485,7 @@
                             localStorage.setItem('sr_username', usernameInput);
                             
                             modal.remove();
-                            showToast('登入成功！正在安全授權進度...', 'success');
+                            showToast('登入成功！正在載入動態...', 'success');
 
                             if (data.status === 'pending') navigate('pending');
                             else if (data.status === 'rejected') navigate('rejected');
@@ -521,7 +521,7 @@
                         
                         <div class="text-center mt-6 mb-10">
                             <h2 class="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-amber-400 tracking-wider font-luxury">SECRETROOM ACQUISITION</h2>
-                            <p class="text-xs text-slate-400 mt-2 leading-relaxed">請仔細填妥以下必要憑證。採實名制與人工審查機制以維護全體會員之安全與私密。</p>
+                            <p class="text-xs text-slate-400 mt-2 leading-relaxed">請填寫以下資訊。採人工審查機制以維護全體會員之安全與私密。</p>
                         </div>
 
                         <!-- 雙欄排版，寬螢幕下完美撐滿不擁擠 -->
@@ -548,13 +548,13 @@
 
                                 <!-- 帳號以及密碼獨立區 -->
                                 <div class="p-5 bg-slate-900/30 border border-slate-900/80 rounded-2xl space-y-4">
-                                    <span class="text-[11px] font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-solid fa-lock mr-1.5"></i> 安全會籍登入憑證</span>
+                                    <span class="text-[11px] font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-solid fa-lock mr-1.5"></i> 會籍帳號申請</span>
                                     <div>
-                                        <label class="block text-[9.5px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 設定專屬帳號 (不限中英數，不可與人重複)</label>
+                                        <label class="block text-[9.5px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 設定帳號 (不限中英數，不可與人重複)</label>
                                         <input type="text" id="reg-username" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
                                     </div>
                                     <div>
-                                        <label class="block text-[9.5px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 再次確認專屬帳號</label>
+                                        <label class="block text-[9.5px] font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 再次確認帳號</label>
                                         <input type="text" id="reg-username-confirm" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" required>
                                     </div>
                                     <div>
@@ -1176,7 +1176,7 @@
                 localStorage.removeItem('sr_username');
                 window.state.userData = {};
                 window.state.applicationId = null;
-                showToast('已安全退出 SecretRoom 會所。', 'info');
+                showToast('已退出 SecretRoom 俱樂部。', 'info');
                 navigate('landing');
             };
 
