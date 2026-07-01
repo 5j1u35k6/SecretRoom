@@ -288,198 +288,114 @@
 
         class LuxuryBGMPlayer {
             constructor() {
-                this.ctx = null;
-                this.isPlaying = false;
-                this.currentTrack = null; 
-                this.nodes = [];
-                this.loopTimer = null;
-                this.bellTimer = null;
-                this.masterGain = null;
-                this.filterNode = null;
-                
+                // 使用外部優質音訊，不再採用 Web Audio API 震盪器合成
                 this.tracks = {
-                    mysterious: {
-                        chords: [
-                            [110, 165, 220, 261.63, 329.63], 
-                            [87.31, 130.81, 174.61, 220, 261.63, 349.23], 
-                            [73.42, 110, 146.83, 196, 220, 293.66], 
-                            [82.41, 123.47, 164.81, 220, 246.94, 329.63]  
-                        ],
-                        tempo: 9000, 
-                        pluckChance: 0.15,
-                        scale: [220, 261.63, 293.66, 329.63, 392, 440]
-                    },
-                    lounge: {
-                        chords: [
-                            [130.81, 196, 246.94, 293.66, 329.63, 392], 
-                            [87.31, 130.81, 174.61, 246.94, 261.63, 349.23], 
-                            [146.83, 196, 246.94, 293.66, 392, 440], 
-                            [164.81, 220, 261.63, 329.63, 392, 440]  
-                        ],
-                        tempo: 7500,
-                        pluckChance: 0.85, 
-                        scale: [392, 440, 523.25, 587.33, 659.25, 783.99, 880, 1046.5] 
-                    }
+                    mysterious: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3", // 奢華神秘、大氣緩慢的高層次環境鋪底音
+                    lounge: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3"       // 水晶般清亮質感、華航豪華VIP貴賓室風格的精緻輕音樂
                 };
-                this.chordIndex = 0;
+                this.audio = null;
+                this.currentTrack = null;
+                this.isPlaying = false;
+                this.fadeTimer = null;
             }
 
             init() {
-                if (this.ctx) return;
-                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                this.ctx = new AudioContext();
-                
-                this.masterGain = this.ctx.createGain();
-                this.masterGain.gain.setValueAtTime(0.3, this.ctx.currentTime); 
-
-                const compressor = this.ctx.createDynamicsCompressor();
-                compressor.threshold.setValueAtTime(-16, this.ctx.currentTime);
-                compressor.knee.setValueAtTime(10, this.ctx.currentTime);
-                compressor.ratio.setValueAtTime(3.5, this.ctx.currentTime);
-                compressor.attack.setValueAtTime(0.03, this.ctx.currentTime);
-                compressor.release.setValueAtTime(0.25, this.ctx.currentTime);
-
-                this.filterNode = this.ctx.createBiquadFilter();
-                this.filterNode.type = 'lowpass';
-                this.filterNode.frequency.setValueAtTime(800, this.ctx.currentTime); 
-
-                this.masterGain.connect(this.filterNode);
-                this.filterNode.connect(compressor);
-                compressor.connect(this.ctx.destination);
+                if (this.audio) return;
+                this.audio = new Audio();
+                this.audio.loop = true;
+                this.audio.volume = 0; // 啟動預設音量為0以利淡入
             }
 
             start(trackName) {
                 this.init();
-                if (this.ctx.state === 'suspended') {
-                    this.ctx.resume();
+                const targetUrl = this.tracks[trackName];
+                if (!targetUrl) return;
+
+                // 若切換新音訊，啟動優雅的交互淡出切換
+                if (this.currentTrack && this.currentTrack !== trackName) {
+                    this.fadeSwitch(targetUrl, trackName);
+                    return;
                 }
 
-                if (this.isPlaying && this.currentTrack === trackName) return;
-                
-                this.stopLoops();
                 this.currentTrack = trackName;
                 this.isPlaying = true;
-                this.chordIndex = 0;
 
-                if (trackName === 'mysterious') {
-                    this.filterNode.frequency.setTargetAtTime(550, this.ctx.currentTime, 1.5);
-                } else {
-                    this.filterNode.frequency.setTargetAtTime(900, this.ctx.currentTime, 1.5); 
+                if (this.audio.src !== targetUrl) {
+                    this.audio.src = targetUrl;
+                    this.audio.load();
                 }
 
-                this.playNextChord();
-                this.startBells();
+                this.audio.play()
+                    .then(() => {
+                        this.fadeIn();
+                    })
+                    .catch(err => {
+                        console.warn("Autoplay blocked or user gesture required:", err);
+                    });
             }
 
             stop() {
                 this.isPlaying = false;
-                this.stopLoops();
-                this.nodes.forEach(node => {
-                    try {
-                        node.gain.setTargetAtTime(0, this.ctx.currentTime, 0.4);
-                        setTimeout(() => node.osc.stop(), 1000);
-                    } catch(e){}
-                });
-                this.nodes = [];
-            }
-
-            stopLoops() {
-                if (this.loopTimer) { clearTimeout(this.loopTimer); this.loopTimer = null; }
-                if (this.bellTimer) { clearTimeout(this.bellTimer); this.bellTimer = null; }
-            }
-
-            playNextChord() {
-                if (!this.isPlaying) return;
-                
-                const track = this.tracks[this.currentTrack];
-                const frequencies = track.chords[this.chordIndex];
-                const now = this.ctx.currentTime;
-                
-                this.nodes.forEach(node => {
-                    node.gain.setTargetAtTime(0, now, 1.8);
-                    setTimeout(() => {
-                        try { node.osc.stop(); } catch(e){}
-                    }, 5000);
-                });
-                this.nodes = [];
-
-                frequencies.forEach((freq, idx) => {
-                    const osc = this.ctx.createOscillator();
-                    const gain = this.ctx.createGain();
-                    
-                    osc.type = idx === 0 ? 'sine' : 'triangle'; 
-                    osc.frequency.setValueAtTime(freq, now);
-                    
-                    if (idx > 0) {
-                        osc.detune.setValueAtTime((Math.random() - 0.5) * 6, now);
-                    }
-
-                    gain.gain.setValueAtTime(0, now);
-                    gain.gain.linearRampToValueAtTime(0.04 / frequencies.length, now + 3.0);
-
-                    osc.connect(gain);
-                    gain.connect(this.masterGain);
-                    osc.start(now);
-                    this.nodes.push({ osc, gain });
-                });
-
-                this.chordIndex = (this.chordIndex + 1) % track.chords.length;
-                this.loopTimer = setTimeout(() => this.playNextChord(), track.tempo);
-            }
-
-            startBells() {
-                if (!this.isPlaying) return;
-                const track = this.tracks[this.currentTrack];
-                
-                if (Math.random() < track.pluckChance) {
-                    this.playCrystalBell();
+                if (this.audio) {
+                    this.fadeOut(() => {
+                        this.audio.pause();
+                    });
                 }
-
-                const interval = this.currentTrack === 'lounge' 
-                    ? (3000 + Math.random() * 3000) 
-                    : (6000 + Math.random() * 6000);
-                
-                this.bellTimer = setTimeout(() => this.startBells(), interval);
             }
 
-            playCrystalBell() {
-                if (!this.ctx) return;
-                const track = this.tracks[this.currentTrack];
-                const now = this.ctx.currentTime;
-                const freq = track.scale[Math.floor(Math.random() * track.scale.length)];
+            fadeIn() {
+                if (!this.audio) return;
+                clearInterval(this.fadeTimer);
                 
-                const osc1 = this.ctx.createOscillator();
-                const osc2 = this.ctx.createOscillator();
-                const bellGain = this.ctx.createGain();
-                
-                osc1.type = 'sine';
-                osc1.frequency.setValueAtTime(freq, now);
-                
-                osc2.type = 'sine';
-                osc2.frequency.setValueAtTime(freq * 3, now); 
-                
-                bellGain.gain.setValueAtTime(0, now);
-                bellGain.gain.linearRampToValueAtTime(0.025, now + 0.01);
-                bellGain.gain.exponentialRampToValueAtTime(0.0001, now + 3.0);
+                let vol = this.audio.volume;
+                this.fadeTimer = setInterval(() => {
+                    if (!this.isPlaying) {
+                        clearInterval(this.fadeTimer);
+                        return;
+                    }
+                    vol += 0.02;
+                    if (vol >= 0.35) { // 限制奢華舒適音量閾值
+                        this.audio.volume = 0.35;
+                        clearInterval(this.fadeTimer);
+                    } else {
+                        this.audio.volume = vol;
+                    }
+                }, 40);
+            }
 
-                const delay = this.ctx.createDelay();
-                delay.delayTime.setValueAtTime(0.4, now);
-                const delayFeedback = this.ctx.createGain();
-                delayFeedback.gain.setValueAtTime(0.28, now);
-
-                osc1.connect(bellGain);
-                osc2.connect(bellGain);
-                bellGain.connect(this.masterGain);
+            fadeOut(callback) {
+                if (!this.audio) {
+                    if (callback) callback();
+                    return;
+                }
+                clearInterval(this.fadeTimer);
                 
-                bellGain.connect(delay);
-                delay.connect(delayFeedback);
-                delayFeedback.connect(delay);
-                delayFeedback.connect(this.masterGain);
+                let vol = this.audio.volume;
+                this.fadeTimer = setInterval(() => {
+                    vol -= 0.02;
+                    if (vol <= 0.01) {
+                        this.audio.volume = 0;
+                        clearInterval(this.fadeTimer);
+                        if (callback) callback();
+                    } else {
+                        this.audio.volume = vol;
+                    }
+                }, 40);
+            }
 
-                osc1.start(now);
-                osc2.start(now);
-                osc1.stop(now + 4);
-                osc2.stop(now + 4);
+            fadeSwitch(newUrl, trackName) {
+                this.fadeOut(() => {
+                    this.currentTrack = trackName;
+                    this.audio.src = newUrl;
+                    this.audio.load();
+                    if (this.isPlaying) {
+                        this.audio.play()
+                            .then(() => {
+                                this.fadeIn();
+                            })
+                            .catch(err => console.log(err));
+                    }
+                });
             }
         }
 
@@ -488,6 +404,7 @@
         window.syncBGM = function() {
             if (!window.luxuryBGM) return;
             const view = window.state.currentView;
+            // 平台首頁、註冊介面播放神秘奢華樂曲；進入俱樂部(dashboard)播放奢華貴賓室輕音樂
             const wantsTrack = (view === 'dashboard') ? 'lounge' : 'mysterious';
             
             const widget = document.getElementById('bgm-controller-widget');
@@ -500,7 +417,7 @@
                 window.luxuryBGM.start(wantsTrack);
                 widget.classList.add('bgm-active');
                 icon.className = 'fa-solid fa-pause text-[9px]';
-                statusText.textContent = (wantsTrack === 'lounge') ? 'VIP Lounge BGM' : 'Mystique Seclusion';
+                statusText.textContent = (wantsTrack === 'lounge') ? 'Premium VIP Lounge' : 'Mystique Seclusion';
             } else {
                 widget.classList.remove('bgm-active');
                 icon.className = 'fa-solid fa-play text-[9px]';
@@ -524,7 +441,7 @@
                     localStorage.setItem('sr_bgm_enabled', 'true');
                     window.luxuryBGM.isPlaying = true; 
                     window.syncBGM();
-                    showToast('頂級會所程序音效已開啟 🔊', 'success');
+                    showToast('頂級會所音訊已啟用 🔊', 'success');
                 }
                 window.syncBGM();
             };
@@ -541,8 +458,6 @@
             document.body.addEventListener('click', autoStartOnInteraction);
             document.body.addEventListener('touchstart', autoStartOnInteraction);
         };
-  
-        const appContainer = document.getElementById('app');
   
         async function initApp() {
             if (emailjsConfig.publicKey && emailjsConfig.publicKey !== "YOUR_EMAILJS_PUBLIC_KEY") {
@@ -1347,7 +1262,7 @@
                         </div>
                         <div class="p-5 bg-[#050508] border border-slate-900 rounded-2xl space-y-4">
                             <p class="text-xs text-slate-400 leading-relaxed">請複製下方綁定密鑰命令，點擊啟動機器人並發送即可安全綁定：</p>
-                            <div class="px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-amber-400 font-mono text-sm font-bold select-all tracking-wider">
+                            <div class="px-4 py-3 bg-slate-900 border border-slate-850 rounded-xl text-amber-400 font-mono text-sm font-bold select-all tracking-wider">
                                 /bind ${token}
                             </div>
                             <div class="flex gap-2">
@@ -1481,7 +1396,7 @@
                                 <i class="fa-solid fa-user-group text-xs"></i> 線上活躍帳號
                             </h3>
                             <div class="space-y-3.5" id="active-users-list-aside">
-                                <div class="text-xs text-slate-500 text-center py-4 font-light">正在安全同步活躍節點...</div>
+                                <div class="text-xs text-slate-550 text-center py-4 font-light">正在安全同步活躍節點...</div>
                             </div>
                         </div>
                     </aside>
@@ -1610,7 +1525,7 @@
                     </div>
                 </div>
   
-                <!-- 快速篩選器：拓寬按鈕內距 (px-6 py-3.5) 與提升文字至 text-xs，防止點擊時的橘框與文字過近 -->
+                <!-- 快速篩選器：拓寬按鈕內距 (px-6 py-3.5) 與提升文字至 text-xs -->
                 <div class="flex items-center gap-2.5 overflow-x-auto scrollbar-hide py-1.5">
                     <button onclick="setGlobalFilter('recommended')" id="filter-btn-recommended" class="shrink-0 text-xs font-bold uppercase tracking-widest px-6 py-3.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'recommended' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900'}">
                         <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>智慧推薦
@@ -1892,7 +1807,7 @@
                     </div>
                     <div>
                         <h4 class="font-bold text-slate-400 text-sm">目前大廳尚無此偏好的祕密動態</h4>
-                        <p class="text-xs text-slate-500 mt-1">點擊分享動態，成為第一個探索本主題的創始紳士吧！</p>
+                        <p class="text-xs text-slate-550 mt-1">點擊分享動態，成為第一個探索本主題的創始紳士吧！</p>
                     </div>
                 `;
                 listContainer.appendChild(emptyCard);
@@ -2064,7 +1979,7 @@
                                     `;
                                 } else {
                                     commentActionHtml = `
-                                        <button onclick="openCommentReportModal('${post.id}', '${c.id}')" class="text-slate-600 hover:text-rose-400 transition text-[10px]" title="檢舉此留言">
+                                        <button onclick="openCommentReportModal('${post.id}', '${c.id}')" class="text-slate-600 hover:text-rose-450 transition text-[10px]" title="檢舉此留言">
                                             <i class="fa-regular fa-flag"></i>
                                         </button>
                                     `;
@@ -2164,7 +2079,6 @@
                 `;
             }
   
-            // 個人主頁徽章區域 (getBadgeHTML) 已完成「絕不顯示贅餘文字」的視覺化升級
             container.innerHTML = `
                 <div class="bg-slate-900/25 border border-slate-900/80 rounded-3xl p-6 relative flex flex-col items-center text-center space-y-5">
                     
@@ -2829,7 +2743,7 @@
                                 ${window.state.kinksOptions.map(k => `
                                     <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-900/60 p-2 rounded-xl transition border border-transparent hover:border-slate-800">
                                         <input type="checkbox" name="edit-kink" value="${k}" ${user.kinks && user.kinks.includes(k) ? 'checked' : ''} class="rounded border-slate-850 bg-slate-950 text-amber-500 focus:ring-amber-500 w-4 h-4">
-                                        <span class="text-xs text-slate-350 font-semibold leading-tight select-none">${k}</span>
+                                        <span class="text-xs text-slate-355 font-semibold leading-tight select-none">${k}</span>
                                     </label>
                                 `).join('')}
                             </div>
@@ -3132,7 +3046,7 @@
             const toast = document.createElement('div');
             const bgColors = {
                 error: 'bg-red-500/95 border-red-400',
-                success: 'bg-emerald-550/95 border-emerald-400',
+                success: 'bg-emerald-555/95 border-emerald-400',
                 info: 'bg-amber-600/95 border-amber-500'
             };
             toast.className = `${bgColors[type]} text-white px-5 py-3.5 rounded-xl shadow-lg border text-sm font-semibold transition-all duration-300 opacity-0 transform -translate-y-4 backdrop-blur-xl flex items-center gap-3 pointer-events-auto`;
