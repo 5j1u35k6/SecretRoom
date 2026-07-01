@@ -1655,7 +1655,7 @@
                                         <i class="fa-solid fa-eye-slash"></i>
                                     </div>
                                     <h5 class="text-sm font-bold text-rose-400">私密尺度照片 (NSFW)</h5>
-                                    <p class="text-xs text-slate-550 mt-1.5">此照片被發布者標記為敏感照片，點擊立即安全解鎖 🔒</p>
+                                    <p class="text-xs text-slate-550 mt-1.5">此照片被發布者標記為敏感照片，點擊解鎖 🔒</p>
                                 </div>
                             </div>
                         `;
@@ -1758,7 +1758,7 @@
   
                     <div id="comments-box-${post.id}" class="${window.state.openComments[post.id] ? '' : 'hidden'} mt-4 pt-4 border-t border-slate-900/60 space-y-3">
                         <div class="flex gap-2">
-                            <input type="text" id="comment-input-${post.id}" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" placeholder="與兄弟低聲交流...">
+                            <input type="text" id="comment-input-${post.id}" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500 transition" placeholder="與其他會員暢聊">
                             <button onclick="submitComment('${post.id}')" class="bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs px-4 rounded-xl transition shrink-0 active:scale-95">送出</button>
                         </div>
                         <div class="space-y-2.5 max-h-48 overflow-y-auto pr-1" id="comments-list-${post.id}">
@@ -2050,7 +2050,7 @@
                 await updateDoc(postRef, { comments: comments });
                 
                 input.value = '';
-                showToast('回覆發布完成！已寫入安全備忘', 'success');
+                showToast('已留言', 'success');
             } catch (err) {
                 console.error("發布留言出錯:", err);
                 showToast('回覆發布失敗', 'error');
@@ -2077,7 +2077,7 @@
         window.unlockNSFW = function(postId) {
             window.state.unlockedNSFWPosts[postId] = true;
             updateSearchAndFeedUI();
-            showToast('已完成端對端解密，解鎖私密圖片觀看 🔞', 'success');
+            showToast('已解密，解鎖圖片觀看 🔞', 'success');
         };
   
         window.openReportModal = function(postId) {
