@@ -127,6 +127,20 @@
             user-select: none !important;
             pointer-events: none;
         }
+
+        /* 奢華背景音樂音波動畫 */
+        @keyframes sound-wave {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(2.2); }
+        }
+        .bgm-bar {
+            transform-origin: bottom;
+            transition: transform 0.3s ease;
+        }
+        .bgm-active .bgm-bar:nth-child(1) { animation: sound-wave 1.2s ease-in-out infinite; }
+        .bgm-active .bgm-bar:nth-child(2) { animation: sound-wave 0.8s ease-in-out infinite 0.2s; }
+        .bgm-active .bgm-bar:nth-child(3) { animation: sound-wave 1.4s ease-in-out infinite 0.4s; }
+        .bgm-active .bgm-bar:nth-child(4) { animation: sound-wave 1.0s ease-in-out infinite 0.1s; }
     </style>
 </head>
 <body class="min-h-screen w-full flex flex-col bg-[#030305] p-0 m-0 overflow-hidden select-none club-groove-bg">
@@ -143,6 +157,22 @@
             <p class="text-amber-500/80 font-bold tracking-[0.2em] text-sm font-luxury uppercase animate-pulse">Establishing Secure Channel...</p>
             <p class="text-slate-400 text-xs mt-3.5 font-light">正在與 SecretRoom 伺服器建立安全加密防護通道...</p>
         </div>
+    </div>
+
+    <!-- 奢華背景音樂控制懸浮窗 -->
+    <div id="bgm-controller-widget" class="fixed top-4 right-4 md:top-6 md:right-6 z-[99] flex items-center gap-2.5 bg-slate-950/80 border border-amber-500/20 rounded-full px-3.5 py-2 shadow-[0_4px_25px_rgba(212,175,55,0.08)] backdrop-blur-md transition-all duration-300 hover:border-amber-500/50 group cursor-pointer">
+        <div class="flex items-center gap-[3px] h-3 w-4" id="bgm-bars">
+            <div class="w-[2px] h-1.5 bg-amber-500 rounded-full bgm-bar"></div>
+            <div class="w-[2px] h-3 bg-amber-500 rounded-full bgm-bar"></div>
+            <div class="w-[2px] h-1 bg-amber-500 rounded-full bgm-bar"></div>
+            <div class="w-[2px] h-2 bg-amber-500 rounded-full bgm-bar"></div>
+        </div>
+        <span class="text-[9px] font-bold text-amber-500/80 tracking-[0.18em] uppercase hidden sm:block font-luxury select-none" id="bgm-status-text">
+            BGM Audio
+        </span>
+        <button id="bgm-toggle-btn" class="w-6 h-6 rounded-full bg-amber-500/10 hover:bg-amber-500/20 flex items-center justify-center border border-amber-500/20 text-amber-500 transition-all duration-300">
+            <i class="fa-solid fa-play text-[9px]" id="bgm-icon"></i>
+        </button>
     </div>
   
     <!-- 奢華彈出通知容器 (Toast) -->
@@ -255,6 +285,264 @@
         };
   
         const appContainer = document.getElementById('app');
+
+        class LuxuryBGMPlayer {
+            constructor() {
+                this.ctx = null;
+                this.isPlaying = false;
+                this.currentTrack = null; 
+                this.nodes = [];
+                this.loopTimer = null;
+                this.bellTimer = null;
+                this.masterGain = null;
+                this.filterNode = null;
+                
+                this.tracks = {
+                    mysterious: {
+                        chords: [
+                            [110, 165, 220, 261.63, 329.63], 
+                            [87.31, 130.81, 174.61, 220, 261.63, 349.23], 
+                            [73.42, 110, 146.83, 196, 220, 293.66], 
+                            [82.41, 123.47, 164.81, 220, 246.94, 329.63]  
+                        ],
+                        tempo: 9000, 
+                        pluckChance: 0.15,
+                        scale: [220, 261.63, 293.66, 329.63, 392, 440]
+                    },
+                    lounge: {
+                        chords: [
+                            [130.81, 196, 246.94, 293.66, 329.63, 392], 
+                            [87.31, 130.81, 174.61, 246.94, 261.63, 349.23], 
+                            [146.83, 196, 246.94, 293.66, 392, 440], 
+                            [164.81, 220, 261.63, 329.63, 392, 440]  
+                        ],
+                        tempo: 7500,
+                        pluckChance: 0.85, 
+                        scale: [392, 440, 523.25, 587.33, 659.25, 783.99, 880, 1046.5] 
+                    }
+                };
+                this.chordIndex = 0;
+            }
+
+            init() {
+                if (this.ctx) return;
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                this.ctx = new AudioContext();
+                
+                this.masterGain = this.ctx.createGain();
+                this.masterGain.gain.setValueAtTime(0.3, this.ctx.currentTime); 
+
+                const compressor = this.ctx.createDynamicsCompressor();
+                compressor.threshold.setValueAtTime(-16, this.ctx.currentTime);
+                compressor.knee.setValueAtTime(10, this.ctx.currentTime);
+                compressor.ratio.setValueAtTime(3.5, this.ctx.currentTime);
+                compressor.attack.setValueAtTime(0.03, this.ctx.currentTime);
+                compressor.release.setValueAtTime(0.25, this.ctx.currentTime);
+
+                this.filterNode = this.ctx.createBiquadFilter();
+                this.filterNode.type = 'lowpass';
+                this.filterNode.frequency.setValueAtTime(800, this.ctx.currentTime); 
+
+                this.masterGain.connect(this.filterNode);
+                this.filterNode.connect(compressor);
+                compressor.connect(this.ctx.destination);
+            }
+
+            start(trackName) {
+                this.init();
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+
+                if (this.isPlaying && this.currentTrack === trackName) return;
+                
+                this.stopLoops();
+                this.currentTrack = trackName;
+                this.isPlaying = true;
+                this.chordIndex = 0;
+
+                if (trackName === 'mysterious') {
+                    this.filterNode.frequency.setTargetAtTime(550, this.ctx.currentTime, 1.5);
+                } else {
+                    this.filterNode.frequency.setTargetAtTime(900, this.ctx.currentTime, 1.5); 
+                }
+
+                this.playNextChord();
+                this.startBells();
+            }
+
+            stop() {
+                this.isPlaying = false;
+                this.stopLoops();
+                this.nodes.forEach(node => {
+                    try {
+                        node.gain.setTargetAtTime(0, this.ctx.currentTime, 0.4);
+                        setTimeout(() => node.osc.stop(), 1000);
+                    } catch(e){}
+                });
+                this.nodes = [];
+            }
+
+            stopLoops() {
+                if (this.loopTimer) { clearTimeout(this.loopTimer); this.loopTimer = null; }
+                if (this.bellTimer) { clearTimeout(this.bellTimer); this.bellTimer = null; }
+            }
+
+            playNextChord() {
+                if (!this.isPlaying) return;
+                
+                const track = this.tracks[this.currentTrack];
+                const frequencies = track.chords[this.chordIndex];
+                const now = this.ctx.currentTime;
+                
+                this.nodes.forEach(node => {
+                    node.gain.setTargetAtTime(0, now, 1.8);
+                    setTimeout(() => {
+                        try { node.osc.stop(); } catch(e){}
+                    }, 5000);
+                });
+                this.nodes = [];
+
+                frequencies.forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    
+                    osc.type = idx === 0 ? 'sine' : 'triangle'; 
+                    osc.frequency.setValueAtTime(freq, now);
+                    
+                    if (idx > 0) {
+                        osc.detune.setValueAtTime((Math.random() - 0.5) * 6, now);
+                    }
+
+                    gain.gain.setValueAtTime(0, now);
+                    gain.gain.linearRampToValueAtTime(0.04 / frequencies.length, now + 3.0);
+
+                    osc.connect(gain);
+                    gain.connect(this.masterGain);
+                    osc.start(now);
+                    this.nodes.push({ osc, gain });
+                });
+
+                this.chordIndex = (this.chordIndex + 1) % track.chords.length;
+                this.loopTimer = setTimeout(() => this.playNextChord(), track.tempo);
+            }
+
+            startBells() {
+                if (!this.isPlaying) return;
+                const track = this.tracks[this.currentTrack];
+                
+                if (Math.random() < track.pluckChance) {
+                    this.playCrystalBell();
+                }
+
+                const interval = this.currentTrack === 'lounge' 
+                    ? (3000 + Math.random() * 3000) 
+                    : (6000 + Math.random() * 6000);
+                
+                this.bellTimer = setTimeout(() => this.startBells(), interval);
+            }
+
+            playCrystalBell() {
+                if (!this.ctx) return;
+                const track = this.tracks[this.currentTrack];
+                const now = this.ctx.currentTime;
+                const freq = track.scale[Math.floor(Math.random() * track.scale.length)];
+                
+                const osc1 = this.ctx.createOscillator();
+                const osc2 = this.ctx.createOscillator();
+                const bellGain = this.ctx.createGain();
+                
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(freq, now);
+                
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(freq * 3, now); 
+                
+                bellGain.gain.setValueAtTime(0, now);
+                bellGain.gain.linearRampToValueAtTime(0.025, now + 0.01);
+                bellGain.gain.exponentialRampToValueAtTime(0.0001, now + 3.0);
+
+                const delay = this.ctx.createDelay();
+                delay.delayTime.setValueAtTime(0.4, now);
+                const delayFeedback = this.ctx.createGain();
+                delayFeedback.gain.setValueAtTime(0.28, now);
+
+                osc1.connect(bellGain);
+                osc2.connect(bellGain);
+                bellGain.connect(this.masterGain);
+                
+                bellGain.connect(delay);
+                delay.connect(delayFeedback);
+                delayFeedback.connect(delay);
+                delayFeedback.connect(this.masterGain);
+
+                osc1.start(now);
+                osc2.start(now);
+                osc1.stop(now + 4);
+                osc2.stop(now + 4);
+            }
+        }
+
+        window.luxuryBGM = new LuxuryBGMPlayer();
+
+        window.syncBGM = function() {
+            if (!window.luxuryBGM) return;
+            const view = window.state.currentView;
+            const wantsTrack = (view === 'dashboard') ? 'lounge' : 'mysterious';
+            
+            const widget = document.getElementById('bgm-controller-widget');
+            const icon = document.getElementById('bgm-icon');
+            const statusText = document.getElementById('bgm-status-text');
+
+            if (!widget) return;
+
+            if (window.luxuryBGM.isPlaying) {
+                window.luxuryBGM.start(wantsTrack);
+                widget.classList.add('bgm-active');
+                icon.className = 'fa-solid fa-pause text-[9px]';
+                statusText.textContent = (wantsTrack === 'lounge') ? 'VIP Lounge BGM' : 'Mystique Seclusion';
+            } else {
+                widget.classList.remove('bgm-active');
+                icon.className = 'fa-solid fa-play text-[9px]';
+                statusText.textContent = 'Audio Muted';
+            }
+        };
+
+        const initBGMController = () => {
+            const widget = document.getElementById('bgm-controller-widget');
+            if (!widget) return;
+
+            widget.onclick = (e) => {
+                e.stopPropagation();
+                if (!window.luxuryBGM) return;
+                
+                if (window.luxuryBGM.isPlaying) {
+                    window.luxuryBGM.stop();
+                    localStorage.setItem('sr_bgm_enabled', 'false');
+                    showToast('會所奢華背景音樂已靜音 🔇', 'info');
+                } else {
+                    localStorage.setItem('sr_bgm_enabled', 'true');
+                    window.luxuryBGM.isPlaying = true; 
+                    window.syncBGM();
+                    showToast('頂級會所程序音效已開啟 🔊', 'success');
+                }
+                window.syncBGM();
+            };
+
+            const autoStartOnInteraction = () => {
+                if (localStorage.getItem('sr_bgm_enabled') !== 'false') {
+                    window.luxuryBGM.isPlaying = true;
+                    window.syncBGM();
+                }
+                document.body.removeEventListener('click', autoStartOnInteraction);
+                document.body.removeEventListener('touchstart', autoStartOnInteraction);
+            };
+
+            document.body.addEventListener('click', autoStartOnInteraction);
+            document.body.addEventListener('touchstart', autoStartOnInteraction);
+        };
+  
+        const appContainer = document.getElementById('app');
   
         async function initApp() {
             if (emailjsConfig.publicKey && emailjsConfig.publicKey !== "YOUR_EMAILJS_PUBLIC_KEY") {
@@ -338,6 +626,10 @@
                 window.state.unsubscribeVisitorsListener = null;
             }
   
+            if (window.syncBGM) {
+                window.syncBGM();
+            }
+
             renderView();
         }
   
@@ -2857,6 +3149,9 @@
   
         window.onload = function() {
             initApp();
+            if (typeof initBGMController === 'function') {
+                initBGMController();
+            }
         };
     </script>
 </body>
