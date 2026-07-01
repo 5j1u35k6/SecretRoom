@@ -266,8 +266,6 @@
             unlockedNSFWPosts: {}, 
             visitors: [], 
             viewedPostsInSession: {}, 
-            emailVerified: false,
-            emailVerificationCode: null,
             searchTab: 'posts', 
             singlePostFocusId: null, 
             userData: {
@@ -288,10 +286,10 @@
 
         class LuxuryBGMPlayer {
             constructor() {
-                // 使用外部優質音訊，不再採用 Web Audio API 震盪器合成
+                // 使用外部優質音訊
                 this.tracks = {
-                    mysterious: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3", // 奢華神秘、大氣緩慢的高層次環境鋪底音
-                    lounge: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3"       // 水晶般清亮質感、華航豪華VIP貴賓室風格的精緻輕音樂
+                    mysterious: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3", // 奢華神秘環境配樂
+                    lounge: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3"       // 奢華VIP貴賓室精緻輕音樂
                 };
                 this.audio = null;
                 this.currentTrack = null;
@@ -401,6 +399,27 @@
 
         window.luxuryBGM = new LuxuryBGMPlayer();
 
+        // 預設開啟音樂 (如果LocalStorage未設定)
+        if (localStorage.getItem('sr_bgm_enabled') !== 'false') {
+            localStorage.setItem('sr_bgm_enabled', 'true');
+            window.luxuryBGM.isPlaying = true;
+        }
+
+        window.toggleBGMState = function() {
+            if (!window.luxuryBGM) return;
+            if (window.luxuryBGM.isPlaying) {
+                window.luxuryBGM.stop();
+                localStorage.setItem('sr_bgm_enabled', 'false');
+                showToast('會所奢華背景音樂已靜音 🔇', 'info');
+            } else {
+                localStorage.setItem('sr_bgm_enabled', 'true');
+                window.luxuryBGM.isPlaying = true; 
+                window.syncBGM();
+                showToast('頂級會所音訊已啟用 🔊', 'success');
+            }
+            window.syncBGM();
+        };
+
         window.syncBGM = function() {
             if (!window.luxuryBGM) return;
             const view = window.state.currentView;
@@ -411,17 +430,48 @@
             const icon = document.getElementById('bgm-icon');
             const statusText = document.getElementById('bgm-status-text');
 
-            if (!widget) return;
+            // 如果進入 Dashboard，右上角的 BGM 控制按鈕隱藏（移至側邊欄）
+            if (widget) {
+                if (view === 'dashboard') {
+                    widget.classList.add('hidden');
+                } else {
+                    widget.classList.remove('hidden');
+                }
+            }
 
             if (window.luxuryBGM.isPlaying) {
                 window.luxuryBGM.start(wantsTrack);
-                widget.classList.add('bgm-active');
-                icon.className = 'fa-solid fa-pause text-[9px]';
-                statusText.textContent = (wantsTrack === 'lounge') ? 'Premium VIP Lounge' : 'Mystique Seclusion';
+                if (widget) {
+                    widget.classList.add('bgm-active');
+                    if (icon) icon.className = 'fa-solid fa-pause text-[9px]';
+                    if (statusText) statusText.textContent = (wantsTrack === 'lounge') ? 'Premium VIP Lounge' : 'Mystique Seclusion';
+                }
             } else {
-                widget.classList.remove('bgm-active');
-                icon.className = 'fa-solid fa-play text-[9px]';
-                statusText.textContent = 'Audio Muted';
+                if (widget) {
+                    widget.classList.remove('bgm-active');
+                    if (icon) icon.className = 'fa-solid fa-play text-[9px]';
+                    if (statusText) statusText.textContent = 'Audio Muted';
+                }
+            }
+
+            // 同步側邊欄嵌入的音樂按鈕
+            const sidebarBtn = document.getElementById('sidebar-bgm-btn');
+            const sidebarBars = document.getElementById('sidebar-bgm-bars');
+            const sidebarText = document.getElementById('sidebar-bgm-text');
+            const sidebarIcon = document.getElementById('sidebar-bgm-icon');
+
+            if (sidebarBtn) {
+                if (window.luxuryBGM.isPlaying) {
+                    sidebarBtn.classList.add('bgm-active');
+                    if (sidebarBars) sidebarBars.classList.add('bgm-active');
+                    if (sidebarText) sidebarText.textContent = 'Premium VIP Lounge';
+                    if (sidebarIcon) sidebarIcon.className = 'fa-solid fa-pause text-[9px]';
+                } else {
+                    sidebarBtn.classList.remove('bgm-active');
+                    if (sidebarBars) sidebarBars.classList.remove('bgm-active');
+                    if (sidebarText) sidebarText.textContent = 'Audio Muted';
+                    if (sidebarIcon) sidebarIcon.className = 'fa-solid fa-play text-[9px]';
+                }
             }
         };
 
@@ -431,23 +481,12 @@
 
             widget.onclick = (e) => {
                 e.stopPropagation();
-                if (!window.luxuryBGM) return;
-                
-                if (window.luxuryBGM.isPlaying) {
-                    window.luxuryBGM.stop();
-                    localStorage.setItem('sr_bgm_enabled', 'false');
-                    showToast('會所奢華背景音樂已靜音 🔇', 'info');
-                } else {
-                    localStorage.setItem('sr_bgm_enabled', 'true');
-                    window.luxuryBGM.isPlaying = true; 
-                    window.syncBGM();
-                    showToast('頂級會所音訊已啟用 🔊', 'success');
-                }
-                window.syncBGM();
+                window.toggleBGMState();
             };
 
             const autoStartOnInteraction = () => {
                 if (localStorage.getItem('sr_bgm_enabled') !== 'false') {
+                    localStorage.setItem('sr_bgm_enabled', 'true');
                     window.luxuryBGM.isPlaying = true;
                     window.syncBGM();
                 }
@@ -597,7 +636,7 @@
                         <h1 class="text-4xl md:text-5xl font-black tracking-[0.28em] text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-100 to-amber-500 font-luxury mb-2.5 select-none italic text-center">SecretRoom</h1>
                         <p class="text-amber-500/95 text-xs font-extrabold uppercase tracking-[0.4em] text-center">俱樂部式私密生活分享</p>
                         
-                        <!-- 裝飾花紋線：擴大上下間距與小點間隙，顯得大氣從容 -->
+                        <!-- 裝飾花紋線 -->
                         <div class="flex items-center gap-4 w-44 my-10">
                             <div class="h-[1px] flex-1 bg-gradient-to-r from-transparent via-amber-500/20 to-amber-500/40"></div>
                             <div class="w-1.5 h-1.5 bg-amber-500/50 rotate-45"></div>
@@ -716,9 +755,6 @@
         }
   
         function renderRegister(container) {
-            window.state.emailVerified = false;
-            window.state.emailVerificationCode = null;
-  
             container.innerHTML = `
                 <div class="w-full bg-[#030306] px-4 py-8 flex flex-col items-center h-full overflow-y-auto">
                     <div class="max-w-4xl w-full bg-slate-950/90 border border-amber-500/10 rounded-3xl p-6 md:p-10 shadow-2xl relative mb-12">
@@ -731,10 +767,10 @@
                             <p class="text-sm text-slate-400 mt-2.5 leading-relaxed">請認真填寫以下會籍檔案。系統將落實最嚴格之人工實名審查，以保障俱樂部會員隱私與安全。</p>
                         </div>
   
-                        <!-- 雙欄排版，寬螢幕下完美撐滿不擁擠 -->
+                        <!-- 雙欄排版，高水準等高對稱 -->
                         <form id="apply-form" class="grid grid-cols-1 md:grid-cols-2 gap-8" onsubmit="return false;">
                             
-                            <!-- 左側區塊：相片上傳與安全憑證設定 -->
+                            <!-- 左側區塊：相片上傳與安全帳號設定 -->
                             <div class="space-y-6">
                                 <!-- 上傳個人頭像 -->
                                 <div class="bg-slate-900/40 p-5 border border-slate-900/80 rounded-2xl flex flex-col items-center justify-center text-center">
@@ -761,16 +797,8 @@
                                         <input type="text" id="reg-username" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 再次確認帳號</label>
-                                        <input type="text" id="reg-username-confirm" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
-                                    </div>
-                                    <div>
                                         <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 設定登入密碼</label>
                                         <input type="password" id="reg-password" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 再次確認密碼</label>
-                                        <input type="password" id="reg-password-confirm" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                                     </div>
                                     
                                     <!-- 密碼強度回饋 -->
@@ -789,7 +817,7 @@
                                 </div>
                             </div>
   
-                            <!-- 右側區塊：基本資料、物理規格 -->
+                            <!-- 右側區塊：基本資料與身體數據 (完全對稱對齊) -->
                             <div class="space-y-6">
                                 <!-- 使用者名稱與生日 -->
                                 <div class="p-5 bg-slate-900/30 border border-slate-900/80 rounded-2xl space-y-4">
@@ -809,26 +837,7 @@
                                     </div>
                                 </div>
   
-                                <!-- 信箱驗證與認證碼 -->
-                                <div class="space-y-4 bg-slate-900/30 p-5 border border-slate-900/80 rounded-2xl">
-                                    <span class="text-sm font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-regular fa-envelope mr-1.5"></i> 通訊安全雙向核查</span>
-                                    <div>
-                                        <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 電子郵件信箱</label>
-                                        <div class="flex gap-2">
-                                            <input type="email" id="reg-email" class="flex-1 min-w-0 bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition">
-                                            <button type="button" id="btn-send-code" class="bg-amber-600 hover:bg-amber-500 active:scale-[0.96] text-slate-950 font-bold text-xs px-3.5 rounded-xl transition duration-300 shrink-0">發送驗證碼</button>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 驗證碼</label>
-                                        <div class="flex gap-2">
-                                            <input type="text" id="reg-email-code" class="flex-1 min-w-0 bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition">
-                                            <button type="button" id="btn-verify-code" class="bg-emerald-600 hover:bg-emerald-500 active:scale-[0.96] text-white font-bold text-xs px-3.5 rounded-xl transition duration-300 shrink-0">驗證信箱</button>
-                                        </div>
-                                    </div>
-                                </div>
-  
-                                <!-- 個人物理狀態 -->
+                                <!-- 個人物理狀態：原信箱驗證移除，此處無縫取代 -->
                                 <div class="p-5 bg-slate-900/30 border border-slate-900/80 rounded-2xl space-y-4">
                                     <span class="text-sm font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-solid fa-user-check mr-1.5"></i> 身體數據密碼規格</span>
                                     
@@ -856,10 +865,10 @@
                                 </div>
                             </div>
   
-                            <!-- 5列2行完全展開標籤清單 - 寬螢幕通欄排版 -->
-                            <div class="md:col-span-2 space-y-2 mt-2">
+                            <!-- 10個標籤完全展開 - 形成一個完全獨立整潔的區塊 -->
+                            <div class="md:col-span-2 space-y-2 mt-4 pt-4 border-t border-slate-900/80">
                                 <label class="block text-sm font-bold text-slate-300 mb-1 uppercase tracking-wider"><span class="text-red-500">*</span> 感興趣的主題與性癖偏好 (至少勾選一項)</label>
-                                <span class="text-xs text-slate-500 block mb-3 leading-relaxed">我們將依此標籤為您進行大廳智慧動態與合適的同好推薦配對。</span>
+                                <span class="text-xs text-slate-550 block mb-3 leading-relaxed">我們將依此標籤為您進行大廳智慧動態與合適的同好推薦配對。</span>
                                 
                                 <div class="grid grid-cols-2 md:grid-cols-5 gap-3 bg-slate-950/40 p-4 border border-slate-900 rounded-2xl" id="register-kinks-box">
                                     ${window.state.kinksOptions.map((k) => `
@@ -926,79 +935,6 @@
   
             document.getElementById('btn-back-landing').onclick = () => navigate('landing');
   
-            const btnSendCode = document.getElementById('btn-send-code');
-            const btnVerifyCode = document.getElementById('btn-verify-code');
-            const emailInput = document.getElementById('reg-email');
-            const codeInput = document.getElementById('reg-email-code');
-  
-            btnSendCode.onclick = async () => {
-                const email = emailInput.value.trim();
-                if (!email || !email.includes('@')) {
-                    showToast('請輸入正確的電子郵件信箱！', 'error');
-                    return;
-                }
-  
-                const generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
-                window.state.emailVerificationCode = generatedCode;
-  
-                btnSendCode.disabled = true;
-                btnSendCode.classList.add('opacity-50', 'cursor-not-allowed');
-  
-                if (emailjsConfig.publicKey && emailjsConfig.publicKey !== "YOUR_EMAILJS_PUBLIC_KEY") {
-                    try {
-                        await emailjs.send(emailjsConfig.serviceId, emailjsConfig.templateId, {
-                            to_email: email,
-                            to_name: "SecretRoom 俱樂部",
-                            status_text: "新帳號信箱安全驗證",
-                            message: `歡迎申請加入 SecretRoom！您的註冊信箱驗證碼為：【${generatedCode}】。請於 10 分鐘內將此碼填回申請頁面以完成安全查核。`
-                        });
-                        showToast('信箱驗證郵件已發送，請立即查收信箱！', 'success');
-                    } catch (err) {
-                        console.error(err);
-                        showToast('驗證信送出失敗，請確認信箱無誤後重試。', 'error');
-                        btnSendCode.disabled = false;
-                        btnSendCode.classList.remove('opacity-50', 'cursor-not-allowed');
-                        return;
-                    }
-                } else {
-                    console.log("[系統通訊調試] 驗證碼：", generatedCode);
-                    showToast(`[系統通訊調試] 驗證碼為：${generatedCode}`, 'info');
-                }
-  
-                let countdown = 60;
-                const timer = setInterval(() => {
-                    countdown--;
-                    btnSendCode.textContent = `${countdown}s 後重發`;
-                    if (countdown <= 0) {
-                        clearInterval(timer);
-                        btnSendCode.disabled = false;
-                        btnSendCode.classList.remove('opacity-50', 'cursor-not-allowed');
-                        btnSendCode.textContent = '發送驗證碼';
-                    }
-                }, 1000);
-            };
-  
-            btnVerifyCode.onclick = () => {
-                const userCode = codeInput.value.trim();
-                if (!window.state.emailVerificationCode) {
-                    showToast('請先點擊發送驗證碼！', 'error');
-                    return;
-                }
-                if (userCode === window.state.emailVerificationCode) {
-                    window.state.emailVerified = true;
-                    showToast('電子郵件驗證成功！', 'success');
-                    
-                    emailInput.disabled = true;
-                    codeInput.disabled = true;
-                    btnSendCode.disabled = true;
-                    btnVerifyCode.disabled = true;
-                    btnVerifyCode.textContent = '驗證完成 ✓';
-                    btnVerifyCode.className = "bg-emerald-700 text-white font-bold text-xs px-3.5 rounded-xl cursor-not-allowed shrink-0";
-                } else {
-                    showToast('驗證碼不正確，請重新確認！', 'error');
-                }
-            };
-  
             const pwdInput = document.getElementById('reg-password');
             const ruleLen = document.getElementById('pwd-rule-len');
             const ruleUpper = document.getElementById('pwd-rule-upper');
@@ -1036,11 +972,8 @@
                 e.preventDefault();
   
                 const username = document.getElementById('reg-username').value.trim();
-                const usernameConfirm = document.getElementById('reg-username-confirm').value.trim();
                 const password = document.getElementById('reg-password').value;
-                const passwordConfirm = document.getElementById('reg-password-confirm').value;
                 const nickname = document.getElementById('reg-nickname').value.trim();
-                const email = emailInput.value.trim();
                 const year = yearSelect.value;
                 const month = monthSelect.value;
                 const day = daySelect.value;
@@ -1054,15 +987,6 @@
                     selectedKinks.push(cb.value);
                 });
   
-                if (username !== usernameConfirm) {
-                    showToast('兩次輸入的帳號不一致！', 'error');
-                    return;
-                }
-                if (password !== passwordConfirm) {
-                    showToast('兩次輸入的密碼不一致！', 'error');
-                    return;
-                }
-  
                 const isLenMet = password.length >= 8;
                 const isUpperMet = /[A-Z]/.test(password);
                 const isSpecMet = /[!@#$%^&*(),.?":{}|<>].*/.test(password);
@@ -1073,11 +997,6 @@
   
                 if (!base64Avatar) {
                     showToast('請上傳個人頭像供審核查驗。', 'error');
-                    return;
-                }
-  
-                if (!window.state.emailVerified) {
-                    showToast('請務必完成信箱安全性驗證！', 'error');
                     return;
                 }
   
@@ -1105,7 +1024,7 @@
                         status: 'pending',
                         password,
                         nickname,
-                        email,
+                        email: '', // 徹底移除信箱驗證，預設留空值
                         birthYear: year,
                         birthMonth: month,
                         birthDay: day,
@@ -1125,7 +1044,7 @@
                     window.state.applicationId = username;
                     localStorage.setItem('sr_username', username);
   
-                    showToast('申請資料提交成功！審核結果將發送至您的信箱。', 'success');
+                    showToast('申請資料提交成功！請靜待審核查驗。', 'success');
                     navigate('pending');
                 } catch (err) {
                     console.error("資料寫入錯誤:", err);
@@ -1146,7 +1065,7 @@
                         <div class="space-y-2.5">
                             <h2 class="text-xl font-bold text-white tracking-wide font-luxury">APPLICATION PENDING</h2>
                             <p class="text-sm text-slate-400 leading-relaxed px-4">
-                                SecretRoom 為保障所有帳號的絕對隱私防護，一律採高規格人工手動審核。我們將於審核完畢後，發送通知信至您的註冊信箱。
+                                SecretRoom 為保障所有帳號的絕對隱私防護，一律採高規格人工手動審核。請您稍後重新整理確認狀態。
                             </p>
                         </div>
   
@@ -1154,7 +1073,6 @@
                             <span class="text-xs font-bold text-amber-500 uppercase tracking-wider block font-luxury">註冊概要資訊</span>
                             <p class="text-sm text-slate-300"><span class="text-slate-500 font-medium">您的帳號:</span> @${window.state.applicationId}</p>
                             <p class="text-sm text-slate-300"><span class="text-slate-500 font-medium">您的名稱:</span> ${window.state.userData.nickname}</p>
-                            <p class="text-sm text-slate-300"><span class="text-slate-500 font-medium">信箱:</span> ${window.state.userData.email}</p>
                         </div>
   
                         <div class="pt-2">
@@ -1215,18 +1133,14 @@
                 
                 setTimeout(() => {
                     const uInput = document.getElementById('reg-username');
-                    const uConf = document.getElementById('reg-username-confirm');
                     const nInput = document.getElementById('reg-nickname');
-                    const eInput = document.getElementById('reg-email');
                     const hInput = document.getElementById('reg-height');
                     const wInput = document.getElementById('reg-weight');
                     const lInput = document.getElementById('reg-length');
                     const gInput = document.getElementById('reg-girth');
   
                     if (uInput) { uInput.value = window.state.applicationId; uInput.disabled = true; }
-                    if (uConf) { uConf.value = window.state.applicationId; uConf.disabled = true; }
                     if (nInput) nInput.value = draft.nickname || '';
-                    if (eInput) eInput.value = draft.email || '';
                     if (hInput) hInput.value = draft.height || '';
                     if (wInput) wInput.value = draft.weight || '';
                     if (lInput) lInput.value = draft.length || '';
@@ -1306,10 +1220,10 @@
   
                             <nav class="space-y-2.5">
                                 <button id="aside-tab-feed" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 text-sm transition-all duration-300 font-bold ${window.state.currentTab === 'feed' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
-                                    <i class="fa-solid fa-door-open text-amber-500/80"></i> 俱樂部首頁
+                                    <i class="fa-solid fa-door-open text-amber-500/80"></i> 俱樂部大廳
                                 </button>
                                 <button id="aside-tab-profile" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 text-sm transition-all duration-300 font-bold ${window.state.currentTab === 'profile' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
-                                    <i class="fa-solid fa-user-shield text-amber-500/80"></i> 我的個人資料
+                                    <i class="fa-solid fa-user-shield text-amber-500/80"></i> 我的個人檔案
                                 </button>
                             </nav>
   
@@ -1318,6 +1232,7 @@
                             </button>
                         </div>
   
+                        <!-- 左下角帳號、音樂、登出功能組合 -->
                         <div class="space-y-4">
                             <!-- 精緻奢華個人小名牌 -->
                             <div class="flex items-center gap-3 p-3 bg-slate-950/50 border border-amber-500/10 rounded-2xl relative overflow-hidden">
@@ -1330,6 +1245,26 @@
                                     <p class="text-xs text-slate-550 truncate font-mono mt-0.5">@${window.state.applicationId}</p>
                                 </div>
                             </div>
+
+                            <!-- 🎶 遷移後的高級嵌入式音樂控制區 -->
+                            <div id="sidebar-bgm-btn" class="flex items-center justify-between bg-slate-950/50 border border-amber-500/15 rounded-2xl p-3 md:p-3.5 hover:border-amber-500/35 transition duration-300 cursor-pointer shadow-[0_4px_25px_rgba(212,175,55,0.03)] backdrop-blur-md group">
+                                <div class="flex items-center gap-2">
+                                    <div class="flex items-center gap-[3px] h-3 w-4" id="sidebar-bgm-bars">
+                                        <div class="w-[2px] h-1.5 bg-amber-500 rounded-full bgm-bar"></div>
+                                        <div class="w-[2px] h-3 bg-amber-500 rounded-full bgm-bar"></div>
+                                        <div class="w-[2px] h-1 bg-amber-500 rounded-full bgm-bar"></div>
+                                        <div class="w-[2px] h-2 bg-amber-500 rounded-full bgm-bar"></div>
+                                    </div>
+                                    <span class="text-[10px] font-bold text-amber-500/80 tracking-wider font-luxury uppercase select-none" id="sidebar-bgm-text">
+                                        BGM Audio
+                                    </span>
+                                </div>
+                                <button class="w-6 h-6 rounded-full bg-amber-500/10 hover:bg-amber-500/20 flex items-center justify-center border border-amber-500/20 text-amber-500 transition-all duration-300">
+                                    <i class="fa-solid fa-play text-[9px]" id="sidebar-bgm-icon"></i>
+                                </button>
+                            </div>
+
+                            <!-- 登出按鈕 -->
                             <button id="aside-btn-logout" class="w-full bg-red-950/10 hover:bg-red-950/30 text-red-400 border border-red-500/10 hover:border-red-500/25 active:scale-[0.97] font-bold text-sm py-3.5 px-4 rounded-2xl transition flex items-center justify-center gap-2 shadow-sm">
                                 <i class="fa-solid fa-power-off"></i> 登出俱樂部
                             </button>
@@ -1441,6 +1376,15 @@
   
             const shareBtnMobile = document.getElementById('mobile-btn-share');
             if (shareBtnMobile) shareBtnMobile.onclick = () => showSharePostModal();
+
+            // 🎶 在側邊欄點選音樂按鈕時調用 toggle
+            const sidebarBgmBtn = document.getElementById('sidebar-bgm-btn');
+            if (sidebarBgmBtn) {
+                sidebarBgmBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    window.toggleBGMState();
+                };
+            }
   
             const tabContentContainer = document.getElementById('dashboard-tab-content');
             if (window.state.currentTab === 'feed') {
@@ -1488,7 +1432,7 @@
                 .slice(0, 4);
   
             if (showList.length === 0) {
-                listContainer.innerHTML = '<div class="text-xs text-slate-500 py-3 text-center">目前尚無其他活躍同好</div>';
+                listContainer.innerHTML = '<div class="text-xs text-slate-550 py-3 text-center">目前尚無其他活躍同好</div>';
                 return;
             }
   
@@ -1503,7 +1447,7 @@
                             <div class="flex items-center gap-1.5">
                                 <h4 class="font-bold text-sm text-slate-300 truncate">${user.nickname}</h4>
                             </div>
-                            <span class="text-xs text-slate-500 block truncate font-mono mt-0.5">@${user.id}</span>
+                            <span class="text-xs text-slate-550 block truncate font-mono mt-0.5">@${user.id}</span>
                         </div>
                     </div>
                     <i class="fa-solid fa-chevron-right text-xs text-slate-700"></i>
@@ -1525,7 +1469,7 @@
                     </div>
                 </div>
   
-                <!-- 快速篩選器：拓寬按鈕內距 (px-6 py-3.5) 與提升文字至 text-xs -->
+                <!-- 快速篩選器 -->
                 <div class="flex items-center gap-2.5 overflow-x-auto scrollbar-hide py-1.5">
                     <button onclick="setGlobalFilter('recommended')" id="filter-btn-recommended" class="shrink-0 text-xs font-bold uppercase tracking-widest px-6 py-3.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'recommended' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-slate-900 hover:bg-slate-900'}">
                         <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>智慧推薦
@@ -1913,7 +1857,6 @@
                     </button>
                 `;
   
-                // 調整貼文作者的頭像至優雅微細 w-8 h-8
                 card.innerHTML = `
                     ${rankingCrownHtml}
                     <div class="flex items-center justify-between">
@@ -2052,7 +1995,7 @@
                     `;
                 } else if (isMe) {
                     specApplyBtnHtml = `
-                        <button onclick="showSpecApplyModal()" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 hover:brightness-110 text-slate-950 font-bold text-xs py-3.5 px-4 rounded-xl shadow-lg shadow-amber-950/15 transition mt-3 flex items-center justify-center gap-1.5 active:scale-[0.98]">
+                        <button onclick="showSpecApplyModal()" class="w-full bg-gradient-to-r from-amber-500 to-yellow-650 hover:brightness-110 text-slate-950 font-bold text-xs py-3.5 px-4 rounded-xl shadow-lg shadow-amber-950/15 transition mt-3 flex items-center justify-center gap-1.5 active:scale-[0.98]">
                             <i class="fa-solid fa-lock"></i> 申請黃金 Spec 認證勳章
                         </button>
                     `;
@@ -2098,7 +2041,7 @@
                         </h2>
                         <span class="text-sm text-slate-500 block font-mono">@${profileUserId}</span>
                         
-                        <!-- 膠囊微光勳章：極致奢華膠囊造型設計，帶有柔和霓虹背景 -->
+                        <!-- 膠囊微光勳章 -->
                         <div class="flex items-center justify-center gap-2 mt-4.5 flex-wrap">
                             ${getBadgeHTML(profileUser, true)}
                         </div>
@@ -2565,7 +2508,7 @@
                                 ${window.state.kinksOptions.map(k => `
                                     <label class="flex items-center gap-2.5 cursor-pointer p-1 rounded hover:bg-slate-900/60 transition">
                                         <input type="checkbox" name="share-kink" value="${k}" class="rounded border-slate-800 bg-slate-950 text-amber-500 w-3.5 h-3.5">
-                                        <span class="text-xs text-slate-350 font-semibold">${k}</span>
+                                        <span class="text-xs text-slate-355 font-semibold">${k}</span>
                                     </label>
                                 `).join('')}
                             </div>
@@ -2987,7 +2930,6 @@
                 });
             }
   
-            // 遵照規範：不出現任何實體說明文字、僅保留奢華圓形霓虹徽章圖示，並支援懸停 tooltip 顯示說明
             return badges.map(b => {
                 const sizeClass = isBig ? 'w-8.5 h-8.5 text-sm' : 'w-6 h-6 text-xs';
                 return `
