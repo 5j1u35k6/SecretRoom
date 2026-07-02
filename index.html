@@ -1334,11 +1334,11 @@
                             </div>
   
                             <nav class="space-y-2.5">
-                                <button id="aside-tab-feed" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 text-sm transition-all duration-300 font-bold ${window.state.currentTab === 'feed' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
+                                <button id="aside-tab-feed" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 text-sm transition-all duration-300 font-bold ${window.state.currentTab === 'feed' && window.state.currentFilter !== 'elite-ranking' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
                                     <i class="fa-solid fa-door-open text-amber-500/80"></i> 俱樂部大廳
                                 </button>
-                                <button id="aside-tab-profile" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 text-sm transition-all duration-300 font-bold ${window.state.currentTab === 'profile' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
-                                    <i class="fa-solid fa-user-shield text-amber-500/80"></i> 我的個人檔案
+                                <button id="aside-tab-ranking" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 text-sm transition-all duration-300 font-bold ${window.state.currentTab === 'feed' && window.state.currentFilter === 'elite-ranking' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
+                                    <i class="fa-solid fa-trophy text-amber-500/80"></i> 綜合排行
                                 </button>
                             </nav>
   
@@ -1350,15 +1350,15 @@
   
                         <!-- 左下角帳號、音樂、登出功能組合 -->
                         <div class="space-y-4">
-                            <!-- 精緻晶面個人小名牌 -->
-                            <div class="flex items-center gap-3 p-3 bg-[#0a0806]/80 border border-amber-500/15 rounded-2xl relative overflow-hidden">
-                                <div class="absolute top-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full m-2 shadow-[0_0_8px_#10b981]"></div>
+                            <!-- 精緻晶面個人小名牌 - 作為個人檔案按鈕觸發 -->
+                            <div id="aside-profile-trigger" class="flex items-center gap-3 p-3 bg-[#0a0806]/80 border ${window.state.currentTab === 'profile' ? 'border-amber-500 bg-amber-550/5 shadow-[0_0_15px_rgba(223,183,108,0.15)]' : 'border-amber-500/15'} rounded-2xl relative overflow-hidden cursor-pointer hover:border-amber-500/40 hover:bg-slate-900/30 transition-all duration-300">
+                                <div class="absolute top-0 right-0 w-2 h-2 bg-emerald-500 rounded-full m-2 shadow-[0_0_8px_#10b981]"></div>
                                 <img src="${window.state.userData.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-9 h-9 rounded-full object-cover border border-amber-500/30">
                                 <div class="overflow-hidden">
                                     <div class="flex items-center gap-1">
-                                        <h4 class="font-bold text-sm text-slate-200 truncate">${window.state.userData.nickname}</h4>
+                                        <h4 class="font-bold text-sm ${window.state.currentTab === 'profile' ? 'text-amber-400' : 'text-slate-200'} truncate">${window.state.userData.nickname}</h4>
                                     </div>
-                                    <p class="text-[10px] text-slate-550 truncate font-mono mt-0.5">@${window.state.applicationId}</p>
+                                    <p class="text-[10px] text-slate-500 truncate font-mono mt-0.5">@${window.state.applicationId}</p>
                                 </div>
                             </div>
 
@@ -1390,15 +1390,15 @@
                     <!-- Main center feed and user profile section -->
                     <main class="flex-1 h-full flex flex-col bg-transparent overflow-hidden">
                         
-                        <!-- RWD: Mobile header -->
-                        <header class="flex md:hidden items-center justify-between px-5 py-4.5 border-b border-amber-500/15 bg-slate-950/70 backdrop-blur-md shrink-0">
+                        <!-- RWD: Mobile header - 修正手機響應式 w-8.5 破圖 -->
+                        <header class="flex md:hidden items-center justify-between px-4 py-3 border-b border-amber-500/15 bg-slate-950/70 backdrop-blur-md shrink-0">
                             <div class="flex items-center gap-2.5">
-                                <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-8.5 h-8.5 rounded-full border border-amber-500/30 object-cover animate-gentle-logo">
-                                <h1 class="text-xl font-black text-white tracking-[0.15em] italic font-luxury">SecretRoom</h1>
+                                <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-8 h-8 rounded-full border border-amber-500/30 object-cover animate-gentle-logo">
+                                <h1 class="text-lg font-black text-white tracking-[0.15em] italic font-luxury">SecretRoom</h1>
                             </div>
                             <!-- 修正漸層防破圖 -->
-                            <button id="mobile-btn-share" class="w-9 h-9 bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-slate-950 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition">
-                                <i class="fa-solid fa-plus text-sm"></i>
+                            <button id="mobile-btn-share" class="w-8 h-8 bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-slate-950 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition">
+                                <i class="fa-solid fa-plus text-xs"></i>
                             </button>
                         </header>
   
@@ -1409,19 +1409,23 @@
                             </div>
                         </div>
   
-                        <!-- RWD: Mobile bottom navbar footer -->
-                        <nav class="flex md:hidden items-center justify-around border-t border-amber-500/15 bg-slate-950/90 backdrop-blur-md p-3 pb-safe-bottom shrink-0 select-none rounded-t-3xl">
-                            <button id="mobile-tab-feed" class="flex flex-col items-center gap-1 transition-all ${window.state.currentTab === 'feed' ? 'text-amber-500 scale-105 font-bold' : 'text-slate-500'}">
-                                <i class="fa-solid fa-house-chimney text-base"></i>
-                                <span class="text-xs font-bold tracking-wider">首頁秘密</span>
+                        <!-- RWD: Mobile bottom navbar footer - 綜合排行整合至此 -->
+                        <nav class="flex md:hidden items-center justify-around border-t border-amber-500/15 bg-slate-950/90 backdrop-blur-md p-2.5 pb-safe-bottom shrink-0 select-none rounded-t-3xl">
+                            <button id="mobile-tab-feed" class="flex flex-col items-center gap-1 transition-all ${window.state.currentTab === 'feed' && window.state.currentFilter !== 'elite-ranking' ? 'text-amber-500 scale-105 font-bold' : 'text-slate-500'}">
+                                <i class="fa-solid fa-house-chimney text-sm"></i>
+                                <span class="text-[10px] font-bold tracking-wider">首頁秘密</span>
+                            </button>
+                            <button id="mobile-tab-ranking" class="flex flex-col items-center gap-1 transition-all ${window.state.currentTab === 'feed' && window.state.currentFilter === 'elite-ranking' ? 'text-amber-500 scale-105 font-bold' : 'text-slate-500'}">
+                                <i class="fa-solid fa-trophy text-sm"></i>
+                                <span class="text-[10px] font-bold tracking-wider">綜合排行</span>
                             </button>
                             <button id="mobile-tab-profile" class="flex flex-col items-center gap-1 transition-all ${window.state.currentTab === 'profile' ? 'text-amber-500 scale-105 font-bold' : 'text-slate-500'}">
-                                <i class="fa-solid fa-user-circle text-base"></i>
-                                <span class="text-xs font-bold tracking-wider">個人主頁</span>
+                                <i class="fa-solid fa-user-circle text-sm"></i>
+                                <span class="text-[10px] font-bold tracking-wider">個人主頁</span>
                             </button>
                             <button id="mobile-btn-logout" class="flex flex-col items-center gap-1 text-slate-600 hover:text-red-400 transition-all">
-                                <i class="fa-solid fa-power-off text-base"></i>
-                                <span class="text-xs font-bold tracking-wider">登出</span>
+                                <i class="fa-solid fa-power-off text-sm"></i>
+                                <span class="text-[10px] font-bold tracking-wider">登出</span>
                             </button>
                         </nav>
                     </main>
@@ -1456,22 +1460,28 @@
                 </div>
             `;
   
-            const bindTabEvents = (id, tabName) => {
+            const bindTabEvents = (id, tabName, filterName = null) => {
                 const el = document.getElementById(id);
                 if (el) el.onclick = () => { 
                     window.state.currentTab = tabName; 
-                    if (tabName === 'feed') {
+                    if (filterName) {
+                        window.state.currentFilter = filterName;
+                        if (filterName === 'elite-ranking' && !window.state.currentRankTag) {
+                            window.state.currentRankTag = window.state.kinksOptions[0];
+                        }
+                    } else if (tabName === 'feed') {
                         window.state.currentFilter = 'recommended';
                         window.state.currentRankTag = null;
-                        window.state.singlePostFocusId = null; 
                     }
+                    window.state.singlePostFocusId = null; 
                     renderDashboard(container); 
                 };
             };
   
-            bindTabEvents('aside-tab-feed', 'feed');
-            bindTabEvents('aside-tab-profile', 'profile');
-            bindTabEvents('mobile-tab-feed', 'feed');
+            bindTabEvents('aside-tab-feed', 'feed', 'recommended');
+            bindTabEvents('aside-tab-ranking', 'feed', 'elite-ranking');
+            bindTabEvents('mobile-tab-feed', 'feed', 'recommended');
+            bindTabEvents('mobile-tab-ranking', 'feed', 'elite-ranking');
             bindTabEvents('mobile-tab-profile', 'profile');
   
             const logoutAction = () => {
@@ -1499,6 +1509,15 @@
                 sidebarBgmBtn.onclick = (e) => {
                     e.stopPropagation();
                     window.toggleBGMState();
+                };
+            }
+
+            // 綁定左下角個人名牌觸發個人主頁效果
+            const profileTrigger = document.getElementById('aside-profile-trigger');
+            if (profileTrigger) {
+                profileTrigger.onclick = () => {
+                    window.state.currentTab = 'profile';
+                    renderDashboard(container);
                 };
             }
   
@@ -1575,7 +1594,7 @@
         function renderFeedTab(container) {
             container.innerHTML = `
                 <div class="relative w-full z-20">
-                    <div class="flex items-center bg-slate-950/90 border border-amber-500/20 rounded-2xl px-4 py-3.5 shadow-lg backdrop-blur-md">
+                    <div class="flex items-center bg-slate-950/90 border border-amber-500/20 rounded-2xl px-4 py-3 shadow-lg backdrop-blur-md">
                         <i class="fa-solid fa-magnifying-glass text-amber-500/70 text-sm mr-3"></i>
                         <input type="text" id="feed-search-input" class="w-full bg-transparent text-sm text-white focus:outline-none" placeholder="搜尋秘密、標籤、暱稱或帳號ID" value="${window.state.searchTerm}">
                     </div>
@@ -1585,23 +1604,20 @@
                     </div>
                 </div>
   
-                <!-- 快速篩選器 -->
-                <div class="flex items-center gap-2.5 overflow-x-auto scrollbar-hide py-1.5">
-                    <button onclick="setGlobalFilter('recommended')" id="filter-btn-recommended" class="shrink-0 text-xs font-bold uppercase tracking-widest px-6 py-3.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'recommended' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-amber-500/10 hover:bg-slate-900'}">
-                        <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i>智慧推薦
+                <!-- 快速篩選器 - 僅保留智慧推薦、高分評分、人氣按讚三個標籤 -->
+                <div class="flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-1">
+                    <button onclick="setGlobalFilter('recommended')" id="filter-btn-recommended" class="shrink-0 text-[11px] sm:text-xs font-bold uppercase tracking-widest px-4 py-2.5 sm:px-6 sm:py-3.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'recommended' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-amber-500/10 hover:bg-slate-900'}">
+                        <i class="fa-solid fa-wand-magic-sparkles mr-1"></i>智慧推薦
                     </button>
-                    <button onclick="setGlobalFilter('highly-rated')" id="filter-btn-highly-rated" class="shrink-0 text-xs font-bold uppercase tracking-widest px-6 py-3.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'highly-rated' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-amber-500/10 hover:bg-slate-900'}">
-                        <i class="fa-solid fa-star mr-1.5"></i>高分評分
+                    <button onclick="setGlobalFilter('highly-rated')" id="filter-btn-highly-rated" class="shrink-0 text-[11px] sm:text-xs font-bold uppercase tracking-widest px-4 py-2.5 sm:px-6 sm:py-3.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'highly-rated' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-amber-500/10 hover:bg-slate-900'}">
+                        <i class="fa-solid fa-star mr-1"></i>高分評分
                     </button>
-                    <button onclick="setGlobalFilter('popular')" id="filter-btn-popular" class="shrink-0 text-xs font-bold uppercase tracking-widest px-6 py-3.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'popular' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-amber-500/10 hover:bg-slate-900'}">
-                        <i class="fa-solid fa-fire-flame-curved mr-1.5"></i>人氣按讚
-                    </button>
-                    <button onclick="setGlobalFilter('elite-ranking')" id="filter-btn-elite-ranking" class="shrink-0 text-xs font-bold uppercase tracking-widest px-6 py-3.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'elite-ranking' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-amber-500/10 hover:bg-slate-900'}">
-                        <i class="fa-solid fa-trophy mr-1.5"></i>綜合排行
+                    <button onclick="setGlobalFilter('popular')" id="filter-btn-popular" class="shrink-0 text-[11px] sm:text-xs font-bold uppercase tracking-widest px-4 py-2.5 sm:px-6 sm:py-3.5 rounded-full border transition-all duration-300 ${window.state.currentFilter === 'popular' ? 'bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30' : 'bg-slate-950/40 text-slate-400 border-amber-500/10 hover:bg-slate-900'}">
+                        <i class="fa-solid fa-fire-flame-curved mr-1"></i>人氣按讚
                     </button>
                 </div>
   
-                <div id="ranking-sub-tabs" class="hidden flex items-center gap-2 overflow-x-auto scrollbar-hide py-2 border-t border-b border-amber-500/10">
+                <div id="ranking-sub-tabs" class="${window.state.currentFilter === 'elite-ranking' ? '' : 'hidden'} flex items-center gap-2 overflow-x-auto scrollbar-hide py-2 border-t border-b border-amber-500/10">
                     <span class="shrink-0 text-xs font-bold text-amber-500 uppercase tracking-widest mr-1">排名分類:</span>
                     ${window.state.kinksOptions.map((k) => `
                         <button onclick="setRankingTag('${k}')" class="sub-rank-btn shrink-0 text-xs font-bold px-4 py-2 rounded-full border border-amber-500/10 transition duration-300 ${window.state.currentRankTag === k ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' : 'bg-slate-950/30 text-slate-500'}" data-tag="${k}">
@@ -1650,14 +1666,14 @@
                 window.state.currentRankTag = window.state.kinksOptions[0];
             }
             
-            const tabs = ['recommended', 'highly-rated', 'popular', 'elite-ranking'];
+            const tabs = ['recommended', 'highly-rated', 'popular'];
             tabs.forEach(t => {
                 const btn = document.getElementById(`filter-btn-${t}`);
                 if (btn) {
                     if (t === filterName) {
-                        btn.className = "shrink-0 text-xs font-bold uppercase tracking-widest px-6 py-3.5 rounded-full border transition-all duration-300 bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30 animate-pulse";
+                        btn.className = "shrink-0 text-[11px] sm:text-xs font-bold uppercase tracking-widest px-4 py-2.5 sm:px-6 sm:py-3.5 rounded-full border transition-all duration-300 bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30 animate-pulse";
                     } else {
-                        btn.className = "shrink-0 text-xs font-bold uppercase tracking-widest px-6 py-3.5 rounded-full border transition-all duration-300 bg-slate-950/40 text-slate-400 border-amber-500/10 hover:bg-slate-900";
+                        btn.className = "shrink-0 text-[11px] sm:text-xs font-bold uppercase tracking-widest px-4 py-2.5 sm:px-6 sm:py-3.5 rounded-full border transition-all duration-300 bg-slate-950/40 text-slate-400 border-amber-500/10 hover:bg-slate-900";
                     }
                 }
             });
@@ -3053,7 +3069,8 @@
             }
   
             return badges.map(b => {
-                const sizeClass = isBig ? 'w-8.5 h-8.5 text-sm' : 'w-6 h-6 text-xs';
+                // 修正手機響應式 w-8.5 破圖
+                const sizeClass = isBig ? 'w-8 h-8 text-sm' : 'w-6 h-6 text-xs';
                 return `
                     <span class="inline-flex items-center justify-center ${sizeClass} rounded-full bg-gradient-to-r ${b.color} text-slate-950 shadow-md badge-glow pointer-events-auto select-none brass-badge" title="${b.tooltip}">
                         <i class="fa-solid ${b.icon}"></i>
