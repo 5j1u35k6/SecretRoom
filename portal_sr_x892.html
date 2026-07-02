@@ -502,7 +502,7 @@
                 if (appData.status === 'pending') {
                     actionButtons = `
                         <div class="flex gap-2 shrink-0 flex-wrap">
-                            <button onclick="updateStatus('${appData.id}', 'approved')" class="bg-emerald-605 hover:bg-emerald-500 active:scale-95 text-slate-950 font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-lg shadow-emerald-950/20">
+                            <button onclick="updateStatus('${appData.id}', 'approved')" class="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-slate-950 font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-lg shadow-emerald-950/20">
                                 <i class="fa-solid fa-check mr-1"></i> 核准加入
                             </button>
                             <button onclick="openRejectReasonModal('${appData.id}')" class="bg-red-650 hover:bg-red-500 active:scale-95 text-red-400 border border-red-500/20 text-xs px-4 py-2.5 rounded-xl transition font-semibold">
