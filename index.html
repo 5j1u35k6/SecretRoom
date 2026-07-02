@@ -180,6 +180,21 @@
         .bgm-active .bgm-bar:nth-child(2) { animation: sound-wave 0.8s ease-in-out infinite 0.2s; }
         .bgm-active .bgm-bar:nth-child(3) { animation: sound-wave 1.4s ease-in-out infinite 0.4s; }
         .bgm-active .bgm-bar:nth-child(4) { animation: sound-wave 1.0s ease-in-out infinite 0.1s; }
+
+        /* 行動端介面去雜亂與防破圖 */
+        @media (max-width: 640px) {
+            .architectural-border {
+                outline: none !important;
+                border-color: rgba(223, 183, 108, 0.18) !important;
+            }
+            .crystal-border {
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7) !important;
+            }
+            #dashboard-tab-content {
+                padding-left: 0.15rem !important;
+                padding-right: 0.15rem !important;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen w-full flex flex-col bg-[#050403] p-0 m-0 overflow-hidden select-none club-groove-bg">
@@ -661,6 +676,11 @@
   
             if (window.syncBGM) {
                 window.syncBGM();
+                // 修正背景音樂：切換頁面時自動轉換對應場景配樂
+                if (localStorage.getItem('sr_bgm_enabled') !== 'false' && window.luxuryBGM && window.luxuryBGM.isPlaying) {
+                    const wantsTrack = (viewName === 'dashboard') ? 'lounge' : 'mysterious';
+                    window.luxuryBGM.start(wantsTrack);
+                }
             }
 
             renderView();
@@ -727,7 +747,8 @@
                         </p>
   
                         <div class="w-full space-y-4 mt-12">
-                            <button id="btn-goto-apply" class="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 hover:brightness-110 active:scale-[0.98] text-slate-950 font-bold text-sm py-4 px-6 rounded-2xl shadow-xl shadow-amber-950/20 transition-all duration-300 tracking-[0.18em] uppercase crystal-border">
+                            <!-- 修正漸層防破圖 -->
+                            <button id="btn-goto-apply" class="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-500 hover:brightness-110 active:scale-[0.98] text-slate-950 font-bold text-sm py-4 px-6 rounded-2xl shadow-xl shadow-amber-950/20 transition-all duration-300 tracking-[0.18em] uppercase crystal-border">
                                 申請會籍 / APPLY
                             </button>
                             <button id="btn-goto-login" class="w-full bg-slate-950/95 hover:bg-slate-900 active:scale-[0.98] text-amber-500 font-semibold text-sm py-4 px-6 rounded-2xl border border-amber-500/30 transition-all duration-300 tracking-wider flex items-center justify-center gap-2">
@@ -779,7 +800,8 @@
                                 </button>
                             </div>
                         </div>
-                        <button id="btn-login-submit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-655 text-slate-950 font-bold text-sm py-4 rounded-xl transition shadow-lg shadow-amber-950/15 tracking-wider uppercase active:scale-[0.98] crystal-border">
+                        <!-- 修正漸層防破圖 -->
+                        <button id="btn-login-submit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-bold text-sm py-4 rounded-xl transition shadow-lg shadow-amber-950/15 tracking-wider uppercase active:scale-[0.98] crystal-border">
                             進入會所
                         </button>
                     </div>
@@ -973,7 +995,8 @@
   
                             <!-- 提交按鈕 - 通欄排列 -->
                             <div class="md:col-span-2 pt-4">
-                                <button type="submit" id="apply-submit" class="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 hover:brightness-110 text-slate-950 font-bold text-sm py-4 px-6 rounded-2xl transition duration-300 shadow-xl shadow-amber-950/20 tracking-wider uppercase active:scale-[0.98] crystal-border">
+                                <!-- 修正漸層防破圖 -->
+                                <button type="submit" id="apply-submit" class="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-500 hover:brightness-110 text-slate-950 font-bold text-sm py-4 px-6 rounded-2xl transition duration-300 shadow-xl shadow-amber-950/20 tracking-wider uppercase active:scale-[0.98] crystal-border">
                                     送出註冊與會籍審核
                                 </button>
                             </div>
@@ -1200,7 +1223,8 @@
                         </div>
   
                         <div class="pt-2 space-y-3">
-                            <button id="btn-reapply-edit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-655 hover:brightness-110 text-slate-950 font-bold text-sm py-3.5 rounded-xl transition shadow-lg active:scale-[0.98] crystal-border">
+                            <!-- 修正漸層防破圖 -->
+                            <button id="btn-reapply-edit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-slate-950 font-bold text-sm py-3.5 rounded-xl transition shadow-lg active:scale-[0.98] crystal-border">
                                 修正資料並重新提交送審
                             </button>
                             <button id="btn-reapply-logout" class="w-full bg-slate-900 hover:bg-slate-850 text-slate-400 font-semibold text-sm py-3.5 rounded-xl transition border border-slate-800/80 active:scale-[0.98]">
@@ -1318,7 +1342,8 @@
                                 </button>
                             </nav>
   
-                            <button id="aside-btn-share" class="w-full bg-gradient-to-r from-amber-500 to-yellow-650 hover:brightness-110 active:scale-[0.97] text-slate-950 font-bold text-sm py-3.5 px-4 rounded-2xl transition duration-300 flex items-center justify-center gap-2 shadow-lg shadow-amber-950/25 architectural-border crystal-border">
+                            <!-- 修正漸層防破圖 -->
+                            <button id="aside-btn-share" class="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 active:scale-[0.97] text-slate-950 font-bold text-sm py-3.5 px-4 rounded-2xl transition duration-300 flex items-center justify-center gap-2 shadow-lg shadow-amber-950/25 architectural-border crystal-border">
                                 <i class="fa-solid fa-circle-plus"></i> 分享動態
                             </button>
                         </div>
@@ -1371,14 +1396,15 @@
                                 <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-8.5 h-8.5 rounded-full border border-amber-500/30 object-cover animate-gentle-logo">
                                 <h1 class="text-xl font-black text-white tracking-[0.15em] italic font-luxury">SecretRoom</h1>
                             </div>
-                            <button id="mobile-btn-share" class="w-9 h-9 bg-gradient-to-r from-amber-500 to-yellow-655 hover:brightness-110 text-slate-950 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition">
+                            <!-- 修正漸層防破圖 -->
+                            <button id="mobile-btn-share" class="w-9 h-9 bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-slate-950 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition">
                                 <i class="fa-solid fa-plus text-sm"></i>
                             </button>
                         </header>
   
                         <!-- Main content scroll block -->
-                        <div class="flex-1 overflow-y-auto scrollbar-hide px-4 md:px-6 py-5" id="main-content-scroll">
-                            <div class="max-w-2xl mx-auto w-full space-y-6" id="dashboard-tab-content">
+                        <div class="flex-1 overflow-y-auto scrollbar-hide px-3 md:px-6 py-4 md:py-5" id="main-content-scroll">
+                            <div class="max-w-2xl mx-auto w-full space-y-4 md:space-y-6" id="dashboard-tab-content">
                                 <!-- Dynamic Subtab Content -->
                             </div>
                         </div>
@@ -1850,7 +1876,8 @@
             
             slicedList.forEach((post, index) => {
                 const card = document.createElement('div');
-                card.className = 'bg-[#0a0806]/90 border border-amber-500/15 rounded-3xl p-4 sm:p-5 hover:border-amber-500/40 transition duration-300 relative space-y-4 architectural-border crystal-border';
+                // 微調內邊距以避免窄屏下顯得過度擁擠
+                card.className = 'bg-[#0a0806]/90 border border-amber-500/15 rounded-3xl p-3.5 sm:p-5 hover:border-amber-500/40 transition duration-300 relative space-y-3 sm:space-y-4 architectural-border crystal-border';
                 
                 if (!window.state.viewedPostsInSession[post.id]) {
                     window.state.viewedPostsInSession[post.id] = true;
@@ -1889,14 +1916,14 @@
                     
                     if (isNSFW && !isUnlocked) {
                         imageHtml = `
-                            <div class="relative w-full rounded-2xl overflow-hidden border border-[#1a140f] bg-slate-950 h-56 group cursor-pointer" onclick="unlockNSFW('${post.id}')">
+                            <div class="relative w-full rounded-2xl overflow-hidden border border-[#1a140f] bg-slate-950 h-52 sm:h-56 group cursor-pointer" onclick="unlockNSFW('${post.id}')">
                                 <img src="${post.image}" class="w-full h-full object-cover filter blur-3xl opacity-35 pointer-events-none" draggable="false" oncontextmenu="return false;">
                                 <div class="absolute inset-0 bg-[#0c0a08]/90 backdrop-blur-md flex flex-col items-center justify-center text-center p-4">
-                                    <div class="w-11 h-11 bg-rose-500/15 rounded-full flex items-center justify-center text-rose-400 text-lg mb-2 shadow-lg shadow-rose-950/20 border border-rose-500/20">
+                                    <div class="w-10 h-10 sm:w-11 sm:h-11 bg-rose-500/15 rounded-full flex items-center justify-center text-rose-400 text-base sm:text-lg mb-2 shadow-lg shadow-rose-950/20 border border-rose-500/20">
                                         <i class="fa-solid fa-eye-slash"></i>
                                     </div>
-                                    <h5 class="text-sm font-bold text-rose-455">私密尺度照片 (NSFW)</h5>
-                                    <p class="text-xs text-slate-400 mt-1.5">此照片被發布者標記為敏感照片，點擊立即安全解鎖 🔒</p>
+                                    <h5 class="text-xs sm:text-sm font-bold text-rose-455">私密尺度照片 (NSFW)</h5>
+                                    <p class="text-[10px] sm:text-xs text-slate-400 mt-1 sm:mt-1.5">此照片被發布者標記為敏感照片，點擊立即安全解鎖 🔒</p>
                                 </div>
                             </div>
                         `;
@@ -1916,29 +1943,29 @@
                 let actionBtnHtml = '';
                 if (post.userId === window.state.applicationId) {
                     actionBtnHtml = `
-                        <button onclick="deleteMyPost('${post.id}')" class="text-slate-500 hover:text-red-400 transition text-sm" title="刪除此秘密">
+                        <button onclick="deleteMyPost('${post.id}')" class="text-slate-550 hover:text-red-400 transition text-xs sm:text-sm" title="刪除此秘密">
                             <i class="fa-regular fa-trash-can"></i>
                         </button>
                     `;
                 } else {
                     actionBtnHtml = `
-                        <button onclick="openReportModal('${post.id}')" class="text-slate-500 hover:text-rose-455 transition text-sm" title="檢舉此內容">
+                        <button onclick="openReportModal('${post.id}')" class="text-slate-550 hover:text-rose-455 transition text-xs sm:text-sm" title="檢舉此內容">
                             <i class="fa-regular fa-flag"></i>
                         </button>
                     `;
                 }
   
                 const peachEggplantHtml = userLiked ? `
-                    <button onclick="toggleLikePost('${post.id}')" class="flex items-center gap-1.5 text-purple-400 font-bold transition duration-300">
-                        <svg class="w-5 h-5 text-purple-400 fill-current animate-pulse" viewBox="0 0 64 64" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                    <button onclick="toggleLikePost('${post.id}')" class="flex items-center gap-1 sm:gap-1.5 text-purple-400 font-bold transition duration-300">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-purple-400 fill-current animate-pulse" viewBox="0 0 64 64" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M16 48C12 40 18 20 38 12C54 6 58 18 54 30C50 42 32 54 16 48Z" />
                             <path d="M34 16C32 10 26 12 28 16C30 20 36 16 36 16Z" fill="#d4af37" stroke="#d4af37" />
                         </svg>
                         <span>${post.likeCount || 0} 個讚</span>
                     </button>
                 ` : `
-                    <button onclick="toggleLikePost('${post.id}')" class="flex items-center gap-1.5 text-slate-400 hover:text-amber-500 transition duration-300">
-                        <svg class="w-5 h-5 text-rose-300 fill-none transition-all" viewBox="0 0 64 64" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+                    <button onclick="toggleLikePost('${post.id}')" class="flex items-center gap-1 sm:gap-1.5 text-slate-400 hover:text-amber-500 transition duration-300">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-rose-300 fill-none transition-all" viewBox="0 0 64 64" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M32 54C18 54 10 44 10 30C10 16 18 8 32 8C46 8 54 16 54 30C54 44 46 54 32 54Z" />
                             <path d="M32 8C32 18 38 30 32 54" />
                             <path d="M32 8C28 2 20 4 22 10C24 16 32 8 32 8Z" fill="#aa771c" stroke="#aa771c" />
@@ -1950,49 +1977,50 @@
                 card.innerHTML = `
                     ${rankingCrownHtml}
                     <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3 cursor-pointer" onclick="viewUserProfile('${post.userId}')">
-                            <img src="${post.authorAvatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-8 h-8 rounded-full object-cover border border-[#1a140f]">
+                        <div class="flex items-center gap-2 sm:gap-3 cursor-pointer" onclick="viewUserProfile('${post.userId}')">
+                            <img src="${post.authorAvatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-[#1a140f]">
                             <div>
-                                <div class="flex items-center gap-2">
-                                    <h4 class="font-bold text-sm text-slate-200">${post.authorName}</h4>
-                                    ${authorBadgeHtml}
+                                <div class="flex flex-wrap items-center gap-1 sm:gap-2">
+                                    <h4 class="font-bold text-xs sm:text-sm text-slate-200">${post.authorName}</h4>
+                                    <div class="flex items-center gap-0.5">${authorBadgeHtml}</div>
                                 </div>
-                                <span class="text-[10px] text-slate-550 block font-mono">@${post.userId}</span>
+                                <span class="text-[9px] sm:text-[10px] text-slate-550 block font-mono">@${post.userId}</span>
                             </div>
                         </div>
                         ${actionBtnHtml}
                     </div>
   
-                    <p class="text-sm text-slate-300 leading-relaxed font-light whitespace-pre-line">${post.text}</p>
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed font-light whitespace-pre-line">${post.text}</p>
   
                     ${imageHtml}
   
                     ${post.kinks && post.kinks.length > 0 ? `
-                        <div class="flex flex-wrap gap-1.5">
+                        <div class="flex flex-wrap gap-1 sm:gap-1.5">
                             ${post.kinks.map(k => `
-                                <span class="text-[11px] font-bold text-amber-500/90 bg-amber-500/5 px-3 py-1 rounded-full border border-amber-500/15"># ${k}</span>
+                                <span class="text-[10px] sm:text-[11px] font-bold text-amber-500/90 bg-amber-500/5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full border border-amber-500/15"># ${k}</span>
                             `).join('')}
                         </div>
                     ` : ''}
   
-                    <div class="pt-3 border-t border-amber-500/10 flex items-center justify-between text-slate-400 text-sm">
+                    <!-- 改善行動端寬度不夠時按鈕、星級與留言互相重疊的情況 -->
+                    <div class="pt-3 border-t border-amber-500/10 flex flex-wrap gap-2 items-center justify-between text-slate-400 text-xs sm:text-sm">
                         
                         ${peachEggplantHtml}
   
-                        <button onclick="toggleCommentsSection('${post.id}')" class="flex items-center gap-1.5 hover:text-amber-500 transition">
+                        <button onclick="toggleCommentsSection('${post.id}')" class="flex items-center gap-1 sm:gap-1.5 hover:text-amber-500 transition">
                             <i class="fa-regular fa-comments"></i>
                             <span>${commentCount} 則留言</span>
                         </button>
   
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-1.5">
                             <div class="flex items-center gap-0.5 text-slate-600">
                                 ${[1, 2, 3, 4, 5].map(star => {
                                     const ratingVal = post.ratings && post.ratings[window.state.applicationId];
                                     const activeColor = ratingVal && ratingVal >= star ? 'text-amber-500' : 'text-slate-700 hover:text-amber-400';
-                                    return `<i onclick="ratePost('${post.id}', ${star})" class="fa-solid fa-star cursor-pointer transition text-xs ${activeColor}"></i>`;
+                                    return `<i onclick="ratePost('${post.id}', ${star})" class="fa-solid fa-star cursor-pointer transition text-[10px] sm:text-xs ${activeColor}"></i>`;
                                 }).join('')}
                             </div>
-                            <span class="text-[11px] text-amber-500 font-bold bg-slate-950/80 px-2.5 py-0.5 rounded-md border border-amber-500/10">${averageRating.toFixed(1)} (${ratings.length}人)</span>
+                            <span class="text-[10px] sm:text-[11px] text-amber-500 font-bold bg-slate-950/80 px-1.5 sm:px-2.5 py-0.5 rounded-md border border-amber-500/10">${averageRating.toFixed(1)}</span>
                         </div>
                     </div>
   
@@ -2085,7 +2113,8 @@
                     `;
                 } else if (isMe) {
                     specApplyBtnHtml = `
-                        <button onclick="showSpecApplyModal()" class="w-full bg-gradient-to-r from-amber-500 to-yellow-655 hover:brightness-110 text-slate-950 font-bold text-xs py-3.5 px-4 rounded-xl shadow-lg shadow-amber-950/15 transition mt-3 flex items-center justify-center gap-1.5 active:scale-[0.98] crystal-border">
+                        <!-- 修正漸層防破圖 -->
+                        <button onclick="showSpecApplyModal()" class="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:brightness-110 text-slate-950 font-bold text-xs py-3.5 px-4 rounded-xl shadow-lg shadow-amber-950/15 transition mt-3 flex items-center justify-center gap-1.5 active:scale-[0.98] crystal-border">
                             <i class="fa-solid fa-lock"></i> 申請黃金 Spec 認證勳章
                         </button>
                     `;
@@ -2578,7 +2607,7 @@
                                     </div>
                                 </div>
                                 <input type="file" id="share-file" accept="image/*" class="hidden">
-                                <span class="text-[10px] text-slate-500 mt-2 block">相片加載後會於背景自動套用全渠道防偽安全性浮水印。</span>
+                                <span class="text-[10px] text-slate-550 mt-2 block">相片加載後會於背景自動套用全渠道防偽安全性浮水印。</span>
                             </div>
                         </div>
   
@@ -2604,7 +2633,8 @@
                             </div>
                         </div>
   
-                        <button id="btn-submit-post" class="w-full bg-gradient-to-r from-amber-500 to-yellow-650 text-slate-950 font-bold text-sm py-3.5 rounded-xl transition tracking-wider active:scale-[0.98] crystal-border">
+                        <!-- 修正漸層防破圖 -->
+                        <button id="btn-submit-post" class="w-full bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-bold text-sm py-3.5 rounded-xl transition tracking-wider active:scale-[0.98] crystal-border">
                             安全發布秘密
                         </button>
                     </div>
@@ -2760,11 +2790,11 @@
                             <span class="text-xs font-bold text-amber-500 uppercase tracking-widest block mb-2"><i class="fa-solid fa-lock mr-1"></i> 身體數據密碼規格</span>
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-500 mb-1">勃起長度 (cm)</label>
+                                    <label class="block text-xs font-bold text-slate-550 mb-1">勃起長度 (cm)</label>
                                     <input type="number" id="edit-length" value="${user.length || ''}" class="w-full bg-slate-900 border border-amber-500/10 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-500 mb-1">勃起粗度圍 (cm)</label>
+                                    <label class="block text-xs font-bold text-slate-550 mb-1">勃起粗度圍 (cm)</label>
                                     <input type="number" id="edit-girth" value="${user.girth || ''}" class="w-full bg-slate-900 border border-amber-500/10 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                                 </div>
                             </div>
@@ -2782,7 +2812,8 @@
                             </div>
                         </div>
   
-                        <button id="btn-submit-profile-edit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-650 text-slate-950 font-bold text-sm py-3.5 rounded-xl transition tracking-wider active:scale-[0.98] crystal-border">
+                        <!-- 修正漸層防破圖 -->
+                        <button id="btn-submit-profile-edit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-bold text-sm py-3.5 rounded-xl transition tracking-wider active:scale-[0.98] crystal-border">
                             儲存變更
                         </button>
                     </div>
@@ -2882,7 +2913,7 @@
                     <h3 class="text-sm font-bold text-white mb-1.5 flex items-center gap-2 font-luxury">
                         <i class="fa-solid fa-medal text-amber-500"></i> GOLD SPEC ELITE
                     </h3>
-                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">請上傳帶有清楚尺規參考物（如捲尺、直尺）的實物測量證明照片，管理團隊將嚴格查驗核准。</p>
+                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">請上傳帶有清楚尺規參考物（如捲尺、直尺）的實物測量證明照片，管理團隊將營演查驗核准。</p>
                     <div class="space-y-4">
                         <div class="border border-amber-500/10 rounded-2xl p-4 flex flex-col items-center justify-center bg-slate-900/20 text-center">
                             <div id="spec-img-trigger" class="relative w-full h-40 rounded-xl border border-dashed border-amber-500/30 hover:border-amber-500 flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-slate-950 transition">
@@ -2894,7 +2925,8 @@
                             </div>
                             <input type="file" id="spec-file" accept="image/*" class="hidden">
                         </div>
-                        <button id="btn-submit-spec" class="w-full bg-gradient-to-r from-amber-500 to-yellow-655 text-slate-950 font-bold text-sm py-3 rounded-xl transition tracking-wider active:scale-[0.98] crystal-border">
+                        <!-- 修正漸層防破圖 -->
+                        <button id="btn-submit-spec" class="w-full bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-bold text-sm py-3 rounded-xl transition tracking-wider active:scale-[0.98] crystal-border">
                             提交規格核查申請
                         </button>
                     </div>
