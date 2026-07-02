@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -270,6 +269,57 @@
         };
   
         const telegramBotName = "SecretRoomtwBot"; 
+
+        /**
+         * 智慧壓縮、縮放圖像，防堵 Base64 過長導致 Firebase 超載
+         * @param {File} file 來源檔案
+         * @param {number} maxDim 最大寬高尺寸
+         * @param {number} quality 壓縮品質 (0.1 ~ 1.0)
+         * @param {string|null} addWatermarkText 是否加蓋浮水印文字
+         */
+        async function processAndCompressImageFile(file, maxDim = 300, quality = 0.7, addWatermarkText = null) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onerror = () => reject(new Error("File reading failed"));
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onerror = () => reject(new Error("Image loading failed"));
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width;
+                        let h = img.height;
+                        if (w > maxDim || h > maxDim) {
+                            if (w > h) {
+                                h = Math.round((h * maxDim) / w);
+                                w = maxDim;
+                            } else {
+                                w = Math.round((w * maxDim) / h);
+                                h = maxDim;
+                            }
+                        }
+                        canvas.width = w;
+                        canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+
+                        if (addWatermarkText) {
+                            ctx.save();
+                            ctx.font = "bold 26px Cinzel";
+                            ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
+                            ctx.translate(w / 2, h / 2);
+                            ctx.rotate(-Math.PI / 6);
+                            ctx.fillText(addWatermarkText, -160, -50);
+                            ctx.fillText(addWatermarkText, -160, 50);
+                            ctx.restore();
+                        }
+
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
   
         async function loadFirebaseSDKs() {
             try {
@@ -306,7 +356,6 @@
   
         let app, db, auth;
   
-        // 全域核心狀態
         window.state = {
             currentView: 'landing',
             currentTab: 'feed', 
@@ -315,11 +364,13 @@
             userId: null,
             applicationId: null,
             unsubscribeListener: null,
+            unsubscribeUsersListener: null, // Tracks active users snapshot reference
             unsubscribeVisitorsListener: null,
             visiblePostsCount: 5,
             openComments: {}, 
             unlockedNSFWPosts: {}, 
             visitors: [], 
+            visitedProfilesInSession: {}, // Session guard cache to prevent duplicate profile visitor updates
             viewedPostsInSession: {}, 
             searchTab: 'posts', 
             singlePostFocusId: null, 
@@ -666,13 +717,19 @@
         function navigate(viewName) {
             window.state.currentView = viewName;
             
-            if (viewName !== 'dashboard' && window.state.unsubscribeListener) {
-                window.state.unsubscribeListener();
-                window.state.unsubscribeListener = null;
-            }
-            if (viewName !== 'dashboard' && window.state.unsubscribeVisitorsListener) {
-                window.state.unsubscribeVisitorsListener();
-                window.state.unsubscribeVisitorsListener = null;
+            if (viewName !== 'dashboard') {
+                if (window.state.unsubscribeListener) {
+                    window.state.unsubscribeListener();
+                    window.state.unsubscribeListener = null;
+                }
+                if (window.state.unsubscribeUsersListener) {
+                    window.state.unsubscribeUsersListener();
+                    window.state.unsubscribeUsersListener = null;
+                }
+                if (window.state.unsubscribeVisitorsListener) {
+                    window.state.unsubscribeVisitorsListener();
+                    window.state.unsubscribeVisitorsListener = null;
+                }
             }
   
             if (window.syncBGM) {
@@ -730,7 +787,7 @@
                         </div>
                         
                         <div class="px-5 py-1.5 rounded-full bg-amber-500/5 border border-amber-500/20 mb-3">
-                            <span class="text-[10px] font-bold text-amber-500/80 tracking-[0.25em] font-luxury">Established Seclusion</span>
+                            <span class="text-[10px] font-bold text-amber-500/80 tracking-[0.25em] uppercase font-luxury">Established Seclusion</span>
                         </div>
                         
                         <h1 class="text-4xl md:text-5xl font-black tracking-[0.28em] text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-amber-500 font-luxury mb-2.5 select-none italic text-center">SecretRoom</h1>
@@ -748,7 +805,7 @@
                         </p>
   
                         <div class="w-full space-y-4 mt-12">
-                            <button id="btn-goto-apply" class="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-500 hover:brightness-110 active:scale-[0.98] text-slate-950 font-bold text-sm py-4 px-6 rounded-2xl shadow-xl shadow-amber-950/20 transition-all duration-300 tracking-[0.18em] crystal-border">
+                            <button id="btn-goto-apply" class="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-500 hover:brightness-110 active:scale-[0.98] text-slate-950 font-bold text-sm py-4 px-6 rounded-2xl shadow-xl shadow-amber-950/20 transition-all duration-300 tracking-[0.18em] uppercase crystal-border">
                                 申請會員 / Apply
                             </button>
                             <button id="btn-goto-login" class="w-full bg-slate-950/95 hover:bg-slate-900 active:scale-[0.98] text-amber-500 font-semibold text-sm py-4 px-6 rounded-2xl border border-amber-500/30 transition-all duration-300 tracking-wider flex items-center justify-center gap-2">
@@ -1026,22 +1083,23 @@
   
             avatarTrigger.onclick = () => fileInput.click();
   
-            fileInput.onchange = (e) => {
+            fileInput.onchange = async (e) => {
                 const file = e.target.files[0];
                 if (file) {
-                    if (file.size > 10 * 1024 * 1024) {
-                        showToast('上傳失敗！頭像檔案大小不得超過 10MB。', 'error');
-                        fileInput.value = '';
-                        return;
-                    }
-                    const reader = new FileReader();
-                    reader.onload = function(evt) {
-                        base64Avatar = evt.target.result;
+                    showLoading();
+                    try {
+                        // 強制縮小頭像至 240px (檔案通常在 10-25KB 內)，兼顧隱私與載入速度，並解決 Firebase 1MB 限制問題
+                        base64Avatar = await processAndCompressImageFile(file, 240, 0.75);
                         previewImg.src = base64Avatar;
                         previewImg.classList.remove('hidden');
                         placeholderBox.classList.add('hidden');
-                    };
-                    reader.readAsDataURL(file);
+                        showToast('頭像智慧壓縮與優化完成', 'success');
+                    } catch (err) {
+                        console.error(err);
+                        showToast('大頭照解析優化失敗，請換一張試試！', 'error');
+                    } finally {
+                        hideLoading();
+                    }
                 }
             };
   
@@ -1191,7 +1249,6 @@
                             <button id="btn-pending-refresh" class="w-full bg-slate-900 hover:bg-slate-850 text-slate-300 font-semibold text-sm py-3.5 rounded-xl border border-slate-800 transition active:scale-[0.98]">
                                 重新整理確認狀態
                             </button>
-                            <!-- 實作：當仍在審核畫面時，新增返回首頁按鈕 -->
                             <button id="btn-pending-back" class="w-full bg-slate-950 hover:bg-slate-900 text-amber-500 font-semibold text-sm py-3.5 rounded-xl border border-amber-500/30 transition active:scale-[0.98]">
                                 返回首頁 / Back to Home
                             </button>
@@ -1206,7 +1263,6 @@
             };
 
             document.getElementById('btn-pending-back').onclick = () => {
-                // 安全清除登入資料並退回首頁
                 localStorage.removeItem('sr_username');
                 window.state.userData = {};
                 window.state.applicationId = null;
@@ -1298,7 +1354,6 @@
                             </p>
                         </div>
                         
-                        <!-- 實作 1：將原本的 Bot 綁定代碼，修改為 Telegram 官方提供的登入元件容器 -->
                         <div class="p-6 bg-[#0a0806] border border-amber-500/10 rounded-2xl flex flex-col items-center justify-center space-y-4">
                             <p class="text-xs text-slate-400 leading-relaxed text-center">請點擊下方按鈕以安全登入並關聯您的 Telegram 帳號：</p>
                             <!-- 官方 Widget 專屬嵌入容器 -->
@@ -1309,7 +1364,6 @@
                             </div>
                         </div>
 
-                        <!-- 實作 3：加入返回首頁按鈕，以便用戶随时跳出綁定流程 -->
                         <div class="pt-2">
                             <button id="btn-bind-cancel" class="w-full bg-slate-900 hover:bg-slate-850 text-slate-400 font-semibold text-sm py-3.5 rounded-xl border border-slate-800 transition active:scale-[0.98]">
                                 返回首頁 / Back to Home
@@ -1354,6 +1408,29 @@
                 showLoading();
                 try {
                     if (db) {
+                        // 1. 驗證該 Telegram ID 是否已被其他帳號綁定 (Rule 2 規範：全量載入後於記憶體中進行比對)
+                        const appsRef = collection(db, 'secretg_apps', appId, 'applications');
+                        const querySnapshot = await getDocs(appsRef);
+                        
+                        let isAlreadyBound = false;
+                        let boundUserNickname = '';
+                        
+                        querySnapshot.forEach((docSnap) => {
+                            const data = docSnap.data();
+                            // 跳過當前使用者本人的帳號 check
+                            if (docSnap.id !== window.state.applicationId && data.telegramInfo && String(data.telegramInfo.id) === String(user.id)) {
+                                isAlreadyBound = true;
+                                boundUserNickname = data.nickname || docSnap.id;
+                            }
+                        });
+
+                        if (isAlreadyBound) {
+                            showToast(`此 Telegram 帳號已被使用者 @${boundUserNickname} 綁定，無法重複綁定！`, 'error');
+                            hideLoading();
+                            return;
+                        }
+
+                        // 2. 寫入綁定資料
                         const appRef = doc(db, 'secretg_apps', appId, 'applications', window.state.applicationId);
                         const telegramPayload = {
                             id: user.id,
@@ -1609,7 +1686,7 @@
             });
   
             const usersQuery = query(collection(db, 'secretg_apps', appId, 'applications'), where('status', '==', 'active'));
-            onSnapshot(usersQuery, (snapshot) => {
+            window.state.unsubscribeUsersListener = onSnapshot(usersQuery, (snapshot) => {
                 const fetchedUsers = [];
                 snapshot.forEach((docSnap) => {
                     fetchedUsers.push({ id: docSnap.id, ...docSnap.data() });
@@ -1733,7 +1810,7 @@
                 const btn = document.getElementById(`filter-btn-${t}`);
                 if (btn) {
                     if (t === filterName) {
-                        btn.className = "shrink-0 text-[11px] sm:text-xs font-bold tracking-widest px-4 py-2.5 sm:px-6 sm:py-3.5 rounded-full border transition-all duration-300 bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30 animate-pulse";
+                        btn.className = "shrink-0 text-[11px] sm:text-xs font-bold tracking-widest px-4 py-2.5 sm:px-6 sm:py-3.5 rounded-full border transition-all duration-300 bg-amber-600 text-slate-950 border-amber-500 shadow-lg shadow-amber-950/30";
                     } else {
                         btn.className = "shrink-0 text-[11px] sm:text-xs font-bold tracking-widest px-4 py-2.5 sm:px-6 sm:py-3.5 rounded-full border transition-all duration-300 bg-slate-950/40 text-slate-400 border-amber-500/10 hover:bg-slate-900";
                     }
@@ -1761,7 +1838,7 @@
                 if (dataTag === kinkTag) {
                     btn.className = "sub-rank-btn shrink-0 text-xs font-bold px-4 py-2 rounded-full border transition duration-300 bg-amber-500/10 text-amber-400 border-amber-500/30";
                 } else {
-                    btn.className = "sub-rank-btn shrink-0 text-xs font-bold px-4 py-2 rounded-full border border-amber-500/10 bg-slate-950/30 text-slate-500 transition duration-300";
+                    btn.className = "sub-rank-btn shrink-0 text-xs font-bold px-4 py-2 rounded-full border border-amber-500/10 bg-slate-950/30 text-slate-555 transition duration-300";
                 }
             });
   
@@ -1781,6 +1858,13 @@
             if (searchInput) searchInput.value = '';
             const searchOverlay = document.getElementById('search-results-overlay');
             if (searchOverlay) searchOverlay.classList.add('hidden');
+            
+            // Increment view count strictly on explicit focused detail view click
+            if (!window.state.viewedPostsInSession[postId]) {
+                window.state.viewedPostsInSession[postId] = true;
+                incrementPostViewCount(postId);
+            }
+            
             renderDashboard(appContainer);
         };
   
@@ -1824,7 +1908,7 @@
                         <div class="overflow-y-auto pr-1 flex-1 space-y-2 max-h-[350px]">
                             ${window.state.searchTab === 'posts' ? 
                                 (matchedPosts.length === 0 ? 
-                                    `\<div class="text-[10px] text-slate-500 py-6 text-center font-light"\>未尋得相符動態貼文\</div\>` :
+                                    `\<div class="text-[10px] text-slate-550 py-6 text-center font-light"\>未尋得相符動態貼文\</div\>` :
                                     matchedPosts.map(post => `
                                         <div class="p-2 bg-slate-900/60 hover:bg-slate-900 border border-amber-500/10 rounded-xl transition cursor-pointer" onclick="viewSinglePost('${post.id}')">
                                             <div class="flex items-center gap-1.5 mb-1">
@@ -1839,7 +1923,7 @@
                                     `).join('')
                                 ) :
                                 (matchedUsers.length === 0 ? 
-                                    `\<div class="text-[10px] text-slate-500 py-6 text-center font-light"\>未尋得相符同好\</div\>` :
+                                    `\<div class="text-[10px] text-slate-550 py-6 text-center font-light"\>未尋得相符同好\</div\>` :
                                     matchedUsers.map(u => `
                                         <div onclick="viewUserProfile('${u.id}')" class="flex items-center justify-between p-1.5 bg-slate-900/60 hover:bg-slate-900 border border-amber-500/10 rounded-xl transition cursor-pointer">
                                             <div class="flex items-center gap-2 overflow-hidden">
@@ -1940,12 +2024,12 @@
                 const emptyCard = document.createElement('div');
                 emptyCard.className = 'text-center py-16 bg-slate-900/10 border border-amber-500/10 rounded-3xl p-6 flex flex-col items-center justify-center gap-3';
                 emptyCard.innerHTML = `
-                    <div class="w-14 h-14 bg-slate-900/60 rounded-full flex items-center justify-center text-slate-500 text-xl border border-amber-500/10">
+                    <div class="w-14 h-14 bg-slate-900/60 rounded-full flex items-center justify-center text-slate-555 text-xl border border-amber-500/10">
                         <i class="fa-solid fa-folder-open text-amber-500/60"></i>
                     </div>
                     <div>
                         <h4 class="font-bold text-slate-400 text-sm">目前大廳尚無此偏好的祕密動態</h4>
-                        <p class="text-xs text-slate-550 mt-1">點擊分享動態，成為第一個探索本主題的創始同好吧！</p>
+                        <p class="text-xs text-slate-555 mt-1">點擊分享動態，成為第一個探索本主題的創始同好吧！</p>
                     </div>
                 `;
                 listContainer.appendChild(emptyCard);
@@ -1956,11 +2040,10 @@
                 const card = document.createElement('div');
                 card.className = 'bg-[#0a0806]/90 border border-amber-500/15 rounded-3xl p-3.5 sm:p-5 hover:border-amber-500/40 transition duration-300 relative space-y-3 sm:space-y-4 architectural-border crystal-border';
                 
-                if (!window.state.viewedPostsInSession[post.id]) {
-                    window.state.viewedPostsInSession[post.id] = true;
-                    incrementPostViewCount(post.id);
-                }
-  
+                // CRITICAL FIX: The viewCount automatic increment block is completely removed here.
+                // We no longer call incrementPostViewCount inside the onSnapshot render loop.
+                // It is now strictly triggered on user interactions (view details, comments expansion).
+
                 let rankingCrownHtml = '';
                 if (window.state.currentFilter === 'elite-ranking' && !isFocusedMode) {
                     const rank = index + 1;
@@ -1970,7 +2053,7 @@
                         3: 'from-amber-600 via-orange-650 to-amber-800 shadow-orange-950/15 text-white'
                     };
                     const badgeText = rank === 1 ? '🥇 1st' : rank === 2 ? '🥈 2nd' : rank === 3 ? '🥉 3rd' : `🏆 ${rank}th`;
-                    const currentBg = colors[rank] || 'from-slate-900 via-slate-950 to-black text-slate-500 border border-slate-800';
+                    const currentBg = colors[rank] || 'from-slate-900 via-slate-950 to-black text-slate-550 border border-slate-800';
                     
                     rankingCrownHtml = `
                         <div class="absolute -top-2.5 -left-2.5 bg-gradient-to-r ${currentBg} text-[10px] font-extrabold px-3 py-1.5 rounded-full shadow-lg z-10 flex items-center gap-1.5 uppercase tracking-wider font-luxury">
@@ -2020,13 +2103,13 @@
                 let actionBtnHtml = '';
                 if (post.userId === window.state.applicationId) {
                     actionBtnHtml = `
-                        <button onclick="deleteMyPost('${post.id}')" class="text-slate-550 hover:text-red-400 transition text-xs sm:text-sm" title="刪除此動態">
+                        <button onclick="deleteMyPost('${post.id}')" class="text-slate-555 hover:text-red-400 transition text-xs sm:text-sm" title="刪除此動態">
                             <i class="fa-regular fa-trash-can"></i>
                         </button>
                     `;
                 } else {
                     actionBtnHtml = `
-                        <button onclick="openReportModal('${post.id}')" class="text-slate-550 hover:text-rose-455 transition text-xs sm:text-sm" title="檢舉此內容">
+                        <button onclick="openReportModal('${post.id}')" class="text-slate-555 hover:text-rose-455 transition text-xs sm:text-sm" title="檢舉此內容">
                             <i class="fa-regular fa-flag"></i>
                         </button>
                     `;
@@ -2061,7 +2144,7 @@
                                     <h4 class="font-bold text-xs sm:text-sm text-slate-200">${post.authorName}</h4>
                                     <div class="flex items-center gap-0.5">${authorBadgeHtml}</div>
                                 </div>
-                                <span class="text-[9px] sm:text-[10px] text-slate-550 block font-mono">@${post.userId}</span>
+                                <span class="text-[9px] sm:text-[10px] text-slate-555 block font-mono">@${post.userId}</span>
                             </div>
                         </div>
                         ${actionBtnHtml}
@@ -2126,7 +2209,7 @@
                                         <div class="flex items-center justify-between mb-1.5">
                                             <span class="font-bold text-amber-500/70">@${c.userId}</span>
                                             <div class="flex items-center gap-2">
-                                                <span class="text-[9px] text-slate-550 font-mono">${new Date(c.time).toLocaleDateString()}</span>
+                                                <span class="text-[9px] text-slate-555 font-mono">${new Date(c.time).toLocaleDateString()}</span>
                                                 ${commentActionHtml}
                                             </div>
                                         </div>
@@ -2159,7 +2242,7 @@
   
             if (!profileUser) {
                 container.innerHTML = `
-                    <div class="text-center py-12 text-slate-550">
+                    <div class="text-center py-12 text-slate-555">
                         <i class="fa-solid fa-circle-exclamation text-2xl mb-2 text-rose-500"></i>
                         <p class="text-sm">無法讀取該會員的個人檔案。</p>
                         <button onclick="backToFeed()" class="text-sm text-amber-500 mt-2 hover:underline">返回首頁</button>
@@ -2168,7 +2251,9 @@
                 return;
             }
   
-            if (!isMe) {
+            // CRITICAL FIX: Session cache prevents recursive infinite visitor writes.
+            if (!isMe && !window.state.visitedProfilesInSession[profileUserId]) {
+                window.state.visitedProfilesInSession[profileUserId] = true;
                 addVisitorRecord(profileUserId);
             }
   
@@ -2204,7 +2289,7 @@
                         <span class="text-xs font-bold text-slate-300 uppercase tracking-widest block"><i class="fa-regular fa-eye text-amber-500 mr-1"></i> 最近訪客足跡：</span>
                         <div class="flex items-center gap-4 overflow-x-auto scrollbar-hide py-1">
                             ${myVisitors.length === 0 ? `
-                                <div class="text-xs text-slate-550 py-1 font-light">目前尚無訪問足跡...</div>
+                                <div class="text-xs text-slate-555 py-1 font-light">目前尚無訪問足跡...</div>
                             ` : myVisitors.map(v => `
                                 <div onclick="viewUserProfile('${v.from}')" class="flex flex-col items-center shrink-0 cursor-pointer group">
                                     <img src="${v.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-10 h-10 rounded-full object-cover border border-amber-500/10 group-hover:border-amber-500 transition duration-300 shadow">
@@ -2233,7 +2318,7 @@
                         <h2 class="text-xl font-bold text-white tracking-wide flex items-center gap-1.5 justify-center">
                             <span>${profileUser.nickname}</span>
                         </h2>
-                        <span class="text-sm text-slate-500 block font-mono">@${profileUserId}</span>
+                        <span class="text-sm text-slate-555 block font-mono">@${profileUserId}</span>
                         
                         <!-- 膠囊微光勳章 -->
                         <div class="flex items-center justify-center gap-2 mt-4.5 flex-wrap">
@@ -2242,10 +2327,10 @@
                     </div>
   
                     <div class="grid grid-cols-2 gap-3 w-full bg-slate-950/60 p-4 border border-amber-500/10 rounded-2xl text-sm text-left text-slate-300 shadow-inner">
-                        <div><span class="text-slate-500 font-semibold mr-1">身高體重:</span> <span class="text-amber-500 font-bold">${profileUser.height} cm / ${profileUser.weight} kg</span></div>
-                        <div><span class="text-slate-500 font-semibold mr-1">私密數字:</span> <span class="text-amber-500 font-bold">長 ${profileUser.length} cm / 粗 ${profileUser.girth} cm</span></div>
+                        <div><span class="text-slate-555 font-semibold mr-1">身高體重:</span> <span class="text-amber-500 font-bold">${profileUser.height} cm / ${profileUser.weight} kg</span></div>
+                        <div><span class="text-slate-555 font-semibold mr-1">私密數字:</span> <span class="text-amber-500 font-bold">長 ${profileUser.length} cm / 粗 ${profileUser.girth} cm</span></div>
                         <div class="col-span-2 pt-2 border-t border-amber-500/10 mt-2">
-                            <span class="text-slate-500 font-semibold">偏好主題:</span>
+                            <span class="text-slate-555 font-semibold">偏好主題:</span>
                             <p class="text-slate-200 mt-1.5 text-xs leading-relaxed font-semibold">${kinksStr}</p>
                         </div>
                     </div>
@@ -2381,7 +2466,14 @@
             window.state.openComments[postId] = !window.state.openComments[postId];
             const box = document.getElementById(`comments-box-${postId}`);
             if (box) {
-                if (window.state.openComments[postId]) box.classList.remove('hidden');
+                if (window.state.openComments[postId]) {
+                    box.classList.remove('hidden');
+                    // Increments viewCount on explicit comment expand engagement
+                    if (!window.state.viewedPostsInSession[postId]) {
+                        window.state.viewedPostsInSession[postId] = true;
+                        incrementPostViewCount(postId);
+                    }
+                }
                 else box.classList.add('hidden');
             }
         };
@@ -2472,7 +2564,7 @@
             modal.className = 'fixed inset-0 z-[105] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md';
             modal.innerHTML = `
                 <div class="bg-[#0c0a08] border border-amber-500/20 rounded-3xl p-6 w-[92vw] max-w-sm shadow-[0_0_50px_rgba(0,0,0,0.95)] relative crystal-border">
-                    <button id="close-comment-report" class="absolute top-4 right-4 text-slate-500 hover:text-white text-2xl">&times;</button>
+                    <button id="close-comment-report" class="absolute top-4 right-4 text-slate-555 hover:text-white text-2xl">&times;</button>
                     <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2 font-luxury">
                         <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> 檢舉此條留言
                     </h3>
@@ -2575,8 +2667,8 @@
             const modal = document.createElement('div');
             modal.className = 'fixed inset-0 z-[105] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md';
             modal.innerHTML = `
-                <div class="bg-[#0c0a08] border border-amber-500/20 rounded-3xl p-6 w-[92vw] max-w-sm shadow-2xl relative crystal-border">
-                    <button id="close-report-modal" class="absolute top-4 right-4 text-slate-500 hover:text-white text-2xl">&times;</button>
+                <div class="bg-[#0c0a08] border border-amber-500/20 rounded-3xl p-6 w-[92vw] max-w-sm shadow-[0_0_50px_rgba(0,0,0,0.95)] relative crystal-border">
+                    <button id="close-report-modal" class="absolute top-4 right-4 text-slate-555 hover:text-white text-2xl">&times;</button>
                     <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2 font-luxury">
                         <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> 檢舉此篇動態
                     </h3>
@@ -2659,7 +2751,7 @@
             modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md';
             modal.innerHTML = `
                 <div class="bg-[#0c0a08] border border-amber-500/20 rounded-3xl p-6 w-[92vw] max-w-md shadow-2xl relative overflow-y-auto max-h-[90vh] crystal-border">
-                    <button id="close-share" class="absolute top-4 right-4 text-slate-500 hover:text-white text-2xl transition">&times;</button>
+                    <button id="close-share" class="absolute top-4 right-4 text-slate-550 hover:text-white text-2xl transition">&times;</button>
                     <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2 font-luxury">
                         <i class="fa-solid fa-feather-pointed text-amber-500"></i> Publish Secret
                     </h3>
@@ -2672,17 +2764,17 @@
                         </div>
   
                         <div>
-                            <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">加載動態照片 (選填)</label>
+                            <label class="block text-xs font-bold text-slate-555 mb-1.5 uppercase tracking-wider">加載動態照片 (選填)</label>
                             <div class="border border-amber-500/10 rounded-2xl p-4 flex flex-col items-center justify-center bg-slate-900/10 text-center">
                                 <div id="share-img-trigger" class="relative w-full h-40 rounded-xl border border-dashed border-amber-500/30 hover:border-amber-500 flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-slate-950 transition">
                                     <img id="share-preview" class="absolute inset-0 w-full h-full object-contain hidden">
-                                    <div id="share-placeholder" class="text-slate-500 flex flex-col items-center gap-1.5 transition">
+                                    <div id="share-placeholder" class="text-slate-550 flex flex-col items-center gap-1.5 transition">
                                         <i class="fa-regular fa-image text-2xl text-amber-500/70"></i>
                                         <span class="text-xs font-bold">點擊選取相片</span>
                                     </div>
                                 </div>
                                 <input type="file" id="share-file" accept="image/*" class="hidden">
-                                <span class="text-[10px] text-slate-550 mt-2 block">相片加載後將自動生成浮水印。</span>
+                                <span class="text-[10px] text-slate-555 mt-2 block">相片加載後將自動生成浮水印。</span>
                             </div>
                         </div>
   
@@ -2691,7 +2783,7 @@
                                 <input type="checkbox" id="share-nsfw-cb" class="rounded border-amber-500/30 bg-slate-950 text-rose-650 focus:ring-rose-550 w-4 h-4">
                                 <div>
                                     <span class="text-xs text-rose-455 font-bold block">標記為私密尺度照片 (NSFW) 🔞</span>
-                                    <p class="text-[10px] text-slate-550 mt-0.5 leading-relaxed">勾選後，大廳相片將預設以高精度毛玻璃覆蓋，點擊才會手動解密觀看。</p>
+                                    <p class="text-[10px] text-slate-555 mt-0.5 leading-relaxed">勾選後，大廳相片將預設以高精度毛玻璃覆蓋，點擊才會手動解密觀看。</p>
                                 </div>
                             </label>
                         </div>
@@ -2725,45 +2817,23 @@
   
             document.getElementById('share-img-trigger').onclick = () => fileInput.click();
   
-            fileInput.onchange = (e) => {
+            fileInput.onchange = async (e) => {
                 const file = e.target.files[0];
                 if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(evt) {
-                        const img = new Image();
-                        img.src = evt.target.result;
-                        img.onload = function() {
-                            const canvas = document.createElement('canvas');
-                            const maxDim = 800; 
-                            let w = img.width;
-                            let h = img.height;
-                            if (w > maxDim || h > maxDim) {
-                                if (w > h) { h = (maxDim / w) * h; w = maxDim; }
-                                else { w = (maxDim / h) * w; h = maxDim; }
-                            }
-                            canvas.width = w;
-                            canvas.height = h;
-  
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0, w, h);
-  
-                            ctx.save();
-                            ctx.font = "bold 26px Cinzel";
-                            ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
-                            ctx.translate(w/2, h/2);
-                            ctx.rotate(-Math.PI / 6); 
-                            
-                            ctx.fillText("SECRETROOM PROOF", -160, -50);
-                            ctx.fillText("SECRETROOM PROOF", -160, 50);
-                            ctx.restore();
-  
-                            bakedBase64 = canvas.toDataURL('image/jpeg', 0.82);
-                            previewImg.src = bakedBase64;
-                            previewImg.classList.remove('hidden');
-                            placeholder.classList.add('hidden');
-                        };
-                    };
-                    reader.readAsDataURL(file);
+                    showLoading();
+                    try {
+                        // 發布動態限制圖片長寬最大 800px 且壓縮至 75%，並在底層自動注入 SecretRoom 水印
+                        bakedBase64 = await processAndCompressImageFile(file, 800, 0.75, "SECRETROOM PROOF");
+                        previewImg.src = bakedBase64;
+                        previewImg.classList.remove('hidden');
+                        placeholder.classList.add('hidden');
+                        showToast('浮水印注入與圖像優化完成', 'success');
+                    } catch (err) {
+                        console.error(err);
+                        showToast('動態照片處理失敗，請換一張試試！', 'error');
+                    } finally {
+                        hideLoading();
+                    }
                 }
             };
   
@@ -2825,7 +2895,7 @@
             modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md';
             modal.innerHTML = `
                 <div class="bg-[#0c0a08] border border-amber-500/20 rounded-3xl p-6 w-[92vw] max-w-md shadow-2xl relative overflow-y-auto max-h-[90vh] crystal-border">
-                    <button id="close-edit" class="absolute top-4 right-4 text-slate-500 hover:text-white text-2xl transition">&times;</button>
+                    <button id="close-edit" class="absolute top-4 right-4 text-slate-555 hover:text-white text-2xl transition">&times;</button>
                     <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2 font-luxury">
                         <i class="fa-solid fa-user-gear text-amber-500"></i> Edit Profile
                     </h3>
@@ -2864,11 +2934,11 @@
                             <span class="text-xs font-bold text-amber-500 uppercase tracking-widest block mb-2"><i class="fa-solid fa-lock mr-1"></i> 身體數據密碼規格</span>
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-550 mb-1">勃起長度 (cm)</label>
+                                    <label class="block text-xs font-bold text-slate-555 mb-1">勃起長度 (cm)</label>
                                     <input type="number" id="edit-length" value="${user.length || ''}" class="w-full bg-slate-900 border border-amber-500/10 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-bold text-slate-550 mb-1">勃起粗度圍 (cm)</label>
+                                    <label class="block text-xs font-bold text-slate-555 mb-1">勃起粗度圍 (cm)</label>
                                     <input type="number" id="edit-girth" value="${user.girth || ''}" class="w-full bg-slate-900 border border-amber-500/10 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                                 </div>
                             </div>
@@ -2902,20 +2972,20 @@
   
             document.getElementById('edit-avatar-trigger').onclick = () => fileInput.click();
   
-            fileInput.onchange = (e) => {
+            fileInput.onchange = async (e) => {
                 const file = e.target.files[0];
                 if (file) {
-                    if (file.size > 10 * 1024 * 1024) {
-                        showToast('上傳失敗！頭像檔案大小不得超過 10MB。', 'error');
-                        fileInput.value = '';
-                        return;
-                    }
-                    const reader = new FileReader();
-                    reader.onload = function(evt) {
-                        pendingBase64 = evt.target.result;
+                    showLoading();
+                    try {
+                        pendingBase64 = await processAndCompressImageFile(file, 240, 0.75);
                         previewImg.src = pendingBase64;
-                    };
-                    reader.readAsDataURL(file);
+                        showToast('新大頭照優化成功', 'success');
+                    } catch (err) {
+                        console.error(err);
+                        showToast('新大頭相片解析失敗！', 'error');
+                    } finally {
+                        hideLoading();
+                    }
                 }
             };
 
@@ -2982,7 +3052,7 @@
             modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md';
             modal.innerHTML = `
                 <div class="bg-[#0c0a08] border border-amber-500/20 rounded-3xl p-6 w-[92vw] max-w-sm shadow-2xl relative crystal-border">
-                    <button id="close-spec" class="absolute top-4 right-4 text-slate-500 hover:text-white text-2xl transition">&times;</button>
+                    <button id="close-spec" class="absolute top-4 right-4 text-slate-555 hover:text-white text-2xl transition">&times;</button>
                     <h3 class="text-sm font-bold text-white mb-1.5 flex items-center gap-2 font-luxury">
                         <i class="fa-solid fa-medal text-amber-500"></i> Gold Spec Elite
                     </h3>
@@ -3015,17 +3085,23 @@
 
             document.getElementById('spec-img-trigger').onclick = () => fileInput.click();
 
-            fileInput.onchange = (e) => {
+            fileInput.onchange = async (e) => {
                 const file = e.target.files[0];
                 if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(evt) {
-                        specBase64 = evt.target.result;
+                    showLoading();
+                    try {
+                        // 認證規格照片維持 800px 清晰度以便後台審查，但經過 75% 壓縮以符合儲存規範
+                        specBase64 = await processAndCompressImageFile(file, 800, 0.75);
                         previewImg.src = specBase64;
                         previewImg.classList.remove('hidden');
                         placeholder.classList.add('hidden');
-                    };
-                    reader.readAsDataURL(file);
+                        showToast('證明相片優化處理成功', 'success');
+                    } catch (err) {
+                        console.error(err);
+                        showToast('證明照片載入錯誤', 'error');
+                    } finally {
+                        hideLoading();
+                    }
                 }
             };
 
