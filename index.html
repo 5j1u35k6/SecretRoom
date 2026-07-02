@@ -734,7 +734,7 @@
                         </div>
                         
                         <h1 class="text-4xl md:text-5xl font-black tracking-[0.28em] text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-amber-500 font-luxury mb-2.5 select-none italic text-center">SecretRoom</h1>
-                        <p class="text-amber-500/95 text-xs font-extrabold uppercase tracking-[0.4em] text-center">頂級會員制 · 私密生活交流會所</p>
+                        <p class="text-amber-500/95 text-xs font-extrabold uppercase tracking-[0.4em] text-center">頂級會員制 · 私生活交流俱樂部</p>
                         
                         <!-- 古典黃金屏風格柵線 -->
                         <div class="flex items-center gap-4 w-44 my-10">
@@ -750,17 +750,17 @@
                         <div class="w-full space-y-4 mt-12">
                             <!-- 修正漸層防破圖 -->
                             <button id="btn-goto-apply" class="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-500 hover:brightness-110 active:scale-[0.98] text-slate-950 font-bold text-sm py-4 px-6 rounded-2xl shadow-xl shadow-amber-950/20 transition-all duration-300 tracking-[0.18em] uppercase crystal-border">
-                                申請會籍 / APPLY
+                                申請會員 / APPLY
                             </button>
                             <button id="btn-goto-login" class="w-full bg-slate-950/95 hover:bg-slate-900 active:scale-[0.98] text-amber-500 font-semibold text-sm py-4 px-6 rounded-2xl border border-amber-500/30 transition-all duration-300 tracking-wider flex items-center justify-center gap-2">
                                 <i class="fa-solid fa-key text-xs text-amber-500/70"></i>
-                                <span>已是會員？安全驗證登入</span>
+                                <span>已是會員？點此登入</span>
                             </button>
                         </div>
   
                         <div class="mt-12 px-5 py-3 rounded-xl bg-amber-500/5 border border-amber-500/10 text-xs text-amber-400/80 font-bold tracking-wider flex items-center gap-2 shadow-sm">
                             <i class="fa-solid fa-shield-halved text-amber-500"></i>
-                            <span>落實人工審核驗證 · 滿 18 歲指定進入</span>
+                            <span>人工審核驗證 · 滿 18 歲即可申請進入</span>
                         </div>
                     </div>
                 </div>
@@ -785,11 +785,11 @@
                     <h3 class="text-sm font-bold text-white mb-1.5 flex items-center gap-2 font-luxury tracking-widest">
                         <i class="fa-solid fa-lock text-amber-500"></i> MEMBER VERIFICATION
                     </h3>
-                    <p class="text-xs text-slate-400 mb-5 leading-relaxed font-light">請輸入您的會籍憑證帳號與密碼進行登入</p>
+                    <p class="text-xs text-slate-400 mb-5 leading-relaxed font-light">請輸入您的帳號與密碼進行登入</p>
                     
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">會籍帳號</label>
+                            <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider">帳號</label>
                             <input type="text" id="login-username" class="w-full bg-slate-900/60 border border-slate-800 rounded-xl px-3.5 py-3 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                         </div>
                         <div>
@@ -803,7 +803,7 @@
                         </div>
                         <!-- 修正漸層防破圖 -->
                         <button id="btn-login-submit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-bold text-sm py-4 rounded-xl transition shadow-lg shadow-amber-950/15 tracking-wider uppercase active:scale-[0.98] crystal-border">
-                            進入會所
+                            進入俱樂部
                         </button>
                     </div>
                 </div>
@@ -839,7 +839,7 @@
                             localStorage.setItem('sr_username', usernameInput);
                             
                             modal.remove();
-                            showToast('登入成功！正在載入尊榮會所...', 'success');
+                            showToast('登入成功！正在載入俱樂部...', 'success');
   
                             if (data.status === 'pending') navigate('pending');
                             else if (data.status === 'rejected') navigate('rejected');
@@ -872,7 +872,7 @@
                         
                         <div class="text-center mt-8 mb-10">
                             <h2 class="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-amber-400 tracking-wider font-luxury">SECRETROOM ACQUISITION</h2>
-                            <p class="text-sm text-slate-400 mt-2.5 leading-relaxed">請認真填寫以下會籍檔案。系統將落實最嚴格之人工實名審查，以保障俱樂部會員隱私與安全。</p>
+                            <p class="text-sm text-slate-400 mt-2.5 leading-relaxed">請填寫以下註冊資料。我們將人工審查，以保障俱樂部會員隱私與安全。</p>
                         </div>
   
                         <!-- 雙欄排版，高水準等高對稱 -->
@@ -899,9 +899,9 @@
   
                                 <!-- 帳號以及密碼獨立區 -->
                                 <div class="p-5 bg-slate-900/10 border border-amber-500/10 rounded-2xl space-y-4">
-                                    <span class="text-sm font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-solid fa-lock mr-1.5"></i> 會籍帳號安全憑證</span>
+                                    <span class="text-sm font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-solid fa-lock mr-1.5"></i> 帳號密碼設定</span>
                                     <div>
-                                        <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 設定會員帳號 (不可與人重複)</label>
+                                        <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 設定會員帳號 (注意中英數)</label>
                                         <input type="text" id="reg-username" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                                     </div>
                                     
@@ -917,7 +917,7 @@
                                     
                                     <!-- 密碼強度回饋 -->
                                     <div class="text-xs space-y-1.5 bg-slate-950/60 p-3 rounded-xl border border-slate-850">
-                                        <span class="text-slate-500 font-bold uppercase tracking-wider block mb-1">安全防禦條件度：</span>
+                                        <span class="text-slate-500 font-bold uppercase tracking-wider block mb-1">密碼設定條件：</span>
                                         <div id="pwd-rule-len" class="flex items-center gap-1.5 text-slate-500 transition">
                                             <i class="fa-solid fa-circle-notch text-xs"></i> <span>密碼長度達 8 個字元以上</span>
                                         </div>
@@ -935,9 +935,9 @@
                             <div class="space-y-6">
                                 <!-- 使用者名稱與生日 -->
                                 <div class="p-5 bg-slate-900/10 border border-amber-500/10 rounded-2xl space-y-4">
-                                    <span class="text-sm font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-solid fa-user mr-1.5"></i> 會員公開識別檔案</span>
+                                    <span class="text-sm font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-solid fa-user mr-1.5"></i> 會員公開資料</span>
                                     <div>
-                                        <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 會所公開暱稱</label>
+                                        <label class="block text-xs font-bold text-slate-400 mb-1.5 uppercase tracking-wider"><span class="text-red-500">*</span> 俱樂部公開暱稱</label>
                                         <input type="text" id="reg-nickname" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                                     </div>
   
@@ -953,7 +953,7 @@
   
                                 <!-- 個人物理狀態 -->
                                 <div class="p-5 bg-slate-900/10 border border-amber-500/10 rounded-2xl space-y-4">
-                                    <span class="text-sm font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-solid fa-user-check mr-1.5"></i> 身體數據密碼規格</span>
+                                    <span class="text-sm font-bold text-amber-500 uppercase tracking-widest block"><i class="fa-solid fa-user-check mr-1.5"></i>個人概要</span>
                                     
                                     <div class="grid grid-cols-2 gap-3">
                                         <div>
@@ -982,7 +982,7 @@
                             <!-- 10個標籤完全展開 -->
                             <div class="md:col-span-2 space-y-2 mt-4 pt-4 border-t border-amber-500/10">
                                 <label class="block text-sm font-bold text-slate-300 mb-1 uppercase tracking-wider"><span class="text-red-500">*</span> 感興趣的主題與偏好 (至少勾選一項)</label>
-                                <span class="text-xs text-slate-400 block mb-3 leading-relaxed">我們將依此標籤為您進行大廳智慧動態與合適的同好推薦配對。</span>
+                                <span class="text-xs text-slate-400 block mb-3 leading-relaxed">我們將依此標籤為您進行動態與合適的帳號推薦配對。</span>
                                 
                                 <div class="grid grid-cols-2 md:grid-cols-5 gap-3 bg-slate-950/40 p-4 border border-amber-500/10 rounded-2xl" id="register-kinks-box">
                                     ${window.state.kinksOptions.map((k) => `
@@ -998,7 +998,7 @@
                             <div class="md:col-span-2 pt-4">
                                 <!-- 修正漸層防破圖 -->
                                 <button type="submit" id="apply-submit" class="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-500 hover:brightness-110 text-slate-950 font-bold text-sm py-4 px-6 rounded-2xl transition duration-300 shadow-xl shadow-amber-950/20 tracking-wider uppercase active:scale-[0.98] crystal-border">
-                                    送出註冊與會籍審核
+                                    送出註冊與會員審核
                                 </button>
                             </div>
                         </form>
@@ -1287,7 +1287,7 @@
                         <div class="space-y-2.5">
                             <h2 class="text-xl font-bold text-white font-luxury">TELEGRAM BINDING</h2>
                             <p class="text-sm text-slate-300 leading-relaxed px-4">
-                                請綁定 Telegram 端對端安全通知，當有人與您產生互動 or 秘密信件時，您的手機將即時收到私密安全推播。
+                                請綁定 Telegram 帳號。
                             </p>
                         </div>
                         <div class="p-5 bg-[#0a0806] border border-amber-500/10 rounded-2xl space-y-4">
@@ -1383,7 +1383,7 @@
 
                             <!-- 登出按鈕 -->
                             <button id="aside-btn-logout" class="w-full bg-red-950/10 hover:bg-red-950/30 text-red-400 border border-red-500/10 hover:border-red-500/25 active:scale-[0.97] font-bold text-sm py-3.5 px-4 rounded-2xl transition flex items-center justify-center gap-2 shadow-sm">
-                                <i class="fa-solid fa-power-off"></i> 登出會所
+                                <i class="fa-solid fa-power-off"></i> 登出俱樂部
                             </button>
                         </div>
                     </aside>
@@ -1414,7 +1414,7 @@
                         <nav class="flex md:hidden items-center justify-around border-t border-amber-500/15 bg-slate-950/90 backdrop-blur-md p-2.5 pb-safe-bottom shrink-0 select-none rounded-t-3xl">
                             <button id="mobile-tab-feed" class="flex flex-col items-center gap-1 transition-all ${window.state.currentTab === 'feed' && window.state.currentFilter !== 'elite-ranking' ? 'text-amber-500 scale-105 font-bold' : 'text-slate-500'}">
                                 <i class="fa-solid fa-house-chimney text-sm"></i>
-                                <span class="text-[10px] font-bold tracking-wider">首頁秘密</span>
+                                <span class="text-[10px] font-bold tracking-wider">首頁</span>
                             </button>
                             <button id="mobile-tab-ranking" class="flex flex-col items-center gap-1 transition-all ${window.state.currentTab === 'feed' && window.state.currentFilter === 'elite-ranking' ? 'text-amber-500 scale-105 font-bold' : 'text-slate-500'}">
                                 <i class="fa-solid fa-trophy text-sm"></i>
@@ -1450,10 +1450,10 @@
   
                         <div class="bg-slate-950/60 border border-amber-500/15 p-5 rounded-3xl space-y-4">
                             <h3 class="text-xs font-bold text-amber-500 flex items-center gap-2 uppercase tracking-wider font-luxury">
-                                <i class="fa-solid fa-user-group text-xs"></i> 線上活躍同好
+                                <i class="fa-solid fa-user-group text-xs"></i> 線上活躍帳號
                             </h3>
                             <div class="space-y-3.5" id="active-users-list-aside">
-                                <div class="text-xs text-slate-550 text-center py-4 font-light">正在安全同步活躍節點...</div>
+                                <div class="text-xs text-slate-550 text-center py-4 font-light">正在更新線上帳號...</div>
                             </div>
                         </div>
                     </aside>
@@ -1489,7 +1489,7 @@
                 localStorage.removeItem('sr_username');
                 window.state.userData = {};
                 window.state.applicationId = null;
-                showToast('已安全退出 SecretRoom 會所。', 'info');
+                showToast('已安全退出 SecretRoom 俱樂部。', 'info');
                 navigate('landing');
             };
   
@@ -1597,7 +1597,7 @@
                 <div class="relative w-full z-20">
                     <div class="flex items-center bg-slate-950/90 border border-amber-500/20 rounded-2xl px-4 py-3 shadow-lg backdrop-blur-md">
                         <i class="fa-solid fa-magnifying-glass text-amber-500/70 text-sm mr-3"></i>
-                        <input type="text" id="feed-search-input" class="w-full bg-transparent text-sm text-white focus:outline-none" placeholder="搜尋秘密、標籤、暱稱或帳號ID" value="${window.state.searchTerm}">
+                        <input type="text" id="feed-search-input" class="w-full bg-transparent text-sm text-white focus:outline-none" placeholder="搜尋動態、標籤、暱稱或帳號ID" value="${window.state.searchTerm}">
                     </div>
                     
                     <!-- 搜尋覆蓋面板 -->
@@ -1630,7 +1630,7 @@
                 <div class="space-y-4" id="feed-posts-list">
                     <div class="text-center py-12 text-slate-550 flex flex-col items-center gap-2">
                         <i class="fa-solid fa-circle-notch animate-spin text-2xl text-amber-500"></i>
-                        <span>正在與會所建立安全防護通道...</span>
+                        <span>正在與俱樂部建立通道...</span>
                     </div>
                 </div>
             `;
@@ -1753,7 +1753,7 @@
                     searchOverlay.innerHTML = `
                         <div class="flex border-b border-amber-500/10 pb-2">
                             <button onclick="setSearchTab('posts')" class="flex-1 text-center py-2 text-sm font-bold uppercase tracking-wider transition ${window.state.searchTab === 'posts' ? 'text-amber-500 border-b-2 border-amber-500' : 'text-slate-500 hover:text-slate-300'}">
-                                秘密牆動態 (${matchedPosts.length})
+                                動態貼文 (${matchedPosts.length})
                             </button>
                             <button onclick="setSearchTab('users')" class="flex-1 text-center py-2 text-sm font-bold uppercase tracking-wider transition ${window.state.searchTab === 'users' ? 'text-amber-500 border-b-2 border-amber-500' : 'text-slate-500 hover:text-slate-300'}">
                                 俱樂部成員 (${matchedUsers.length})
@@ -1763,7 +1763,7 @@
                         <div class="overflow-y-auto pr-1 flex-1 space-y-2 max-h-[350px]">
                             ${window.state.searchTab === 'posts' ? 
                                 (matchedPosts.length === 0 ? 
-                                    `\<div class="text-[10px] text-slate-500 py-6 text-center font-light"\>未尋得相符秘密動態\</div\>` :
+                                    `\<div class="text-[10px] text-slate-500 py-6 text-center font-light"\>未尋得相符動態貼文\</div\>` :
                                     matchedPosts.map(post => `
                                         <div class="p-2 bg-slate-900/60 hover:bg-slate-900 border border-amber-500/10 rounded-xl transition cursor-pointer" onclick="viewSinglePost('${post.id}')">
                                             <div class="flex items-center gap-1.5 mb-1">
@@ -1773,7 +1773,7 @@
                                                     <span class="text-[8px] text-slate-550 font-mono block">@${post.userId}</span>
                                                 </div>
                                             </div>
-                                            <p class="text-[10px] text-slate-400 truncate">${post.text || '(發布相片秘密)'}</p>
+                                            <p class="text-[10px] text-slate-400 truncate">${post.text || '(發布相片)'}</p>
                                         </div>
                                     `).join('')
                                 ) :
@@ -1939,8 +1939,8 @@
                                     <div class="w-10 h-10 sm:w-11 sm:h-11 bg-rose-500/15 rounded-full flex items-center justify-center text-rose-400 text-base sm:text-lg mb-2 shadow-lg shadow-rose-950/20 border border-rose-500/20">
                                         <i class="fa-solid fa-eye-slash"></i>
                                     </div>
-                                    <h5 class="text-xs sm:text-sm font-bold text-rose-455">私密尺度照片 (NSFW)</h5>
-                                    <p class="text-[10px] sm:text-xs text-slate-400 mt-1 sm:mt-1.5">此照片被發布者標記為敏感照片，點擊立即安全解鎖 🔒</p>
+                                    <h5 class="text-xs sm:text-sm font-bold text-rose-455">成人尺度照片 (NSFW)</h5>
+                                    <p class="text-[10px] sm:text-xs text-slate-400 mt-1 sm:mt-1.5">此照片被發布者標記為敏感照片，點擊解鎖 🔒</p>
                                 </div>
                             </div>
                         `;
@@ -1960,7 +1960,7 @@
                 let actionBtnHtml = '';
                 if (post.userId === window.state.applicationId) {
                     actionBtnHtml = `
-                        <button onclick="deleteMyPost('${post.id}')" class="text-slate-550 hover:text-red-400 transition text-xs sm:text-sm" title="刪除此秘密">
+                        <button onclick="deleteMyPost('${post.id}')" class="text-slate-550 hover:text-red-400 transition text-xs sm:text-sm" title="刪除此動態">
                             <i class="fa-regular fa-trash-can"></i>
                         </button>
                     `;
@@ -2084,12 +2084,12 @@
             if (totalCount > window.state.visiblePostsCount && !isFocusedMode) {
                 const loadMoreEl = document.createElement('div');
                 loadMoreEl.className = 'text-center py-4 text-xs text-slate-500 animate-pulse';
-                loadMoreEl.textContent = '往下滾動載入更多祕密內容... 🔑';
+                loadMoreEl.textContent = '往下滾動載入更多內容... 🔑';
                 listContainer.appendChild(loadMoreEl);
             } else if (!isFocusedMode) {
                 const finishedEl = document.createElement('div');
                 finishedEl.className = 'text-center py-6 text-xs text-slate-600 border-t border-amber-500/10 mt-4';
-                finishedEl.innerHTML = '已看完會所最新秘密 🔒';
+                finishedEl.innerHTML = '已看完俱樂部最新動態 🔒';
                 listContainer.appendChild(finishedEl);
             }
         }
@@ -2163,7 +2163,7 @@
                     
                     ${!isMe ? `
                         <button onclick="backToFeed()" class="absolute top-5 left-5 text-slate-400 hover:text-white transition text-xs font-semibold flex items-center gap-1">
-                            <i class="fa-solid fa-arrow-left text-amber-500"></i> 返回秘密牆
+                            <i class="fa-solid fa-arrow-left text-amber-500"></i> 返回首頁
                         </button>
                     ` : ''}
   
@@ -2354,7 +2354,7 @@
                 await updateDoc(postRef, { comments: comments });
                 
                 input.value = '';
-                showToast('回覆發布完成！已寫入安全備忘', 'success');
+                showToast('回覆發布完成', 'success');
             } catch (err) {
                 console.error("發布留言出錯:", err);
                 showToast('回覆發布失敗', 'error');
@@ -2373,7 +2373,7 @@
             const originalDesc = modalDesc.textContent;
             
             modalTitle.textContent = "確定刪除此留言？";
-            modalDesc.textContent = "此留言將從本貼文中永久徹底移除，此操作安全且無法撤回！";
+            modalDesc.textContent = "此留言將從本貼文中永久徹底移除，此操作無法撤回！";
             
             modal.classList.remove('hidden');
 
@@ -2398,7 +2398,7 @@
                         
                         const postRef = doc(db, 'secretg_apps', appId, 'posts', postId);
                         await updateDoc(postRef, { comments: updatedComments });
-                        showToast('留言已安全銷毀 🔒', 'success');
+                        showToast('留言已刪除 🔒', 'success');
                     }
                 } catch (err) {
                     console.error("刪除留言失敗:", err);
@@ -2481,7 +2481,7 @@
                         comments[commentId] = comment;
 
                         await updateDoc(postRef, { comments: comments });
-                        showToast('留言安全性檢舉提交成功！', 'success');
+                        showToast('留言檢舉提交成功！', 'success');
                     }
                 }
             } catch (err) {
@@ -2520,7 +2520,7 @@
                 <div class="bg-[#0c0a08] border border-amber-500/20 rounded-3xl p-6 w-[92vw] max-w-sm shadow-2xl relative crystal-border">
                     <button id="close-report-modal" class="absolute top-4 right-4 text-slate-500 hover:text-white text-2xl">&times;</button>
                     <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2 font-luxury">
-                        <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> 檢舉此篇秘密
+                        <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> 檢舉此篇動態
                     </h3>
                     <p class="text-sm text-slate-400 mb-4 leading-relaxed">請選擇檢舉原因，我們將在後台派專員審核此內容：</p>
                     <div class="space-y-2 mb-6">
@@ -2586,7 +2586,7 @@
                         reportCount: updatedReports.length
                     });
   
-                    showToast('安全檢舉已提交成功，管理團隊會儘速審查此秘密動態！', 'success');
+                    showToast('檢舉已提交成功，管理團隊會儘速審查此動態！', 'success');
                 }
             } catch (err) {
                 console.error("提交檢舉異常:", err);
@@ -2605,16 +2605,16 @@
                     <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2 font-luxury">
                         <i class="fa-solid fa-feather-pointed text-amber-500"></i> PUBLISH SECRET
                     </h3>
-                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">發布您的今日秘密。發布相片時將自動於後台壓制安全防偽水印。</p>
+                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">發布近期動態。發布相片時將自動生成浮水印。</p>
   
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">秘密內容描述 (選填)</label>
+                            <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">動態內容描述 (選填)</label>
                             <textarea id="share-text" rows="3" class="w-full bg-slate-900 border border-amber-500/10 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 resize-none transition" placeholder="分享當下的健美重訓成果 or 私密心情..."></textarea>
                         </div>
   
                         <div>
-                            <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">加載秘密照片 (選填)</label>
+                            <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider">加載動態照片 (選填)</label>
                             <div class="border border-amber-500/10 rounded-2xl p-4 flex flex-col items-center justify-center bg-slate-900/10 text-center">
                                 <div id="share-img-trigger" class="relative w-full h-40 rounded-xl border border-dashed border-amber-500/30 hover:border-amber-500 flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-slate-950 transition">
                                     <img id="share-preview" class="absolute inset-0 w-full h-full object-contain hidden">
@@ -2624,7 +2624,7 @@
                                     </div>
                                 </div>
                                 <input type="file" id="share-file" accept="image/*" class="hidden">
-                                <span class="text-[10px] text-slate-550 mt-2 block">相片加載後會於背景自動套用全渠道防偽安全性浮水印。</span>
+                                <span class="text-[10px] text-slate-550 mt-2 block">相片加載後將自動生成浮水印。</span>
                             </div>
                         </div>
   
@@ -2652,7 +2652,7 @@
   
                         <!-- 修正漸層防破圖 -->
                         <button id="btn-submit-post" class="w-full bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-bold text-sm py-3.5 rounded-xl transition tracking-wider active:scale-[0.98] crystal-border">
-                            安全發布秘密
+                            發布動態
                         </button>
                     </div>
                 </div>
@@ -2752,7 +2752,7 @@
                     });
   
                     modal.remove();
-                    showToast('動態已安全發布並完成加密備份！', 'success');
+                    showToast('動態已發布', 'success');
                 } catch (err) {
                     console.error("貼文失敗:", err);
                     showToast('貼文失敗', 'error');
@@ -3065,7 +3065,7 @@
                 badges.push({ 
                     icon: 'fa-camera', 
                     color: 'from-violet-500 to-purple-700 shadow-violet-500/20 border-purple-500/25', 
-                    tooltip: '累計發布上百篇秘密作品'
+                    tooltip: '累計發布上百篇動態作品'
                 });
             }
   
@@ -3112,7 +3112,7 @@
                 showLoading();
                 try {
                     await deleteDoc(doc(db, 'secretg_apps', appId, 'posts', postId));
-                    showToast('該條分享秘密已安全徹底永久銷毀 🔒', 'success');
+                    showToast('該條分享動態已刪除 🔒', 'success');
                 } catch (err) {
                     console.error("刪除失敗:", err);
                     showToast('銷毀失敗', 'error');
