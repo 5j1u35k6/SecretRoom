@@ -10,7 +10,7 @@
     <!-- 預載入技術：高優先級下載圖章以達到秒速啟動載入 -->
     <link rel="preload" href="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" as="image">
     
-    <title>SecretRoom | 俱樂部式男性隱私社群</title>
+    <title>SecretRoom | 男性頂級私密俱樂部平台</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;650;750;800&family=Cinzel:wght@600;700;900&family=Noto+Serif+TC:wght@400;600;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -194,7 +194,7 @@
                 </div>
             </div>
             <p class="text-amber-500/80 font-bold tracking-[0.2em] text-sm font-luxury uppercase animate-pulse">Establishing Secure Channel...</p>
-            <p class="text-slate-400 text-xs mt-3.5 font-light">正在與 SecretRoom 伺服器建立安全加密防護通道...</p>
+            <p class="text-slate-400 text-xs mt-3.5 font-light">正在與 SecretRoom 伺服器建立通道...</p>
         </div>
     </div>
 
@@ -219,12 +219,12 @@
   
     <!-- 客製化安全確認彈窗 -->
     <div id="custom-confirm-modal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[101] flex items-center justify-center p-4 hidden">
-        <div class="bg-[#0c0a08] border border-amber-500/20 rounded-3xl p-6.5 w-[92vw] max-w-sm shadow-[0_0_50px_rgba(0,0,0,0.95)] relative text-center crystal-border">
+        <div class="bg-[#0c0a08] border border-amber-500/20 rounded-3xl p-6.5 max-w-sm w-[92vw] shadow-[0_0_50px_rgba(0,0,0,0.95)] relative text-center crystal-border">
             <div class="w-14 h-14 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-500 text-2xl mx-auto mb-4">
                 <i class="fa-solid fa-triangle-exclamation"></i>
             </div>
             <h3 class="text-base font-bold text-white mb-2">確定刪除(永久銷毀)？</h3>
-            <p class="text-sm text-slate-400 mb-6 leading-relaxed">此篇天菜秘密動態與實體照片將從伺服器端永久徹底抹除，本操作安全且無法撤回！</p>
+            <p class="text-sm text-slate-400 mb-6 leading-relaxed">此篇動態貼文與實體照片將從伺服器永久徹底刪除，本操作無法救回！</p>
             <div class="grid grid-cols-2 gap-3">
                 <button id="confirm-modal-cancel" class="bg-slate-900/80 hover:bg-slate-800 text-slate-300 font-bold text-sm py-3 rounded-xl transition">取消</button>
                 <button id="confirm-modal-ok" class="bg-gradient-to-r from-amber-600 to-amber-700 hover:brightness-110 text-slate-950 font-bold text-sm py-3 rounded-xl transition shadow-md shadow-amber-950/20">確認銷毀</button>
@@ -455,9 +455,6 @@
         window.luxuryBGM = new LuxuryBGMPlayer();
 
         // 預設開啟音樂 (系統直接將 BGM 啟用，並透過使用者首次互動漸入)
-        if (!localStorage.getItem('sr_bgm_enabled')) {
-            localStorage.setItem('sr_bgm_enabled', 'true');
-        }
         localStorage.setItem('sr_bgm_enabled', 'true');
         window.luxuryBGM.isPlaying = true;
 
@@ -484,7 +481,7 @@
             if (isActuallyPlaying) {
                 window.luxuryBGM.stop();
                 localStorage.setItem('sr_bgm_enabled', 'false');
-                showToast('會所奢華背景音樂已靜音 🔇', 'info');
+                showToast('背景音樂已靜音 🔇', 'info');
             } else {
                 localStorage.setItem('sr_bgm_enabled', 'true');
                 window.luxuryBGM.isPlaying = true; 
@@ -492,7 +489,7 @@
                 const view = window.state.currentView;
                 const wantsTrack = (view === 'dashboard') ? 'lounge' : 'mysterious';
                 window.luxuryBGM.start(wantsTrack);
-                showToast('頂級會所音樂已啟用 🔊', 'success');
+                showToast('背景音樂已開啟 🔊', 'success');
             }
         };
 
@@ -761,7 +758,7 @@
             modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-md';
             
             modal.innerHTML = `
-                <div class="bg-[#0c0a08] border border-amber-500/30 rounded-3xl p-6.5 w-[92vw] max-w-sm shadow-[0_0_60px_rgba(0,0,0,0.95)] relative crystal-border">
+                <div class="bg-[#0c0a08] border border-amber-500/30 rounded-3xl p-6 sm:p-8 w-[92vw] max-w-sm shadow-[0_0_60px_rgba(0,0,0,0.95)] relative crystal-border">
                     <button id="close-login" class="absolute top-4 right-4 text-slate-500 hover:text-white text-2xl transition">&times;</button>
                     <h3 class="text-sm font-bold text-white mb-1.5 flex items-center gap-2 font-luxury tracking-widest">
                         <i class="fa-solid fa-lock text-amber-500"></i> MEMBER VERIFICATION
@@ -782,7 +779,7 @@
                                 </button>
                             </div>
                         </div>
-                        <button id="btn-login-submit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-650 text-slate-950 font-bold text-sm py-4 rounded-xl transition shadow-lg shadow-amber-950/15 tracking-wider uppercase active:scale-[0.98] crystal-border">
+                        <button id="btn-login-submit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-655 text-slate-950 font-bold text-sm py-4 rounded-xl transition shadow-lg shadow-amber-950/15 tracking-wider uppercase active:scale-[0.98] crystal-border">
                             進入會所
                         </button>
                     </div>
@@ -844,8 +841,8 @@
   
         function renderRegister(container) {
             container.innerHTML = `
-                <div class="w-full bg-[#050403] px-4 py-8 flex flex-col items-center h-full overflow-y-auto pb-24 md:pb-8">
-                    <div class="w-[92vw] max-w-4xl bg-[#0c0a08] border border-amber-500/20 rounded-3xl p-6 md:p-10 shadow-2xl relative mb-12 crystal-border">
+                <div class="w-full bg-[#050403] px-3 sm:px-4 py-6 md:py-8 flex flex-col items-center h-full overflow-y-auto pb-24 md:pb-8">
+                    <div class="w-[92vw] max-w-4xl bg-[#0c0a08] border border-amber-500/20 rounded-3xl p-5 sm:p-8 md:p-10 shadow-2xl relative mb-12 crystal-border">
                         <button id="btn-back-landing" class="absolute top-6 left-6 text-slate-400 hover:text-white transition text-sm flex items-center gap-2 font-semibold">
                             <i class="fa-solid fa-arrow-left text-amber-500"></i> 返回首頁
                         </button>
@@ -856,7 +853,7 @@
                         </div>
   
                         <!-- 雙欄排版，高水準等高對稱 -->
-                        <form id="apply-form" class="grid grid-cols-1 md:grid-cols-2 gap-8" onsubmit="return false;">
+                        <form id="apply-form" class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8" onsubmit="return false;">
                             
                             <!-- 左側區塊：相片上傳與安全帳號設定 -->
                             <div class="space-y-6">
@@ -1206,7 +1203,7 @@
                             <button id="btn-reapply-edit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-655 hover:brightness-110 text-slate-950 font-bold text-sm py-3.5 rounded-xl transition shadow-lg active:scale-[0.98] crystal-border">
                                 修正資料並重新提交送審
                             </button>
-                            <button id="btn-reapply-logout" class="w-full bg-slate-900 hover:bg-slate-800 text-slate-400 font-semibold text-sm py-3.5 rounded-xl transition border border-slate-800/80 active:scale-[0.98]">
+                            <button id="btn-reapply-logout" class="w-full bg-slate-900 hover:bg-slate-850 text-slate-400 font-semibold text-sm py-3.5 rounded-xl transition border border-slate-800/80 active:scale-[0.98]">
                                 登出當前帳號
                             </button>
                         </div>
@@ -1374,7 +1371,7 @@
                                 <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-8.5 h-8.5 rounded-full border border-amber-500/30 object-cover animate-gentle-logo">
                                 <h1 class="text-xl font-black text-white tracking-[0.15em] italic font-luxury">SecretRoom</h1>
                             </div>
-                            <button id="mobile-btn-share" class="w-9 h-9 bg-gradient-to-r from-amber-500 to-yellow-650 hover:brightness-110 text-slate-950 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition">
+                            <button id="mobile-btn-share" class="w-9 h-9 bg-gradient-to-r from-amber-500 to-yellow-655 hover:brightness-110 text-slate-950 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition">
                                 <i class="fa-solid fa-plus text-sm"></i>
                             </button>
                         </header>
@@ -1730,7 +1727,7 @@
                                                 <img src="${post.authorAvatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-5 h-5 rounded-full object-cover">
                                                 <div>
                                                     <span class="text-[11px] font-bold text-slate-300 block leading-tight">${post.authorName}</span>
-                                                    <span class="text-[8px] text-slate-500 font-mono block">@${post.userId}</span>
+                                                    <span class="text-[8px] text-slate-550 font-mono block">@${post.userId}</span>
                                                 </div>
                                             </div>
                                             <p class="text-[10px] text-slate-400 truncate">${post.text || '(發布相片秘密)'}</p>
@@ -1748,7 +1745,7 @@
                                                         <span class="text-[11px] font-bold text-slate-200 truncate">${u.nickname}</span>
                                                         ${getBadgeHTML(u)}
                                                     </div>
-                                                    <span class="text-[8px] text-slate-500 block">@${u.id}</span>
+                                                    <span class="text-[8px] text-slate-550 block">@${u.id}</span>
                                                 </div>
                                             </div>
                                             <i class="fa-solid fa-chevron-right text-[10px] text-amber-500/50"></i>
@@ -2785,7 +2782,7 @@
                             </div>
                         </div>
   
-                        <button id="btn-submit-profile-edit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-bold text-sm py-3.5 rounded-xl transition tracking-wider active:scale-[0.98] crystal-border">
+                        <button id="btn-submit-profile-edit" class="w-full bg-gradient-to-r from-amber-500 to-yellow-650 text-slate-950 font-bold text-sm py-3.5 rounded-xl transition tracking-wider active:scale-[0.98] crystal-border">
                             儲存變更
                         </button>
                     </div>
@@ -2897,7 +2894,7 @@
                             </div>
                             <input type="file" id="spec-file" accept="image/*" class="hidden">
                         </div>
-                        <button id="btn-submit-spec" class="w-full bg-gradient-to-r from-amber-500 to-yellow-650 text-slate-950 font-bold text-sm py-3 rounded-xl transition tracking-wider active:scale-[0.98] crystal-border">
+                        <button id="btn-submit-spec" class="w-full bg-gradient-to-r from-amber-500 to-yellow-655 text-slate-950 font-bold text-sm py-3 rounded-xl transition tracking-wider active:scale-[0.98] crystal-border">
                             提交規格核查申請
                         </button>
                     </div>
