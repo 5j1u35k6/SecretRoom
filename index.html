@@ -313,6 +313,328 @@
                 padding-right: 0.15rem !important;
             }
         }
+
+
+        /* =========================================================
+           Luxury UI 2.0 Override
+           China Airlines Inspired: Deep Space Indigo Navy + Plum Crimson + Walnut Wood
+           ========================================================= */
+        :root {
+            --ci-deep-space: #07111f;
+            --ci-indigo: #102747;
+            --ci-plum: #5f1d37;
+            --ci-crimson: #8e2b41;
+            --ci-walnut: #2d1e14;
+            --ci-ebony: #050403;
+            --ci-champagne: #dfb76c;
+            --ci-brass: #aa771c;
+            --ci-ivory: #f8f3e8;
+            --ci-glass: rgba(12, 10, 8, 0.55);
+            --ci-glass-deep: rgba(9, 11, 18, 0.62);
+            --ci-glow-gold: rgba(223, 183, 108, 0.32);
+        }
+
+        html, body {
+            min-height: 100%;
+            background-color: var(--ci-ebony) !important;
+        }
+
+        body,
+        body.club-groove-bg {
+            font-family: 'Inter', 'Noto Serif TC', serif;
+            color: var(--ci-ivory);
+            background:
+                radial-gradient(circle at 10% 8%, rgba(16, 42, 78, 0.88) 0%, rgba(16, 42, 78, 0.42) 24%, transparent 56%),
+                radial-gradient(circle at 92% 10%, rgba(112, 30, 62, 0.52) 0%, rgba(94, 27, 51, 0.28) 32%, transparent 58%),
+                radial-gradient(ellipse at 50% 118%, rgba(54, 34, 20, 0.98) 0%, rgba(25, 15, 10, 0.82) 40%, rgba(5, 4, 5, 0.98) 78%),
+                linear-gradient(135deg, #030406 0%, #080d18 38%, #080505 100%) !important;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: geometricPrecision;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image:
+                repeating-linear-gradient(
+                    90deg,
+                    rgba(223, 183, 108, 0.00) 0px,
+                    rgba(223, 183, 108, 0.00) 8px,
+                    rgba(223, 183, 108, 0.115) 9px,
+                    rgba(223, 183, 108, 0.06) 10px,
+                    rgba(0, 0, 0, 0.00) 20px
+                ),
+                linear-gradient(90deg, rgba(255,255,255,0.035) 0 1px, transparent 1px),
+                radial-gradient(circle at 18% 14%, rgba(255,255,255,0.08), transparent 30%),
+                radial-gradient(circle at 85% 12%, rgba(223,183,108,0.06), transparent 34%);
+            background-size: 20px 100%, 160px 100%, 100% 100%, 100% 100%;
+            mix-blend-mode: soft-light;
+            opacity: 0.84;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background:
+                linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.035) 41%, transparent 48%),
+                radial-gradient(circle at 50% -15%, rgba(223,183,108,0.12), transparent 48%),
+                radial-gradient(circle at 50% 110%, rgba(170,119,28,0.10), transparent 55%);
+            opacity: 0.92;
+        }
+
+        #app,
+        #toast-container,
+        #bgm-controller-widget,
+        #custom-confirm-modal {
+            position: relative;
+            z-index: 1;
+        }
+
+        #app {
+            background: transparent !important;
+        }
+
+        .club-groove-bg {
+            background-color: transparent !important;
+            background-image: none !important;
+        }
+
+        .ci-lounge-gradient,
+        .ambient-spotlight {
+            background:
+                radial-gradient(circle at 20% 0%, rgba(17, 48, 86, 0.45) 0%, transparent 52%),
+                radial-gradient(circle at 90% 4%, rgba(108, 27, 57, 0.30) 0%, transparent 52%),
+                radial-gradient(circle at 50% 105%, rgba(54, 34, 20, 0.54) 0%, transparent 68%) !important;
+        }
+
+        .glass-panel {
+            background:
+                linear-gradient(145deg, rgba(12, 14, 22, 0.58) 0%, rgba(16, 12, 12, 0.48) 45%, rgba(23, 15, 10, 0.42) 100%) !important;
+            border: 1px solid rgba(255, 255, 255, 0.105) !important;
+            backdrop-filter: blur(35px) saturate(168%) contrast(1.06) !important;
+            -webkit-backdrop-filter: blur(35px) saturate(168%) contrast(1.06) !important;
+            box-shadow:
+                0 28px 80px -20px rgba(0, 0, 0, 0.92),
+                0 0 0 1px rgba(223, 183, 108, 0.18),
+                inset 0 1px 0 rgba(255, 255, 255, 0.20),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.34),
+                inset 0 0 38px rgba(223, 183, 108, 0.055),
+                0 0 48px rgba(16, 42, 78, 0.22) !important;
+        }
+
+        .crystal-border {
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            box-shadow:
+                0 0 0 1px rgba(223, 183, 108, 0.22),
+                0 12px 42px rgba(0, 0, 0, 0.74),
+                inset 0 1px 1px rgba(255, 255, 255, 0.22),
+                inset 0 0 24px rgba(223, 183, 108, 0.045) !important;
+        }
+
+        .crystal-border::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            pointer-events: none;
+            background:
+                linear-gradient(135deg, rgba(255,255,255,0.34), transparent 22%, rgba(223,183,108,0.16) 44%, transparent 65%, rgba(255,255,255,0.16)),
+                radial-gradient(circle at 12% 8%, rgba(255,255,255,0.24), transparent 16%),
+                radial-gradient(circle at 88% 92%, rgba(223,183,108,0.18), transparent 18%);
+            opacity: 0.72;
+            mix-blend-mode: screen;
+        }
+
+        .architectural-border {
+            border: 1px solid rgba(223, 183, 108, 0.32) !important;
+            outline: 1px solid rgba(255, 246, 220, 0.10) !important;
+            outline-offset: -6px !important;
+            box-shadow:
+                inset 0 0 0 1px rgba(223, 183, 108, 0.055),
+                0 0 35px rgba(223, 183, 108, 0.08) !important;
+        }
+
+        .brushed-gold {
+            color: #171007 !important;
+            background:
+                linear-gradient(110deg, #8a5a00 0%, #d4af37 13%, #fff1b8 28%, #a8711b 48%, #f8df8d 68%, #7b4b00 100%) !important;
+            border: 1px solid rgba(255, 241, 184, 0.72) !important;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.72),
+                inset 0 -2px 0 rgba(90, 55, 0, 0.34),
+                0 10px 24px rgba(90, 55, 0, 0.34),
+                0 0 24px rgba(223, 183, 108, 0.20) !important;
+            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.32) !important;
+        }
+
+        .brass-badge {
+            background: rgba(223, 183, 108, 0.055) !important;
+            border: 1px solid rgba(223, 183, 108, 0.48) !important;
+            box-shadow:
+                0 0 18px rgba(223, 183, 108, 0.16),
+                inset 0 0 12px rgba(223, 183, 108, 0.10) !important;
+        }
+
+        .hover-breath {
+            transition:
+                transform 420ms cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 420ms cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 420ms cubic-bezier(0.16, 1, 0.3, 1),
+                filter 420ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+
+        .hover-breath:hover {
+            transform: translateY(-3px) scale(1.018) !important;
+            filter: brightness(1.055) saturate(1.08) !important;
+            border-color: rgba(255, 232, 170, 0.58) !important;
+            box-shadow:
+                0 18px 46px rgba(0, 0, 0, 0.50),
+                0 0 32px rgba(223, 183, 108, 0.22),
+                inset 0 0 20px rgba(255, 255, 255, 0.07) !important;
+        }
+
+        .click-press:active {
+            transform: scale(0.965) translateY(1px) !important;
+            filter: brightness(0.88) saturate(0.96) !important;
+        }
+
+        @keyframes crystal-breath {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow:
+                    0 0 42px rgba(223, 183, 108, 0.16),
+                    0 0 78px rgba(16, 42, 78, 0.16),
+                    inset 0 0 24px rgba(223, 183, 108, 0.04);
+                border-color: rgba(223, 183, 108, 0.25);
+            }
+            50% {
+                transform: scale(1.026);
+                box-shadow:
+                    0 0 82px rgba(223, 183, 108, 0.40),
+                    0 0 50px rgba(112, 30, 62, 0.22),
+                    inset 0 0 35px rgba(254, 249, 219, 0.18);
+                border-color: rgba(254, 249, 219, 0.64);
+            }
+        }
+
+        .animate-gentle-logo {
+            animation: crystal-breath 6.5s ease-in-out infinite !important;
+        }
+
+        #loading-screen,
+        .bg-black\/95,
+        .bg-black\/90,
+        .bg-\[\#0f1115\] {
+            background:
+                radial-gradient(circle at 18% 12%, rgba(16, 42, 78, 0.72), transparent 52%),
+                radial-gradient(circle at 86% 14%, rgba(112, 30, 62, 0.38), transparent 56%),
+                radial-gradient(circle at 50% 110%, rgba(54, 34, 20, 0.78), rgba(5, 4, 5, 0.88) 72%) !important;
+            backdrop-filter: blur(28px) saturate(150%) !important;
+            -webkit-backdrop-filter: blur(28px) saturate(150%) !important;
+        }
+
+        .bg-slate-950,
+        .bg-slate-950\/95,
+        .bg-slate-950\/90,
+        .bg-slate-950\/80,
+        .bg-slate-950\/60,
+        .bg-slate-950\/40,
+        .bg-slate-900\/80,
+        .bg-slate-900\/60,
+        .bg-slate-900\/40,
+        .bg-slate-900\/10 {
+            background-color: rgba(8, 12, 20, 0.58) !important;
+        }
+
+        input,
+        select,
+        textarea {
+            background-color: rgba(6, 9, 16, 0.68) !important;
+            border-color: rgba(223, 183, 108, 0.16) !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.045) !important;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: rgba(255, 224, 153, 0.68) !important;
+            box-shadow:
+                0 0 0 1px rgba(223, 183, 108, 0.32),
+                0 0 28px rgba(223, 183, 108, 0.12),
+                inset 0 1px 0 rgba(255,255,255,0.08) !important;
+        }
+
+        button,
+        label,
+        input,
+        select,
+        textarea,
+        [class*="tracking-"] {
+            text-transform: none !important;
+        }
+
+        .text-amber-500,
+        .text-amber-400,
+        .text-amber-300 {
+            color: rgba(235, 195, 115, 0.96) !important;
+        }
+
+        .border-amber-500\/10,
+        .border-amber-500\/15,
+        .border-amber-500\/20,
+        .border-amber-500\/30 {
+            border-color: rgba(223, 183, 108, 0.22) !important;
+        }
+
+        .shadow-amber-950\/20,
+        .shadow-amber-950\/15,
+        .shadow-amber-950\/10 {
+            --tw-shadow-color: rgba(90, 55, 0, 0.22) !important;
+        }
+
+        .text-slate-550,
+        .text-slate-505 {
+            color: rgba(148, 163, 184, 0.58) !important;
+        }
+
+        #bgm-controller-widget,
+        #sidebar-bgm-btn {
+            background:
+                linear-gradient(145deg, rgba(8, 12, 20, 0.78), rgba(22, 14, 10, 0.62)) !important;
+            border-color: rgba(223, 183, 108, 0.28) !important;
+        }
+
+        #toast-container > div {
+            background:
+                linear-gradient(145deg, rgba(16, 18, 27, 0.82), rgba(28, 18, 14, 0.76)) !important;
+            border-color: rgba(223, 183, 108, 0.34) !important;
+            color: var(--ci-ivory) !important;
+        }
+
+        ::selection {
+            background: rgba(223, 183, 108, 0.28);
+            color: #fff8dc;
+        }
+
+        @media (max-width: 640px) {
+            body::before {
+                background-size: 20px 100%, 120px 100%, 100% 100%, 100% 100%;
+                opacity: 0.62;
+            }
+            .glass-panel {
+                backdrop-filter: blur(25px) saturate(150%) !important;
+                -webkit-backdrop-filter: blur(25px) saturate(150%) !important;
+            }
+        }
+
     </style>
 </head>
 <body class="min-h-screen w-full flex flex-col p-0 m-0 overflow-hidden select-none club-groove-bg">
@@ -328,7 +650,7 @@
                     <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-full h-full object-cover">
                 </div>
             </div>
-            <!-- 修正：移除 uppercase -->
+            <!-- 修正：移除 normal-case -->
             <p class="text-amber-500/80 font-bold tracking-[0.2em] text-sm font-luxury animate-pulse">Establishing Secure Channel...</p>
             <p class="text-slate-400 text-xs mt-3.5 font-light">正在與 SecretRoom 伺服器建立通道...</p>
         </div>
@@ -342,7 +664,7 @@
             <div class="w-[2px] h-1 bg-amber-500 rounded-full bgm-bar"></div>
             <div class="w-[2px] h-2 bg-amber-500 rounded-full bgm-bar"></div>
         </div>
-        <!-- 修正：移除 uppercase -->
+        <!-- 修正：移除 normal-case -->
         <span class="text-[9px] font-bold text-amber-500/80 tracking-[0.18em] hidden sm:block font-luxury select-none" id="bgm-status-text">
             Bgm Audio
         </span>
@@ -487,7 +809,7 @@
             unsubscribeVisitorsListener: null,
             visiblePostsCount: 5,
             openComments: {}, 
-            unlockedNSFWPosts: {}, 
+            unlockedNsfwPosts: {}, 
             visitors: [], 
             visitedProfilesInSession: {}, 
             viewedPostsInSession: {}, 
@@ -498,7 +820,7 @@
                 height: '', weight: '', length: '', girth: '', kinks: [], email: '', avatar: ''
             },
             kinksOptions: [
-                "性愛偏好｜角色定位", "BDSM｜繩縛", "制服愛好｜皮革/膠衣", "心理角色｜Daddy/Boy", "自我管理｜健身/健美", 
+                "性愛偏好｜角色定位", "Bdsm｜繩縛", "制服愛好｜皮革/膠衣", "心理角色｜Daddy/Boy", "自我管理｜健身/健美", 
                 "友善社交｜約會/派對", "體型美學｜壯碩/熊系", "特殊癖好｜穿戴玩物", "旅遊休閒｜友善旅遊", "數位社交｜交友軟體"
             ],
             posts: [], 
@@ -894,7 +1216,7 @@
                         </div>
                         
                         <div class="px-5 py-1.5 rounded-full bg-amber-500/5 border border-amber-500/20 mb-3">
-                            <!-- 修正：移除 uppercase -->
+                            <!-- 修正：移除 normal-case -->
                             <span class="text-[10px] font-bold text-amber-500/80 tracking-[0.25em] font-luxury">Established Seclusion</span>
                         </div>
                         
@@ -947,7 +1269,7 @@
                 <!-- 修正：套用 glass-panel 與 crystal-border 水晶折射質感 -->
                 <div class="glass-panel border border-amber-500/30 rounded-3xl p-6 sm:p-8 w-[92vw] max-w-sm relative crystal-border">
                     <button id="close-login" class="absolute top-4 right-4 text-slate-550 hover:text-white text-2xl transition hover-breath click-press">&times;</button>
-                    <!-- 修正：移除 uppercase -->
+                    <!-- 修正：移除 normal-case -->
                     <h3 class="text-sm font-bold text-white mb-1.5 flex items-center gap-2 font-luxury tracking-widest">
                         <i class="fa-solid fa-lock text-amber-500"></i> Member Verification
                     </h3>
@@ -955,12 +1277,12 @@
                     
                     <div class="space-y-4">
                         <div>
-                            <!-- 修正：移除 uppercase -->
+                            <!-- 修正：移除 normal-case -->
                             <label class="block text-xs font-bold text-slate-400 mb-1.5 tracking-wider">帳號</label>
                             <input type="text" id="login-username" class="w-full bg-slate-900/60 border border-slate-800 rounded-xl px-3.5 py-3 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                         </div>
                         <div>
-                            <!-- 修正：移除 uppercase -->
+                            <!-- 修正：移除 normal-case -->
                             <label class="block text-xs font-bold text-slate-400 mb-1.5 tracking-wider">密碼</label>
                             <div class="relative">
                                 <input type="password" id="login-password" class="w-full bg-slate-900/60 border border-slate-800 rounded-xl pl-3.5 pr-10 py-3 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
@@ -1042,7 +1364,7 @@
                         </button>
                         
                         <div class="text-center mt-8 mb-10">
-                            <!-- 修正：移除 uppercase，改為 Title Case -->
+                            <!-- 修正：移除 normal-case，改為 Title Case -->
                             <h2 class="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-amber-400 tracking-wider font-luxury">SecretRoom Acquisition</h2>
                             <p class="text-sm text-slate-400 mt-2.5 leading-relaxed">請填寫以下註冊資料。我們將人工審查，以保障俱樂部會員隱私與安全。</p>
                         </div>
@@ -1051,16 +1373,16 @@
                             
                             <div class="space-y-6">
                                 <div class="bg-slate-900/40 p-5 border border-amber-500/10 rounded-2xl flex flex-col items-center justify-center text-center">
-                                    <!-- 修正：移除 uppercase -->
+                                    <!-- 修正：移除 normal-case -->
                                     <span class="text-sm font-bold text-slate-300 mb-3 tracking-wider block">
                                         <span class="text-red-500">*</span> 上傳個人真實頭像照片
-                                        <span class="text-amber-500 font-normal text-xs block mt-1">(僅限 Jpeg/Png，支援最大 10MB)</span>
+                                        <span class="text-amber-500 font-normal text-xs block mt-1">(僅限 Jpeg/Png，支援最大 10 Mb)</span>
                                     </span>
                                     <div class="relative w-28 h-28 rounded-full border border-dashed border-amber-500/30 transition cursor-pointer flex flex-col items-center justify-center bg-slate-950/80 overflow-hidden group shadow-[0_0_20px_rgba(223,183,108,0.1)] hover-breath click-press" id="avatar-trigger">
                                         <img id="avatar-preview" class="absolute inset-0 w-full h-full object-cover hidden">
                                         <div class="z-10 flex flex-col items-center text-slate-550 group-hover:text-amber-500 transition" id="avatar-placeholder">
                                             <i class="fa-solid fa-camera text-2xl mb-1.5"></i>
-                                            <!-- 修正：移除 uppercase -->
+                                            <!-- 修正：移除 normal-case -->
                                             <span class="text-xs font-bold tracking-wider">選擇檔案</span>
                                         </div>
                                     </div>
@@ -1069,16 +1391,16 @@
                                 </div>
   
                                 <div class="p-5 bg-slate-900/40 border border-amber-500/10 rounded-2xl space-y-4">
-                                    <!-- 修正：移除 uppercase -->
+                                    <!-- 修正：移除 normal-case -->
                                     <span class="text-sm font-bold text-amber-500 tracking-widest block"><i class="fa-solid fa-lock mr-1.5"></i> 帳號密碼設定</span>
                                     <div>
-                                        <!-- 修正：移除 uppercase -->
+                                        <!-- 修正：移除 normal-case -->
                                         <label class="block text-xs font-bold text-slate-400 mb-1.5 tracking-wider"><span class="text-red-500">*</span> 設定會員帳號 (注意中英數)</label>
                                         <input type="text" id="reg-username" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                                     </div>
                                     
                                     <div>
-                                        <!-- 修正：移除 uppercase -->
+                                        <!-- 修正：移除 normal-case -->
                                         <label class="block text-xs font-bold text-slate-400 mb-1.5 tracking-wider"><span class="text-red-500">*</span> 設定登入密碼</label>
                                         <div class="relative">
                                             <input type="password" id="reg-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-3.5 pr-10 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
@@ -1089,7 +1411,7 @@
                                     </div>
                                     
                                     <div class="text-xs space-y-1.5 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
-                                        <!-- 修正：移除 uppercase -->
+                                        <!-- 修正：移除 normal-case -->
                                         <span class="text-slate-400 font-bold tracking-wider block mb-1">密碼設定條件：</span>
                                         <div id="pwd-rule-len" class="flex items-center gap-1.5 text-slate-500 transition">
                                             <i class="fa-solid fa-circle-notch text-xs"></i> <span>密碼長度達 8 個字元以上</span>
@@ -1106,16 +1428,16 @@
   
                             <div class="space-y-6">
                                 <div class="p-5 bg-slate-900/40 border border-amber-500/10 rounded-2xl space-y-4">
-                                    <!-- 修正：移除 uppercase -->
+                                    <!-- 修正：移除 normal-case -->
                                     <span class="text-sm font-bold text-amber-500 tracking-widest block"><i class="fa-solid fa-user mr-1.5"></i> 會員公開資料</span>
                                     <div>
-                                        <!-- 修正：移除 uppercase -->
+                                        <!-- 修正：移除 normal-case -->
                                         <label class="block text-xs font-bold text-slate-400 mb-1.5 tracking-wider"><span class="text-red-500">*</span> 俱樂部公開暱稱</label>
                                         <input type="text" id="reg-nickname" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                                     </div>
   
                                     <div>
-                                        <!-- 修正：移除 uppercase -->
+                                        <!-- 修正：移除 normal-case -->
                                         <label class="block text-xs font-bold text-slate-400 mb-1.5 tracking-wider"><span class="text-red-500">*</span> 出生年月日 (須滿 18 歲)</label>
                                         <div class="grid grid-cols-3 gap-2">
                                             <select id="reg-year" class="bg-slate-950 border border-slate-800 text-slate-300 rounded-xl pl-3 pr-8 py-2.5 text-sm focus:outline-none focus:border-amber-500 transition hover-breath click-press"></select>
@@ -1126,7 +1448,7 @@
                                 </div>
   
                                 <div class="p-5 bg-slate-900/40 border border-amber-500/10 rounded-2xl space-y-4">
-                                    <!-- 修正：移除 uppercase -->
+                                    <!-- 修正：移除 normal-case -->
                                     <span class="text-sm font-bold text-amber-500 tracking-widest block"><i class="fa-solid fa-user-check mr-1.5"></i>個人概要</span>
                                     
                                     <div class="grid grid-cols-2 gap-3">
@@ -1154,7 +1476,7 @@
                             </div>
   
                             <div class="md:col-span-2 space-y-2 mt-4 pt-4 border-t border-amber-500/10">
-                                <!-- 修正：移除 uppercase -->
+                                <!-- 修正：移除 normal-case -->
                                 <label class="block text-sm font-bold text-slate-300 mb-1 tracking-wider"><span class="text-red-500">*</span> 感興趣的主題與偏好 (至少勾選一項)</label>
                                 <span class="text-xs text-slate-400 block mb-3 leading-relaxed">我們將依此標籤為您進行動態與合適的帳號推薦配對。</span>
                                 
@@ -1169,7 +1491,7 @@
                             </div>
   
                             <div class="md:col-span-2 pt-4">
-                                <!-- 修正：套用 brushed-gold 皇家拉絲金與 hover-breath、click-press，移除 uppercase -->
+                                <!-- 修正：套用 brushed-gold 皇家拉絲金與 hover-breath、click-press，移除 normal-case -->
                                 <button type="submit" id="apply-submit" class="w-full brushed-gold font-bold text-sm py-4 px-6 rounded-2xl transition duration-300 tracking-wider crystal-border hover-breath click-press">
                                     送出註冊與會員審核
                                 </button>
@@ -1206,7 +1528,7 @@
                 const file = e.target.files[0];
                 if (file) {
                     if (file.size > 10 * 1024 * 1024) {
-                        showToast('大頭照檔案大小超過 10MB 限制！', 'error');
+                        showToast('大頭照檔案大小超過 10 Mb 限制！', 'error');
                         return;
                     }
                     showLoading();
@@ -1361,7 +1683,7 @@
                             <i class="fa-solid fa-hourglass-half animate-spin"></i>
                         </div>
                         <div class="space-y-2.5">
-                            <!-- 修正：移除 uppercase，改為 Title Case -->
+                            <!-- 修正：移除 normal-case，改為 Title Case -->
                             <h2 class="text-xl font-bold text-white tracking-wide font-luxury">Application Pending</h2>
                             <p class="text-sm text-slate-300 leading-relaxed px-4">
                                 SecretRoom 為保障所有帳號的絕對隱私防護，一律採高規格人工手動審核。請您稍後重新整理確認狀態。
@@ -1369,7 +1691,7 @@
                         </div>
   
                         <div class="bg-slate-900/40 border border-amber-500/10 p-4 rounded-2xl text-left space-y-2">
-                            <!-- 修正：移除 uppercase -->
+                            <!-- 修正：移除 normal-case -->
                             <span class="text-xs font-bold text-amber-500 tracking-wider block font-luxury">註冊概要資訊</span>
                             <p class="text-sm text-slate-300"><span class="text-amber-500/70 font-medium">您的帳號:</span> @${window.state.applicationId}</p>
                             <p class="text-sm text-slate-300"><span class="text-amber-500/70 font-medium">您的名稱:</span> ${window.state.userData.nickname}</p>
@@ -1408,13 +1730,13 @@
                             <i class="fa-solid fa-triangle-exclamation"></i>
                         </div>
                         <div class="space-y-2">
-                            <!-- 修正：移除 uppercase，改為 Title Case -->
+                            <!-- 修正：移除 normal-case，改為 Title Case -->
                             <h2 class="text-xl font-bold text-white tracking-wide font-luxury">Application Rejected</h2>
                             <p class="text-sm text-slate-300 leading-relaxed px-4 font-light">很遺憾，您的加入申請未能通過管理審查團隊的查核。</p>
                         </div>
   
                         <div class="bg-red-550/5 border border-red-500/15 p-4 rounded-2xl text-left space-y-2">
-                            <!-- 修正：移除 uppercase -->
+                            <!-- 修正：移除 normal-case -->
                             <span class="text-xs font-bold text-red-400 tracking-wider block">退件具體理由</span>
                             <p class="text-sm text-slate-300 leading-relaxed font-light">${reason}</p>
                         </div>
@@ -1486,7 +1808,7 @@
                             <i class="fa-brands fa-telegram"></i>
                         </div>
                         <div class="space-y-2.5">
-                            <!-- 修正：移除 uppercase，改為 Title Case -->
+                            <!-- 修正：移除 normal-case，改為 Title Case -->
                             <h2 class="text-xl font-bold text-white font-luxury">Telegram Binding</h2>
                             <p class="text-sm text-slate-300 leading-relaxed px-4">
                                 為開啟高級警報防護與即時密語傳輸，請在下方透過 Telegram 官方進行安全登入綁定。
@@ -1497,7 +1819,7 @@
                             <p class="text-xs text-slate-400 leading-relaxed text-center">請點擊下方按鈕以安全登入並關聯您的 Telegram 帳號：</p>
                             <div id="telegram-widget-anchor" class="min-h-[44px] flex items-center justify-center transition duration-300">
                                 <span class="text-xs text-amber-500/50 flex items-center gap-1.5 animate-pulse">
-                                    <i class="fa-solid fa-indigo-650 animate-spin"></i> 正在加載官方驗證入口...
+                                    <i class="fa-solid fa-circle-notch text-amber-500 animate-spin"></i> 正在加載官方驗證入口...
                                 </span>
                             </div>
                         </div>
@@ -1598,7 +1920,7 @@
                                 <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-10 h-10 rounded-full border border-amber-500/30 object-cover animate-gentle-logo shadow-[0_0_15px_rgba(223,183,108,0.15)]">
                                 <div>
                                     <h2 class="text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-amber-400 tracking-widest italic font-luxury">SecretRoom</h2>
-                                    <!-- 修正：移除 uppercase -->
+                                    <!-- 修正：移除 normal-case -->
                                     <span class="text-[10px] text-amber-500/60 font-bold tracking-[0.2em] block font-luxury">Private Club</span>
                                 </div>
                             </div>
@@ -1640,7 +1962,7 @@
                                         <div class="w-[2px] h-1 bg-amber-500 rounded-full bgm-bar"></div>
                                         <div class="w-[2px] h-2 bg-amber-500 rounded-full bgm-bar"></div>
                                     </div>
-                                    <!-- 修正：移除 uppercase -->
+                                    <!-- 修正：移除 normal-case -->
                                     <span class="text-[10px] font-bold text-amber-500/80 tracking-wider font-luxury select-none" id="sidebar-bgm-text">
                                         Bgm Audio
                                     </span>
@@ -1702,7 +2024,7 @@
                         
                         <div class="bg-slate-900/40 border border-amber-500/15 p-5 rounded-3xl space-y-3.5 relative overflow-hidden">
                             <div class="absolute -top-6 -right-6 w-16 h-16 bg-amber-500/5 rounded-full blur-xl"></div>
-                            <!-- 修正：移除 uppercase -->
+                            <!-- 修正：移除 normal-case -->
                             <h3 class="text-xs font-bold text-amber-500 flex items-center gap-2 tracking-wider font-luxury">
                                 <i class="fa-solid fa-compass text-xs"></i> 熱門主題探索
                             </h3>
@@ -1716,7 +2038,7 @@
                         </div>
   
                         <div class="bg-slate-900/40 border border-amber-500/15 p-5 rounded-3xl space-y-4">
-                            <!-- 修正：移除 uppercase -->
+                            <!-- 修正：移除 normal-case -->
                             <h3 class="text-xs font-bold text-amber-500 flex items-center gap-2 tracking-wider font-luxury">
                                 <i class="fa-solid fa-user-group text-xs"></i> 線上活躍帳號
                             </h3>
@@ -1865,7 +2187,7 @@
                 <div class="relative w-full z-20">
                     <div class="flex items-center bg-slate-900/60 border border-amber-500/20 rounded-2xl px-4 py-3 shadow-lg backdrop-blur-md">
                         <i class="fa-solid fa-magnifying-glass text-amber-500/70 text-sm mr-3"></i>
-                        <input type="text" id="feed-search-input" class="w-full bg-transparent text-sm text-white focus:outline-none" placeholder="搜尋動態、標籤、暱稱或帳號ID" value="${window.state.searchTerm}">
+                        <input type="text" id="feed-search-input" class="w-full bg-transparent text-sm text-white focus:outline-none" placeholder="搜尋動態、標籤、暱稱或帳號 Id" value="${window.state.searchTerm}">
                     </div>
                     
                     <div id="search-results-overlay" class="absolute left-0 right-0 top-14 bg-slate-900/95 border border-amber-500/20 rounded-3xl p-4 shadow-2xl hidden flex flex-col gap-3 max-h-[450px] overflow-hidden z-50 backdrop-blur-xl crystal-border">
@@ -1873,7 +2195,7 @@
                 </div>
   
                 <div class="flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-1">
-                    <!-- 修正：套用 brushed-gold、hover-breath 與 click-press，移除 uppercase -->
+                    <!-- 修正：套用 brushed-gold、hover-breath 與 click-press，移除 normal-case -->
                     <button onclick="setGlobalFilter('recommended')" id="filter-btn-recommended" class="shrink-0 text-[11px] sm:text-xs font-bold tracking-widest px-4 py-2.5 sm:px-6 sm:py-3.5 rounded-full border transition-all duration-300 hover-breath click-press ${window.state.currentFilter === 'recommended' ? 'brushed-gold crystal-border' : 'bg-slate-950/40 text-slate-400 border-amber-500/10'}">
                         <i class="fa-solid fa-wand-magic-sparkles mr-1"></i>智慧推薦
                     </button>
@@ -1886,7 +2208,7 @@
                 </div>
   
                 <div id="ranking-sub-tabs" class="${window.state.currentFilter === 'elite-ranking' ? '' : 'hidden'} flex items-center gap-2 overflow-x-auto scrollbar-hide py-2 border-t border-b border-amber-500/10">
-                    <!-- 修正：移除 uppercase -->
+                    <!-- 修正：移除 normal-case -->
                     <span class="shrink-0 text-xs font-bold text-amber-500 tracking-widest mr-1">排名分類:</span>
                     ${window.state.kinksOptions.map((k) => `
                         <button onclick="setRankingTag('${k}')" class="sub-rank-btn shrink-0 text-xs font-bold px-4 py-2 rounded-full border transition duration-300 hover-breath click-press ${window.state.currentRankTag === k ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' : 'bg-slate-950/30 text-slate-500 border-amber-500/10'}" data-tag="${k}">
@@ -2027,7 +2349,7 @@
   
                     searchOverlay.innerHTML = `
                         <div class="flex border-b border-amber-500/10 pb-2">
-                            <!-- 修正：移除 uppercase -->
+                            <!-- 修正：移除 normal-case -->
                             <button onclick="setSearchTab('posts')" class="flex-1 text-center py-2 text-sm font-bold tracking-wider transition click-press ${window.state.searchTab === 'posts' ? 'text-amber-500 border-b-2 border-amber-500' : 'text-slate-500 hover:text-slate-300'}">
                                 動態貼文 (${matchedPosts.length})
                             </button>
@@ -2189,10 +2511,10 @@
                     const currentBg = colors[rank] || 'from-slate-900 via-slate-950 to-black text-slate-500 border border-slate-800';
                     
                     rankingCrownHtml = `
-                        <!-- 修正：移除 uppercase -->
+                        <!-- 修正：移除 normal-case -->
                         <div class="absolute -top-2.5 -left-2.5 bg-gradient-to-r ${currentBg} text-[10px] font-extrabold px-3 py-1.5 rounded-full shadow-lg z-10 flex items-center gap-1.5 tracking-wider font-luxury crystal-border">
                             <span>${badgeText}</span>
-                            <span class="text-[8px] font-light opacity-75 font-sans lowercase">Score: ${post.rankScore ? post.rankScore.toFixed(1) : 0}</span>
+                            <span class="text-[8px] font-light opacity-75 font-sans">Score: ${post.rankScore ? post.rankScore.toFixed(1) : 0}</span>
                         </div>
                     `;
                 }
@@ -2205,12 +2527,12 @@
   
                 let imageHtml = '';
                 if (post.image) {
-                    const isNSFW = post.isSensitive;
-                    const isUnlocked = window.state.unlockedNSFWPosts[post.id] || false;
+                    const isNsfw = post.isSensitive;
+                    const isUnlocked = window.state.unlockedNsfwPosts[post.id] || false;
                     
-                    if (isNSFW && !isUnlocked) {
+                    if (isNsfw && !isUnlocked) {
                         imageHtml = `
-                            <div class="relative w-full rounded-2xl overflow-hidden border border-[#1a140f] bg-slate-950 h-52 sm:h-56 group cursor-pointer click-press" onclick="unlockNSFW('${post.id}')">
+                            <div class="relative w-full rounded-2xl overflow-hidden border border-[#1a140f] bg-slate-950 h-52 sm:h-56 group cursor-pointer click-press" onclick="unlockNsfw('${post.id}')">
                                 <img src="${post.image}" class="w-full h-full object-cover filter blur-3xl opacity-35 pointer-events-none" draggable="false" oncontextmenu="return false;">
                                 <div class="absolute inset-0 bg-[#0c0a08]/90 backdrop-blur-md flex flex-col items-center justify-center text-center p-4">
                                     <div class="w-10 h-10 sm:w-11 sm:h-11 bg-rose-500/15 rounded-full flex items-center justify-center text-rose-400 text-base sm:text-lg mb-2 shadow-lg shadow-rose-950/20 border border-rose-500/20">
@@ -2226,7 +2548,7 @@
                             <div class="relative w-full rounded-2xl overflow-hidden border border-[#1a140f] bg-slate-950 max-h-[420px] group select-none flex justify-center items-center">
                                 <img src="${post.image}" class="w-full h-auto object-contain max-h-[400px] pointer-events-none rounded-xl" draggable="false" oncontextmenu="return false;">
                                 <div class="absolute inset-0 pointer-events-none select-none flex flex-col items-center justify-center opacity-[0.03]">
-                                    <!-- 修正：移除 uppercase -->
+                                    <!-- 修正：移除 normal-case -->
                                     <span class="text-white text-3xl font-extrabold rotate-12 tracking-widest font-luxury">SecretRoom Proof</span>
                                     <span class="text-white text-3xl font-extrabold rotate-12 tracking-widest font-luxury">SecretRoom Proof</span>
                                 </div>
@@ -2420,7 +2742,7 @@
                 const myVisitors = window.state.visitors || [];
                 visitorsHtml = `
                     <div class="bg-slate-900/60 border border-amber-500/15 p-5 rounded-3xl space-y-4 animate-fade-in shadow-xl shadow-black/40">
-                        <!-- 修正：移除 uppercase -->
+                        <!-- 修正：移除 normal-case -->
                         <span class="text-xs font-bold text-slate-300 tracking-widest block"><i class="fa-regular fa-eye text-amber-500 mr-1"></i> 最近訪客足跡：</span>
                         <div class="flex items-center gap-4 overflow-x-auto scrollbar-hide py-1">
                             ${myVisitors.length === 0 ? `
@@ -2791,8 +3113,8 @@
             }
         }
   
-        window.unlockNSFW = function(postId) {
-            window.state.unlockedNSFWPosts[postId] = true;
+        window.unlockNsfw = function(postId) {
+            window.state.unlockedNsfwPosts[postId] = true;
             updateSearchAndFeedUI();
             showToast('已完成端對端解密，解鎖私密圖片觀看 🔞', 'success');
         };
@@ -2887,7 +3209,7 @@
                 <!-- 修正：套用 glass-panel 與 crystal-border -->
                 <div class="glass-panel border border-amber-500/20 rounded-3xl p-6 w-[92vw] max-w-md shadow-2xl relative overflow-y-auto max-h-[90vh] crystal-border">
                     <button id="close-share" class="absolute top-4 right-4 text-slate-500 hover:text-white text-2xl transition hover-breath click-press">&times;</button>
-                    <!-- 修正：移除 uppercase -->
+                    <!-- 修正：移除 normal-case -->
                     <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2 font-luxury">
                         <i class="fa-solid fa-feather-pointed text-amber-500"></i> Publish Secret
                     </h3>
@@ -2895,13 +3217,13 @@
   
                     <div class="space-y-4">
                         <div>
-                            <!-- 修正：移除 uppercase -->
+                            <!-- 修正：移除 normal-case -->
                             <label class="block text-xs font-bold text-slate-555 mb-1.5 tracking-wider">動態內容描述 (選填)</label>
                             <textarea id="share-text" rows="3" class="w-full bg-slate-900 border border-amber-500/10 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 resize-none transition" placeholder="分享當下的健美重訓成果 or 私密心情..."></textarea>
                         </div>
   
                         <div>
-                            <!-- 修正：移除 uppercase -->
+                            <!-- 修正：移除 normal-case -->
                             <label class="block text-xs font-bold text-slate-555 mb-1.5 tracking-wider">加載動態照片 (選填)</label>
                             <div class="border border-amber-500/10 rounded-2xl p-4 flex flex-col items-center justify-center bg-slate-900/10 text-center">
                                 <div id="share-img-trigger" class="relative w-full h-40 rounded-xl border border-dashed border-amber-500/30 flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-slate-950 transition hover-breath click-press">
@@ -2920,7 +3242,7 @@
                             <label class="flex items-center gap-3 cursor-pointer hover-breath">
                                 <input type="checkbox" id="share-nsfw-cb" class="rounded border-amber-500/30 bg-slate-950 text-rose-650 focus:ring-rose-550 w-4 h-4">
                                 <div>
-                                    <!-- 修正：移除 uppercase -->
+                                    <!-- 修正：移除 normal-case -->
                                     <span class="text-xs text-rose-455 font-bold block">標記為私密尺度照片 (Nsfw) 🔞</span>
                                     <p class="text-[10px] text-slate-555 mt-0.5 leading-relaxed">勾選後，大廳相片將預設以高精度毛玻璃覆蓋，點擊才會手動解密觀看。</p>
                                 </div>
@@ -2928,7 +3250,7 @@
                         </div>
   
                         <div>
-                            <!-- 修正：移除 uppercase -->
+                            <!-- 修正：移除 normal-case -->
                             <label class="block text-xs font-bold text-slate-555 mb-1.5 tracking-wider">關聯主題標籤 (至少勾選一項)</label>
                             <div class="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto bg-slate-950/60 p-3 border border-amber-500/10 rounded-2xl" id="share-kinks-container">
                                 ${window.state.kinksOptions.map(k => `
@@ -2979,7 +3301,7 @@
   
             document.getElementById('btn-submit-post').onclick = async () => {
                 const text = document.getElementById('share-text').value.trim();
-                const isNSFW = document.getElementById('share-nsfw-cb').checked;
+                const isNsfw = document.getElementById('share-nsfw-cb').checked;
   
                 const selectedKinks = [];
                 document.querySelectorAll('input[name="share-kink"]:checked').forEach(cb => {
@@ -3006,7 +3328,7 @@
                         authorAvatar: window.state.userData.avatar || '',
                         text: text,
                         image: bakedBase64,
-                        isSensitive: isNSFW,
+                        isSensitive: isNsfw,
                         kinks: selectedKinks,
                         likes: {},
                         likeCount: 0,
@@ -3037,7 +3359,7 @@
                 <!-- 修正：套用 glass-panel 與 crystal-border -->
                 <div class="glass-panel border border-amber-500/20 rounded-3xl p-6 w-[92vw] max-w-md shadow-2xl relative overflow-y-auto max-h-[90vh] crystal-border">
                     <button id="close-edit" class="absolute top-4 right-4 text-slate-550 hover:text-white text-2xl transition hover-breath click-press">&times;</button>
-                    <!-- 修正：移除 uppercase -->
+                    <!-- 修正：移除 normal-case -->
                     <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2 font-luxury">
                         <i class="fa-solid fa-user-gear text-amber-500"></i> Edit Profile
                     </h3>
@@ -3047,7 +3369,7 @@
                         
                         <div class="bg-slate-900/40 p-4 border border-amber-500/10 rounded-2xl flex items-center justify-between">
                             <div class="text-left max-w-[210px]">
-                                <!-- 修正：移除 uppercase -->
+                                <!-- 修正：移除 normal-case -->
                                 <span class="text-xs font-bold text-slate-300 tracking-wider block">變更個人大頭照</span>
                                 <span class="text-[10px] text-amber-500/80 font-semibold block mt-1 leading-normal"><i class="fa-solid fa-camera"></i> 變更大頭照需要管理團隊人工二次核定後才予以替換啟用。</span>
                             </div>
@@ -3058,26 +3380,26 @@
                         </div>
   
                         <div>
-                            <!-- 修正：移除 uppercase -->
+                            <!-- 修正：移除 normal-case -->
                             <label class="block text-xs font-bold text-slate-400 mb-1.5 tracking-wider">個人暱稱</label>
                             <input type="text" id="edit-nickname" value="${user.nickname || ''}" class="w-full bg-slate-900 border border-amber-500/10 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                         </div>
   
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <!-- 修正：移除 uppercase -->
+                                <!-- 修正：移除 normal-case -->
                                 <label class="block text-xs font-bold text-slate-400 mb-1.5 tracking-wider">身高 (cm)</label>
                                 <input type="number" id="edit-height" value="${user.height || ''}" class="w-full bg-slate-900 border border-amber-500/10 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                             </div>
                             <div>
-                                <!-- 修正：移除 uppercase -->
+                                <!-- 修正：移除 normal-case -->
                                 <label class="block text-xs font-bold text-slate-400 mb-1.5 tracking-wider">體重 (kg)</label>
                                 <input type="number" id="edit-weight" value="${user.weight || ''}" class="w-full bg-slate-900 border border-amber-500/10 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                             </div>
                         </div>
   
                         <div class="p-4 bg-slate-900/40 border border-amber-500/10 rounded-2xl">
-                            <!-- 修正：移除 uppercase -->
+                            <!-- 修正：移除 normal-case -->
                             <span class="text-xs font-bold text-amber-500 tracking-widest block mb-2"><i class="fa-solid fa-lock mr-1"></i> 身體數據密碼規格</span>
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
@@ -3092,7 +3414,7 @@
                         </div>
   
                         <div>
-                            <!-- 修正：移除 uppercase -->
+                            <!-- 修正：移除 normal-case -->
                             <label class="block text-xs font-bold text-slate-400 mb-1.5 tracking-wider">感興趣的主題與偏好標籤</label>
                             <div class="grid grid-cols-2 gap-2 bg-slate-950/40 p-3.5 border border-amber-500/15 rounded-2xl">
                                 ${window.state.kinksOptions.map(k => `
@@ -3125,7 +3447,7 @@
                 const file = e.target.files[0];
                 if (file) {
                     if (file.size > 10 * 1024 * 1024) {
-                        showToast('新大頭照檔案大小超過 10MB 限制！', 'error');
+                        showToast('新大頭照檔案大小超過 10 Mb 限制！', 'error');
                         return;
                     }
                     showLoading();
@@ -3207,7 +3529,7 @@
                 <!-- 修正：套用 glass-panel 與 crystal-border -->
                 <div class="glass-panel border border-amber-500/20 rounded-3xl p-6 w-[92vw] max-w-sm shadow-2xl relative crystal-border">
                     <button id="close-spec" class="absolute top-4 right-4 text-slate-550 hover:text-white text-2xl transition hover-breath click-press">&times;</button>
-                    <!-- 修正：移除 uppercase -->
+                    <!-- 修正：移除 normal-case -->
                     <h3 class="text-sm font-bold text-white mb-1.5 flex items-center gap-2 font-luxury">
                         <i class="fa-solid fa-medal text-amber-500"></i> Gold Spec Elite
                     </h3>
