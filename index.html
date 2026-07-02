@@ -1086,6 +1086,10 @@
             fileInput.onchange = async (e) => {
                 const file = e.target.files[0];
                 if (file) {
+                    if (file.size > 10 * 1024 * 1024) {
+                        showToast('大頭照檔案大小超過 10MB 限制！', 'error');
+                        return;
+                    }
                     showLoading();
                     try {
                         // 強制縮小頭像至 240px (檔案通常在 10-25KB 內)，兼顧隱私與載入速度，並解決 Firebase 1MB 限制問題
@@ -2906,7 +2910,7 @@
                         <div class="bg-slate-900/40 p-4 border border-amber-500/10 rounded-2xl flex items-center justify-between">
                             <div class="text-left max-w-[210px]">
                                 <span class="text-xs font-bold text-slate-300 uppercase tracking-wider block">變更個人大頭照</span>
-                                <span class="text-[10px] text-amber-500/80 font-semibold block mt-1 leading-normal"><i class="fa-solid fa-camera"></i> 變更大頭照需要管理團隊人工二次核定後才予以替換啟用。</span>
+                                <span class="text-[10px] text-amber-500/80 font-semibold block mt-1 leading-normal"><i class="fa-solid fa-camera"></i> 僅限 Jpeg/Png，支援最大 10MB。變更後需管理團隊人工二次核定才予以替換啟用。</span>
                             </div>
                             <div class="relative w-14 h-14 rounded-full border border-amber-500/30 cursor-pointer overflow-hidden shadow-md" id="edit-avatar-trigger">
                                 <img src="${user.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" id="edit-avatar-preview" class="w-full h-full object-cover">
@@ -2975,6 +2979,10 @@
             fileInput.onchange = async (e) => {
                 const file = e.target.files[0];
                 if (file) {
+                    if (file.size > 10 * 1024 * 1024) {
+                        showToast('新大頭照檔案大小超過 10MB 限制！', 'error');
+                        return;
+                    }
                     showLoading();
                     try {
                         pendingBase64 = await processAndCompressImageFile(file, 240, 0.75);
