@@ -635,6 +635,40 @@
             }
         }
 
+
+        /* SecretRomm 統一滿版浮水印：向右旋轉 45 度 */
+        .sr-watermark-grid {
+            position: absolute;
+            inset: -34%;
+            display: grid;
+            grid-template-columns: repeat(5, minmax(180px, 1fr));
+            gap: 58px 82px;
+            align-content: center;
+            justify-items: center;
+            pointer-events: none;
+            user-select: none;
+            overflow: hidden;
+            z-index: 8;
+        }
+        .sr-watermark-grid span {
+            display: inline-block;
+            transform: rotate(45deg);
+            white-space: nowrap;
+            color: rgba(255, 255, 255, var(--wm-opacity, 0.13));
+            font-family: 'Cinzel', 'Inter', 'Noto Serif TC', serif;
+            font-weight: 900;
+            font-size: clamp(15px, 2.8vw, 30px);
+            letter-spacing: 0.08em;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.38);
+        }
+        .sr-watermark-grid.sr-watermark-compact {
+            grid-template-columns: repeat(4, minmax(150px, 1fr));
+            gap: 44px 64px;
+        }
+        .spec-vault-card img {
+            -webkit-user-drag: none;
+        }
+
     </style>
 </head>
 <body class="min-h-screen w-full flex flex-col p-0 m-0 overflow-hidden select-none club-groove-bg">
@@ -744,13 +778,28 @@
                         ctx.drawImage(img, 0, 0, w, h);
 
                         if (addWatermarkText) {
+                            const watermarkText = String(addWatermarkText || '').trim() || getWatermarkText();
+                            const fontSize = Math.max(18, Math.round(Math.min(w, h) * 0.075));
+                            const stepX = Math.max(220, Math.round(fontSize * 9.5));
+                            const stepY = Math.max(150, Math.round(fontSize * 6.5));
+
                             ctx.save();
-                            ctx.font = "bold 26px Cinzel";
-                            ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
                             ctx.translate(w / 2, h / 2);
-                            ctx.rotate(-Math.PI / 6);
-                            ctx.fillText(addWatermarkText, -160, -50);
-                            ctx.fillText(addWatermarkText, -160, 50);
+                            ctx.rotate(Math.PI / 4); // 向右旋轉 45 度
+                            ctx.font = `800 ${fontSize}px Cinzel, Inter, sans-serif`;
+                            ctx.fillStyle = "rgba(255, 255, 255, 0.115)";
+                            ctx.textAlign = "center";
+                            ctx.textBaseline = "middle";
+                            ctx.shadowColor = "rgba(0, 0, 0, 0.28)";
+                            ctx.shadowBlur = Math.max(2, Math.round(fontSize * 0.12));
+
+                            const spanX = Math.ceil((w + h) * 1.15);
+                            const spanY = Math.ceil((w + h) * 1.15);
+                            for (let yPos = -spanY; yPos <= spanY; yPos += stepY) {
+                                for (let xPos = -spanX; xPos <= spanX; xPos += stepX) {
+                                    ctx.fillText(watermarkText, xPos, yPos);
+                                }
+                            }
                             ctx.restore();
                         }
 
@@ -809,7 +858,8 @@
             unsubscribeVisitorsListener: null,
             visiblePostsCount: 5,
             openComments: {}, 
-            unlockedNsfwPosts: {}, 
+            unlockedNsfwPosts: {},
+            unlockedSpecVaultImages: {}, 
             visitors: [], 
             visitedProfilesInSession: {}, 
             viewedPostsInSession: {}, 
@@ -830,6 +880,39 @@
         };
   
         const appContainer = document.getElementById('app');
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function escapeJsString(value) {
+            return String(value ?? '')
+                .replace(/\\/g, '\\\\')
+                .replace(/'/g, "\\'")
+                .replace(/\n/g, '\\n')
+                .replace(/\r/g, '\\r');
+        }
+
+        function getWatermarkText(userId = window.state.applicationId) {
+            const account = String(userId || 'member').replace(/^@+/, '').trim() || 'member';
+            return `SecretRomm @${account}`;
+        }
+
+        function renderWatermarkOverlay(userId = window.state.applicationId, opacity = 0.13, compact = false) {
+            const safeText = escapeHtml(getWatermarkText(userId));
+            const items = Array.from({ length: compact ? 28 : 48 }, () => `<span>${safeText}</span>`).join('');
+            return `<div class="sr-watermark-grid ${compact ? 'sr-watermark-compact' : ''}" style="--wm-opacity:${opacity};">${items}</div>`;
+        }
+
+        function canAccessSpecVault() {
+            const u = window.state.userData || {};
+            return u.role === 'admin' || u.isAdmin === true || u.canReviewSpec === true || u.specViewerApproved === true;
+        }
 
         class LuxuryBgmPlayer {
             constructor() {
@@ -1932,6 +2015,10 @@
                                 <button id="aside-tab-ranking" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 text-sm transition-all duration-300 font-bold hover-breath click-press ${window.state.currentTab === 'feed' && window.state.currentFilter === 'elite-ranking' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500 shadow-[0_0_20px_rgba(223,183,108,0.1)]' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
                                     <i class="fa-solid fa-trophy text-amber-500/80"></i> 綜合排行
                                 </button>
+                                <button id="aside-tab-spec-vault" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center justify-between gap-3 text-sm transition-all duration-300 font-bold hover-breath click-press ${window.state.currentTab === 'spec-vault' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500 shadow-[0_0_20px_rgba(223,183,108,0.1)]' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
+                                    <span class="flex items-center gap-3"><i class="fa-solid fa-medal text-amber-500/80"></i> S+ . S . G 部</span>
+                                    <span class="text-[9px] px-2 py-1 rounded-full brushed-gold crystal-border shrink-0">黃金Spec限定</span>
+                                </button>
                             </nav>
   
                             <!-- 修正：套用 brushed-gold、hover-breath 與 click-press -->
@@ -2071,6 +2158,7 @@
   
             bindTabEvents('aside-tab-feed', 'feed', 'recommended');
             bindTabEvents('aside-tab-ranking', 'feed', 'elite-ranking');
+            bindTabEvents('aside-tab-spec-vault', 'spec-vault');
             bindTabEvents('mobile-tab-feed', 'feed', 'recommended');
             bindTabEvents('mobile-tab-ranking', 'feed', 'elite-ranking');
             bindTabEvents('mobile-tab-profile', 'profile');
@@ -2116,12 +2204,149 @@
                 renderFeedTab(tabContentContainer);
             } else if (window.state.currentTab === 'profile') {
                 renderProfileTab(tabContentContainer, window.state.applicationId);
+            } else if (window.state.currentTab === 'spec-vault') {
+                renderSpecVaultTab(tabContentContainer);
             } else if (window.state.currentTab === 'other-profile') {
                 renderProfileTab(tabContentContainer, window.state.viewTargetUserId);
             }
   
             startRealtimeSnapshotSync();
         }
+  
+        function renderSpecVaultTab(container) {
+            const isAuthorized = canAccessSpecVault();
+            const selfUser = window.state.applicationId ? { id: window.state.applicationId, ...window.state.userData } : null;
+            const merged = [];
+            const seen = new Set();
+            [selfUser, ...window.state.activeUsers].forEach((user) => {
+                if (!user || !user.id || seen.has(user.id)) return;
+                seen.add(user.id);
+                merged.push(user);
+            });
+
+            const specApplicants = merged
+                .filter(user => user.specImage)
+                .sort((a, b) => {
+                    const statusWeight = { pending: 0, approved: 1, active: 1, rejected: 2 };
+                    return (statusWeight[a.specEliteStatus] ?? 9) - (statusWeight[b.specEliteStatus] ?? 9);
+                });
+
+            if (!isAuthorized) {
+                container.innerHTML = `
+                    <div class="glass-panel crystal-border rounded-3xl p-6 md:p-8 space-y-6 text-center">
+                        <div class="mx-auto w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500 text-2xl">
+                            <i class="fa-solid fa-user-shield"></i>
+                        </div>
+                        <div>
+                            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full brushed-gold crystal-border text-[10px] font-black tracking-wider mb-4">黃金Spec限定</div>
+                            <h2 class="text-2xl font-black text-white font-luxury tracking-widest">S+ . S . G 部</h2>
+                            <p class="text-sm text-slate-300 mt-3 leading-relaxed">
+                                此區僅供已授權的審核管理者查看黃金 Spec 審核照片。未授權會員無法瀏覽其他會員的私密審核圖像。
+                            </p>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/25 text-left">
+                            <h3 class="text-sm font-bold text-rose-300 flex items-center gap-2"><i class="fa-solid fa-eye-slash"></i> NSFW Privacy Gate</h3>
+                            <p class="text-xs text-slate-400 mt-2 leading-relaxed">為避免私密照片外流，此功能預設封鎖。若你是審核人員，請在 Firestore 將你的帳號設為 <span class="text-amber-300 font-mono">role: admin</span>、<span class="text-amber-300 font-mono">isAdmin: true</span>、<span class="text-amber-300 font-mono">canReviewSpec: true</span> 或 <span class="text-amber-300 font-mono">specViewerApproved: true</span>。</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="space-y-5">
+                    <div class="glass-panel crystal-border rounded-3xl p-5 md:p-6 relative overflow-hidden">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 relative z-10">
+                            <div>
+                                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full brushed-gold crystal-border text-[10px] font-black tracking-wider mb-3">黃金Spec限定</div>
+                                <h2 class="text-2xl md:text-3xl font-black text-white font-luxury tracking-widest">S+ . S . G 部</h2>
+                                <p class="text-sm text-slate-300 mt-2 leading-relaxed">集中檢視俱樂部成員申請黃金 Spec 審核時上傳的私密照片。所有照片均覆蓋 NSFW 提醒與滿版 SecretRomm 浮水印。</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-3xl font-black text-amber-300 font-luxury">${specApplicants.length}</div>
+                                <div class="text-[10px] text-slate-400 tracking-widest">Pending / Archived Photos</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 rounded-3xl bg-rose-500/10 border border-rose-500/25 crystal-border">
+                        <h3 class="text-sm font-black text-rose-300 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> NSFW 審核提醒</h3>
+                        <p class="text-xs text-slate-300 mt-2 leading-relaxed">本區包含會員私密審核照片，僅限審核必要用途。請勿截圖、轉傳、下載或外流。</p>
+                    </div>
+
+                    <div id="spec-vault-list" class="grid grid-cols-1 gap-5">
+                        ${specApplicants.length === 0 ? `
+                            <div class="glass-panel crystal-border rounded-3xl p-8 text-center text-slate-400">
+                                <i class="fa-solid fa-folder-open text-2xl text-amber-500/70 mb-3"></i>
+                                <div class="font-bold text-sm">目前沒有可顯示的黃金 Spec 審核照片</div>
+                                <div class="text-xs mt-1 text-slate-500">當會員送出審核照片後，會在此區出現。</div>
+                            </div>
+                        ` : specApplicants.map(user => renderSpecApplicantCard(user)).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderSpecApplicantCard(user) {
+            const safeUserId = escapeHtml(user.id);
+            const jsUserId = escapeJsString(user.id);
+            const safeNickname = escapeHtml(user.nickname || user.id || 'Unknown Member');
+            const status = escapeHtml(user.specEliteStatus || 'pending');
+            const isUnlocked = window.state.unlockedSpecVaultImages[user.id] || false;
+            const length = escapeHtml(user.length || '-');
+            const girth = escapeHtml(user.girth || '-');
+            const imgSrc = user.specImage || '';
+
+            const imageHtml = isUnlocked ? `
+                <div class="relative w-full rounded-2xl overflow-hidden border border-amber-500/20 bg-slate-950 flex items-center justify-center min-h-[260px] max-h-[620px] select-none">
+                    <img src="${imgSrc}" class="w-full h-auto max-h-[600px] object-contain pointer-events-none" draggable="false" oncontextmenu="return false;">
+                    ${renderWatermarkOverlay(user.id, 0.16)}
+                    <div class="absolute top-3 left-3 px-3 py-1.5 rounded-full bg-rose-950/80 border border-rose-400/30 text-rose-200 text-[10px] font-black tracking-widest backdrop-blur-md z-20">NSFW</div>
+                </div>
+            ` : `
+                <div class="relative w-full rounded-2xl overflow-hidden border border-rose-500/20 bg-slate-950 h-72 sm:h-96 group cursor-pointer click-press select-none" onclick="unlockSpecVaultImage('${jsUserId}')">
+                    <img src="${imgSrc}" class="w-full h-full object-cover filter blur-3xl opacity-35 pointer-events-none" draggable="false" oncontextmenu="return false;">
+                    ${renderWatermarkOverlay(user.id, 0.11, true)}
+                    <div class="absolute inset-0 bg-[#0c0a08]/88 backdrop-blur-md flex flex-col items-center justify-center text-center p-5 z-20">
+                        <div class="w-12 h-12 bg-rose-500/15 rounded-full flex items-center justify-center text-rose-300 text-xl mb-3 shadow-lg shadow-rose-950/20 border border-rose-500/25">
+                            <i class="fa-solid fa-eye-slash"></i>
+                        </div>
+                        <h5 class="text-sm font-black text-rose-300 tracking-widest">NSFW 黃金 Spec 審核照</h5>
+                        <p class="text-xs text-slate-400 mt-2 leading-relaxed">點擊後僅於本機臨時解鎖顯示，照片仍會保留 SecretRomm 滿版浮水印。</p>
+                    </div>
+                </div>
+            `;
+
+            return `
+                <article class="spec-vault-card glass-panel crystal-border rounded-3xl p-4 md:p-5 space-y-4 overflow-hidden">
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <img src="${user.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-10 h-10 rounded-full object-cover border border-amber-500/30 shrink-0">
+                            <div class="min-w-0">
+                                <h3 class="font-black text-white text-sm truncate">${safeNickname}</h3>
+                                <p class="text-[10px] text-slate-400 font-mono truncate">@${safeUserId}</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end gap-1 shrink-0">
+                            <span class="px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-[10px] font-black text-amber-300">${status}</span>
+                            <span class="text-[10px] text-slate-500">${length} cm / ${girth} cm</span>
+                        </div>
+                    </div>
+                    ${imageHtml}
+                </article>
+            `;
+        }
+
+        window.unlockSpecVaultImage = function(userId) {
+            if (!canAccessSpecVault()) {
+                showToast('此區僅限授權審核者查看。', 'error');
+                return;
+            }
+            window.state.unlockedSpecVaultImages[userId] = true;
+            const tabContentContainer = document.getElementById('dashboard-tab-content');
+            if (tabContentContainer) renderSpecVaultTab(tabContentContainer);
+        };
+
   
         function startRealtimeSnapshotSync() {
             if (!db || window.state.unsubscribeListener) return;
@@ -2144,6 +2369,10 @@
                 });
                 window.state.activeUsers = fetchedUsers;
                 renderActiveUsersAside();
+                if (window.state.currentTab === 'spec-vault') {
+                    const tabContentContainer = document.getElementById('dashboard-tab-content');
+                    if (tabContentContainer) renderSpecVaultTab(tabContentContainer);
+                }
             }, (err) => console.error("Users Snapshot error:", err));
         }
   
@@ -2534,7 +2763,8 @@
                         imageHtml = `
                             <div class="relative w-full rounded-2xl overflow-hidden border border-[#1a140f] bg-slate-950 h-52 sm:h-56 group cursor-pointer click-press" onclick="unlockNsfw('${post.id}')">
                                 <img src="${post.image}" class="w-full h-full object-cover filter blur-3xl opacity-35 pointer-events-none" draggable="false" oncontextmenu="return false;">
-                                <div class="absolute inset-0 bg-[#0c0a08]/90 backdrop-blur-md flex flex-col items-center justify-center text-center p-4">
+                                ${renderWatermarkOverlay(post.userId || window.state.applicationId, 0.10, true)}
+                                <div class="absolute inset-0 bg-[#0c0a08]/90 backdrop-blur-md flex flex-col items-center justify-center text-center p-4 z-20">
                                     <div class="w-10 h-10 sm:w-11 sm:h-11 bg-rose-500/15 rounded-full flex items-center justify-center text-rose-400 text-base sm:text-lg mb-2 shadow-lg shadow-rose-950/20 border border-rose-500/20">
                                         <i class="fa-solid fa-eye-slash"></i>
                                     </div>
@@ -2547,11 +2777,7 @@
                         imageHtml = `
                             <div class="relative w-full rounded-2xl overflow-hidden border border-[#1a140f] bg-slate-950 max-h-[420px] group select-none flex justify-center items-center">
                                 <img src="${post.image}" class="w-full h-auto object-contain max-h-[400px] pointer-events-none rounded-xl" draggable="false" oncontextmenu="return false;">
-                                <div class="absolute inset-0 pointer-events-none select-none flex flex-col items-center justify-center opacity-[0.03]">
-                                    <!-- 修正：移除 normal-case -->
-                                    <span class="text-white text-3xl font-extrabold rotate-12 tracking-widest font-luxury">SecretRoom Proof</span>
-                                    <span class="text-white text-3xl font-extrabold rotate-12 tracking-widest font-luxury">SecretRoom Proof</span>
-                                </div>
+                                ${renderWatermarkOverlay(post.userId || window.state.applicationId, 0.14)}
                             </div>
                         `;
                     }
@@ -3213,7 +3439,7 @@
                     <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2 font-luxury">
                         <i class="fa-solid fa-feather-pointed text-amber-500"></i> Publish Secret
                     </h3>
-                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">發布近期動態。發布相片時將自動生成浮水印。</p>
+                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">發布近期動態。發布相片時將自動生成「SecretRomm @使用者帳號」滿版 45 度浮水印。</p>
   
                     <div class="space-y-4">
                         <div>
@@ -3234,7 +3460,7 @@
                                     </div>
                                 </div>
                                 <input type="file" id="share-file" accept="image/*" class="hidden">
-                                <span class="text-[10px] text-slate-555 mt-2 block">相片加載後將自動生成浮水印。</span>
+                                <span class="text-[10px] text-slate-555 mt-2 block">相片加載後將自動生成「SecretRomm @使用者帳號」滿版 45 度浮水印。</span>
                             </div>
                         </div>
   
@@ -3285,7 +3511,7 @@
                 if (file) {
                     showLoading();
                     try {
-                        bakedBase64 = await processAndCompressImageFile(file, 800, 0.75, "SecretRoom Proof");
+                        bakedBase64 = await processAndCompressImageFile(file, 800, 0.75, getWatermarkText());
                         previewImg.src = bakedBase64;
                         previewImg.classList.remove('hidden');
                         placeholder.classList.add('hidden');
@@ -3533,7 +3759,7 @@
                     <h3 class="text-sm font-bold text-white mb-1.5 flex items-center gap-2 font-luxury">
                         <i class="fa-solid fa-medal text-amber-500"></i> Gold Spec Elite
                     </h3>
-                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">請上傳帶有清楚尺規參考物（如捲尺、直尺）的實物測量證明照片，管理團隊將營演查驗核准。</p>
+                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">請上傳帶有清楚尺規參考物（如捲尺、直尺）的實物測量證明照片。系統會自動覆蓋「SecretRomm @使用者帳號」滿版 45 度浮水印，照片僅供授權審核者查驗。</p>
                     <div class="space-y-4">
                         <div class="border border-amber-500/10 rounded-2xl p-4 flex flex-col items-center justify-center bg-slate-900/20 text-center">
                             <div id="spec-img-trigger" class="relative w-full h-40 rounded-xl border border-dashed border-amber-500/30 flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-slate-950 transition hover-breath click-press">
@@ -3568,7 +3794,7 @@
                 if (file) {
                     showLoading();
                     try {
-                        specBase64 = await processAndCompressImageFile(file, 800, 0.75);
+                        specBase64 = await processAndCompressImageFile(file, 800, 0.75, getWatermarkText());
                         previewImg.src = specBase64;
                         previewImg.classList.remove('hidden');
                         placeholder.classList.add('hidden');
@@ -3759,4 +3985,3 @@
     </script>
 </body>
 </html>
-<!-- redeploy 2026-07-03 -->
