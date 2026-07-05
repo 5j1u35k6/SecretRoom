@@ -1038,6 +1038,7 @@
             posts: [], 
             activeUsers: [], 
             notifications: [],
+            notificationInboxTab: 'unread',
             searchTerm: '',
             searchTimeout: null,
             unsubscribeNotificationsListener: null
@@ -1159,28 +1160,62 @@
             } catch (_) {}
         }
 
+        function parseNotificationTimeValue(value) {
+            if (value && value.seconds) return value.seconds * 1000;
+            if (value && typeof value.toDate === 'function') {
+                const d = value.toDate();
+                return d && !Number.isNaN(d.getTime()) ? d.getTime() : 0;
+            }
+            if (typeof value === 'number') return value;
+            if (typeof value === 'string') {
+                const t = new Date(value).getTime();
+                return Number.isNaN(t) ? 0 : t;
+            }
+            return 0;
+        }
+
+        function getStableLocalNotificationTime(id, fallbackValue) {
+            const key = 'sr_notifications_fixed_times';
+            const fallback = parseNotificationTimeValue(fallbackValue) || Date.now();
+            try {
+                const raw = localStorage.getItem(key);
+                const map = raw ? JSON.parse(raw) : {};
+                if (!map[id]) {
+                    map[id] = fallback;
+                    localStorage.setItem(key, JSON.stringify(map));
+                }
+                return map[id];
+            } catch (_) {
+                return fallback;
+            }
+        }
+
+        function notificationTimeValue(item) {
+            return parseNotificationTimeValue(item.createdAt || item.sentAt || item.createdAtMs || item.timestamp || item.updatedAt || item.reviewedAt);
+        }
+
         function formatNotificationTime(value) {
             try {
-                let date = null;
-                if (value && value.seconds) date = new Date(value.seconds * 1000);
-                else if (typeof value === 'number') date = new Date(value);
-                else if (typeof value === 'string') date = new Date(value);
-                if (!date || Number.isNaN(date.getTime())) return '剛剛';
-                return date.toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+                const timeValue = parseNotificationTimeValue(value);
+                if (!timeValue) return '—';
+                const date = new Date(timeValue);
+                return date.toLocaleString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false });
             } catch (_) {
-                return '剛剛';
+                return '—';
             }
         }
 
         function notificationSortValue(item) {
-            const v = item.createdAt || item.createdAtMs || item.timestamp;
-            if (v && v.seconds) return v.seconds * 1000;
-            if (typeof v === 'number') return v;
-            if (typeof v === 'string') {
-                const t = new Date(v).getTime();
-                return Number.isNaN(t) ? 0 : t;
+            return notificationTimeValue(item);
+        }
+
+        function localStatusTimeFallback(user, keys) {
+            for (const key of keys) {
+                const value = user[key];
+                const parsed = parseNotificationTimeValue(value);
+                if (parsed) return parsed;
             }
-            return 0;
+            return Date.now();
         }
 
         function getLocalStatusNotifications() {
@@ -1188,12 +1223,16 @@
             const items = [];
             const avatarStatus = String(user.avatarStatus || '').toLowerCase();
             const specStatus = String(user.specEliteStatus || '').toLowerCase();
-            if (avatarStatus === 'pending') items.push({ id: `avatar-${window.state.applicationId}-pending`, type: 'avatar', tone: 'pending', title: '大頭照更換審核中', message: '新的個人大頭照已送交管理員審核，通過後會自動套用。', createdAtMs: Date.now() - 3000 });
-            else if (avatarStatus === 'approved') items.push({ id: `avatar-${window.state.applicationId}-approved`, type: 'avatar', tone: 'success', title: '大頭照更換已通過', message: '您的新頭像已完成審核並正式啟用。', createdAtMs: Date.now() - 3000 });
-            else if (avatarStatus === 'rejected') items.push({ id: `avatar-${window.state.applicationId}-rejected`, type: 'avatar', tone: 'error', title: '大頭照更換未通過', message: '本次大頭照更換未通過審核，您可以重新提交清晰且符合規範的照片。', createdAtMs: Date.now() - 3000 });
-            if (specStatus === 'pending') items.push({ id: `spec-${window.state.applicationId}-pending`, type: 'spec', tone: 'pending', title: '黃金 Spec 認證審核中', message: '您的黃金 Spec 認證照片已送出，管理員將依據規格證明進行人工核查。', createdAtMs: Date.now() - 2000 });
-            else if (isGoldSpecApproved(user)) items.push({ id: `spec-${window.state.applicationId}-approved`, type: 'spec', tone: 'success', title: '黃金 Spec 認證已通過', message: '您已取得黃金 Spec 認證，S+ . S . G 功能已自動開啟。', createdAtMs: Date.now() - 2000 });
-            else if (specStatus === 'rejected') items.push({ id: `spec-${window.state.applicationId}-rejected`, type: 'spec', tone: 'error', title: '黃金 Spec 認證未通過', message: '本次黃金 Spec 認證未通過，請確認照片清晰度與尺規參考後再重新申請。', createdAtMs: Date.now() - 2000 });
+            const pushLocal = (item, fallbackKeys) => {
+                const fallback = localStatusTimeFallback(user, fallbackKeys);
+                items.push({ ...item, createdAtMs: getStableLocalNotificationTime(item.id, fallback) });
+            };
+            if (avatarStatus === 'pending') pushLocal({ id: `avatar-${window.state.applicationId}-pending`, type: 'avatar', tone: 'pending', title: '大頭照更換審核中', message: '新的個人大頭照已送交管理員審核，通過後會自動套用。' }, ['avatarSubmittedAt', 'avatarPendingAt', 'avatarUpdatedAt', 'updatedAt', 'createdAt']);
+            else if (avatarStatus === 'approved') pushLocal({ id: `avatar-${window.state.applicationId}-approved`, type: 'avatar', tone: 'success', title: '大頭照更換已通過', message: '您的新頭像已完成審核並正式啟用。' }, ['avatarReviewedAt', 'avatarApprovedAt', 'avatarUpdatedAt', 'updatedAt', 'createdAt']);
+            else if (avatarStatus === 'rejected') pushLocal({ id: `avatar-${window.state.applicationId}-rejected`, type: 'avatar', tone: 'error', title: '大頭照更換未通過', message: '本次大頭照更換未通過審核，您可以重新提交清晰且符合規範的照片。' }, ['avatarReviewedAt', 'avatarRejectedAt', 'avatarUpdatedAt', 'updatedAt', 'createdAt']);
+            if (specStatus === 'pending') pushLocal({ id: `spec-${window.state.applicationId}-pending`, type: 'spec', tone: 'pending', title: '黃金 Spec 認證審核中', message: '您的黃金 Spec 認證照片已送出，管理員將依據規格證明進行人工核查。' }, ['specSubmittedAt', 'specEliteSubmittedAt', 'specUpdatedAt', 'updatedAt', 'createdAt']);
+            else if (isGoldSpecApproved(user)) pushLocal({ id: `spec-${window.state.applicationId}-approved`, type: 'spec', tone: 'success', title: '黃金 Spec 認證已通過', message: '您已取得黃金 Spec 認證，S+ . S . G 功能已自動開啟。' }, ['specReviewedAt', 'specEliteReviewedAt', 'specApprovedAt', 'specUpdatedAt', 'updatedAt', 'createdAt']);
+            else if (specStatus === 'rejected') pushLocal({ id: `spec-${window.state.applicationId}-rejected`, type: 'spec', tone: 'error', title: '黃金 Spec 認證未通過', message: '本次黃金 Spec 認證未通過，請確認照片清晰度與尺規參考後再重新申請。' }, ['specReviewedAt', 'specEliteReviewedAt', 'specRejectedAt', 'specUpdatedAt', 'updatedAt', 'createdAt']);
             return items;
         }
 
@@ -2688,10 +2727,24 @@
             startRealtimeSnapshotSync();
         }
   
+        function markNotificationAsRead(notificationId, silent = false) {
+            if (!notificationId) return;
+            const nextReadSet = getNotificationReadSet();
+            const beforeSize = nextReadSet.size;
+            nextReadSet.add(String(notificationId));
+            saveNotificationReadSet(nextReadSet);
+            updateNotificationIndicators();
+            if (!silent && nextReadSet.size !== beforeSize) showToast('已標記為已讀。', 'success');
+        }
+
         function renderNotificationsTab(container) {
             const items = getNotificationItems();
             const readSet = getNotificationReadSet();
-            const unreadCount = items.filter(item => !readSet.has(item.id)).length;
+            const unreadItems = items.filter(item => !readSet.has(item.id));
+            const readItems = items.filter(item => readSet.has(item.id));
+            const unreadCount = unreadItems.length;
+            const activeInboxTab = window.state.notificationInboxTab === 'read' ? 'read' : 'unread';
+            const displayItems = activeInboxTab === 'read' ? readItems : unreadItems;
             const toneMap = {
                 success: { icon: 'fa-circle-check', color: 'text-emerald-400', border: 'border-emerald-500/20', bg: 'bg-emerald-500/5' },
                 error: { icon: 'fa-circle-exclamation', color: 'text-red-400', border: 'border-red-500/20', bg: 'bg-red-500/5' },
@@ -2699,45 +2752,53 @@
                 platform: { icon: 'fa-bullhorn', color: 'text-amber-300', border: 'border-amber-500/20', bg: 'bg-amber-500/5' },
                 report: { icon: 'fa-flag', color: 'text-rose-400', border: 'border-rose-500/20', bg: 'bg-rose-500/5' }
             };
+            const tabButtonClass = (tabName) => tabName === activeInboxTab
+                ? 'bg-gradient-to-r from-amber-400 to-amber-600 text-slate-950 border-amber-200 shadow-[0_0_22px_rgba(223,183,108,0.28)]'
+                : 'bg-slate-950/45 text-slate-400 border-amber-500/15 hover:text-amber-200';
+            const renderNotificationCard = (item) => {
+                const toneKey = item.tone || item.category || item.type || 'platform';
+                const tone = toneMap[toneKey] || toneMap.platform;
+                const isUnread = !readSet.has(item.id);
+                const audience = String(item.target || item.audience || '').toLowerCase();
+                const audienceText = audience === 'all' || audience === 'everyone' || audience === '全體會員' ? '全體會員' : (audience === 'sg' || audience === 's_plus_s_g' || audience === 's.s+.g' || audience === 's+ . s . g' ? 'S+ . S . G' : '個人通知');
+                return `
+                    <article data-notification-id="${escapeHtml(item.id)}" class="notification-item glass-panel crystal-border rounded-3xl p-4 md:p-5 border ${tone.border} ${tone.bg} relative overflow-hidden cursor-pointer hover-breath click-press transition ${isUnread ? 'ring-1 ring-red-500/15' : 'opacity-85'}">
+                        ${isUnread ? '<div class="absolute top-4 right-4 w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.65)]"></div>' : ''}
+                        <div class="flex gap-3.5 pr-5">
+                            <div class="w-10 h-10 rounded-2xl bg-slate-950/70 border border-amber-500/15 flex items-center justify-center shrink-0 ${tone.color}"><i class="fa-solid ${tone.icon}"></i></div>
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-2 flex-wrap mb-1"><h3 class="text-sm md:text-base font-black text-slate-100">${escapeHtml(item.title || '平台通知')}</h3><span class="text-[9px] px-2 py-1 rounded-full border border-amber-500/15 bg-slate-950/45 text-amber-300/80 font-black">${audienceText}</span>${isUnread ? '<span class="text-[9px] px-2 py-1 rounded-full border border-red-500/20 bg-red-500/10 text-red-300 font-black">未讀</span>' : '<span class="text-[9px] px-2 py-1 rounded-full border border-slate-700/60 bg-slate-950/35 text-slate-500 font-black">已讀</span>'}</div>
+                                <p class="text-xs md:text-sm text-slate-400 leading-relaxed">${escapeHtml(item.message || item.body || '請查看最新平台狀態。')}</p>
+                                <div class="mt-3 flex items-center justify-between gap-3 text-[10px] text-slate-500 font-mono"><span>${formatNotificationTime(item.createdAt || item.sentAt || item.createdAtMs || item.timestamp || item.updatedAt || item.reviewedAt)}</span>${item.status ? `<span class="font-black text-amber-300/80">${escapeHtml(item.status)}</span>` : ''}</div>
+                            </div>
+                        </div>
+                    </article>`;
+            };
             container.innerHTML = `
                 <div class="space-y-5">
                     <div class="glass-panel crystal-border rounded-3xl p-5 md:p-6 relative overflow-hidden">
                         <div class="absolute -top-16 -right-16 w-32 h-32 rounded-full bg-amber-500/10 blur-3xl"></div>
-                        <div class="relative flex items-center justify-between gap-4">
+                        <div class="relative flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                             <div>
                                 <div class="text-[10px] text-amber-400/75 font-black tracking-[0.26em] font-luxury">Notification Center</div>
                                 <h2 class="text-2xl font-black text-white font-luxury tracking-wider mt-1">通知區塊</h2>
-                                <p class="text-xs text-slate-400 mt-2 leading-relaxed">集中查看檢舉進度、黃金 Spec 認證、大頭照更換，以及官方平台通知。</p>
+                                <p class="text-xs text-slate-400 mt-2 leading-relaxed">集中查看檢舉進度、黃金 Spec 認證、大頭照更換，以及官方平台通知。訊息時間以發送或審核完成時間固定顯示。</p>
                             </div>
                             <button id="btn-mark-notifications-read" class="shrink-0 px-3.5 py-2 rounded-xl border border-amber-500/20 bg-slate-950/55 text-xs font-black text-amber-300 hover-breath click-press">全部已讀</button>
                         </div>
+                        <div class="relative mt-5 grid grid-cols-2 gap-2 rounded-2xl border border-amber-500/12 bg-slate-950/35 p-1.5">
+                            <button id="btn-notification-tab-unread" class="px-3 py-2.5 rounded-xl border text-xs font-black transition ${tabButtonClass('unread')}">未讀訊息 <span class="font-mono">${unreadItems.length}</span></button>
+                            <button id="btn-notification-tab-read" class="px-3 py-2.5 rounded-xl border text-xs font-black transition ${tabButtonClass('read')}">已讀訊息 <span class="font-mono">${readItems.length}</span></button>
+                        </div>
                     </div>
                     <div id="notifications-list" class="space-y-3">
-                        ${items.length === 0 ? `
+                        ${displayItems.length === 0 ? `
                             <div class="glass-panel crystal-border rounded-3xl p-8 text-center">
                                 <div class="w-14 h-14 rounded-full bg-slate-950/70 border border-amber-500/15 flex items-center justify-center mx-auto mb-4 text-amber-400"><i class="fa-regular fa-bell text-xl"></i></div>
-                                <h3 class="font-black text-slate-200 mb-1">目前沒有新的平台通知</h3>
-                                <p class="text-xs text-slate-500">有新的審核、檢舉或官方訊息時，會自動出現在這裡。</p>
+                                <h3 class="font-black text-slate-200 mb-1">${activeInboxTab === 'read' ? '目前沒有已讀通知' : '目前沒有未讀通知'}</h3>
+                                <p class="text-xs text-slate-500">${activeInboxTab === 'read' ? '點擊未讀通知後，該通知會移入已讀訊息。' : '有新的審核、檢舉或官方訊息時，會自動出現在這裡。'}</p>
                             </div>
-                        ` : items.map(item => {
-                            const toneKey = item.tone || item.category || item.type || 'platform';
-                            const tone = toneMap[toneKey] || toneMap.platform;
-                            const isUnread = !readSet.has(item.id);
-                            const audience = String(item.target || item.audience || '').toLowerCase();
-                            const audienceText = audience === 'all' || audience === 'everyone' ? '全體會員' : (audience === 'sg' || audience === 's_plus_s_g' || audience === 's.s+.g' ? 'S+ . S . G' : '個人通知');
-                            return `
-                                <article class="glass-panel crystal-border rounded-3xl p-4 md:p-5 border ${tone.border} ${tone.bg} relative overflow-hidden">
-                                    ${isUnread ? '<div class="absolute top-4 right-4 w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.65)]"></div>' : ''}
-                                    <div class="flex gap-3.5 pr-5">
-                                        <div class="w-10 h-10 rounded-2xl bg-slate-950/70 border border-amber-500/15 flex items-center justify-center shrink-0 ${tone.color}"><i class="fa-solid ${tone.icon}"></i></div>
-                                        <div class="min-w-0 flex-1">
-                                            <div class="flex items-center gap-2 flex-wrap mb-1"><h3 class="text-sm md:text-base font-black text-slate-100">${escapeHtml(item.title || '平台通知')}</h3><span class="text-[9px] px-2 py-1 rounded-full border border-amber-500/15 bg-slate-950/45 text-amber-300/80 font-black">${audienceText}</span></div>
-                                            <p class="text-xs md:text-sm text-slate-400 leading-relaxed">${escapeHtml(item.message || item.body || '請查看最新平台狀態。')}</p>
-                                            <div class="mt-3 flex items-center justify-between gap-3 text-[10px] text-slate-500 font-mono"><span>${formatNotificationTime(item.createdAt || item.createdAtMs || item.timestamp)}</span>${item.status ? `<span class="font-black text-amber-300/80">${escapeHtml(item.status)}</span>` : ''}</div>
-                                        </div>
-                                    </div>
-                                </article>`;
-                        }).join('')}
+                        ` : displayItems.map(renderNotificationCard).join('')}
                     </div>
                 </div>`;
             const readBtn = document.getElementById('btn-mark-notifications-read');
@@ -2746,10 +2807,26 @@
                     const nextReadSet = getNotificationReadSet();
                     getNotificationItems().forEach(item => nextReadSet.add(item.id));
                     saveNotificationReadSet(nextReadSet);
+                    window.state.notificationInboxTab = 'read';
                     updateNotificationIndicators();
-                    showToast(unreadCount > 0 ? '通知已標記為已讀。' : '目前沒有未讀通知。', 'success');
+                    showToast(unreadCount > 0 ? '通知已全部標記為已讀。' : '目前沒有未讀通知。', 'success');
                 };
             }
+            const unreadTabBtn = document.getElementById('btn-notification-tab-unread');
+            const readTabBtn = document.getElementById('btn-notification-tab-read');
+            if (unreadTabBtn) unreadTabBtn.onclick = () => { window.state.notificationInboxTab = 'unread'; renderNotificationsTab(container); };
+            if (readTabBtn) readTabBtn.onclick = () => { window.state.notificationInboxTab = 'read'; renderNotificationsTab(container); };
+            document.querySelectorAll('.notification-item[data-notification-id]').forEach(card => {
+                card.onclick = () => {
+                    const id = card.getAttribute('data-notification-id');
+                    if (!getNotificationReadSet().has(id)) {
+                        markNotificationAsRead(id, true);
+                        window.state.notificationInboxTab = 'read';
+                        const tabContentContainer = document.getElementById('dashboard-tab-content');
+                        if (tabContentContainer) renderNotificationsTab(tabContentContainer);
+                    }
+                };
+            });
         }
 
         function renderBadgeProgressTab(container) {
