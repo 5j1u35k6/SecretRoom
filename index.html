@@ -636,13 +636,13 @@
         }
 
 
-        /* SecretRomm 統一滿版浮水印：向右旋轉 45 度，縮小並降低透明度 */
+        /* SecretRomm 統一滿版浮水印：更隱性、更淡、更小，保留 45 度防外流識別 */
         .sr-watermark-grid {
             position: absolute;
-            inset: -34%;
+            inset: -36%;
             display: grid;
-            grid-template-columns: repeat(5, minmax(150px, 1fr));
-            gap: 66px 96px;
+            grid-template-columns: repeat(6, minmax(120px, 1fr));
+            gap: 78px 112px;
             align-content: center;
             justify-items: center;
             pointer-events: none;
@@ -654,16 +654,16 @@
             display: inline-block;
             transform: rotate(45deg);
             white-space: nowrap;
-            color: rgba(255, 255, 255, var(--wm-opacity, 0.055));
+            color: rgba(244, 247, 251, var(--wm-opacity, 0.034));
             font-family: 'Cinzel', 'Inter', 'Noto Serif TC', serif;
-            font-weight: 800;
-            font-size: clamp(10px, 1.7vw, 20px);
-            letter-spacing: 0.075em;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
+            font-weight: 700;
+            font-size: clamp(8px, 1.15vw, 13px);
+            letter-spacing: 0.06em;
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.12);
         }
         .sr-watermark-grid.sr-watermark-compact {
-            grid-template-columns: repeat(4, minmax(120px, 1fr));
-            gap: 52px 74px;
+            grid-template-columns: repeat(5, minmax(110px, 1fr));
+            gap: 64px 90px;
         }
         .spec-vault-card img {
             -webkit-user-drag: none;
@@ -779,19 +779,19 @@
 
                         if (addWatermarkText) {
                             const watermarkText = String(addWatermarkText || '').trim() || getWatermarkText();
-                            const fontSize = Math.max(12, Math.round(Math.min(w, h) * 0.05));
-                            const stepX = Math.max(190, Math.round(fontSize * 12));
-                            const stepY = Math.max(130, Math.round(fontSize * 8));
+                            const fontSize = Math.max(10, Math.round(Math.min(w, h) * 0.028));
+                            const stepX = Math.max(170, Math.round(fontSize * 13.5));
+                            const stepY = Math.max(118, Math.round(fontSize * 9.2));
 
                             ctx.save();
                             ctx.translate(w / 2, h / 2);
                             ctx.rotate(Math.PI / 4); // 向右旋轉 45 度
-                            ctx.font = `700 ${fontSize}px Cinzel, Inter, sans-serif`;
-                            ctx.fillStyle = "rgba(255, 255, 255, 0.052)";
+                            ctx.font = `600 ${fontSize}px Cinzel, Inter, sans-serif`;
+                            ctx.fillStyle = "rgba(244, 247, 251, 0.028)";
                             ctx.textAlign = "center";
                             ctx.textBaseline = "middle";
-                            ctx.shadowColor = "rgba(0, 0, 0, 0.16)";
-                            ctx.shadowBlur = Math.max(1, Math.round(fontSize * 0.08));
+                            ctx.shadowColor = "rgba(0, 0, 0, 0.10)";
+                            ctx.shadowBlur = Math.max(1, Math.round(fontSize * 0.04));
 
                             const spanX = Math.ceil((w + h) * 1.15);
                             const spanY = Math.ceil((w + h) * 1.15);
@@ -903,9 +903,9 @@
             return `SecretRomm @${account}`;
         }
 
-        function renderWatermarkOverlay(userId = window.state.applicationId, opacity = 0.13, compact = false) {
+        function renderWatermarkOverlay(userId = window.state.applicationId, opacity = 0.055, compact = false) {
             const safeText = escapeHtml(getWatermarkText(userId));
-            const items = Array.from({ length: compact ? 28 : 48 }, () => `<span>${safeText}</span>`).join('');
+            const items = Array.from({ length: compact ? 24 : 42 }, () => `<span>${safeText}</span>`).join('');
             return `<div class="sr-watermark-grid ${compact ? 'sr-watermark-compact' : ''}" style="--wm-opacity:${opacity};">${items}</div>`;
         }
 
@@ -3442,7 +3442,7 @@
                     <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2 font-luxury">
                         <i class="fa-solid fa-feather-pointed text-amber-500"></i> Publish Secret
                     </h3>
-                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">發布近期動態。發布相片時將自動生成「SecretRomm @使用者帳號」滿版 45 度浮水印。</p>
+                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">發布近期動態。發布相片時將自動生成淡色、較隱性的「SecretRomm @使用者帳號」滿版 45 度浮水印；若原始圖片本身已有其他浮水印，系統不會自動移除。</p>
   
                     <div class="space-y-4">
                         <div>
@@ -3463,7 +3463,7 @@
                                     </div>
                                 </div>
                                 <input type="file" id="share-file" accept="image/*" class="hidden">
-                                <span class="text-[10px] text-slate-555 mt-2 block">相片加載後將自動生成「SecretRomm @使用者帳號」滿版 45 度浮水印。</span>
+                                <span class="text-[10px] text-slate-555 mt-2 block">相片加載後將自動生成淡色、較隱性的「SecretRomm @使用者帳號」滿版 45 度浮水印；若原始圖片本身已有其他浮水印，系統不會自動移除。</span>
                             </div>
                         </div>
   
@@ -3762,7 +3762,7 @@
                     <h3 class="text-sm font-bold text-white mb-1.5 flex items-center gap-2 font-luxury">
                         <i class="fa-solid fa-medal text-amber-500"></i> Gold Spec Elite
                     </h3>
-                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">請上傳帶有清楚尺規參考物（如捲尺、直尺）的實物測量證明照片。系統會自動覆蓋「SecretRomm @使用者帳號」滿版 45 度浮水印。若通過黃金Spec認證將會自動開啟S+ . S . G功能，可查看其他通過黃金Spec會員之審核照。</p>
+                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">請上傳帶有清楚尺規參考物（如捲尺、直尺）的實物測量證明照片。系統會自動覆蓋淡色、較隱性的「SecretRomm @使用者帳號」滿版 45 度浮水印；若原始圖片本身已有其他浮水印，系統不會自動移除。若通過黃金Spec認證將會自動開啟S+ . S . G功能，可查看其他通過黃金Spec會員之審核照。</p>
                     <div class="space-y-4">
                         <div class="border border-amber-500/10 rounded-2xl p-4 flex flex-col items-center justify-center bg-slate-900/20 text-center">
                             <div id="spec-img-trigger" class="relative w-full h-40 rounded-xl border border-dashed border-amber-500/30 flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-slate-950 transition hover-breath click-press">
