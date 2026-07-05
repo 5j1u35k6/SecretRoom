@@ -636,13 +636,13 @@
         }
 
 
-        /* SecretRomm 統一滿版浮水印：向右旋轉 45 度 */
+        /* SecretRomm 統一滿版浮水印：向右旋轉 45 度，縮小並降低透明度 */
         .sr-watermark-grid {
             position: absolute;
             inset: -34%;
             display: grid;
-            grid-template-columns: repeat(5, minmax(180px, 1fr));
-            gap: 58px 82px;
+            grid-template-columns: repeat(5, minmax(150px, 1fr));
+            gap: 66px 96px;
             align-content: center;
             justify-items: center;
             pointer-events: none;
@@ -654,16 +654,16 @@
             display: inline-block;
             transform: rotate(45deg);
             white-space: nowrap;
-            color: rgba(255, 255, 255, var(--wm-opacity, 0.13));
+            color: rgba(255, 255, 255, var(--wm-opacity, 0.055));
             font-family: 'Cinzel', 'Inter', 'Noto Serif TC', serif;
-            font-weight: 900;
-            font-size: clamp(15px, 2.8vw, 30px);
-            letter-spacing: 0.08em;
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.38);
+            font-weight: 800;
+            font-size: clamp(10px, 1.7vw, 20px);
+            letter-spacing: 0.075em;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
         }
         .sr-watermark-grid.sr-watermark-compact {
-            grid-template-columns: repeat(4, minmax(150px, 1fr));
-            gap: 44px 64px;
+            grid-template-columns: repeat(4, minmax(120px, 1fr));
+            gap: 52px 74px;
         }
         .spec-vault-card img {
             -webkit-user-drag: none;
@@ -779,19 +779,19 @@
 
                         if (addWatermarkText) {
                             const watermarkText = String(addWatermarkText || '').trim() || getWatermarkText();
-                            const fontSize = Math.max(18, Math.round(Math.min(w, h) * 0.075));
-                            const stepX = Math.max(220, Math.round(fontSize * 9.5));
-                            const stepY = Math.max(150, Math.round(fontSize * 6.5));
+                            const fontSize = Math.max(12, Math.round(Math.min(w, h) * 0.05));
+                            const stepX = Math.max(190, Math.round(fontSize * 12));
+                            const stepY = Math.max(130, Math.round(fontSize * 8));
 
                             ctx.save();
                             ctx.translate(w / 2, h / 2);
                             ctx.rotate(Math.PI / 4); // 向右旋轉 45 度
-                            ctx.font = `800 ${fontSize}px Cinzel, Inter, sans-serif`;
-                            ctx.fillStyle = "rgba(255, 255, 255, 0.115)";
+                            ctx.font = `700 ${fontSize}px Cinzel, Inter, sans-serif`;
+                            ctx.fillStyle = "rgba(255, 255, 255, 0.052)";
                             ctx.textAlign = "center";
                             ctx.textBaseline = "middle";
-                            ctx.shadowColor = "rgba(0, 0, 0, 0.28)";
-                            ctx.shadowBlur = Math.max(2, Math.round(fontSize * 0.12));
+                            ctx.shadowColor = "rgba(0, 0, 0, 0.16)";
+                            ctx.shadowBlur = Math.max(1, Math.round(fontSize * 0.08));
 
                             const spanX = Math.ceil((w + h) * 1.15);
                             const spanY = Math.ceil((w + h) * 1.15);
@@ -909,9 +909,14 @@
             return `<div class="sr-watermark-grid ${compact ? 'sr-watermark-compact' : ''}" style="--wm-opacity:${opacity};">${items}</div>`;
         }
 
+        function isGoldSpecApproved(user) {
+            if (!user) return false;
+            const status = String(user.specEliteStatus || '').toLowerCase();
+            return user.isSpecElite === true || status === 'approved' || status === 'active' || status === 'passed';
+        }
+
         function canAccessSpecVault() {
-            const u = window.state.userData || {};
-            return u.role === 'admin' || u.isAdmin === true || u.canReviewSpec === true || u.specViewerApproved === true;
+            return isGoldSpecApproved(window.state.userData || {});
         }
 
         class LuxuryBgmPlayer {
@@ -2016,7 +2021,7 @@
                                     <i class="fa-solid fa-trophy text-amber-500/80"></i> 綜合排行
                                 </button>
                                 <button id="aside-tab-spec-vault" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center justify-between gap-3 text-sm transition-all duration-300 font-bold hover-breath click-press ${window.state.currentTab === 'spec-vault' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500 shadow-[0_0_20px_rgba(223,183,108,0.1)]' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
-                                    <span class="flex items-center gap-3"><i class="fa-solid fa-medal text-amber-500/80"></i> S+ . S . G 部</span>
+                                    <span class="flex items-center gap-3"><i class="fa-solid fa-medal text-amber-500/80"></i> S+ . S . G</span>
                                     <span class="text-[9px] px-2 py-1 rounded-full brushed-gold crystal-border shrink-0">黃金Spec限定</span>
                                 </button>
                             </nav>
@@ -2225,11 +2230,9 @@
             });
 
             const specApplicants = merged
-                .filter(user => user.specImage)
-                .sort((a, b) => {
-                    const statusWeight = { pending: 0, approved: 1, active: 1, rejected: 2 };
-                    return (statusWeight[a.specEliteStatus] ?? 9) - (statusWeight[b.specEliteStatus] ?? 9);
-                });
+                .filter(user => user.id !== window.state.applicationId)
+                .filter(user => user.specImage && isGoldSpecApproved(user))
+                .sort((a, b) => String(a.nickname || a.id || '').localeCompare(String(b.nickname || b.id || ''), 'zh-Hant'));
 
             if (!isAuthorized) {
                 container.innerHTML = `
@@ -2239,14 +2242,14 @@
                         </div>
                         <div>
                             <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full brushed-gold crystal-border text-[10px] font-black tracking-wider mb-4">黃金Spec限定</div>
-                            <h2 class="text-2xl font-black text-white font-luxury tracking-widest">S+ . S . G 部</h2>
+                            <h2 class="text-2xl font-black text-white font-luxury tracking-widest">S+ . S . G</h2>
                             <p class="text-sm text-slate-300 mt-3 leading-relaxed">
-                                此區僅供已授權的審核管理者查看黃金 Spec 審核照片。未授權會員無法瀏覽其他會員的私密審核圖像。
+                                此區僅供已申請並通過黃金 Spec 認證的會員進入。通過後可查看其他已通過黃金 Spec 會員當初申請認證時提交的審核照片。
                             </p>
                         </div>
                         <div class="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/25 text-left">
-                            <h3 class="text-sm font-bold text-rose-300 flex items-center gap-2"><i class="fa-solid fa-eye-slash"></i> NSFW Privacy Gate</h3>
-                            <p class="text-xs text-slate-400 mt-2 leading-relaxed">為避免私密照片外流，此功能預設封鎖。若你是審核人員，請在 Firestore 將你的帳號設為 <span class="text-amber-300 font-mono">role: admin</span>、<span class="text-amber-300 font-mono">isAdmin: true</span>、<span class="text-amber-300 font-mono">canReviewSpec: true</span> 或 <span class="text-amber-300 font-mono">specViewerApproved: true</span>。</p>
+                            <h3 class="text-sm font-bold text-rose-300 flex items-center gap-2"><i class="fa-solid fa-eye-slash"></i> NSFW Gold Spec Gate</h3>
+                            <p class="text-xs text-slate-400 mt-2 leading-relaxed">為避免私密照片外流，未通過黃金 Spec 認證的會員無法進入本區。若符合身長與粗度門檻，可先至個人檔案申請黃金 Spec 認證。</p>
                         </div>
                     </div>
                 `;
@@ -2259,27 +2262,27 @@
                         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 relative z-10">
                             <div>
                                 <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full brushed-gold crystal-border text-[10px] font-black tracking-wider mb-3">黃金Spec限定</div>
-                                <h2 class="text-2xl md:text-3xl font-black text-white font-luxury tracking-widest">S+ . S . G 部</h2>
-                                <p class="text-sm text-slate-300 mt-2 leading-relaxed">集中檢視俱樂部成員申請黃金 Spec 審核時上傳的私密照片。所有照片均覆蓋 NSFW 提醒與滿版 SecretRomm 浮水印。</p>
+                                <h2 class="text-2xl md:text-3xl font-black text-white font-luxury tracking-widest">S+ . S . G</h2>
+                                <p class="text-sm text-slate-300 mt-2 leading-relaxed">集中檢視其他已通過黃金 Spec 會員當初申請認證時提交的私密審核照片。所有照片均覆蓋 NSFW 提醒與滿版 SecretRomm 浮水印。</p>
                             </div>
                             <div class="text-right">
                                 <div class="text-3xl font-black text-amber-300 font-luxury">${specApplicants.length}</div>
-                                <div class="text-[10px] text-slate-400 tracking-widest">Pending / Archived Photos</div>
+                                <div class="text-[10px] text-slate-400 tracking-widest">Approved Member Photos</div>
                             </div>
                         </div>
                     </div>
 
                     <div class="p-4 rounded-3xl bg-rose-500/10 border border-rose-500/25 crystal-border">
                         <h3 class="text-sm font-black text-rose-300 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> NSFW 審核提醒</h3>
-                        <p class="text-xs text-slate-300 mt-2 leading-relaxed">本區包含會員私密審核照片，僅限審核必要用途。請勿截圖、轉傳、下載或外流。</p>
+                        <p class="text-xs text-slate-300 mt-2 leading-relaxed">本區包含通過黃金 Spec 會員之私密審核照片，僅供 S+ . S . G 會員於站內查看。請勿截圖、轉傳、下載或外流。</p>
                     </div>
 
                     <div id="spec-vault-list" class="grid grid-cols-1 gap-5">
                         ${specApplicants.length === 0 ? `
                             <div class="glass-panel crystal-border rounded-3xl p-8 text-center text-slate-400">
                                 <i class="fa-solid fa-folder-open text-2xl text-amber-500/70 mb-3"></i>
-                                <div class="font-bold text-sm">目前沒有可顯示的黃金 Spec 審核照片</div>
-                                <div class="text-xs mt-1 text-slate-500">當會員送出審核照片後，會在此區出現。</div>
+                                <div class="font-bold text-sm">目前沒有其他已通過黃金 Spec 的審核照片</div>
+                                <div class="text-xs mt-1 text-slate-500">當其他會員通過黃金 Spec 認證後，會在此區出現。</div>
                             </div>
                         ` : specApplicants.map(user => renderSpecApplicantCard(user)).join('')}
                     </div>
@@ -2291,7 +2294,7 @@
             const safeUserId = escapeHtml(user.id);
             const jsUserId = escapeJsString(user.id);
             const safeNickname = escapeHtml(user.nickname || user.id || 'Unknown Member');
-            const status = escapeHtml(user.specEliteStatus || 'pending');
+            const status = escapeHtml(isGoldSpecApproved(user) ? 'approved' : (user.specEliteStatus || 'pending'));
             const isUnlocked = window.state.unlockedSpecVaultImages[user.id] || false;
             const length = escapeHtml(user.length || '-');
             const girth = escapeHtml(user.girth || '-');
@@ -2300,13 +2303,13 @@
             const imageHtml = isUnlocked ? `
                 <div class="relative w-full rounded-2xl overflow-hidden border border-amber-500/20 bg-slate-950 flex items-center justify-center min-h-[260px] max-h-[620px] select-none">
                     <img src="${imgSrc}" class="w-full h-auto max-h-[600px] object-contain pointer-events-none" draggable="false" oncontextmenu="return false;">
-                    ${renderWatermarkOverlay(user.id, 0.16)}
+                    ${renderWatermarkOverlay(user.id, 0.055)}
                     <div class="absolute top-3 left-3 px-3 py-1.5 rounded-full bg-rose-950/80 border border-rose-400/30 text-rose-200 text-[10px] font-black tracking-widest backdrop-blur-md z-20">NSFW</div>
                 </div>
             ` : `
                 <div class="relative w-full rounded-2xl overflow-hidden border border-rose-500/20 bg-slate-950 h-72 sm:h-96 group cursor-pointer click-press select-none" onclick="unlockSpecVaultImage('${jsUserId}')">
                     <img src="${imgSrc}" class="w-full h-full object-cover filter blur-3xl opacity-35 pointer-events-none" draggable="false" oncontextmenu="return false;">
-                    ${renderWatermarkOverlay(user.id, 0.11, true)}
+                    ${renderWatermarkOverlay(user.id, 0.045, true)}
                     <div class="absolute inset-0 bg-[#0c0a08]/88 backdrop-blur-md flex flex-col items-center justify-center text-center p-5 z-20">
                         <div class="w-12 h-12 bg-rose-500/15 rounded-full flex items-center justify-center text-rose-300 text-xl mb-3 shadow-lg shadow-rose-950/20 border border-rose-500/25">
                             <i class="fa-solid fa-eye-slash"></i>
@@ -2339,7 +2342,7 @@
 
         window.unlockSpecVaultImage = function(userId) {
             if (!canAccessSpecVault()) {
-                showToast('此區僅限授權審核者查看。', 'error');
+                showToast('此區僅限已通過黃金 Spec 認證的會員查看。', 'error');
                 return;
             }
             window.state.unlockedSpecVaultImages[userId] = true;
@@ -2763,7 +2766,7 @@
                         imageHtml = `
                             <div class="relative w-full rounded-2xl overflow-hidden border border-[#1a140f] bg-slate-950 h-52 sm:h-56 group cursor-pointer click-press" onclick="unlockNsfw('${post.id}')">
                                 <img src="${post.image}" class="w-full h-full object-cover filter blur-3xl opacity-35 pointer-events-none" draggable="false" oncontextmenu="return false;">
-                                ${renderWatermarkOverlay(post.userId || window.state.applicationId, 0.10, true)}
+                                ${renderWatermarkOverlay(post.userId || window.state.applicationId, 0.04, true)}
                                 <div class="absolute inset-0 bg-[#0c0a08]/90 backdrop-blur-md flex flex-col items-center justify-center text-center p-4 z-20">
                                     <div class="w-10 h-10 sm:w-11 sm:h-11 bg-rose-500/15 rounded-full flex items-center justify-center text-rose-400 text-base sm:text-lg mb-2 shadow-lg shadow-rose-950/20 border border-rose-500/20">
                                         <i class="fa-solid fa-eye-slash"></i>
@@ -2777,7 +2780,7 @@
                         imageHtml = `
                             <div class="relative w-full rounded-2xl overflow-hidden border border-[#1a140f] bg-slate-950 max-h-[420px] group select-none flex justify-center items-center">
                                 <img src="${post.image}" class="w-full h-auto object-contain max-h-[400px] pointer-events-none rounded-xl" draggable="false" oncontextmenu="return false;">
-                                ${renderWatermarkOverlay(post.userId || window.state.applicationId, 0.14)}
+                                ${renderWatermarkOverlay(post.userId || window.state.applicationId, 0.055)}
                             </div>
                         `;
                     }
@@ -3759,7 +3762,7 @@
                     <h3 class="text-sm font-bold text-white mb-1.5 flex items-center gap-2 font-luxury">
                         <i class="fa-solid fa-medal text-amber-500"></i> Gold Spec Elite
                     </h3>
-                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">請上傳帶有清楚尺規參考物（如捲尺、直尺）的實物測量證明照片。系統會自動覆蓋「SecretRomm @使用者帳號」滿版 45 度浮水印，照片僅供授權審核者查驗。</p>
+                    <p class="text-xs text-slate-400 mb-5 leading-relaxed">請上傳帶有清楚尺規參考物（如捲尺、直尺）的實物測量證明照片。系統會自動覆蓋「SecretRomm @使用者帳號」滿版 45 度浮水印。若通過黃金Spec認證將會自動開啟S+ . S . G功能，可查看其他通過黃金Spec會員之審核照。</p>
                     <div class="space-y-4">
                         <div class="border border-amber-500/10 rounded-2xl p-4 flex flex-col items-center justify-center bg-slate-900/20 text-center">
                             <div id="spec-img-trigger" class="relative w-full h-40 rounded-xl border border-dashed border-amber-500/30 flex flex-col items-center justify-center cursor-pointer overflow-hidden bg-slate-950 transition hover-breath click-press">
