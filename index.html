@@ -669,24 +669,6 @@
             -webkit-user-drag: none;
         }
 
-
-        /* 互動保護：避免折射層或瀏覽器未載入 Tailwind 時阻擋點擊 */
-        button, a, label, input, select, textarea, [role="button"] {
-            position: relative;
-            z-index: 2;
-            pointer-events: auto !important;
-        }
-        .hidden { display: none !important; }
-        #custom-confirm-modal:not(.hidden) {
-            display: flex !important;
-            z-index: 99999 !important;
-        }
-        #toast-container {
-            z-index: 100000 !important;
-            pointer-events: none;
-        }
-        #toast-container > div { pointer-events: auto; }
-
     </style>
 </head>
 <body class="min-h-screen w-full flex flex-col p-0 m-0 overflow-hidden select-none club-groove-bg">
@@ -926,70 +908,6 @@
             const items = Array.from({ length: compact ? 24 : 42 }, () => `<span>${safeText}</span>`).join('');
             return `<div class="sr-watermark-grid ${compact ? 'sr-watermark-compact' : ''}" style="--wm-opacity:${opacity};">${items}</div>`;
         }
-
-
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            if (!container) return;
-            const toast = document.createElement('div');
-            const bgColors = {
-                error: 'bg-red-500/95 border-red-400',
-                success: 'bg-emerald-600/95 border-emerald-400',
-                info: 'bg-amber-600/95 border-amber-500'
-            };
-            toast.className = `${bgColors[type] || bgColors.info} text-white px-5 py-3.5 rounded-xl shadow-lg border border-white/10 text-sm font-semibold transition-all duration-300 opacity-0 transform -translate-y-4 backdrop-blur-xl flex items-center gap-3 pointer-events-auto shadow-[0_4px_25px_rgba(212,175,55,0.08)]`;
-            const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
-            toast.innerHTML = `<i class="fa-solid ${icon} text-lg text-white"></i> <span>${escapeHtml(message)}</span>`;
-            container.appendChild(toast);
-            requestAnimationFrame(() => toast.classList.remove('opacity-0', '-translate-y-4'));
-            setTimeout(() => {
-                toast.classList.add('opacity-0', '-translate-y-4');
-                setTimeout(() => toast.remove(), 300);
-            }, 3200);
-        }
-        window.showToast = showToast;
-
-        function withTimeout(promise, ms = 12000, message = '操作逾時，請檢查網路後再試一次。') {
-            let timer;
-            const timeout = new Promise((_, reject) => {
-                timer = setTimeout(() => reject(new Error(message)), ms);
-            });
-            return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
-        }
-
-        window.addEventListener('error', (event) => {
-            console.error('Global runtime error:', event.error || event.message);
-            if (window.showToast) window.showToast('操作未完成，請重新整理後再試一次。', 'error');
-        });
-
-        window.addEventListener('unhandledrejection', (event) => {
-            console.error('Unhandled promise rejection:', event.reason);
-            if (window.showToast) window.showToast('操作未完成，請稍後再試。', 'error');
-        });
-
-
-        // 互動保險：若 inline onclick 或動態綁定因瀏覽器差異失效，仍可啟動關鍵按鈕。
-        document.addEventListener('click', (event) => {
-            const target = event.target && event.target.closest ? event.target.closest('button, [role="button"], [onclick]') : null;
-            if (!target) return;
-
-            if (target.id === 'btn-login-submit' && typeof window.__srHandleLoginSubmit === 'function') {
-                event.preventDefault();
-                event.stopPropagation();
-                event.stopImmediatePropagation();
-                window.__srHandleLoginSubmit();
-                return;
-            }
-
-            const inlineClick = target.getAttribute('onclick') || '';
-            const deletePostMatch = inlineClick.match(/deleteMyPost\('([^']+)'\)/);
-            if (deletePostMatch && typeof window.deleteMyPost === 'function') {
-                event.preventDefault();
-                event.stopPropagation();
-                event.stopImmediatePropagation();
-                window.deleteMyPost(deletePostMatch[1]);
-            }
-        }, true);
 
         function isGoldSpecApproved(user) {
             if (!user) return false;
@@ -1472,8 +1390,7 @@
   
             document.getElementById('close-login').onclick = () => modal.remove();
   
-            const loginSubmitBtn = document.getElementById('btn-login-submit');
-            const handleLoginSubmit = async () => {
+            document.getElementById('btn-login-submit').onclick = async () => {
                 const usernameInput = document.getElementById('login-username').value.trim();
                 const passwordInput = document.getElementById('login-password').value;
   
@@ -1483,18 +1400,14 @@
                 }
   
                 if (!db) {
-                    showToast('伺服器尚未完成連線，請稍後再登入。', 'error');
+                    showToast('驗證中，正在進行安全協議...', 'error');
                     return;
                 }
   
-                loginSubmitBtn.disabled = true;
-                loginSubmitBtn.classList.add('opacity-60', 'cursor-not-allowed');
-                const originalText = loginSubmitBtn.innerHTML;
-                loginSubmitBtn.innerHTML = '驗證中...';
                 showLoading();
                 try {
                     const appRef = doc(db, 'secretg_apps', appId, 'applications', usernameInput);
-                    const docSnap = await withTimeout(getDoc(appRef), 12000, '登入驗證逾時，請檢查網路或稍後重試。');
+                    const docSnap = await getDoc(appRef);
   
                     if (docSnap.exists()) {
                         const data = docSnap.data();
@@ -1511,8 +1424,6 @@
                             else if (data.status === 'approved' || data.status === 'active') {
                                 if (!data.telegramInfo) navigate('telegram-bind');
                                 else navigate('dashboard');
-                            } else {
-                                showToast('帳號狀態尚未啟用，請等待審核。', 'error');
                             }
                         } else {
                             showToast('密碼不正確，請重新檢查。', 'error');
@@ -1522,27 +1433,11 @@
                     }
                 } catch (err) {
                     console.error("登入驗證錯誤:", err);
-                    showToast(err.message || '驗證異常，請稍後重試。', 'error');
+                    showToast('驗證異常: ' + err.message, 'error');
                 } finally {
                     hideLoading();
-                    if (document.body.contains(loginSubmitBtn)) {
-                        loginSubmitBtn.disabled = false;
-                        loginSubmitBtn.classList.remove('opacity-60', 'cursor-not-allowed');
-                        loginSubmitBtn.innerHTML = originalText;
-                    }
                 }
             };
-            loginSubmitBtn.onclick = handleLoginSubmit;
-            window.__srHandleLoginSubmit = handleLoginSubmit;
-            ['login-username', 'login-password'].forEach((id) => {
-                const input = document.getElementById(id);
-                if (input) input.addEventListener('keydown', (event) => {
-                    if (event.key === 'Enter') {
-                        event.preventDefault();
-                        handleLoginSubmit();
-                    }
-                });
-            });
         }
   
         function renderRegister(container) {
@@ -3203,7 +3098,7 @@
         };
   
         window.toggleLikePost = async function(postId) {
-            if (!db) { showToast('伺服器尚未完成連線，暫時無法按讚。', 'error'); return; }
+            if (!db) return;
             const post = window.state.posts.find(p => p.id === postId);
             if (!post) return;
   
@@ -3236,7 +3131,7 @@
         };
   
         window.ratePost = async function(postId, ratingValue) {
-            if (!db) { showToast('伺服器尚未完成連線，暫時無法評分。', 'error'); return; }
+            if (!db) return;
             const post = window.state.posts.find(p => p.id === postId);
             if (!post) return;
   
@@ -3275,7 +3170,7 @@
             const text = input.value.trim();
             if (!text) return;
   
-            if (!db) { showToast('伺服器尚未完成連線，暫時無法留言。', 'error'); return; }
+            if (!db) return;
             showLoading();
   
             try {
@@ -3328,7 +3223,7 @@
                 modalTitle.textContent = originalTitle;
                 modalDesc.textContent = originalDesc;
                 
-                if (!db) { showToast('伺服器尚未完成連線，暫時無法刪除留言。', 'error'); return; }
+                if (!db) return;
                 showLoading();
                 try {
                     const post = window.state.posts.find(p => p.id === postId);
@@ -3391,7 +3286,7 @@
         };
 
         window.submitCommentReport = async function(postId, commentId, reason) {
-            if (!db) { showToast('伺服器尚未完成連線，暫時無法提交檢舉。', 'error'); return; }
+            if (!db) return;
             showLoading();
             try {
                 const postRef = doc(db, 'secretg_apps', appId, 'posts', postId);
@@ -3499,7 +3394,7 @@
         };
   
         window.submitPostReport = async function(postId, reason) {
-            if (!db) { showToast('伺服器尚未完成連線，暫時無法提交檢舉。', 'error'); return; }
+            if (!db) return;
             showLoading();
             try {
                 const postRef = doc(db, 'secretg_apps', appId, 'posts', postId);
@@ -3651,7 +3546,7 @@
                     return;
                 }
   
-                if (!db) { showToast('伺服器尚未完成連線，暫時無法發布動態。', 'error'); return; }
+                if (!db) return;
                 showLoading();
   
                 try {
@@ -3922,7 +3817,7 @@
                     return;
                 }
 
-                if (!db) { showToast('伺服器尚未完成連線，暫時無法提交認證。', 'error'); return; }
+                if (!db) return;
                 showLoading();
 
                 try {
@@ -4040,46 +3935,49 @@
   
         window.deleteMyPost = function(postId) {
             const modal = document.getElementById('custom-confirm-modal');
-            const cancelBtn = document.getElementById('confirm-modal-cancel');
-            const okBtn = document.getElementById('confirm-modal-ok');
-            if (!modal || !cancelBtn || !okBtn) {
-                showToast('刪除確認視窗載入失敗，請重新整理後再試。', 'error');
-                return;
-            }
+            if (!modal) return;
             modal.classList.remove('hidden');
 
-            cancelBtn.onclick = () => {
+            document.getElementById('confirm-modal-cancel').onclick = () => {
                 modal.classList.add('hidden');
             };
 
-            okBtn.onclick = async () => {
-                if (!db) {
-                    modal.classList.add('hidden');
-                    showToast('伺服器尚未完成連線，暫時無法刪除。', 'error');
-                    return;
-                }
-                okBtn.disabled = true;
-                okBtn.classList.add('opacity-60', 'cursor-not-allowed');
-                const originalText = okBtn.innerHTML;
-                okBtn.innerHTML = '刪除中...';
+            document.getElementById('confirm-modal-ok').onclick = async () => {
+                modal.classList.add('hidden');
+                if (!db) return;
                 showLoading();
                 try {
-                    await withTimeout(deleteDoc(doc(db, 'secretg_apps', appId, 'posts', postId)), 12000, '刪除逾時，請稍後重試。');
-                    modal.classList.add('hidden');
+                    await deleteDoc(doc(db, 'secretg_apps', appId, 'posts', postId));
                     showToast('該條分享動態已刪除 🔒', 'success');
                 } catch (err) {
                     console.error("刪除失敗:", err);
-                    showToast(err.message || '銷毀失敗', 'error');
+                    showToast('銷毀失敗', 'error');
                 } finally {
                     hideLoading();
-                    okBtn.disabled = false;
-                    okBtn.classList.remove('opacity-60', 'cursor-not-allowed');
-                    okBtn.innerHTML = originalText;
                 }
             };
         };
 
-        window.showToast = showToast;
+        window.showToast = function(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            const bgColors = {
+                error: 'bg-red-500/95 border-red-400',
+                success: 'bg-emerald-600/95 border-emerald-400',
+                info: 'bg-amber-600/95 border-amber-500'
+            };
+            toast.className = `${bgColors[type]} text-white px-5 py-3.5 rounded-xl shadow-lg border border-white/10 text-sm font-semibold transition-all duration-300 opacity-0 transform -translate-y-4 backdrop-blur-xl flex items-center gap-3 pointer-events-auto shadow-[0_4px_25px_rgba(212,175,55,0.08)]`;
+            const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+            toast.innerHTML = `<i class="fa-solid ${icon} text-lg text-white"></i> <span>${message}</span>`;
+            
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.remove('opacity-0', '-translate-y-4'));
+            setTimeout(() => {
+                toast.classList.add('opacity-0', '-translate-y-4');
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        };
   
         window.onload = function() {
             initApp();
