@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -736,6 +736,69 @@
         }
 
 
+        /* 手機版完整功能表：將桌面左右欄缺失的功能收納至右上角選單 */
+        .sr-mobile-menu-panel {
+            position: fixed !important;
+            inset: 0 !important;
+            z-index: 95000 !important;
+            pointer-events: auto !important;
+        }
+        .sr-mobile-menu-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.58);
+            backdrop-filter: blur(14px) saturate(135%);
+            -webkit-backdrop-filter: blur(14px) saturate(135%);
+        }
+        .sr-mobile-menu-sheet {
+            position: absolute;
+            top: calc(4.75rem + env(safe-area-inset-top));
+            left: 0.85rem;
+            right: 0.85rem;
+            max-height: calc(100dvh - 8.8rem - env(safe-area-inset-bottom));
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            padding: 1rem;
+        }
+        .sr-mobile-menu-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            width: 100%;
+            padding: 0.9rem 0.95rem;
+            border-radius: 1.15rem;
+            border: 1px solid rgba(223, 183, 108, 0.16);
+            background: rgba(8, 12, 20, 0.56);
+            color: rgba(226, 232, 240, 0.92);
+            font-size: 0.82rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+        }
+        .sr-mobile-menu-item:active {
+            transform: scale(0.98);
+        }
+        .sr-mobile-menu-create-button {
+            width: 3.35rem;
+            height: 3.35rem;
+            border-radius: 999px;
+            margin-top: -1.35rem;
+            margin-bottom: -0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .sr-mobile-dashboard-nav {
+            min-height: calc(4.35rem + env(safe-area-inset-bottom)) !important;
+        }
+        @media (min-width: 761px) {
+            .sr-mobile-menu-panel {
+                display: none !important;
+            }
+        }
+
+
         /* 互動保護：避免折射層或瀏覽器未載入 Tailwind 時阻擋點擊 */
         button, a, label, input, select, textarea, [role="button"] {
             position: relative;
@@ -1331,6 +1394,14 @@
                     if (sidebarText) sidebarText.textContent = 'Audio Muted';
                     if (sidebarIcon) sidebarIcon.className = 'fa-solid fa-play text-[9px]';
                 }
+            }
+
+            const mobileBgmText = document.getElementById('mobile-menu-bgm-text');
+            const mobileBgmBtn = document.getElementById('mobile-menu-bgm-toggle');
+            if (mobileBgmText) mobileBgmText.textContent = isActuallyPlaying ? 'Premium Vip Lounge' : 'Audio Muted';
+            if (mobileBgmBtn) {
+                const icon = mobileBgmBtn.querySelector('i');
+                if (icon) icon.className = `fa-solid ${isActuallyPlaying ? 'fa-volume-high' : 'fa-volume-xmark'} text-amber-400`;
             }
         };
 
@@ -2224,6 +2295,74 @@
             };
         }
   
+        function renderMobileFeatureMenuHtml() {
+            const users = (window.state.activeUsers || [])
+                .filter(u => u && u.id && u.id !== window.state.applicationId)
+                .slice(0, 8);
+            const bgmEnabled = !!(window.luxuryBgm && window.luxuryBgm.audio && !window.luxuryBgm.audio.paused && window.luxuryBgm.isPlaying);
+            const tagButtons = window.state.kinksOptions.slice(0, 10).map(k => `
+                <button onclick="mobileSelectTag('${escapeJsString(k)}')" class="text-[11px] font-bold bg-slate-950/55 border border-amber-500/15 px-3 py-2 rounded-full text-slate-300 transition hover-breath click-press">
+                    # ${escapeHtml(k)}
+                </button>
+            `).join('');
+            const userCards = users.length === 0 ? `
+                <div class="text-xs text-slate-500 py-3 text-center border border-amber-500/10 rounded-2xl bg-slate-950/35">目前尚無其他活躍帳號</div>
+            ` : users.map(user => `
+                <button onclick="mobileOpenUserProfile('${escapeJsString(user.id)}')" class="w-full flex items-center justify-between p-2.5 bg-slate-950/45 rounded-2xl border border-amber-500/10 transition hover-breath click-press">
+                    <span class="flex items-center gap-2.5 min-w-0 text-left">
+                        <img src="${user.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-8 h-8 rounded-full object-cover border border-amber-500/20 shrink-0">
+                        <span class="min-w-0">
+                            <span class="block text-sm font-black text-slate-200 truncate">${escapeHtml(user.nickname || user.id)}</span>
+                            <span class="block text-[10px] text-slate-500 font-mono truncate">@${escapeHtml(user.id)}</span>
+                        </span>
+                    </span>
+                    <i class="fa-solid fa-chevron-right text-[10px] text-amber-400/70"></i>
+                </button>
+            `).join('');
+
+            return `
+                <div id="mobile-feature-menu" class="sr-mobile-menu-panel hidden md:hidden">
+                    <div id="mobile-feature-menu-backdrop" class="sr-mobile-menu-backdrop"></div>
+                    <section class="sr-mobile-menu-sheet glass-panel crystal-border rounded-3xl">
+                        <div class="flex items-center justify-between gap-3 mb-4">
+                            <div>
+                                <div class="text-[10px] text-amber-400/75 font-black tracking-[0.24em] font-luxury">Full Menu</div>
+                                <h3 class="text-lg font-black text-white tracking-widest font-luxury mt-1">完整功能表</h3>
+                            </div>
+                            <button id="mobile-feature-menu-close" class="w-9 h-9 rounded-full border border-amber-500/20 bg-slate-950/55 text-slate-300 flex items-center justify-center click-press" aria-label="關閉功能表">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-2.5 mb-5">
+                            <button id="mobile-menu-bgm-toggle" class="sr-mobile-menu-item">
+                                <span class="flex items-center gap-3"><i class="fa-solid ${bgmEnabled ? 'fa-volume-high' : 'fa-volume-xmark'} text-amber-400"></i><span>聲音播放</span></span>
+                                <span id="mobile-menu-bgm-text" class="text-[10px] text-amber-300/80 font-luxury">${bgmEnabled ? 'Premium Vip Lounge' : 'Audio Muted'}</span>
+                            </button>
+                            <button id="mobile-menu-spec-vault" class="sr-mobile-menu-item">
+                                <span class="flex items-center gap-3"><i class="fa-solid fa-medal text-amber-400"></i><span>S+ . S . G</span></span>
+                                <span class="text-[10px] text-amber-300/80">黃金Spec限定</span>
+                            </button>
+                            <button id="mobile-menu-badge-progress" class="sr-mobile-menu-item">
+                                <span class="flex items-center gap-3"><i class="fa-solid fa-award text-amber-400"></i><span>徽章進度</span></span>
+                                <span class="text-[10px] text-slate-500">Badge</span>
+                            </button>
+                        </div>
+
+                        <div class="space-y-3 mb-5">
+                            <h4 class="text-xs font-black text-amber-400 flex items-center gap-2 tracking-wider font-luxury"><i class="fa-solid fa-tags"></i> 熱門標籤</h4>
+                            <div class="flex flex-wrap gap-2">${tagButtons}</div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <h4 class="text-xs font-black text-amber-400 flex items-center gap-2 tracking-wider font-luxury"><i class="fa-solid fa-user-group"></i> 線上活躍帳號</h4>
+                            <div id="mobile-active-users-list" class="space-y-2.5">${userCards}</div>
+                        </div>
+                    </section>
+                </div>
+            `;
+        }
+
         function renderDashboard(container) {
             container.innerHTML = `
                 <!-- 修正：套用 ambient-spotlight 聚光燈效果 -->
@@ -2311,18 +2450,20 @@
                                 <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-8 h-8 rounded-full border border-amber-500/30 object-cover animate-gentle-logo">
                                 <h1 class="text-lg font-black text-white tracking-[0.15em] italic font-luxury">SecretRoom</h1>
                             </div>
-                            <!-- 修正：套用 brushed-gold、click-press -->
-                            <button id="mobile-btn-share" class="w-8 h-8 brushed-gold font-bold rounded-full flex items-center justify-center shadow-lg transition click-press">
-                                <i class="fa-solid fa-plus text-xs"></i>
+                            <!-- 手機版完整功能表入口：原新增貼文位置改為三條橫槓 -->
+                            <button id="mobile-btn-menu" class="w-9 h-9 bg-slate-950/55 border border-amber-500/25 text-amber-300 font-bold rounded-full flex items-center justify-center shadow-lg transition click-press hover-breath" aria-label="開啟完整功能表">
+                                <i class="fa-solid fa-bars text-sm"></i>
                             </button>
                         </header>
+
+                        ${renderMobileFeatureMenuHtml()}
   
                         <div class="flex-1 overflow-y-auto scrollbar-hide px-3 md:px-6 py-4 md:py-5" id="main-content-scroll">
                             <div class="max-w-2xl mx-auto w-full space-y-4 md:space-y-6" id="dashboard-tab-content">
                             </div>
                         </div>
   
-                        <!-- 手機版底部導覽：套用 glass-panel -->
+                        <!-- 手機版底部導覽：新增中央分享動態，形成五格功能列 -->
                         <nav class="sr-mobile-dashboard-nav flex md:hidden items-center justify-around border-t border-amber-500/15 glass-panel p-2.5 pb-safe-bottom shrink-0 select-none rounded-t-3xl">
                             <button id="mobile-tab-feed" class="flex flex-col items-center gap-1 transition-all click-press ${window.state.currentTab === 'feed' && window.state.currentFilter !== 'elite-ranking' ? 'text-amber-500 scale-105 font-bold' : 'text-slate-500'}">
                                 <i class="fa-solid fa-house-chimney text-sm"></i>
@@ -2331,6 +2472,9 @@
                             <button id="mobile-tab-ranking" class="flex flex-col items-center gap-1 transition-all click-press ${window.state.currentTab === 'feed' && window.state.currentFilter === 'elite-ranking' ? 'text-amber-500 scale-105 font-bold' : 'text-slate-500'}">
                                 <i class="fa-solid fa-trophy text-sm"></i>
                                 <span class="text-[10px] font-bold tracking-wider">綜合排行</span>
+                            </button>
+                            <button id="mobile-btn-share" class="sr-mobile-menu-create-button brushed-gold crystal-border shadow-xl transition-all click-press" aria-label="新增貼文">
+                                <i class="fa-solid fa-plus text-lg"></i>
                             </button>
                             <button id="mobile-tab-profile" class="flex flex-col items-center gap-1 transition-all click-press ${window.state.currentTab === 'profile' ? 'text-amber-500 scale-105 font-bold' : 'text-slate-500'}">
                                 <i class="fa-solid fa-user-circle text-sm"></i>
@@ -2420,6 +2564,21 @@
   
             const shareBtnMobile = document.getElementById('mobile-btn-share');
             if (shareBtnMobile) shareBtnMobile.onclick = () => showSharePostModal();
+
+            const mobileMenuBtn = document.getElementById('mobile-btn-menu');
+            const mobileMenu = document.getElementById('mobile-feature-menu');
+            const mobileMenuBackdrop = document.getElementById('mobile-feature-menu-backdrop');
+            const mobileMenuClose = document.getElementById('mobile-feature-menu-close');
+            const mobileMenuBgm = document.getElementById('mobile-menu-bgm-toggle');
+            const mobileMenuSpec = document.getElementById('mobile-menu-spec-vault');
+            const mobileMenuBadge = document.getElementById('mobile-menu-badge-progress');
+            const closeMobileFeatureMenu = () => { if (mobileMenu) mobileMenu.classList.add('hidden'); };
+            if (mobileMenuBtn) mobileMenuBtn.onclick = () => { if (mobileMenu) mobileMenu.classList.toggle('hidden'); };
+            if (mobileMenuBackdrop) mobileMenuBackdrop.onclick = closeMobileFeatureMenu;
+            if (mobileMenuClose) mobileMenuClose.onclick = closeMobileFeatureMenu;
+            if (mobileMenuBgm) mobileMenuBgm.onclick = (e) => { e.stopPropagation(); window.toggleBGMState(); };
+            if (mobileMenuSpec) mobileMenuSpec.onclick = () => { closeMobileFeatureMenu(); window.state.currentTab = 'spec-vault'; window.state.singlePostFocusId = null; renderDashboard(container); };
+            if (mobileMenuBadge) mobileMenuBadge.onclick = () => { closeMobileFeatureMenu(); window.state.currentTab = 'badge-progress'; window.state.singlePostFocusId = null; renderDashboard(container); };
 
             const sidebarBgmBtn = document.getElementById('sidebar-bgm-btn');
             if (sidebarBgmBtn) {
@@ -2714,7 +2873,40 @@
             }, (err) => console.error("Users Snapshot error:", err));
         }
   
+        function renderMobileActiveUsersList() {
+            const listContainer = document.getElementById('mobile-active-users-list');
+            if (!listContainer) return;
+            listContainer.innerHTML = '';
+            const showList = (window.state.activeUsers || [])
+                .filter(u => u && u.id && u.id !== window.state.applicationId)
+                .slice(0, 8);
+
+            if (showList.length === 0) {
+                listContainer.innerHTML = '<div class="text-xs text-slate-500 py-3 text-center border border-amber-500/10 rounded-2xl bg-slate-950/35">目前尚無其他活躍帳號</div>';
+                return;
+            }
+
+            showList.forEach((user) => {
+                const card = document.createElement('button');
+                card.type = 'button';
+                card.className = 'w-full flex items-center justify-between p-2.5 bg-slate-950/45 rounded-2xl border border-amber-500/10 transition hover-breath click-press';
+                card.onclick = () => window.mobileOpenUserProfile(user.id);
+                card.innerHTML = `
+                    <span class="flex items-center gap-2.5 min-w-0 text-left">
+                        <img src="${user.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-8 h-8 rounded-full object-cover border border-amber-500/20 shrink-0">
+                        <span class="min-w-0">
+                            <span class="block text-sm font-black text-slate-200 truncate">${escapeHtml(user.nickname || user.id)}</span>
+                            <span class="block text-[10px] text-slate-500 font-mono truncate">@${escapeHtml(user.id)}</span>
+                        </span>
+                    </span>
+                    <i class="fa-solid fa-chevron-right text-[10px] text-amber-400/70"></i>
+                `;
+                listContainer.appendChild(card);
+            });
+        }
+
         function renderActiveUsersAside() {
+            renderMobileActiveUsersList();
             const listContainer = document.getElementById('active-users-list-aside');
             if (!listContainer) return;
   
@@ -3432,6 +3624,22 @@
             renderDashboard(appContainer);
         };
   
+        window.mobileSelectTag = function(filterName) {
+            const menu = document.getElementById('mobile-feature-menu');
+            if (menu) menu.classList.add('hidden');
+            window.state.currentTab = 'feed';
+            window.state.currentFilter = filterName;
+            window.state.currentRankTag = null;
+            window.state.singlePostFocusId = null;
+            renderDashboard(appContainer);
+        };
+
+        window.mobileOpenUserProfile = function(userId) {
+            const menu = document.getElementById('mobile-feature-menu');
+            if (menu) menu.classList.add('hidden');
+            window.viewUserProfile(userId);
+        };
+
         window.toggleLikePost = async function(postId) {
             if (!db) { showToast('伺服器尚未完成連線，暫時無法按讚。', 'error'); return; }
             const post = window.state.posts.find(p => p.id === postId);
@@ -3680,7 +3888,7 @@
         window.unlockNsfw = function(postId) {
             window.state.unlockedNsfwPosts[postId] = true;
             updateSearchAndFeedUI();
-            showToast('已完成解密，解鎖私密圖片觀看 🔞', 'success');
+            showToast('已完成端對端解密，解鎖私密圖片觀看 🔞', 'success');
         };
   
         window.openReportModal = function(postId) {
@@ -4182,7 +4390,7 @@
                 badges.push({ 
                     icon: 'fa-crown', 
                     color: 'from-amber-400 via-yellow-200 to-amber-600 shadow-yellow-500/20 border-amber-400/30', 
-                    tooltip: '官方治理'
+                    tooltip: '官方最高權限治理者'
                 });
             }
             const createdSecs = user.createdAt ? user.createdAt.seconds : 0;
@@ -4191,21 +4399,21 @@
                 badges.push({ 
                     icon: 'fa-seedling', 
                     color: 'from-emerald-400 via-green-200 to-teal-600 shadow-emerald-500/20 border-emerald-500/30', 
-                    tooltip: '本週新進會員'
+                    tooltip: '本週新進之尊貴仕紳'
                 });
             }
             if (user.isPioneer) {
                 badges.push({ 
                     icon: 'fa-shield-halved', 
                     color: 'from-amber-600 to-orange-700 shadow-orange-500/10 border-orange-500/20', 
-                    tooltip: '創始階段即入駐會員'
+                    tooltip: '創始階段即入駐的終身元老'
                 });
             }
             if (user.isSpecElite) {
                 badges.push({ 
                     icon: 'fa-medal', 
                     color: 'from-amber-300 via-yellow-200 to-yellow-650 shadow-amber-500/35 border-amber-300/30 animate-pulse', 
-                    tooltip: '通過官方認證S.S+.G'
+                    tooltip: '通過官方生殖規格實證認證'
                 });
             }
   
@@ -4216,7 +4424,7 @@
                 badges.push({ 
                     icon: 'fa-fire', 
                     color: 'from-orange-500 to-rose-600 shadow-orange-500/20 border-orange-500/25', 
-                    tooltip: '獲得超過千次按讚社群人氣王'
+                    tooltip: '獲得超過千次按讚之社群人氣王'
                 });
             }
   
@@ -4229,7 +4437,7 @@
                 badges.push({ 
                     icon: 'fa-star', 
                     color: 'from-amber-400 to-yellow-500 shadow-amber-400/20 border-amber-400/25', 
-                    tooltip: '多篇作品榮獲滿分評價'
+                    tooltip: '多篇作品榮獲無瑕滿分評價'
                 });
             }
   
