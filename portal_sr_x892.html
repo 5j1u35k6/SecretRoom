@@ -24,8 +24,7 @@
 <body class="min-h-screen bg-[#020204] p-4 md:p-8">
 
     <div class="max-w-4xl mx-auto">
-        <!-- 頂部標頭 -->
-        <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8 pb-6 border-b border-slate-900">
+<header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8 pb-6 border-b border-slate-900">
             <div>
                 <h1 class="text-3xl font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-amber-300 flex items-center gap-3 font-serif">
                     <i class="fa-solid fa-user-shield text-amber-500"></i> SecretRoom 總控制台 (v2.5.4)
@@ -36,9 +35,7 @@
                 <i class="fa-solid fa-circle-notch animate-spin text-amber-500"></i> 端對端加密通道：資料安全同步中...
             </div>
         </header>
-
-        <!-- 統計數據卡片 -->
-        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
+<div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
             <div class="bg-slate-950/60 border border-slate-900 p-5 rounded-2xl">
                 <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider">待審核申請</div>
                 <div id="count-pending" class="text-3xl font-bold text-amber-500 mt-1">-</div>
@@ -57,8 +54,30 @@
             </div>
         </div>
 
-        <!-- 申請名單區塊 -->
-        <div class="bg-slate-950/40 border border-slate-900 rounded-3xl p-6 glass-panel">
+        <div class="bg-slate-950/40 border border-amber-500/15 rounded-3xl p-6 glass-panel mb-8">
+            <div class="flex items-center justify-between gap-4 mb-5">
+                <div>
+                    <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                        <div class="w-1.5 h-5 bg-amber-500 rounded-full"></div> 平台通知廣播
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-1">可發送訊息至全體會員，或僅發送給已通過黃金 Spec 的 S+ . S . G 會員。</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-3 mb-3">
+                <select id="broadcast-target" class="bg-slate-900 border border-slate-800 rounded-xl px-3 py-3 text-xs text-amber-500 focus:outline-none">
+                    <option value="all">全體會員</option>
+                    <option value="sg">S+ . S . G</option>
+                </select>
+                <input id="broadcast-title" class="bg-slate-900 border border-slate-800 rounded-xl px-3 py-3 text-sm text-slate-200 focus:outline-none focus:border-amber-500" placeholder="通知標題，例如：本週社群公告">
+            </div>
+            <textarea id="broadcast-message" class="w-full min-h-[110px] bg-slate-900 border border-slate-800 rounded-2xl px-3 py-3 text-sm text-slate-200 focus:outline-none focus:border-amber-500 resize-none" placeholder="輸入要發送給會員的通知內容"></textarea>
+            <div class="flex justify-end mt-4">
+                <button onclick="sendPlatformBroadcast()" class="px-5 py-3 bg-amber-600 hover:bg-amber-500 text-slate-950 rounded-xl text-xs font-bold transition shadow-lg shadow-amber-950/20">
+                    <i class="fa-solid fa-paper-plane mr-1.5"></i> 發送平台通知
+                </button>
+            </div>
+        </div>
+<div class="bg-slate-950/40 border border-slate-900 rounded-3xl p-6 glass-panel">
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-lg font-bold text-white flex items-center gap-2">
                     <div class="w-1.5 h-5 bg-amber-500 rounded-full"></div> 會籍准駁與社群內容安全中樞
@@ -76,9 +95,7 @@
                     </select>
                 </div>
             </div>
-
-            <!-- 名單容器 -->
-            <div id="admin-list" class="space-y-4">
+<div id="admin-list" class="space-y-4">
                 <div class="flex flex-col items-center justify-center py-12 text-slate-500 gap-3">
                     <i class="fa-solid fa-circle-notch animate-spin text-2xl text-amber-500"></i>
                     <span>正在檢索受審會員佇列...</span>
@@ -86,17 +103,13 @@
             </div>
         </div>
     </div>
-
-    <!-- 圖片高清燈箱放大模態視窗 -->
-    <div id="zoom-modal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[100] flex items-center justify-center hidden opacity-0 transition-opacity duration-300" onclick="closeZoomModal()">
+<div id="zoom-modal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[100] flex items-center justify-center hidden opacity-0 transition-opacity duration-300" onclick="closeZoomModal()">
         <div class="relative max-w-4xl max-h-[90vh] p-4 flex flex-col items-center justify-center" onclick="event.stopPropagation()">
             <button onclick="closeZoomModal()" class="absolute top-4 right-4 text-white hover:text-slate-300 text-3xl transition z-10">&times;</button>
             <img id="zoom-modal-img" class="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl border border-slate-850">
         </div>
     </div>
-
-    <!-- 客製高質感「拒絕原因」彈出選單 -->
-    <div id="reject-reason-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+<div id="reject-reason-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
         <div class="bg-slate-950 border border-slate-800 p-6 rounded-3xl max-w-sm w-full mx-4 shadow-2xl transform scale-95 transition-transform duration-300" id="reject-reason-content">
             <h3 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
                 <i class="fa-solid fa-circle-question text-amber-500"></i> 選擇審核拒絕原因
@@ -128,9 +141,7 @@
             </div>
         </div>
     </div>
-
-    <!-- 客製高質感防誤觸刪除帳號確認模態視窗 -->
-    <div id="delete-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+<div id="delete-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
         <div class="bg-slate-950 border border-slate-800 p-6 rounded-3xl max-w-sm w-full mx-4 shadow-2xl transform scale-95 transition-transform duration-300" id="delete-modal-content">
             <h3 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
                 <i class="fa-solid fa-triangle-exclamation text-red-500"></i> 確定要刪除該用戶？
@@ -148,7 +159,7 @@
     <div id="toast-container" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col gap-2 w-full max-w-xs px-4"></div>
 
     <script type="module">
-        let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc, deleteDoc, query, where, getDocs;
+        let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc, deleteDoc, query, where, getDocs, setDoc, serverTimestamp;
 
         const appId = 'secretg-production-node-tw';
         const firebaseConfig = {
@@ -184,6 +195,8 @@
                 query = firestoreMod.query;
                 where = firestoreMod.where;
                 getDocs = firestoreMod.getDocs;
+                setDoc = firestoreMod.setDoc;
+                serverTimestamp = firestoreMod.serverTimestamp;
 
                 return true;
             } catch (e) {
@@ -445,7 +458,6 @@
                     `;
                 }
 
-                // 黃金 Spec 獨立專區審核與管理
                 let specReviewHtml = '';
                 if (appData.specEliteStatus === 'pending' && appData.specImage) {
                     specReviewHtml = `
@@ -549,6 +561,41 @@
                 `;
                 listContainer.appendChild(card);
             });
+        }
+
+        window.sendPlatformBroadcast = async function() {
+            if (!db) {
+                showToast("資料庫尚未完成連線，無法發送通知", "error");
+                return;
+            }
+            const target = document.getElementById('broadcast-target').value;
+            const title = document.getElementById('broadcast-title').value.trim();
+            const message = document.getElementById('broadcast-message').value.trim();
+            if (!title || !message) {
+                showToast("請填寫通知標題與內容", "error");
+                return;
+            }
+            try {
+                const notifRef = doc(collection(db, 'secretg_apps', appId, 'notifications'));
+                await setDoc(notifRef, {
+                    target,
+                    type: 'platform',
+                    category: 'platform',
+                    tone: 'platform',
+                    title,
+                    message,
+                    status: target === 'sg' ? 'S+ . S . G 專屬' : '全體會員公告',
+                    createdAt: serverTimestamp(),
+                    createdAtMs: Date.now(),
+                    createdBy: 'admin'
+                });
+                document.getElementById('broadcast-title').value = '';
+                document.getElementById('broadcast-message').value = '';
+                showToast(target === 'sg' ? '已發送給 S+ . S . G 會員' : '已發送給全體會員', 'success');
+            } catch (err) {
+                console.error("平台通知發送失敗:", err);
+                showToast("發送失敗: " + err.message, "error");
+            }
         }
 
         window.filterApplications = function() {
@@ -721,7 +768,6 @@
             }
         }
 
-        // 審核大頭照：核准
         window.approveAvatarChange = async function(userId) {
             if (!db) return;
             try {
