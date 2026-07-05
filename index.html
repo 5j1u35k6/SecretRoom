@@ -2307,7 +2307,7 @@
                             
                             <h2 class="text-xl font-bold text-white font-luxury">Telegram Binding</h2>
                             <p class="text-sm text-slate-300 leading-relaxed px-4">
-                                為開啟高級警報防護與即時密語傳輸，請在下方透過 Telegram 官方進行安全登入綁定。
+                                請在下方透過 Telegram 官方進行註冊綁定。
                             </p>
                         </div>
                         
@@ -2492,7 +2492,7 @@
                                     <i class="fa-solid fa-door-open text-amber-500/80"></i> 俱樂部大廳
                                 </button>
                                 <button id="aside-tab-notifications" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center justify-between gap-3 text-sm transition-all duration-300 font-bold hover-breath click-press ${window.state.currentTab === 'notifications' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500 shadow-[0_0_20px_rgba(223,183,108,0.1)]' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
-                                    <span class="flex items-center gap-3"><i class="fa-solid fa-bell text-amber-500/80"></i> 通知區塊</span>
+                                    <span class="flex items-center gap-3"><i class="fa-solid fa-bell text-amber-500/80"></i> 通知</span>
                                     <span id="aside-notification-count" class="hidden min-w-[1.25rem] h-5 px-1.5 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center shadow-[0_0_12px_rgba(239,68,68,0.5)]"></span>
                                 </button>
                                 <button id="aside-tab-ranking" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 text-sm transition-all duration-300 font-bold hover-breath click-press ${window.state.currentTab === 'feed' && window.state.currentFilter === 'elite-ranking' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500 shadow-[0_0_20px_rgba(223,183,108,0.1)]' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
@@ -2781,8 +2781,8 @@
                         <div class="relative flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                             <div>
                                 <div class="text-[10px] text-amber-400/75 font-black tracking-[0.26em] font-luxury">Notification Center</div>
-                                <h2 class="text-2xl font-black text-white font-luxury tracking-wider mt-1">通知區塊</h2>
-                                <p class="text-xs text-slate-400 mt-2 leading-relaxed">集中查看檢舉進度、黃金 Spec 認證、大頭照更換，以及官方平台通知。訊息時間以發送或審核完成時間固定顯示。</p>
+                                <h2 class="text-2xl font-black text-white font-luxury tracking-wider mt-1">通知</h2>
+                                <p class="text-xs text-slate-400 mt-2 leading-relaxed">查看任何進度、黃金 Spec 認證、大頭照更換，以及官方平台通知。訊息時間以發送或審核完成時間顯示。</p>
                             </div>
                             <button id="btn-mark-notifications-read" class="shrink-0 px-3.5 py-2 rounded-xl border border-amber-500/20 bg-slate-950/55 text-xs font-black text-amber-300 hover-breath click-press">全部已讀</button>
                         </div>
@@ -2848,49 +2848,49 @@
             const progressItems = [
                 {
                     icon: 'fa-crown',
-                    title: '官方最高權限治理者',
-                    desc: '授予負責平台治理、會員安全與重大決策的最高管理身分。此徽章不開放一般申請。',
+                    title: '官方平台治理者',
+                    desc: '負責平台管理、會員安全與重大決策的最高管理身分。此徽章不開放一般申請。',
                     unlocked: user.role === 'admin' || user.isAdmin === true,
                     note: (user.role === 'admin' || user.isAdmin === true) ? '已啟用' : '官方授權限定'
                 },
                 {
                     icon: 'fa-seedling',
-                    title: '本週新進之尊貴仕紳',
+                    title: '新進俱樂部會員',
                     desc: '加入俱樂部七日內自動顯示，象徵新會員完成入駐並進入社群禮遇期。',
                     unlocked: isNewThisWeek,
                     note: isNewThisWeek ? '禮遇期內' : '入會七日內限定'
                 },
                 {
                     icon: 'fa-shield-halved',
-                    title: '創始階段終身元老',
-                    desc: '保留給平台早期即入駐、共同奠定俱樂部文化與社群秩序的創始會員。',
+                    title: '創始階段加入之會員',
+                    desc: '平台早期加入、共同奠定俱樂部文化與社群秩序的創始會員。',
                     unlocked: user.isPioneer === true,
                     note: user.isPioneer === true ? '已取得' : '創始會員限定'
                 },
                 {
                     icon: 'fa-medal',
-                    title: '黃金 Spec 實證認證',
-                    desc: '通過官方審核的身體規格實證認證。通過後將同步開啟 S+ . S . G 專區權限。',
+                    title: '黃金Spec認證',
+                    desc: '當會員資料部分達到平台門檻時，可申請加入黃金Spec，通過官方審核的認證將同步開啟 S+ . S . G 專區權限。',
                     unlocked: specApproved,
                     note: specApproved ? '已通過' : (specPending ? '審核中' : '可於個人主頁申請')
                 },
                 {
                     icon: 'fa-fire',
-                    title: '社群人氣王',
-                    desc: '累計獲得超過一千次按讚，代表作品在俱樂部內具備高度關注與互動聲量。',
+                    title: '千次按讚人氣王',
+                    desc: '累計獲得超過一千次按讚，在俱樂部內具備高度關注與互動聲量。',
                     unlocked: totalLikes >= 1000,
                     note: `${totalLikes} / 1000 讚`
                 },
                 {
                     icon: 'fa-star',
-                    title: '無瑕滿分典藏',
+                    title: '滿分典藏',
                     desc: '多篇作品維持滿分評價，且累積足夠評分數後解鎖，象徵內容品質穩定受到肯定。',
                     unlocked: perfectAll,
                     note: perfectAll ? '已達成' : `${perfectPosts.length} 篇符合滿分門檻`
                 },
                 {
                     icon: 'fa-camera',
-                    title: '百篇動態創作者',
+                    title: '百篇創作者',
                     desc: '累計發布上百篇動態作品，代表長期穩定創作、分享與維持社群活躍。',
                     unlocked: userPosts.length >= 100,
                     note: `${userPosts.length} / 100 篇`
@@ -2974,7 +2974,7 @@
                             <div>
                                 <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full brushed-gold crystal-border text-[10px] font-black tracking-wider mb-3">黃金Spec限定</div>
                                 <h2 class="text-2xl md:text-3xl font-black text-white font-luxury tracking-widest">S+ . S . G</h2>
-                                <p class="text-sm text-slate-300 mt-2 leading-relaxed">集中檢視其他已通過黃金 Spec 會員當初申請認證時提交的私密審核照片。所有照片均覆蓋 NSFW 提醒與滿版 SecretRomm 浮水印。</p>
+                                <p class="text-sm text-slate-300 mt-2 leading-relaxed">集中檢視其他已通過黃金 Spec 會員當初申請認證時提交的私密審核照片。</p>
                             </div>
                             <div class="text-right">
                                 <div class="text-3xl font-black text-amber-300 font-luxury">${specApplicants.length}</div>
@@ -4625,16 +4625,16 @@
                         type: 'spec',
                         tone: 'pending',
                         title: '黃金 Spec 認證已送審',
-                        message: '您的規格證明照片已送交官方審核，審核完成後會在通知區塊更新狀態。',
+                        message: '您的照片已送交官方審核，審核完成後會在通知更新狀態。',
                         status: '審查中'
                     });
 
                     window.state.userData.specEliteStatus = 'pending';
                     modal.remove();
-                    showToast('規格核查照片已送出，請耐心等待審查結果！', 'success');
+                    showToast('照片已送出，請耐心等待審查結果！', 'success');
                     renderDashboard(appContainer);
                 } catch (err) {
-                    console.error("提交規格審核錯誤:", err);
+                    console.error("提交審核錯誤:", err);
                     showToast('提交失敗，請重試: ' + err.message, 'error');
                 } finally {
                     hideLoading();
@@ -4649,7 +4649,7 @@
                 badges.push({ 
                     icon: 'fa-crown', 
                     color: 'from-amber-400 via-yellow-200 to-amber-600 shadow-yellow-500/20 border-amber-400/30', 
-                    tooltip: '官方最高權限治理者'
+                    tooltip: '官方平台治理者'
                 });
             }
             const createdSecs = user.createdAt ? user.createdAt.seconds : 0;
@@ -4658,21 +4658,21 @@
                 badges.push({ 
                     icon: 'fa-seedling', 
                     color: 'from-emerald-400 via-green-200 to-teal-600 shadow-emerald-500/20 border-emerald-500/30', 
-                    tooltip: '本週新進之尊貴仕紳'
+                    tooltip: '新進俱樂部會員'
                 });
             }
             if (user.isPioneer) {
                 badges.push({ 
                     icon: 'fa-shield-halved', 
                     color: 'from-amber-600 to-orange-700 shadow-orange-500/10 border-orange-500/20', 
-                    tooltip: '創始階段即入駐的終身元老'
+                    tooltip: '創始階段加入之會員'
                 });
             }
             if (user.isSpecElite) {
                 badges.push({ 
                     icon: 'fa-medal', 
                     color: 'from-amber-300 via-yellow-200 to-yellow-650 shadow-amber-500/35 border-amber-300/30 animate-pulse', 
-                    tooltip: '通過官方生殖規格實證認證'
+                    tooltip: '黃金Spec認證'
                 });
             }
   
@@ -4683,7 +4683,7 @@
                 badges.push({ 
                     icon: 'fa-fire', 
                     color: 'from-orange-500 to-rose-600 shadow-orange-500/20 border-orange-500/25', 
-                    tooltip: '獲得超過千次按讚之社群人氣王'
+                    tooltip: '千次按讚人氣王'
                 });
             }
   
@@ -4696,7 +4696,7 @@
                 badges.push({ 
                     icon: 'fa-star', 
                     color: 'from-amber-400 to-yellow-500 shadow-amber-400/20 border-amber-400/25', 
-                    tooltip: '多篇作品榮獲無瑕滿分評價'
+                    tooltip: '滿分典藏'
                 });
             }
   
@@ -4704,7 +4704,7 @@
                 badges.push({ 
                     icon: 'fa-camera', 
                     color: 'from-violet-500 to-purple-700 shadow-violet-500/20 border-purple-500/25', 
-                    tooltip: '累計發布上百篇動態作品'
+                    tooltip: '百篇創作者'
                 });
             }
   
