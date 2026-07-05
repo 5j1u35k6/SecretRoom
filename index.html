@@ -3680,7 +3680,7 @@
         window.unlockNsfw = function(postId) {
             window.state.unlockedNsfwPosts[postId] = true;
             updateSearchAndFeedUI();
-            showToast('已完成端對端解密，解鎖私密圖片觀看 🔞', 'success');
+            showToast('已完成解密，解鎖私密圖片觀看 🔞', 'success');
         };
   
         window.openReportModal = function(postId) {
@@ -4182,7 +4182,7 @@
                 badges.push({ 
                     icon: 'fa-crown', 
                     color: 'from-amber-400 via-yellow-200 to-amber-600 shadow-yellow-500/20 border-amber-400/30', 
-                    tooltip: '官方最高權限治理者'
+                    tooltip: '官方治理'
                 });
             }
             const createdSecs = user.createdAt ? user.createdAt.seconds : 0;
@@ -4191,21 +4191,21 @@
                 badges.push({ 
                     icon: 'fa-seedling', 
                     color: 'from-emerald-400 via-green-200 to-teal-600 shadow-emerald-500/20 border-emerald-500/30', 
-                    tooltip: '本週新進之尊貴仕紳'
+                    tooltip: '本週新進會員'
                 });
             }
             if (user.isPioneer) {
                 badges.push({ 
                     icon: 'fa-shield-halved', 
                     color: 'from-amber-600 to-orange-700 shadow-orange-500/10 border-orange-500/20', 
-                    tooltip: '創始階段即入駐的終身元老'
+                    tooltip: '創始階段即入駐會員'
                 });
             }
             if (user.isSpecElite) {
                 badges.push({ 
                     icon: 'fa-medal', 
                     color: 'from-amber-300 via-yellow-200 to-yellow-650 shadow-amber-500/35 border-amber-300/30 animate-pulse', 
-                    tooltip: '通過官方生殖規格實證認證'
+                    tooltip: '通過官方認證S.S+.G'
                 });
             }
   
@@ -4216,7 +4216,7 @@
                 badges.push({ 
                     icon: 'fa-fire', 
                     color: 'from-orange-500 to-rose-600 shadow-orange-500/20 border-orange-500/25', 
-                    tooltip: '獲得超過千次按讚之社群人氣王'
+                    tooltip: '獲得超過千次按讚社群人氣王'
                 });
             }
   
@@ -4229,7 +4229,7 @@
                 badges.push({ 
                     icon: 'fa-star', 
                     color: 'from-amber-400 to-yellow-500 shadow-amber-400/20 border-amber-400/25', 
-                    tooltip: '多篇作品榮獲無瑕滿分評價'
+                    tooltip: '多篇作品榮獲滿分評價'
                 });
             }
   
