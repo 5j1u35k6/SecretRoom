@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -669,6 +669,72 @@
             -webkit-user-drag: none;
         }
 
+
+        /* 互動保護：避免折射層或瀏覽器未載入 Tailwind 時阻擋點擊 */
+        button, a, label, input, select, textarea, [role="button"] {
+            position: relative;
+            z-index: 2;
+            pointer-events: auto !important;
+        }
+        .hidden { display: none !important; }
+        #custom-confirm-modal:not(.hidden) {
+            display: flex !important;
+            z-index: 99999 !important;
+        }
+        #toast-container {
+            z-index: 100000 !important;
+            pointer-events: none;
+        }
+        #toast-container > div { pointer-events: auto; }
+
+        /* 修正：前一版把 Toast / BGM / Confirm Modal 一併設為 relative，導致彈窗與確認視窗無法正常浮出 */
+        #toast-container {
+            position: fixed !important;
+            top: 1.5rem !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            z-index: 2147483000 !important;
+            pointer-events: none !important;
+        }
+        #toast-container > div {
+            pointer-events: auto !important;
+        }
+        #custom-confirm-modal {
+            position: fixed !important;
+            inset: 0 !important;
+            z-index: 2147483001 !important;
+        }
+        #custom-confirm-modal.hidden {
+            display: none !important;
+        }
+        #custom-confirm-modal:not(.hidden) {
+            display: flex !important;
+        }
+        #bgm-controller-widget {
+            position: fixed !important;
+            z-index: 2147482000 !important;
+        }
+
+        /* 修正：長表單 Modal 在 Chrome/Safari backdrop-filter 下產生區塊破圖，改用穩定的內層繪製 */
+        .sr-stable-modal-panel {
+            background: linear-gradient(145deg, rgba(10, 12, 19, 0.96), rgba(31, 20, 16, 0.94)) !important;
+            backdrop-filter: blur(22px) saturate(132%) !important;
+            -webkit-backdrop-filter: blur(22px) saturate(132%) !important;
+            contain: paint;
+            isolation: isolate;
+            transform: translateZ(0);
+            will-change: transform;
+        }
+        .sr-stable-modal-panel::before {
+            opacity: 0.22 !important;
+        }
+        .sr-stable-modal-panel .bg-slate-900\/40,
+        .sr-stable-modal-panel .bg-slate-950\/40,
+        .sr-stable-modal-panel .bg-slate-900\/20,
+        .sr-stable-modal-panel .bg-slate-900\/10 {
+            background-color: rgba(7, 10, 17, 0.76) !important;
+        }
+
     </style>
 </head>
 <body class="min-h-screen w-full flex flex-col p-0 m-0 overflow-hidden select-none club-groove-bg">
@@ -908,6 +974,70 @@
             const items = Array.from({ length: compact ? 24 : 42 }, () => `<span>${safeText}</span>`).join('');
             return `<div class="sr-watermark-grid ${compact ? 'sr-watermark-compact' : ''}" style="--wm-opacity:${opacity};">${items}</div>`;
         }
+
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            const bgColors = {
+                error: 'bg-red-500/95 border-red-400',
+                success: 'bg-emerald-600/95 border-emerald-400',
+                info: 'bg-amber-600/95 border-amber-500'
+            };
+            toast.className = `${bgColors[type] || bgColors.info} text-white px-5 py-3.5 rounded-xl shadow-lg border border-white/10 text-sm font-semibold transition-all duration-300 opacity-0 transform -translate-y-4 backdrop-blur-xl flex items-center gap-3 pointer-events-auto shadow-[0_4px_25px_rgba(212,175,55,0.08)]`;
+            const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+            toast.innerHTML = `<i class="fa-solid ${icon} text-lg text-white"></i> <span>${escapeHtml(message)}</span>`;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.remove('opacity-0', '-translate-y-4'));
+            setTimeout(() => {
+                toast.classList.add('opacity-0', '-translate-y-4');
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        }
+        window.showToast = showToast;
+
+        function withTimeout(promise, ms = 12000, message = '操作逾時，請檢查網路後再試一次。') {
+            let timer;
+            const timeout = new Promise((_, reject) => {
+                timer = setTimeout(() => reject(new Error(message)), ms);
+            });
+            return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+        }
+
+        window.addEventListener('error', (event) => {
+            console.error('Global runtime error:', event.error || event.message);
+            if (window.showToast) window.showToast('操作未完成，請重新整理後再試一次。', 'error');
+        });
+
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('Unhandled promise rejection:', event.reason);
+            if (window.showToast) window.showToast('操作未完成，請稍後再試。', 'error');
+        });
+
+
+        // 互動保險：若 inline onclick 或動態綁定因瀏覽器差異失效，仍可啟動關鍵按鈕。
+        document.addEventListener('click', (event) => {
+            const target = event.target && event.target.closest ? event.target.closest('button, [role="button"], [onclick]') : null;
+            if (!target) return;
+
+            if (target.id === 'btn-login-submit' && typeof window.__srHandleLoginSubmit === 'function') {
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+                window.__srHandleLoginSubmit();
+                return;
+            }
+
+            const inlineClick = target.getAttribute('onclick') || '';
+            const deletePostMatch = inlineClick.match(/deleteMyPost\('([^']+)'\)/);
+            if (deletePostMatch && typeof window.deleteMyPost === 'function') {
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+                window.deleteMyPost(deletePostMatch[1]);
+            }
+        }, true);
 
         function isGoldSpecApproved(user) {
             if (!user) return false;
@@ -1362,6 +1492,7 @@
                         <i class="fa-solid fa-lock text-amber-500"></i> Member Verification
                     </h3>
                     <p class="text-xs text-slate-400 mb-5 leading-relaxed font-light">請輸入您的帳號與密碼進行登入</p>
+                    <div id="login-error-box" class="hidden mb-4 p-3 rounded-2xl bg-red-500/10 border border-red-400/25 text-red-200 text-xs font-bold leading-relaxed"></div>
                     
                     <div class="space-y-4">
                         <div>
@@ -1390,24 +1521,37 @@
   
             document.getElementById('close-login').onclick = () => modal.remove();
   
-            document.getElementById('btn-login-submit').onclick = async () => {
+            const loginSubmitBtn = document.getElementById('btn-login-submit');
+            const showLoginError = (message) => {
+                showToast(message, 'error');
+                const errorBox = document.getElementById('login-error-box');
+                if (errorBox) {
+                    errorBox.textContent = message;
+                    errorBox.classList.remove('hidden');
+                }
+            };
+            const handleLoginSubmit = async () => {
                 const usernameInput = document.getElementById('login-username').value.trim();
                 const passwordInput = document.getElementById('login-password').value;
   
                 if (!usernameInput || !passwordInput) {
-                    showToast('請填寫完整登入資訊！', 'error');
+                    showLoginError('請填寫完整登入資訊！');
                     return;
                 }
   
                 if (!db) {
-                    showToast('驗證中，正在進行安全協議...', 'error');
+                    showLoginError('伺服器尚未完成連線，請稍後再登入。');
                     return;
                 }
   
+                loginSubmitBtn.disabled = true;
+                loginSubmitBtn.classList.add('opacity-60', 'cursor-not-allowed');
+                const originalText = loginSubmitBtn.innerHTML;
+                loginSubmitBtn.innerHTML = '驗證中...';
                 showLoading();
                 try {
                     const appRef = doc(db, 'secretg_apps', appId, 'applications', usernameInput);
-                    const docSnap = await getDoc(appRef);
+                    const docSnap = await withTimeout(getDoc(appRef), 12000, '登入驗證逾時，請檢查網路或稍後重試。');
   
                     if (docSnap.exists()) {
                         const data = docSnap.data();
@@ -1424,20 +1568,38 @@
                             else if (data.status === 'approved' || data.status === 'active') {
                                 if (!data.telegramInfo) navigate('telegram-bind');
                                 else navigate('dashboard');
+                            } else {
+                                showLoginError('帳號狀態尚未啟用，請等待審核。');
                             }
                         } else {
-                            showToast('密碼不正確，請重新檢查。', 'error');
+                            showLoginError('密碼不正確，請重新檢查。');
                         }
                     } else {
-                        showToast('該帳號未完成帳號申請。', 'error');
+                        showLoginError('該帳號未完成帳號申請。');
                     }
                 } catch (err) {
                     console.error("登入驗證錯誤:", err);
-                    showToast('驗證異常: ' + err.message, 'error');
+                    showLoginError(err.message || '驗證異常，請稍後重試。');
                 } finally {
                     hideLoading();
+                    if (document.body.contains(loginSubmitBtn)) {
+                        loginSubmitBtn.disabled = false;
+                        loginSubmitBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+                        loginSubmitBtn.innerHTML = originalText;
+                    }
                 }
             };
+            loginSubmitBtn.onclick = handleLoginSubmit;
+            window.__srHandleLoginSubmit = handleLoginSubmit;
+            ['login-username', 'login-password'].forEach((id) => {
+                const input = document.getElementById(id);
+                if (input) input.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        handleLoginSubmit();
+                    }
+                });
+            });
         }
   
         function renderRegister(container) {
@@ -2024,6 +2186,10 @@
                                     <span class="flex items-center gap-3"><i class="fa-solid fa-medal text-amber-500/80"></i> S+ . S . G</span>
                                     <span class="text-[9px] px-2 py-1 rounded-full brushed-gold crystal-border shrink-0">黃金Spec限定</span>
                                 </button>
+                                <button id="aside-tab-badge-progress" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center justify-between gap-3 text-sm transition-all duration-300 font-bold hover-breath click-press ${window.state.currentTab === 'badge-progress' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500 shadow-[0_0_20px_rgba(223,183,108,0.1)]' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
+                                    <span class="flex items-center gap-3"><i class="fa-solid fa-award text-amber-500/80"></i> 徽章進度</span>
+                                    <span class="text-[9px] px-2 py-1 rounded-full border border-amber-500/20 text-amber-300/80 shrink-0">Badge</span>
+                                </button>
                             </nav>
   
                             <!-- 修正：套用 brushed-gold、hover-breath 與 click-press -->
@@ -2164,6 +2330,7 @@
             bindTabEvents('aside-tab-feed', 'feed', 'recommended');
             bindTabEvents('aside-tab-ranking', 'feed', 'elite-ranking');
             bindTabEvents('aside-tab-spec-vault', 'spec-vault');
+            bindTabEvents('aside-tab-badge-progress', 'badge-progress');
             bindTabEvents('mobile-tab-feed', 'feed', 'recommended');
             bindTabEvents('mobile-tab-ranking', 'feed', 'elite-ranking');
             bindTabEvents('mobile-tab-profile', 'profile');
@@ -2211,6 +2378,8 @@
                 renderProfileTab(tabContentContainer, window.state.applicationId);
             } else if (window.state.currentTab === 'spec-vault') {
                 renderSpecVaultTab(tabContentContainer);
+            } else if (window.state.currentTab === 'badge-progress') {
+                renderBadgeProgressTab(tabContentContainer);
             } else if (window.state.currentTab === 'other-profile') {
                 renderProfileTab(tabContentContainer, window.state.viewTargetUserId);
             }
@@ -2218,6 +2387,106 @@
             startRealtimeSnapshotSync();
         }
   
+        function renderBadgeProgressTab(container) {
+            const user = { id: window.state.applicationId, ...(window.state.userData || {}) };
+            const userPosts = window.state.posts.filter(p => p.userId === window.state.applicationId);
+            const totalLikes = userPosts.reduce((sum, p) => sum + (p.likeCount || 0), 0);
+            const createdSecs = user.createdAt ? user.createdAt.seconds : 0;
+            const nowSecs = Date.now() / 1000;
+            const isNewThisWeek = !!(createdSecs && (nowSecs - createdSecs) <= (168 * 3600));
+            const perfectPosts = userPosts.filter(p => {
+                const ratings = p.ratings ? Object.values(p.ratings) : [];
+                const avg = ratings.length > 0 ? (ratings.reduce((a,b)=>a+b, 0) / ratings.length) : 0;
+                return avg === 5.0 && ratings.length >= 500;
+            });
+            const perfectAll = userPosts.length >= 50 && perfectPosts.length === userPosts.length;
+            const specApproved = isGoldSpecApproved(user);
+            const specPending = String(user.specEliteStatus || '').toLowerCase() === 'pending';
+
+            const progressItems = [
+                {
+                    icon: 'fa-crown',
+                    title: '官方最高權限治理者',
+                    desc: '授予負責平台治理、會員安全與重大決策的最高管理身分。此徽章不開放一般申請。',
+                    unlocked: user.role === 'admin' || user.isAdmin === true,
+                    note: (user.role === 'admin' || user.isAdmin === true) ? '已啟用' : '官方授權限定'
+                },
+                {
+                    icon: 'fa-seedling',
+                    title: '本週新進之尊貴仕紳',
+                    desc: '加入俱樂部七日內自動顯示，象徵新會員完成入駐並進入社群禮遇期。',
+                    unlocked: isNewThisWeek,
+                    note: isNewThisWeek ? '禮遇期內' : '入會七日內限定'
+                },
+                {
+                    icon: 'fa-shield-halved',
+                    title: '創始階段終身元老',
+                    desc: '保留給平台早期即入駐、共同奠定俱樂部文化與社群秩序的創始會員。',
+                    unlocked: user.isPioneer === true,
+                    note: user.isPioneer === true ? '已取得' : '創始會員限定'
+                },
+                {
+                    icon: 'fa-medal',
+                    title: '黃金 Spec 實證認證',
+                    desc: '通過官方審核的身體規格實證認證。通過後將同步開啟 S+ . S . G 專區權限。',
+                    unlocked: specApproved,
+                    note: specApproved ? '已通過' : (specPending ? '審核中' : '可於個人主頁申請')
+                },
+                {
+                    icon: 'fa-fire',
+                    title: '社群人氣王',
+                    desc: '累計獲得超過一千次按讚，代表作品在俱樂部內具備高度關注與互動聲量。',
+                    unlocked: totalLikes >= 1000,
+                    note: `${totalLikes} / 1000 讚`
+                },
+                {
+                    icon: 'fa-star',
+                    title: '無瑕滿分典藏',
+                    desc: '多篇作品維持滿分評價，且累積足夠評分數後解鎖，象徵內容品質穩定受到肯定。',
+                    unlocked: perfectAll,
+                    note: perfectAll ? '已達成' : `${perfectPosts.length} 篇符合滿分門檻`
+                },
+                {
+                    icon: 'fa-camera',
+                    title: '百篇動態創作者',
+                    desc: '累計發布上百篇動態作品，代表長期穩定創作、分享與維持社群活躍。',
+                    unlocked: userPosts.length >= 100,
+                    note: `${userPosts.length} / 100 篇`
+                }
+            ];
+
+            container.innerHTML = `
+                <div class="space-y-5">
+                    <div class="glass-panel crystal-border rounded-3xl p-5 md:p-6 relative overflow-hidden">
+                        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-[10px] font-black text-amber-300 tracking-widest mb-3">
+                            <i class="fa-solid fa-award"></i> Badge Progress
+                        </div>
+                        <h2 class="text-2xl md:text-3xl font-black text-white font-luxury tracking-widest">徽章進度</h2>
+                        <p class="text-sm text-slate-300 mt-2 leading-relaxed">
+                            這裡整理目前所有榮譽徽章的解鎖條件與你的完成狀態。徽章會依照帳號權限、入會時間、黃金 Spec 審核、作品數量、按讚與評價表現自動更新。
+                        </p>
+                    </div>
+                    <div class="grid grid-cols-1 gap-4">
+                        ${progressItems.map(item => `
+                            <article class="glass-panel crystal-border rounded-3xl p-4 md:p-5 flex items-start gap-4">
+                                <div class="w-11 h-11 rounded-2xl ${item.unlocked ? 'brushed-gold text-slate-950' : 'bg-slate-900/70 text-slate-500 border border-amber-500/15'} flex items-center justify-center shrink-0">
+                                    <i class="fa-solid ${item.icon}"></i>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5">
+                                        <h3 class="text-sm font-black ${item.unlocked ? 'text-white' : 'text-slate-300'}">${item.title}</h3>
+                                        <span class="text-[10px] px-2.5 py-1 rounded-full ${item.unlocked ? 'bg-emerald-500/12 border border-emerald-400/25 text-emerald-300' : 'bg-slate-900/70 border border-amber-500/15 text-slate-400'} font-bold shrink-0">${item.unlocked ? '已解鎖' : '未解鎖'}</span>
+                                    </div>
+                                    <p class="text-xs text-slate-400 mt-2 leading-relaxed">${item.desc}</p>
+                                    <div class="text-[10px] text-amber-300/80 mt-3 font-bold tracking-wider">${item.note}</div>
+                                </div>
+                            </article>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
         function renderSpecVaultTab(container) {
             const isAuthorized = canAccessSpecVault();
             const selfUser = window.state.applicationId ? { id: window.state.applicationId, ...window.state.userData } : null;
@@ -3098,7 +3367,7 @@
         };
   
         window.toggleLikePost = async function(postId) {
-            if (!db) return;
+            if (!db) { showToast('伺服器尚未完成連線，暫時無法按讚。', 'error'); return; }
             const post = window.state.posts.find(p => p.id === postId);
             if (!post) return;
   
@@ -3131,7 +3400,7 @@
         };
   
         window.ratePost = async function(postId, ratingValue) {
-            if (!db) return;
+            if (!db) { showToast('伺服器尚未完成連線，暫時無法評分。', 'error'); return; }
             const post = window.state.posts.find(p => p.id === postId);
             if (!post) return;
   
@@ -3170,7 +3439,7 @@
             const text = input.value.trim();
             if (!text) return;
   
-            if (!db) return;
+            if (!db) { showToast('伺服器尚未完成連線，暫時無法留言。', 'error'); return; }
             showLoading();
   
             try {
@@ -3223,7 +3492,7 @@
                 modalTitle.textContent = originalTitle;
                 modalDesc.textContent = originalDesc;
                 
-                if (!db) return;
+                if (!db) { showToast('伺服器尚未完成連線，暫時無法刪除留言。', 'error'); return; }
                 showLoading();
                 try {
                     const post = window.state.posts.find(p => p.id === postId);
@@ -3286,7 +3555,7 @@
         };
 
         window.submitCommentReport = async function(postId, commentId, reason) {
-            if (!db) return;
+            if (!db) { showToast('伺服器尚未完成連線，暫時無法提交檢舉。', 'error'); return; }
             showLoading();
             try {
                 const postRef = doc(db, 'secretg_apps', appId, 'posts', postId);
@@ -3394,7 +3663,7 @@
         };
   
         window.submitPostReport = async function(postId, reason) {
-            if (!db) return;
+            if (!db) { showToast('伺服器尚未完成連線，暫時無法提交檢舉。', 'error'); return; }
             showLoading();
             try {
                 const postRef = doc(db, 'secretg_apps', appId, 'posts', postId);
@@ -3436,7 +3705,7 @@
             modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md';
             modal.innerHTML = `
                 <!-- 修正：套用 glass-panel 與 crystal-border -->
-                <div class="glass-panel border border-amber-500/20 rounded-3xl p-6 w-[92vw] max-w-md shadow-2xl relative overflow-y-auto max-h-[90vh] crystal-border">
+                <div class="glass-panel sr-stable-modal-panel border border-amber-500/20 rounded-3xl p-6 w-[92vw] max-w-md shadow-2xl relative overflow-y-auto max-h-[90vh] crystal-border">
                     <button id="close-share" class="absolute top-4 right-4 text-slate-500 hover:text-white text-2xl transition hover-breath click-press">&times;</button>
                     <!-- 修正：移除 normal-case -->
                     <h3 class="text-lg font-bold text-white mb-1.5 flex items-center gap-2 font-luxury">
@@ -3546,7 +3815,7 @@
                     return;
                 }
   
-                if (!db) return;
+                if (!db) { showToast('伺服器尚未完成連線，暫時無法發布動態。', 'error'); return; }
                 showLoading();
   
                 try {
@@ -3817,7 +4086,7 @@
                     return;
                 }
 
-                if (!db) return;
+                if (!db) { showToast('伺服器尚未完成連線，暫時無法提交認證。', 'error'); return; }
                 showLoading();
 
                 try {
@@ -3909,7 +4178,7 @@
             return badges.map(b => {
                 const sizeClass = isBig ? 'w-8 h-8 text-sm' : 'w-6 h-6 text-xs';
                 return `
-                    <span class="inline-flex items-center justify-center ${sizeClass} rounded-full bg-gradient-to-r ${b.color} text-slate-950 shadow-md badge-glow pointer-events-auto select-none brass-badge cursor-help hover-breath click-press" title="${b.tooltip}">
+                    <span class="inline-flex items-center justify-center ${sizeClass} rounded-full bg-gradient-to-r ${b.color} text-slate-950 shadow-md badge-glow pointer-events-auto select-none brass-badge cursor-default hover-breath" aria-label="${b.tooltip}">
                         <i class="fa-solid ${b.icon}"></i>
                     </span>
                 `;
@@ -3935,49 +4204,46 @@
   
         window.deleteMyPost = function(postId) {
             const modal = document.getElementById('custom-confirm-modal');
-            if (!modal) return;
+            const cancelBtn = document.getElementById('confirm-modal-cancel');
+            const okBtn = document.getElementById('confirm-modal-ok');
+            if (!modal || !cancelBtn || !okBtn) {
+                showToast('刪除確認視窗載入失敗，請重新整理後再試。', 'error');
+                return;
+            }
             modal.classList.remove('hidden');
 
-            document.getElementById('confirm-modal-cancel').onclick = () => {
+            cancelBtn.onclick = () => {
                 modal.classList.add('hidden');
             };
 
-            document.getElementById('confirm-modal-ok').onclick = async () => {
-                modal.classList.add('hidden');
-                if (!db) return;
+            okBtn.onclick = async () => {
+                if (!db) {
+                    modal.classList.add('hidden');
+                    showToast('伺服器尚未完成連線，暫時無法刪除。', 'error');
+                    return;
+                }
+                okBtn.disabled = true;
+                okBtn.classList.add('opacity-60', 'cursor-not-allowed');
+                const originalText = okBtn.innerHTML;
+                okBtn.innerHTML = '刪除中...';
                 showLoading();
                 try {
-                    await deleteDoc(doc(db, 'secretg_apps', appId, 'posts', postId));
+                    await withTimeout(deleteDoc(doc(db, 'secretg_apps', appId, 'posts', postId)), 12000, '刪除逾時，請稍後重試。');
+                    modal.classList.add('hidden');
                     showToast('該條分享動態已刪除 🔒', 'success');
                 } catch (err) {
                     console.error("刪除失敗:", err);
-                    showToast('銷毀失敗', 'error');
+                    showToast(err.message || '銷毀失敗', 'error');
                 } finally {
                     hideLoading();
+                    okBtn.disabled = false;
+                    okBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+                    okBtn.innerHTML = originalText;
                 }
             };
         };
 
-        window.showToast = function(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            if (!container) return;
-            const toast = document.createElement('div');
-            const bgColors = {
-                error: 'bg-red-500/95 border-red-400',
-                success: 'bg-emerald-600/95 border-emerald-400',
-                info: 'bg-amber-600/95 border-amber-500'
-            };
-            toast.className = `${bgColors[type]} text-white px-5 py-3.5 rounded-xl shadow-lg border border-white/10 text-sm font-semibold transition-all duration-300 opacity-0 transform -translate-y-4 backdrop-blur-xl flex items-center gap-3 pointer-events-auto shadow-[0_4px_25px_rgba(212,175,55,0.08)]`;
-            const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
-            toast.innerHTML = `<i class="fa-solid ${icon} text-lg text-white"></i> <span>${message}</span>`;
-            
-            container.appendChild(toast);
-            requestAnimationFrame(() => toast.classList.remove('opacity-0', '-translate-y-4'));
-            setTimeout(() => {
-                toast.classList.add('opacity-0', '-translate-y-4');
-                setTimeout(() => toast.remove(), 300);
-            }, 3200);
-        };
+        window.showToast = showToast;
   
         window.onload = function() {
             initApp();
