@@ -1065,6 +1065,12 @@ let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
                                         <label class="block text-xs font-bold text-slate-400 mb-1.5 tracking-wider"><span class="text-red-500">*</span> 設定會員帳號 (注意中英數)</label>
                                         <input type="text" id="reg-username" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
                                     </div>
+
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-400 mb-1.5 tracking-wider"><span class="text-red-500">*</span> 綁定通知信箱</label>
+                                        <input type="email" id="reg-email" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" placeholder="example@email.com" required>
+                                        <p class="text-[10px] text-slate-500 mt-1.5 leading-relaxed">審核結果、黃金會員、檢舉處理與頭像更換結果將寄送到此信箱。</p>
+                                    </div>
                                     
                                     <div>
                                         
@@ -1254,6 +1260,7 @@ let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
   
                 const username = document.getElementById('reg-username').value.trim();
                 const password = document.getElementById('reg-password').value;
+                const email = document.getElementById('reg-email').value.trim();
                 const nickname = document.getElementById('reg-nickname').value.trim();
                 const year = yearSelect.value;
                 const month = monthSelect.value;
@@ -1268,6 +1275,12 @@ let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
                     selectedKinks.push(cb.value);
                 });
   
+                const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+                if (!isEmailValid) {
+                    showToast('請填寫有效的通知信箱，未來審核與平台通知會寄送到此信箱。', 'error');
+                    return;
+                }
+
                 const isLenMet = password.length >= 8;
                 const isUpperMet = /[A-Z]/.test(password);
                 const isSpecMet = /[!@#$%^&*(),.?":{}|<>].*/.test(password);
@@ -1305,7 +1318,7 @@ let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
                         status: 'pending',
                         password,
                         nickname,
-                        email: '', 
+                        email, 
                         birthYear: year,
                         birthMonth: month,
                         birthDay: day,
@@ -1659,15 +1672,15 @@ let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
                             </div>
   
                             <nav class="space-y-2.5">
-                                <button id="aside-tab-feed" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 text-sm transition-all duration-300 font-bold hover-breath click-press ${window.state.currentTab === 'feed' && window.state.currentFilter !== 'elite-ranking' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500 shadow-[0_0_20px_rgba(223,183,108,0.1)]' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
-                                    <i class="fa-solid fa-door-open text-amber-500/80"></i> 俱樂部大廳
+                                <button id="aside-tab-feed" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 text-sm transition-all duration-300 font-bold hover-breath click-press ${window.state.currentTab === 'feed' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500 shadow-[0_0_20px_rgba(223,183,108,0.1)]' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
+                                    <i class="fa-solid fa-house-chimney text-amber-500/80"></i> 首頁
+                                </button>
+                                <button id="aside-tab-ranking" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 text-sm transition-all duration-300 font-bold hover-breath click-press ${window.state.currentTab === 'rank' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500 shadow-[0_0_20px_rgba(223,183,108,0.1)]' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
+                                    <i class="fa-solid fa-ranking-star text-amber-500/80"></i> 位階
                                 </button>
                                 <button id="aside-tab-notifications" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center justify-between gap-3 text-sm transition-all duration-300 font-bold hover-breath click-press ${window.state.currentTab === 'notifications' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500 shadow-[0_0_20px_rgba(223,183,108,0.1)]' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
-                                    <span class="flex items-center gap-3"><i class="fa-solid fa-bell text-amber-500/80"></i> 通知區塊</span>
+                                    <span class="flex items-center gap-3"><i class="fa-solid fa-bell text-amber-500/80"></i> 通知</span>
                                     <span id="aside-notification-count" class="hidden min-w-[1.25rem] h-5 px-1.5 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center shadow-[0_0_12px_rgba(239,68,68,0.5)]"></span>
-                                </button>
-                                <button id="aside-tab-ranking" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 text-sm transition-all duration-300 font-bold hover-breath click-press ${window.state.currentTab === 'feed' && window.state.currentFilter === 'elite-ranking' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500 shadow-[0_0_20px_rgba(223,183,108,0.1)]' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
-                                    <i class="fa-solid fa-trophy text-amber-500/80"></i> 綜合排行
                                 </button>
                                 <button id="aside-tab-spec-vault" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center justify-between gap-3 text-sm transition-all duration-300 font-bold hover-breath click-press ${window.state.currentTab === 'spec-vault' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500 shadow-[0_0_20px_rgba(223,183,108,0.1)]' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
                                     <span class="flex items-center gap-3"><i class="fa-solid fa-medal text-amber-500/80"></i> S+ . S . G</span>
@@ -1730,7 +1743,7 @@ let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
                             </div>
                             
                             <div class="flex items-center gap-2">
-                                <button id="mobile-btn-notifications" class="w-9 h-9 bg-slate-950/55 border border-amber-500/25 text-amber-300 font-bold rounded-full flex items-center justify-center shadow-lg transition click-press hover-breath relative" aria-label="開啟通知區塊">
+                                <button id="mobile-btn-notifications" class="w-9 h-9 bg-slate-950/55 border border-amber-500/25 text-amber-300 font-bold rounded-full flex items-center justify-center shadow-lg transition click-press hover-breath relative" aria-label="開啟通知">
                                     <i class="fa-solid fa-bell text-sm"></i>
                                     <span id="mobile-notification-count" class="hidden absolute -top-1 -right-1 min-w-[1.15rem] h-[1.15rem] px-1 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center shadow-[0_0_10px_rgba(239,68,68,0.55)]"></span>
                                 </button>
@@ -1748,13 +1761,13 @@ let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
                         </div>
 
                         <nav class="sr-mobile-dashboard-nav flex md:hidden items-center justify-around border-t border-amber-500/15 glass-panel p-2.5 pb-safe-bottom shrink-0 select-none rounded-t-3xl">
-                            <button id="mobile-tab-feed" class="flex flex-col items-center gap-1 transition-all click-press ${window.state.currentTab === 'feed' && window.state.currentFilter !== 'elite-ranking' ? 'text-amber-500 scale-105 font-bold' : 'text-slate-500'}">
+                            <button id="mobile-tab-feed" class="flex flex-col items-center gap-1 transition-all click-press ${window.state.currentTab === 'feed' ? 'text-amber-500 scale-105 font-bold' : 'text-slate-500'}">
                                 <i class="fa-solid fa-house-chimney text-sm"></i>
                                 <span class="text-[10px] font-bold tracking-wider">首頁</span>
                             </button>
-                            <button id="mobile-tab-ranking" class="flex flex-col items-center gap-1 transition-all click-press ${window.state.currentTab === 'feed' && window.state.currentFilter === 'elite-ranking' ? 'text-amber-500 scale-105 font-bold' : 'text-slate-500'}">
+                            <button id="mobile-tab-ranking" class="flex flex-col items-center gap-1 transition-all click-press ${window.state.currentTab === 'rank' ? 'text-amber-500 scale-105 font-bold' : 'text-slate-500'}">
                                 <i class="fa-solid fa-trophy text-sm"></i>
-                                <span class="text-[10px] font-bold tracking-wider">綜合排行</span>
+                                <span class="text-[10px] font-bold tracking-wider">位階</span>
                             </button>
                             <button id="mobile-btn-share" class="sr-mobile-menu-create-button brushed-gold crystal-border shadow-xl transition-all click-press" aria-label="新增貼文">
                                 <i class="fa-solid fa-plus text-lg"></i>
@@ -1821,11 +1834,11 @@ let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
   
             bindTabEvents('aside-tab-feed', 'feed', 'recommended');
             bindTabEvents('aside-tab-notifications', 'notifications');
-            bindTabEvents('aside-tab-ranking', 'feed', 'elite-ranking');
+            bindTabEvents('aside-tab-ranking', 'rank');
             bindTabEvents('aside-tab-spec-vault', 'spec-vault');
             bindTabEvents('aside-tab-badge-progress', 'badge-progress');
             bindTabEvents('mobile-tab-feed', 'feed', 'recommended');
-            bindTabEvents('mobile-tab-ranking', 'feed', 'elite-ranking');
+            bindTabEvents('mobile-tab-ranking', 'rank');
             bindTabEvents('mobile-tab-profile', 'profile');
             bindTabEvents('mobile-btn-notifications', 'notifications');
   
@@ -1883,6 +1896,8 @@ let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
             const tabContentContainer = document.getElementById('dashboard-tab-content');
             if (window.state.currentTab === 'feed') {
                 renderFeedTab(tabContentContainer);
+            } else if (window.state.currentTab === 'rank') {
+                renderRankTab(tabContentContainer);
             } else if (window.state.currentTab === 'notifications') {
                 renderNotificationsTab(tabContentContainer);
             } else if (window.state.currentTab === 'profile') {
@@ -1957,7 +1972,7 @@ let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
                         <div class="relative flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                             <div>
                                 <div class="text-[10px] text-amber-400/75 font-black tracking-[0.26em] font-luxury">Notification Center</div>
-                                <h2 class="text-2xl font-black text-white font-luxury tracking-wider mt-1">通知區塊</h2>
+                                <h2 class="text-2xl font-black text-white font-luxury tracking-wider mt-1">通知</h2>
                                 <p class="text-xs text-slate-400 mt-2 leading-relaxed">集中查看檢舉進度、黃金 Spec 認證、大頭照更換，以及官方平台通知。訊息時間以發送或審核完成時間固定顯示。</p>
                             </div>
                             <button id="btn-mark-notifications-read" class="shrink-0 px-3.5 py-2 rounded-xl border border-amber-500/20 bg-slate-950/55 text-xs font-black text-amber-300 hover-breath click-press">全部已讀</button>
@@ -2358,6 +2373,184 @@ let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
             });
         }
   
+
+        function parsePostTimeValue(value) {
+            if (value && value.seconds) return value.seconds * 1000;
+            if (value && typeof value.toDate === 'function') {
+                const d = value.toDate();
+                return d && !Number.isNaN(d.getTime()) ? d.getTime() : 0;
+            }
+            if (typeof value === 'number') return value;
+            if (typeof value === 'string') {
+                const t = new Date(value).getTime();
+                return Number.isNaN(t) ? 0 : t;
+            }
+            return 0;
+        }
+
+        function getWeeklyRankWindow(baseDate = new Date()) {
+            const current = new Date(baseDate);
+            const day = current.getDay();
+            const diffToMonday = day === 0 ? -6 : 1 - day;
+            const start = new Date(current.getFullYear(), current.getMonth(), current.getDate() + diffToMonday, 0, 0, 0, 0);
+            const end = new Date(start);
+            end.setDate(start.getDate() + 7);
+            end.setMilliseconds(-1);
+            return { start, end };
+        }
+
+        function floorOneDecimal(value) {
+            return Math.floor((Number(value) || 0) * 10) / 10;
+        }
+
+        function getPostRankStats(post) {
+            const likes = Number(post.likeCount || Object.keys(post.likes || {}).length || 0);
+            const ratingValues = Object.values(post.ratings || {}).map(Number).filter(v => Number.isFinite(v) && v > 0);
+            const ratingCount = ratingValues.length;
+            const ratingSum = ratingValues.reduce((sum, value) => sum + value, 0);
+            const avgRating = ratingCount > 0 ? ratingSum / ratingCount : 0;
+            const ratingComponent = avgRating > 0 ? ratingCount / avgRating : 0;
+            const score = floorOneDecimal((likes * 0.3) + ratingComponent);
+            return { likes, ratingCount, ratingSum, avgRating, ratingComponent, score };
+        }
+
+        function getRankTier(score) {
+            const value = Number(score) || 0;
+            if (value > 1350) return { code: 'Z.G', name: 'Zenith Grade', min: 1350, tone: 'from-fuchsia-300 via-amber-200 to-cyan-200', note: '超越 1350' };
+            if (value >= 1350) return { code: 'SSR.G', name: 'Secret Super Rare Grade', min: 1350, tone: 'from-violet-300 via-amber-200 to-rose-200', note: '1350' };
+            if (value >= 750) return { code: 'S+.G', name: 'Superior Plus Grade', min: 750, tone: 'from-amber-200 via-yellow-300 to-amber-500', note: '750' };
+            if (value >= 500) return { code: 'S.G', name: 'Superior Grade', min: 500, tone: 'from-yellow-200 via-amber-400 to-orange-500', note: '500' };
+            if (value >= 250) return { code: 'A.G', name: 'Apex Grade', min: 250, tone: 'from-blue-200 via-cyan-300 to-amber-200', note: '250' };
+            if (value >= 150) return { code: 'B.G', name: 'Brass Grade', min: 150, tone: 'from-emerald-200 via-teal-300 to-slate-200', note: '150' };
+            if (value >= 100) return { code: 'C.G', name: 'Classic Grade', min: 100, tone: 'from-slate-200 via-slate-300 to-amber-100', note: '100' };
+            if (value >= 50) return { code: 'D.G', name: 'Dawn Grade', min: 50, tone: 'from-stone-300 via-amber-200 to-stone-500', note: '50' };
+            return { code: 'N.G', name: 'No Grade', min: 0, tone: 'from-slate-500 via-slate-400 to-slate-600', note: '未達 50' };
+        }
+
+        function getWeeklyRankData() {
+            const { start, end } = getWeeklyRankWindow();
+            const startMs = start.getTime();
+            const endMs = end.getTime();
+            const weeklyPosts = (window.state.posts || []).filter(post => {
+                const t = parsePostTimeValue(post.createdAt || post.createdAtMs || post.timestamp);
+                return t >= startMs && t <= endMs;
+            }).map(post => ({ ...post, rankStats: getPostRankStats(post) }));
+            const memberMap = new Map();
+            weeklyPosts.forEach(post => {
+                const userId = post.userId || 'unknown';
+                const userProfile = (window.state.activeUsers || []).find(u => u.id === userId) || {};
+                if (!memberMap.has(userId)) {
+                    memberMap.set(userId, {
+                        userId,
+                        nickname: post.authorName || userProfile.nickname || userId,
+                        avatar: post.authorAvatar || userProfile.avatar || '',
+                        score: 0,
+                        likes: 0,
+                        ratingCount: 0,
+                        ratingSum: 0,
+                        posts: [],
+                        topPost: null
+                    });
+                }
+                const entry = memberMap.get(userId);
+                entry.score += post.rankStats.score;
+                entry.likes += post.rankStats.likes;
+                entry.ratingCount += post.rankStats.ratingCount;
+                entry.ratingSum += post.rankStats.ratingSum;
+                entry.posts.push(post);
+                if (!entry.topPost || post.rankStats.score > entry.topPost.rankStats.score) entry.topPost = post;
+            });
+            const members = Array.from(memberMap.values()).map(entry => ({
+                ...entry,
+                score: floorOneDecimal(entry.score),
+                avgRating: entry.ratingCount > 0 ? entry.ratingSum / entry.ratingCount : 0,
+                tier: getRankTier(floorOneDecimal(entry.score))
+            })).sort((a, b) => b.score - a.score || b.likes - a.likes || b.ratingCount - a.ratingCount);
+            return { start, end, weeklyPosts, members };
+        }
+
+        function renderRankTab(container) {
+            const { start, end, weeklyPosts, members } = getWeeklyRankData();
+            const currentIndex = members.findIndex(item => item.userId === window.state.applicationId);
+            const current = currentIndex >= 0 ? members[currentIndex] : null;
+            const currentScore = current ? current.score : 0;
+            const currentTier = getRankTier(currentScore);
+            const periodText = `${start.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' })}－${end.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' })}`;
+            const thresholds = [
+                ['D.G', '50'], ['C.G', '100'], ['B.G', '150'], ['A.G', '250'], ['S.G', '500'], ['S+.G', '750'], ['SSR.G', '1350'], ['Z.G', '> 1350']
+            ];
+            container.innerHTML = `
+                <div class="space-y-5">
+                    <div class="glass-panel crystal-border rounded-3xl p-5 md:p-7 relative overflow-hidden">
+                        <div class="absolute -top-16 -right-16 w-40 h-40 bg-amber-500/10 blur-3xl rounded-full"></div>
+                        <div class="relative z-10 flex flex-col md:flex-row md:items-end md:justify-between gap-5">
+                            <div>
+                                <div class="text-[10px] text-amber-400/75 font-black tracking-[0.24em] font-luxury">Weekly Grade System</div>
+                                <h2 class="text-2xl md:text-3xl font-black text-white font-luxury tracking-wider mt-1">位階</h2>
+                                <p class="text-xs text-slate-400 mt-2 leading-relaxed max-w-2xl">每週一 00:00 至週日 23:59 結算。計分依單週貼文互動計算，公式採你提供的範例：按讚數 × 30% + 評星人數 ÷ 平均星數，分數無條件捨去至小數點後一位。</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-[10px] text-slate-500 font-black tracking-wider">本週週期</div>
+                                <div class="text-lg text-amber-300 font-black font-luxury">${periodText}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-[1fr_1.25fr] gap-4">
+                        <div class="glass-panel crystal-border rounded-3xl p-5 relative overflow-hidden">
+                            <div class="text-xs text-slate-500 font-black tracking-wider mb-2">你的本週位階</div>
+                            <div class="flex items-center gap-4">
+                                <div class="w-20 h-20 rounded-3xl bg-gradient-to-br ${currentTier.tone} text-slate-950 flex items-center justify-center shadow-xl font-black font-luxury text-xl">${currentTier.code}</div>
+                                <div>
+                                    <div class="text-3xl font-black text-white font-luxury">${currentScore.toFixed(1)}</div>
+                                    <div class="text-xs text-slate-400 mt-1">${current ? `第 ${currentIndex + 1} 名 · ${current.posts.length} 篇貼文納入計算` : '本週尚無可計分貼文'}</div>
+                                    <div class="text-[10px] text-amber-300/80 mt-2 font-black">${currentTier.name}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel crystal-border rounded-3xl p-5">
+                            <div class="text-xs text-slate-500 font-black tracking-wider mb-3">牌位門檻</div>
+                            <div class="grid grid-cols-4 gap-2">
+                                ${thresholds.map(([code, score]) => `<div class="rounded-2xl border border-amber-500/10 bg-slate-950/45 p-3 text-center"><div class="text-sm font-black text-amber-300 font-luxury">${code}</div><div class="text-[10px] text-slate-500 mt-1">${score}</div></div>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel crystal-border rounded-3xl p-5 md:p-6">
+                        <div class="flex items-center justify-between gap-3 mb-4">
+                            <div>
+                                <h3 class="text-lg font-black text-white font-luxury tracking-wider">本週位階榜</h3>
+                                <p class="text-xs text-slate-500 mt-1">共 ${weeklyPosts.length} 篇貼文納入本週結算。</p>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            ${members.length === 0 ? `
+                                <div class="text-center py-12 text-slate-500">
+                                    <i class="fa-solid fa-ranking-star text-3xl text-amber-500/40 mb-3"></i>
+                                    <div class="font-black text-slate-300">本週尚無位階資料</div>
+                                    <div class="text-xs mt-1">發布貼文並累積按讚、評星後會自動進入週榜。</div>
+                                </div>
+                            ` : members.map((entry, index) => `
+                                <div class="rounded-3xl border border-amber-500/10 bg-slate-950/35 p-4 flex items-center gap-3 hover-breath click-press cursor-pointer" onclick="viewUserProfile('${escapeJsString(entry.userId)}')">
+                                    <div class="w-9 text-center font-black text-amber-300 font-luxury">#${index + 1}</div>
+                                    <img src="${entry.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-12 h-12 rounded-2xl object-cover border border-amber-500/20 shrink-0">
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center gap-2 flex-wrap"><span class="font-black text-slate-100 truncate">${escapeHtml(entry.nickname)}</span><span class="text-[10px] text-slate-500 font-mono">@${escapeHtml(entry.userId)}</span></div>
+                                        <div class="text-[10px] text-slate-500 mt-1">${entry.posts.length} 篇 · ${entry.likes} 讚 · ${entry.ratingCount} 位評星 · 均星 ${entry.avgRating.toFixed(1)}</div>
+                                    </div>
+                                    <div class="text-right shrink-0">
+                                        <div class="inline-flex items-center justify-center min-w-[4rem] px-3 py-2 rounded-2xl bg-gradient-to-br ${entry.tier.tone} text-slate-950 font-black font-luxury">${entry.tier.code}</div>
+                                        <div class="text-sm font-black text-white mt-1">${entry.score.toFixed(1)}</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         function renderFeedTab(container) {
             container.innerHTML = `
                 <div class="relative w-full z-20">
@@ -2383,7 +2576,7 @@ let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
                     </button>
                 </div>
   
-                <div id="ranking-sub-tabs" class="${window.state.currentFilter === 'elite-ranking' ? '' : 'hidden'} flex items-center gap-2 overflow-x-auto scrollbar-hide py-2 border-t border-b border-amber-500/10">
+                <div id="ranking-sub-tabs" class="hidden flex items-center gap-2 overflow-x-auto scrollbar-hide py-2 border-t border-b border-amber-500/10">
                     
                     <span class="shrink-0 text-xs font-bold text-amber-500 tracking-widest mr-1">排名分類:</span>
                     ${window.state.kinksOptions.map((k) => `
@@ -3291,7 +3484,7 @@ let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
                             category: 'report',
                             tone: 'report',
                             title: '留言檢舉已受理',
-                            message: `您提交的留言檢舉已進入安全審查佇列。檢舉原因：${selectedReason}`,
+                            message: `您提交的留言檢舉已進入安全審查佇列。檢舉原因：${reason}`,
                             status: '審查中',
                             sourceType: 'comment',
                             sourceId: postId
@@ -3960,7 +4153,7 @@ let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
                         type: 'spec',
                         tone: 'pending',
                         title: '黃金 Spec 認證已送審',
-                        message: '您的規格證明照片已送交官方審核，審核完成後會在通知區塊更新狀態。',
+                        message: '您的規格證明照片已送交官方審核，審核完成後會在通知更新狀態。',
                         status: '審查中'
                     });
 

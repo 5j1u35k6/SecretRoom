@@ -12,8 +12,20 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
 
         const emailjsConfig = {
             publicKey: "ZEp9d-hAeYdFujDZy", 
-            serviceId: "service_1ou10mi", 
-            templateId: "template_25proud" 
+            serviceId: "service_1ou10mi",
+            defaultTemplateId: "template_25proud",
+            templates: {
+                registrationApproved: "template_25proud",
+                registrationRejected: "template_25proud",
+                specApproved: "template_25proud",
+                specRejected: "template_25proud",
+                avatarApproved: "template_25proud",
+                avatarRejected: "template_25proud",
+                reportAccepted: "template_25proud",
+                reportDismissed: "template_25proud",
+                passwordReset: "template_25proud",
+                accountRequest: "template_25proud"
+            }
         };
 
         async function loadFirebaseSDKs() {
@@ -845,7 +857,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                 await writeAdminLog('update_status', userId, { status });
                 showToast('已將狀態更新為 ' + (status === 'approved' ? '已核准' : '已拒絕'), 'success');
                 
-                await sendEmailNotification(userData, status);
+                await sendEmailNotification(userData, status, status === 'approved' ? '會籍申請審核通過' : '會籍申請審核更新', null, status === 'approved' ? 'registrationApproved' : 'registrationRejected');
             } catch (e) {
                 console.error("更新狀態失敗:", e);
                 showToast('更新失敗: ' + e.message, 'error');
@@ -888,7 +900,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                     });
                     await writeAdminLog('approve_spec', userId, { length: data.length, girth: data.girth });
                     showToast("Spec Elite 徽章核准完成！", "success");
-                    await sendEmailNotification(data, 'approved', "黃金 Spec 審核通過", "您的 SecretRoom 黃金 Spec Elite 勳章申請已正式核准，已即刻渲染在您的個人暱稱下方！");
+                    await sendEmailNotification(data, 'approved', "黃金 Spec 審核通過", "您的 SecretRoom 黃金 Spec Elite 勳章申請已正式核准，已即刻渲染在您的個人暱稱下方！", 'specApproved');
                 }
             } catch (err) {
                 console.error("核發失敗:", err);
@@ -914,7 +926,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                     });
                     await writeAdminLog('reject_spec', userId, { reason: 'spec_rejected' });
                     showToast("Spec Elite 申請已被退回。", "info");
-                    await sendEmailNotification(data, 'rejected', "黃金 Spec 審核退回", "您申請的 SecretRoom 黃金 Spec Elite 勳章經管理員檢視照片與規格未通過核可。");
+                    await sendEmailNotification(data, 'rejected', "黃金 Spec 審核退回", "您申請的 SecretRoom 黃金 Spec Elite 勳章經管理員檢視照片與規格未通過核可。", 'specRejected');
                 }
             } catch (err) {
                 console.error("拒絕出錯:", err);
@@ -981,35 +993,85 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                 await writeAdminLog('reject_application', userId, { reason });
                 showToast('已退回會籍申請', 'success');
                 
-                await sendEmailNotification(userData, status, "會籍申請退回通知", `很抱歉，您的 SecretRoom 會籍申請未通過審核。退件理由：${reason}`);
+                await sendEmailNotification(userData, status, "會籍申請退回通知", `很抱歉，您的 SecretRoom 會籍申請未通過審核。退件理由：${reason}`, 'registrationRejected');
             } catch (e) {
                 console.error("更新狀態失敗:", e);
                 showToast('更新失敗: ' + e.message, 'error');
             }
         }
 
-        async function sendEmailNotification(userData, status, title = "審核通知", customMsg = null) {
+        function inferEmailTemplateKey(status, title, explicitKey = null) {
+            if (explicitKey) return explicitKey;
+            const text = `${title || ''} ${status || ''}`.toLowerCase();
+            if (text.includes('黃金') || text.includes('spec')) return String(status).toLowerCase() === 'rejected' ? 'specRejected' : 'specApproved';
+            if (text.includes('頭像')) return String(status).toLowerCase() === 'rejected' ? 'avatarRejected' : 'avatarApproved';
+            if (text.includes('檢舉') || text.includes('貼文') || text.includes('留言')) return text.includes('駁回') || text.includes('未成立') || text.includes('dismiss') ? 'reportDismissed' : 'reportAccepted';
+            if (text.includes('密碼')) return 'passwordReset';
+            if (text.includes('刪除') || text.includes('帳號')) return 'accountRequest';
+            return String(status).toLowerCase() === 'rejected' ? 'registrationRejected' : 'registrationApproved';
+        }
+
+        function getEmailTemplateId(templateKey) {
+            const templates = emailjsConfig.templates || {};
+            return templates[templateKey] || emailjsConfig.templateId || emailjsConfig.defaultTemplateId;
+        }
+
+        async function sendEmailNotification(userData, status, title = "審核通知", customMsg = null, templateKey = null) {
+            const targetEmail = String(userData && userData.email ? userData.email : '').trim();
+            if (!targetEmail) {
+                console.info('[Email 略過] 會員未綁定通知信箱');
+                return;
+            }
             if (!emailjsConfig.publicKey || emailjsConfig.publicKey === "YOUR_EMAILJS_PUBLIC_KEY") {
-                console.info(`[Email 模擬] 發送郵件給 ${userData.email}`);
-                showToast(`[模擬信件] 已寄送審核通知至 ${userData.email}`, "info");
+                console.info(`[Email 模擬] 發送郵件給 ${targetEmail}`);
+                showToast(`[模擬信件] 已寄送通知至 ${targetEmail}`, "info");
                 return;
             }
 
             const messageText = customMsg || (status === 'approved' 
                 ? `恭喜您！您的 SecretRoom 加入申請已通過審核。\n\n請您點擊下方連結重新進入平台，輸入您的帳號密碼進行登入：\nhttps://5j1u35k6.github.io/SecretRoom/`
                 : `很抱歉，您的加入申請未通過審核。感謝您的關注。`);
+            const resolvedTemplateKey = inferEmailTemplateKey(status, title, templateKey);
+            const resolvedTemplateId = getEmailTemplateId(resolvedTemplateKey);
 
             try {
-                await emailjs.send(emailjsConfig.serviceId, emailjsConfig.templateId, {
-                    to_email: userData.email,
-                    to_name: userData.nickname,
+                await emailjs.send(emailjsConfig.serviceId, resolvedTemplateId, {
+                    to_email: targetEmail,
+                    to_name: userData.nickname || userData.userId || 'SecretRoom Member',
                     status_text: title,
-                    message: messageText
+                    message: messageText,
+                    email_type: resolvedTemplateKey,
+                    member_id: userData.id || userData.userId || ''
                 });
-                showToast(`真實審核通知信已寄送至 ${userData.email}`, "success");
+                showToast(`Email 通知已寄送至 ${targetEmail}`, "success");
             } catch (error) {
                 console.error("Email 發送失敗:", error);
-                showToast("通知信發送失敗，請確認您的 EmailJS 設定", "error");
+                showToast("通知信發送失敗，請確認 EmailJS 模板設定", "error");
+            }
+        }
+
+        async function getApplicationDataById(userId) {
+            if (!db || !userId) return null;
+            try {
+                const userRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+                const userSnap = await getDoc(userRef);
+                return userSnap.exists() ? { id: userSnap.id, ...userSnap.data() } : null;
+            } catch (err) {
+                console.warn('讀取會員信箱資料失敗:', err);
+                return null;
+            }
+        }
+
+        async function sendEmailToUserId(userId, status, title, message, templateKey) {
+            const userData = await getApplicationDataById(userId);
+            if (!userData) return;
+            await sendEmailNotification(userData, status, title, message, templateKey);
+        }
+
+        async function sendReportEmailsToReporters(reports, title, message, templateKey) {
+            const ids = Array.from(new Set((reports || []).map(r => r && r.reporterId).filter(Boolean)));
+            for (const reporterId of ids) {
+                await sendEmailToUserId(reporterId, 'approved', title, message, templateKey);
             }
         }
 
@@ -1033,7 +1095,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                     });
                     await writeAdminLog('approve_avatar', userId, {});
                     showToast("頭像變更已核准啟用！", "success");
-                    await sendEmailNotification(data, 'approved', "頭像變更審核通過", "您的 SecretRoom 新頭像更換申請已通過管理員審核，已立刻套用！");
+                    await sendEmailNotification(data, 'approved', "頭像變更審核通過", "您的 SecretRoom 新頭像更換申請已通過管理員審核，已立刻套用！", 'avatarApproved');
                 }
             } catch (err) {
                 console.error("核准頭像出錯:", err);
@@ -1060,7 +1122,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                     });
                     await writeAdminLog('reject_avatar', userId, {});
                     showToast("頭像變更申請已拒絕。", "info");
-                    await sendEmailNotification(data, 'rejected', "頭像變更審核未通過", "您在 SecretRoom 申請更換的新大頭照，未通過管理員審核，已回復原頭像。");
+                    await sendEmailNotification(data, 'rejected', "頭像變更審核未通過", "您在 SecretRoom 申請更換的新大頭照，未通過管理員審核，已回復原頭像。", 'avatarRejected');
                 }
             } catch (err) {
                 console.error("拒絕頭像出錯:", err);
@@ -1133,6 +1195,9 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
             try {
                 const postRef = doc(db, 'secretg_apps', appId, 'posts', postId);
                 const reason = prompt('請輸入駁回貼文檢舉原因：') || '經審查未違反社群規範';
+                const snap = await getDoc(postRef);
+                const postData = snap.exists() ? snap.data() : {};
+                const reportList = postData.reports || [];
                 await updateDoc(postRef, {
                     reports: [],
                     reportCount: 0,
@@ -1143,6 +1208,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                     reportReviewedBy: currentAdminId
                 });
                 await writeAdminLog('dismiss_post_reports', postId, { reason });
+                await sendReportEmailsToReporters(reportList, '貼文檢舉審查結果', `您提交的貼文檢舉已完成審查。處理結果：檢舉未成立。原因：${reason}`, 'reportDismissed');
                 showToast("已成功反駁該貼文的所有檢舉！", "success");
             } catch (err) {
                 console.error("反駁失敗:", err);
@@ -1155,8 +1221,12 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
             try {
                 const postRef = doc(db, 'secretg_apps', appId, 'posts', postId);
                 const reason = prompt('請輸入刪除貼文原因：') || '貼文違反社群規範';
+                const snap = await getDoc(postRef);
+                const postData = snap.exists() ? snap.data() : {};
                 await deleteDoc(postRef);
                 await writeAdminLog('delete_post', postId, { reason });
+                if (postData.userId) await sendEmailToUserId(postData.userId, 'rejected', '貼文審查處理通知', `您的貼文經審查後已由管理員下架。處理原因：${reason}`, 'reportAccepted');
+                await sendReportEmailsToReporters(postData.reports || [], '貼文檢舉審查結果', `您提交的貼文檢舉已完成審查。處理結果：檢舉成立，該貼文已下架。`, 'reportAccepted');
                 showToast("貼文已成功安全下架銷毀！", "success");
             } catch (err) {
                 console.error("刪除失敗:", err);
@@ -1173,6 +1243,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                 if (!snap.exists()) return;
                 const data = snap.data();
                 const comments = data.comments || {};
+                const originalComment = comments[commentId] ? { ...comments[commentId] } : null;
                 if (comments[commentId]) {
                     comments[commentId].reports = [];
                     comments[commentId].reportCount = 0;
@@ -1182,6 +1253,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                 }
                 await updateDoc(postRef, { comments });
                 await writeAdminLog('dismiss_comment_reports', commentId, { postId, reason });
+                if (originalComment) await sendReportEmailsToReporters(originalComment.reports || [], '留言檢舉審查結果', `您提交的留言檢舉已完成審查。處理結果：檢舉未成立。原因：${reason}`, 'reportDismissed');
                 showToast('已駁回留言檢舉', 'success');
             } catch (err) {
                 showToast('操作失敗: ' + err.message, 'error');
@@ -1198,9 +1270,12 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                 if (!snap.exists()) return;
                 const data = snap.data();
                 const comments = data.comments || {};
+                const originalComment = comments[commentId] ? { ...comments[commentId] } : null;
                 delete comments[commentId];
                 await updateDoc(postRef, { comments });
                 await writeAdminLog('delete_comment', commentId, { postId, reason });
+                if (originalComment && originalComment.userId) await sendEmailToUserId(originalComment.userId, 'rejected', '留言審查處理通知', `您的留言經審查後已由管理員刪除。處理原因：${reason}`, 'reportAccepted');
+                if (originalComment) await sendReportEmailsToReporters(originalComment.reports || [], '留言檢舉審查結果', `您提交的留言檢舉已完成審查。處理結果：檢舉成立，該留言已刪除。`, 'reportAccepted');
                 showToast('留言已刪除', 'success');
             } catch (err) {
                 showToast('刪除失敗: ' + err.message, 'error');
@@ -1225,7 +1300,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                 await updateDoc(userRef, { password: newPassword, passwordUpdatedAt: serverTimestamp(), passwordUpdatedAtMs: Date.now(), passwordUpdatedBy: currentAdminId });
                 await updateDoc(reqRef, { status: 'completed', completedAt: serverTimestamp(), completedAtMs: Date.now(), reviewedBy: currentAdminId });
                 await writeAdminLog('complete_password_reset', userId, { requestId });
-                await sendEmailNotification({ ...userData, email: req.email || userData.email }, 'approved', 'SecretRoom 密碼重設完成', `您的 SecretRoom 登入密碼已由管理員重設。臨時密碼：${newPassword}。登入後請儘快修改密碼。`);
+                await sendEmailNotification({ ...userData, email: req.email || userData.email }, 'approved', 'SecretRoom 密碼重設完成', `您的 SecretRoom 登入密碼已由管理員重設。臨時密碼：${newPassword}。登入後請儘快修改密碼。`, 'passwordReset');
                 showToast('臨時密碼已設定並寄送通知', 'success');
             } catch (err) {
                 console.error('密碼重設失敗:', err);
