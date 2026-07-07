@@ -11,22 +11,22 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
         };
 
         const emailjsConfig = {
-    publicKey: "ZEp9d-hAeYdFujDZy",
-    serviceId: "service_1ou10mi",
-    defaultTemplateId: "template_sr_notice",
-    templates: {
-        registrationApproved: "template_sr_notice",
-        registrationRejected: "template_sr_notice",
-        specApproved: "template_sr_notice",
-        specRejected: "template_sr_notice",
-        avatarApproved: "template_sr_notice",
-        avatarRejected: "template_sr_notice",
-        reportAccepted: "template_sr_notice",
-        reportDismissed: "template_sr_notice",
-        passwordReset: "template_sr_security",
-        accountRequest: "template_sr_security"
-    }
-};
+            publicKey: "ZEp9d-hAeYdFujDZy", 
+            serviceId: "service_1ou10mi",
+            defaultTemplateId: "template_25proud",
+            templates: {
+                registrationApproved: "template_25proud",
+                registrationRejected: "template_25proud",
+                specApproved: "template_25proud",
+                specRejected: "template_25proud",
+                avatarApproved: "template_25proud",
+                avatarRejected: "template_25proud",
+                reportAccepted: "template_25proud",
+                reportDismissed: "template_25proud",
+                passwordReset: "template_25proud",
+                accountRequest: "template_25proud"
+            }
+        };
 
         async function loadFirebaseSDKs() {
             try {
@@ -304,7 +304,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
             setText('count-ssg-users', allApplications.filter(isGoldSpecApproved).length);
             setText('count-today-posts', allPosts.filter(p => isTimeToday(p.createdAt || p.createdAtMs)).length);
             setText('count-account-requests', allAccountRequests.filter(r => String(r.status || 'pending') === 'pending').length);
-            setText('count-password-reset', allPasswordResetRequests.filter(r => String(r.status || 'pending') === 'pending').length);
+            setText('count-password-reset', allPasswordResetRequests.filter(isValidForgotPasswordRequest).length);
         }
 
         function listenToAdmins() {
@@ -379,7 +379,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                 querySnapshot.forEach((docSnap) => allPasswordResetRequests.push({ id: docSnap.id, ...docSnap.data() }));
                 updateOperationalStats();
                 renderApplications();
-            }, (err) => console.warn('密碼重設申請同步失敗:', err));
+            }, (err) => console.warn('忘記密碼申請同步失敗:', err));
         }
 
         function listenToAccountRequests() {
@@ -442,14 +442,51 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
             return '待處理';
         }
 
+        function normalizeEmail(value) {
+            return String(value || '').trim().toLowerCase();
+        }
+
+        function getApplicationById(userId) {
+            const id = String(userId || '').trim();
+            if (!id) return null;
+            return allApplications.find(app => String(app.id || '').trim() === id) || null;
+        }
+
+        function getBoundEmailFromMember(member) {
+            return normalizeEmail(member && (member.email || member.boundEmail || member.notificationEmail));
+        }
+
+        function isActiveMemberForForgotPassword(member) {
+            if (!member) return false;
+            const status = String(member.status || '').toLowerCase();
+            return !status || status === 'approved' || status === 'active';
+        }
+
+        function isValidForgotPasswordRequest(req) {
+            if (!req || String(req.status || 'pending') !== 'pending') return false;
+            const member = getApplicationById(req.userId);
+            if (!isActiveMemberForForgotPassword(member)) return false;
+            const requestEmail = normalizeEmail(req.email);
+            const memberEmail = getBoundEmailFromMember(member);
+            return !!requestEmail && !!memberEmail && requestEmail === memberEmail;
+        }
+
+        function getVisibleForgotPasswordRequests() {
+            return allPasswordResetRequests.filter(req => {
+                const status = String(req.status || 'pending');
+                if (status !== 'pending') return true;
+                return isValidForgotPasswordRequest(req);
+            });
+        }
+
         function renderPasswordResetRequests(listContainer) {
             const searchTerm = (document.getElementById('admin-search')?.value || '').trim().toLowerCase();
-            const list = [...allPasswordResetRequests]
+            const list = getVisibleForgotPasswordRequests()
                 .filter(r => !searchTerm || `${r.userId || ''} ${r.email || ''} ${r.status || ''}`.toLowerCase().includes(searchTerm))
                 .sort((a,b) => parseTime(b.createdAt || b.createdAtMs) - parseTime(a.createdAt || a.createdAtMs));
             listContainer.innerHTML = '';
             if (list.length === 0) {
-                listContainer.innerHTML = '<div class="text-center py-12 text-slate-500 flex flex-col items-center gap-2"><i class="fa-solid fa-key text-2xl"></i><span>目前沒有密碼重設申請</span></div>';
+                listContainer.innerHTML = '<div class="text-center py-12 text-slate-500 flex flex-col items-center gap-2"><i class="fa-solid fa-key text-2xl"></i><span>目前沒有忘記密碼申請</span></div>';
                 return;
             }
             list.forEach(req => {
@@ -458,13 +495,13 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                 card.className = `admin-muted-card p-5 rounded-2xl border ${pending ? 'border-amber-500/20' : 'border-slate-800/80 opacity-75'} flex flex-col md:flex-row md:items-center justify-between gap-4`;
                 card.innerHTML = `
                     <div class="space-y-1.5">
-                        <div class="text-sm font-black text-slate-200">密碼重設：@${escapeHtml(req.userId || '未填帳號')}</div>
+                        <div class="text-sm font-black text-slate-200">忘記密碼：@${escapeHtml(req.userId || '未填帳號')}</div>
                         <div class="text-xs text-slate-400"><i class="fa-regular fa-envelope"></i> ${escapeHtml(req.email || '未填信箱')}</div>
                         <div class="text-[10px] text-slate-500">${renderRequestTime(req)} · ${requestStatusLabel(req.status)}</div>
                     </div>
                     <div class="flex gap-2 flex-wrap">
                         ${pending ? `
-                            <button onclick="completePasswordResetRequest('${req.id}')" class="bg-emerald-600/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/20 text-xs px-4 py-2.5 rounded-xl font-bold">設定臨時密碼</button>
+                            <button onclick="completePasswordResetRequest('${req.id}')" class="bg-emerald-600/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/20 text-xs px-4 py-2.5 rounded-xl font-bold">設定新密碼</button>
                             <button onclick="rejectPasswordResetRequest('${req.id}')" class="bg-slate-800 hover:bg-red-950/40 text-slate-400 hover:text-red-300 border border-slate-700 text-xs px-4 py-2.5 rounded-xl font-bold">拒絕</button>
                         ` : '<span class="text-xs text-slate-500 px-3 py-2">已處理</span>'}
                     </div>`;
@@ -1016,6 +1053,22 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
             return templates[templateKey] || emailjsConfig.templateId || emailjsConfig.defaultTemplateId;
         }
 
+        function getEmailTypeLabel(templateKey) {
+            const labels = {
+                registrationApproved: '會籍審核通過',
+                registrationRejected: '會籍申請退回',
+                specApproved: '黃金 Spec 認證通過',
+                specRejected: '黃金 Spec 認證退回',
+                avatarApproved: '大頭照更換通過',
+                avatarRejected: '大頭照更換退回',
+                reportAccepted: '內容審查處理',
+                reportDismissed: '檢舉審查結果',
+                passwordReset: '忘記密碼',
+                accountRequest: '帳號異動'
+            };
+            return labels[templateKey] || '會員通知';
+        }
+
         async function sendEmailNotification(userData, status, title = "審核通知", customMsg = null, templateKey = null) {
             const targetEmail = String(userData && userData.email ? userData.email : '').trim();
             if (!targetEmail) {
@@ -1040,7 +1093,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                     to_name: userData.nickname || userData.userId || 'SecretRoom Member',
                     status_text: title,
                     message: messageText,
-                    email_type: resolvedTemplateKey,
+                    email_type: getEmailTypeLabel(resolvedTemplateKey),
                     member_id: userData.id || userData.userId || ''
                 });
                 showToast(`Email 通知已寄送至 ${targetEmail}`, "success");
@@ -1284,38 +1337,46 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
 
         window.completePasswordResetRequest = async function(requestId) {
             if (!db) return;
-            const newPassword = prompt('請輸入要設定給會員的臨時密碼（至少 8 碼）：');
-            if (!newPassword || newPassword.length < 8) { showToast('臨時密碼至少需要 8 碼', 'error'); return; }
             try {
                 const reqRef = doc(db, 'secretg_apps', appId, 'password_reset_requests', requestId);
                 const reqSnap = await getDoc(reqRef);
                 if (!reqSnap.exists()) { showToast('找不到申請紀錄', 'error'); return; }
-                const req = reqSnap.data();
+                const req = { id: reqSnap.id, ...reqSnap.data() };
                 const userId = req.userId;
                 if (!userId) { showToast('申請缺少會員帳號', 'error'); return; }
                 const userRef = doc(db, 'secretg_apps', appId, 'applications', userId);
                 const userSnap = await getDoc(userRef);
-                if (!userSnap.exists()) { showToast('找不到會員帳號', 'error'); return; }
-                const userData = userSnap.data();
+                if (!userSnap.exists()) { showToast('找不到會員帳號，已略過此筆申請', 'error'); return; }
+                const userData = userSnap.data() || {};
+                const requestEmail = normalizeEmail(req.email);
+                const memberEmail = getBoundEmailFromMember(userData);
+                if (!requestEmail || !memberEmail || requestEmail !== memberEmail || !isActiveMemberForForgotPassword(userData)) {
+                    await updateDoc(reqRef, { status: 'invalid', invalidReason: '會員帳號或綁定信箱不符', reviewedAt: serverTimestamp(), reviewedAtMs: Date.now(), reviewedBy: currentAdminId });
+                    await writeAdminLog('invalid_forgot_password_request', userId, { requestId, requestEmail });
+                    showToast('會員帳號或綁定信箱不符，已標記為無效申請', 'error');
+                    return;
+                }
+                const newPassword = prompt('請輸入要設定給會員的新臨時密碼（至少 8 碼）：');
+                if (!newPassword || newPassword.length < 8) { showToast('新臨時密碼至少需要 8 碼', 'error'); return; }
                 await updateDoc(userRef, { password: newPassword, passwordUpdatedAt: serverTimestamp(), passwordUpdatedAtMs: Date.now(), passwordUpdatedBy: currentAdminId });
                 await updateDoc(reqRef, { status: 'completed', completedAt: serverTimestamp(), completedAtMs: Date.now(), reviewedBy: currentAdminId });
-                await writeAdminLog('complete_password_reset', userId, { requestId });
-                await sendEmailNotification({ ...userData, email: req.email || userData.email }, 'approved', 'SecretRoom 密碼重設完成', `您的 SecretRoom 登入密碼已由管理員重設。臨時密碼：${newPassword}。登入後請儘快修改密碼。`, 'passwordReset');
-                showToast('臨時密碼已設定並寄送通知', 'success');
+                await writeAdminLog('complete_forgot_password', userId, { requestId });
+                await sendEmailNotification({ ...userData, id: userId, userId, email: requestEmail }, 'approved', 'SecretRoom 忘記密碼處理完成', `已為您的 SecretRoom 帳號設定新的臨時登入密碼：${newPassword}。登入後請儘快修改為您自己的密碼。`, 'passwordReset');
+                showToast('新臨時密碼已設定並寄送通知', 'success');
             } catch (err) {
-                console.error('密碼重設失敗:', err);
+                console.error('忘記密碼處理失敗:', err);
                 showToast('操作失敗: ' + err.message, 'error');
             }
         };
 
         window.rejectPasswordResetRequest = async function(requestId) {
             if (!db) return;
-            const reason = prompt('請輸入拒絕原因：') || '資料不符，無法受理密碼重設';
+            const reason = prompt('請輸入拒絕原因：') || '資料不符，無法受理忘記密碼申請';
             try {
                 const reqRef = doc(db, 'secretg_apps', appId, 'password_reset_requests', requestId);
                 await updateDoc(reqRef, { status: 'rejected', rejectionReason: reason, reviewedAt: serverTimestamp(), reviewedAtMs: Date.now(), reviewedBy: currentAdminId });
-                await writeAdminLog('reject_password_reset', requestId, { reason });
-                showToast('已拒絕密碼重設申請', 'success');
+                await writeAdminLog('reject_forgot_password', requestId, { reason });
+                showToast('已拒絕忘記密碼申請', 'success');
             } catch (err) {
                 showToast('操作失敗: ' + err.message, 'error');
             }

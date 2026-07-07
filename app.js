@@ -927,7 +927,7 @@ let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
                             進入俱樂部
                         </button>
                         <button type="button" id="btn-forgot-password" class="w-full text-xs text-slate-400 hover:text-amber-300 transition font-bold py-1.5 click-press">
-                            忘記密碼 / 申請重設
+                            忘記密碼
                         </button>
                     </div>
                 </div>
@@ -3771,12 +3771,12 @@ let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
             modal.innerHTML = `
                 <div class="glass-panel border border-amber-500/20 rounded-3xl p-6 w-[92vw] max-w-sm shadow-2xl relative crystal-border">
                     <button id="close-reset-request" class="absolute top-4 right-4 text-slate-550 hover:text-white text-2xl transition hover-breath click-press">&times;</button>
-                    <h3 class="text-lg font-black text-white mb-1 font-luxury"><i class="fa-solid fa-user-lock text-amber-500 mr-2"></i>密碼重設申請</h3>
-                    <p class="text-xs text-slate-400 leading-relaxed mb-5">請輸入帳號與註冊信箱。系統會送出重設申請給管理員處理；為避免帳號探測，送出後不會透露帳號是否存在。</p>
+                    <h3 class="text-lg font-black text-white mb-1 font-luxury"><i class="fa-solid fa-user-lock text-amber-500 mr-2"></i>忘記密碼</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed mb-5">請輸入會員帳號與註冊時綁定的通知信箱。系統會先比對既有會員資料，只有資料相符才會送出重新設定申請。</p>
                     <div class="space-y-3">
                         <input id="reset-request-id" class="w-full bg-slate-900 border border-amber-500/10 rounded-xl px-3.5 py-3 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="會員帳號 ID">
-                        <input id="reset-request-email" type="email" class="w-full bg-slate-900 border border-amber-500/10 rounded-xl px-3.5 py-3 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="註冊通知信箱">
-                        <button id="btn-submit-reset-request" class="w-full brushed-gold font-bold text-sm py-3.5 rounded-xl crystal-border hover-breath click-press">送出重設申請</button>
+                        <input id="reset-request-email" type="email" class="w-full bg-slate-900 border border-amber-500/10 rounded-xl px-3.5 py-3 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="註冊綁定信箱">
+                        <button id="btn-submit-reset-request" class="w-full brushed-gold font-bold text-sm py-3.5 rounded-xl crystal-border hover-breath click-press">送出忘記密碼申請</button>
                     </div>
                 </div>
             `;
@@ -3784,26 +3784,55 @@ let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
             document.getElementById('close-reset-request').onclick = () => modal.remove();
             document.getElementById('btn-submit-reset-request').onclick = async () => {
                 const userId = document.getElementById('reset-request-id').value.trim();
-                const email = document.getElementById('reset-request-email').value.trim();
-                if (!userId || !email) { showToast('請填寫帳號與註冊信箱。', 'error'); return; }
+                const email = document.getElementById('reset-request-email').value.trim().toLowerCase();
+                if (!userId || !email) { showToast('請填寫帳號與註冊綁定信箱。', 'error'); return; }
+                if (!/^\S+@\S+\.\S+$/.test(email)) { showToast('請輸入有效的 Email 格式。', 'error'); return; }
                 if (!db) { showToast('伺服器尚未完成連線，請稍後再試。', 'error'); return; }
                 showLoading();
                 try {
+                    const userRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+                    const userSnap = await getDoc(userRef);
+                    if (!userSnap.exists()) {
+                        showToast('查無符合的會員帳號或綁定信箱，請確認後再送出。', 'error');
+                        return;
+                    }
+                    const userData = userSnap.data() || {};
+                    const boundEmail = String(userData.email || userData.boundEmail || userData.notificationEmail || '').trim().toLowerCase();
+                    if (!boundEmail || boundEmail !== email) {
+                        showToast('查無符合的會員帳號或綁定信箱，請確認後再送出。', 'error');
+                        return;
+                    }
+                    const memberStatus = String(userData.status || '').toLowerCase();
+                    if (memberStatus && !['approved', 'active'].includes(memberStatus)) {
+                        showToast('此帳號尚未通過審核，無法使用忘記密碼功能。', 'error');
+                        return;
+                    }
+                    const existingQuery = query(collection(db, 'secretg_apps', appId, 'password_reset_requests'), where('userId', '==', userId), where('status', '==', 'pending'));
+                    const existingSnap = await getDocs(existingQuery);
+                    if (!existingSnap.empty) {
+                        showToast('此帳號已有待處理的忘記密碼申請，請等待處理。', 'info');
+                        modal.remove();
+                        if (previousModal && previousModal.remove) previousModal.remove();
+                        return;
+                    }
                     const reqRef = doc(collection(db, 'secretg_apps', appId, 'password_reset_requests'));
                     await setDoc(reqRef, {
                         userId,
                         email,
                         status: 'pending',
-                        type: 'password_reset',
+                        type: 'forgot_password',
+                        verifiedMember: true,
+                        userDisplayName: userData.nickname || userData.displayName || userId,
+                        memberStatus: userData.status || '',
                         createdAt: serverTimestamp(),
                         createdAtMs: Date.now(),
                         userAgent: navigator.userAgent || ''
                     });
                     modal.remove();
                     if (previousModal && previousModal.remove) previousModal.remove();
-                    showToast('密碼重設申請已送出，請等待管理員處理。', 'success');
+                    showToast('忘記密碼申請已送出，請等待管理員協助設定新密碼。', 'success');
                 } catch (err) {
-                    console.error('密碼重設申請失敗:', err);
+                    console.error('忘記密碼申請失敗:', err);
                     showToast('申請送出失敗：' + err.message, 'error');
                 } finally {
                     hideLoading();
