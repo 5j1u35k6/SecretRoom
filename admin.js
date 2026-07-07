@@ -11,22 +11,22 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
         };
 
         const emailjsConfig = {
-            publicKey: "ZEp9d-hAeYdFujDZy", 
-            serviceId: "service_1ou10mi",
-            defaultTemplateId: "template_25proud",
-            templates: {
-                registrationApproved: "template_25proud",
-                registrationRejected: "template_25proud",
-                specApproved: "template_25proud",
-                specRejected: "template_25proud",
-                avatarApproved: "template_25proud",
-                avatarRejected: "template_25proud",
-                reportAccepted: "template_25proud",
-                reportDismissed: "template_25proud",
-                passwordReset: "template_25proud",
-                accountRequest: "template_25proud"
-            }
-        };
+    publicKey: "ZEp9d-hAeYdFujDZy",
+    serviceId: "service_1ou10mi",
+    defaultTemplateId: "template_sr_notice",
+    templates: {
+        registrationApproved: "template_sr_notice",
+        registrationRejected: "template_sr_notice",
+        specApproved: "template_sr_notice",
+        specRejected: "template_sr_notice",
+        avatarApproved: "template_sr_notice",
+        avatarRejected: "template_sr_notice",
+        reportAccepted: "template_sr_notice",
+        reportDismissed: "template_sr_notice",
+        passwordReset: "template_sr_security",
+        accountRequest: "template_sr_security"
+    }
+};
 
         async function loadFirebaseSDKs() {
             try {
