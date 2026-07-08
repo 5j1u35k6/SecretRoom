@@ -1,0 +1,78 @@
+name: SecretRoom EmailJS send hardening
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/sr-emailjs-send-hardening.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch-emailjs-send:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Harden EmailJS browser sends and force cache refresh
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          public_key = 'XggJY7iHQcZYYhNY7'
+          version = '20260708-emailjs-key2'
+
+          admin = Path('admin.js')
+          if admin.exists():
+              text = admin.read_text(encoding='utf-8')
+              text = text.replace(
+                  "emailjs.init({ publicKey: emailjsConfig.publicKey });",
+                  "emailjs.init({ publicKey: emailjsConfig.publicKey, blockHeadless: false });"
+              )
+              text = text.replace(
+                  "member_id: userData.id || userData.userId || ''\n                });",
+                  "member_id: userData.id || userData.userId || ''\n                }, { publicKey: emailjsConfig.publicKey });"
+              )
+              text = text.replace(
+                  "member_id: item.memberId || ''\n                });",
+                  "member_id: item.memberId || ''\n                }, { publicKey: emailjsConfig.publicKey });"
+              )
+              admin.write_text(text, encoding='utf-8')
+
+          app = Path('app.js')
+          if app.exists():
+              text = app.read_text(encoding='utf-8')
+              text = text.replace('publicKey: "ZEp9d-hAeYdFujDZy"', f'publicKey: "{public_key}"')
+              app.write_text(text, encoding='utf-8')
+
+          portal = Path('portal_sr_x892.html')
+          if portal.exists():
+              text = portal.read_text(encoding='utf-8')
+              import re
+              text = re.sub(r'src="admin\.js(?:\?v=[^"]*)?"', f'src="admin.js?v={version}"', text)
+              portal.write_text(text, encoding='utf-8')
+
+          index = Path('index.html')
+          if index.exists():
+              text = index.read_text(encoding='utf-8')
+              import re
+              text = re.sub(r'src="app\.js(?:\?v=[^"]*)?"', f'src="app.js?v={version}"', text)
+              index.write_text(text, encoding='utf-8')
+
+          workflow = Path('.github/workflows/sr-emailjs-send-hardening.yml')
+          if workflow.exists():
+              workflow.unlink()
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app.js admin.js index.html portal_sr_x892.html .github/workflows/sr-emailjs-send-hardening.yml
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Harden EmailJS browser sends and refresh asset cache"
+            git push
+          fi
