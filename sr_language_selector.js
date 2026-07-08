@@ -104,6 +104,18 @@
     document.head.appendChild(link);
   }
 
+  function applyTranslatedLayoutFixes() {
+    const nodes = document.querySelectorAll('button, a, span, div');
+    nodes.forEach(el => {
+      if (el.id === 'sr-language-selector-wrap' || el.closest('#sr-language-selector-wrap')) return;
+      const text = (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim();
+      if (!text || text.length > 70) return;
+      const isGoldSpec = /黃金|黄金|Spec|spec|Specifo|Golden|Limigita|限定|認證|认证/i.test(text);
+      const looksLikePill = /rounded|brushed-gold|amber|gold|crystal-border/i.test(String(el.className || ''));
+      if (isGoldSpec && looksLikePill) el.classList.add('sr-spec-two-line-pill');
+    });
+  }
+
   window.googleTranslateElementInit = function() {
     if (!window.google || !window.google.translate) return;
     new window.google.translate.TranslateElement({ pageLanguage: 'zh-TW', includedLanguages: included, autoDisplay: false, layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE }, 'google_translate_element');
@@ -121,9 +133,28 @@
     #sr-language-selector-wrap, #sr-language-selector-wrap * { font-family: var(--sr-unified-font) !important; }
     #sr-language-selector { letter-spacing: 0.02em; }
     #sr-language-selector option { background: #020204; color: #f8e7b0; font-family: var(--sr-unified-font) !important; }
+    .sr-spec-two-line-pill {
+      width: 9.75rem !important;
+      max-width: 9.75rem !important;
+      min-height: 3.15rem !important;
+      white-space: normal !important;
+      overflow: visible !important;
+      text-overflow: clip !important;
+      line-height: 1.12 !important;
+      text-align: center !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      flex-wrap: wrap !important;
+      word-break: normal !important;
+      overflow-wrap: anywhere !important;
+      padding-left: 0.9rem !important;
+      padding-right: 0.9rem !important;
+    }
     @media (max-width: 640px) {
       #sr-language-selector-wrap { right: 0.75rem !important; bottom: 0.75rem !important; width: 12.75rem !important; max-width: calc(100vw - 1.5rem); padding: 0.65rem 0.75rem; }
       #sr-language-selector { font-size: 10px; }
+      .sr-spec-two-line-pill { width: 8.9rem !important; max-width: 8.9rem !important; min-height: 3rem !important; font-size: 10px !important; }
     }
   `;
   document.head.appendChild(css);
@@ -132,4 +163,7 @@
   ensureInitialLanguage();
   buildSelector();
   loadGoogleTranslate();
+  applyTranslatedLayoutFixes();
+  new MutationObserver(() => setTimeout(applyTranslatedLayoutFixes, 120)).observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+  setInterval(applyTranslatedLayoutFixes, 1500);
 })();
