@@ -13,10 +13,14 @@ let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
         };
   
         const emailjsConfig = {
-            publicKey: "ZEp9d-hAeYdFujDZy", 
-            serviceId: "service_1ou10mi", 
-            templateId: "template_25proud" 
-        };
+  publicKey: "ZEp9d-hAeYdFujDZy",
+  serviceId: "service_1ou10mi",
+  defaultTemplateId: "template_sr_notice",
+  templates: {
+    notice: "template_sr_notice",
+    security: "template_sr_security"
+  }
+};
   
         const telegramBotName = "SecretRoomtwBot"; 
 
