@@ -63,6 +63,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
         let allNotifications = [];
         let allPasswordResetRequests = [];
         let allAccountRequests = [];
+        let allEmailFailures = [];
         let currentAdminId = null;
         let currentAdminSource = null;
         let userIdToDelete = null; 
@@ -156,6 +157,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
             listenToNotifications();
             listenToPasswordResetRequests();
             listenToAccountRequests();
+            listenToEmailFailures();
         }
 
         function initAdminGate() {
@@ -207,6 +209,16 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                 querySnapshot.forEach((docSnap) => allNotifications.push({ id: docSnap.id, ...docSnap.data() }));
                 renderNotificationHistory();
             }, (err) => console.error('通知紀錄同步失敗:', err));
+        }
+
+        function listenToEmailFailures() {
+            const q = collection(db, 'secretg_apps', appId, 'email_failures');
+            onSnapshot(q, (querySnapshot) => {
+                allEmailFailures = [];
+                querySnapshot.forEach((docSnap) => allEmailFailures.push({ id: docSnap.id, ...docSnap.data() }));
+                const filter = document.getElementById('filter-status');
+                if (filter && filter.value === 'email_failures') renderApplications();
+            }, (err) => console.error('Email 失敗紀錄同步失敗:', err));
         }
 
         function parseTime(value) {
@@ -541,6 +553,55 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
             });
         }
 
+        function emailFailureStatusLabel(status) {
+            const value = String(status || 'failed');
+            if (value === 'sent') return '補寄成功';
+            if (value === 'handled') return '已手動處理';
+            return '發送失敗';
+        }
+
+        function buildEmailFailureText(item) {
+            return [
+                `To: ${item.toName || item.memberId || 'SecretRoom Member'} <${item.toEmail || ''}>`,
+                `Subject: ${item.title || 'SecretRoom 通知'}`,
+                '',
+                item.message || ''
+            ].join('\n');
+        }
+
+        function renderEmailFailures(listContainer) {
+            const searchTerm = (document.getElementById('admin-search')?.value || '').trim().toLowerCase();
+            const list = [...allEmailFailures]
+                .filter(item => !searchTerm || `${item.memberId || ''} ${item.toEmail || ''} ${item.toName || ''} ${item.title || ''} ${item.templateKey || ''} ${item.status || ''} ${item.errorMessage || ''}`.toLowerCase().includes(searchTerm))
+                .sort((a,b) => parseTime(b.createdAt || b.createdAtMs || b.lastFailedAtMs) - parseTime(a.createdAt || a.createdAtMs || a.lastFailedAtMs));
+            listContainer.innerHTML = '';
+            if (list.length === 0) {
+                listContainer.innerHTML = '<div class="text-center py-12 text-slate-500 flex flex-col items-center gap-2"><i class="fa-solid fa-envelope-circle-check text-2xl text-emerald-400"></i><span>目前沒有 Email 發送失敗紀錄</span></div>';
+                return;
+            }
+            list.forEach(item => {
+                const status = String(item.status || 'failed');
+                const canRetry = status !== 'sent';
+                const card = document.createElement('div');
+                card.className = `admin-muted-card p-5 rounded-2xl border ${status === 'sent' ? 'border-emerald-500/20 opacity-75' : 'border-rose-500/25'} flex flex-col md:flex-row md:items-start justify-between gap-4`;
+                card.innerHTML = `
+                    <div class="space-y-2 flex-1 min-w-0">
+                        <div class="text-sm font-black text-slate-200">Email 發送失敗：${escapeHtml(item.title || 'SecretRoom 通知')}</div>
+                        <div class="text-xs text-slate-400"><i class="fa-regular fa-envelope"></i> ${escapeHtml(item.toEmail || '未記錄信箱')}</div>
+                        <div class="text-xs text-slate-500">會員：@${escapeHtml(item.memberId || '')} · 類型：${escapeHtml(item.templateKey || 'notice')} · ${emailFailureStatusLabel(status)}</div>
+                        <div class="text-xs text-rose-300 bg-rose-950/20 border border-rose-500/10 rounded-xl p-3 leading-relaxed break-words">${escapeHtml(item.errorMessage || item.lastError || '未記錄錯誤訊息')}</div>
+                        <div class="text-xs text-slate-300 bg-slate-950/45 border border-slate-800 rounded-xl p-3 leading-relaxed whitespace-pre-wrap">${escapeHtml(item.message || '')}</div>
+                        <div class="text-[10px] text-slate-500">${formatTime(item.createdAt || item.createdAtMs || item.lastFailedAtMs)} · 重試 ${Number(item.retryCount || 0)} 次</div>
+                    </div>
+                    <div class="flex gap-2 flex-wrap shrink-0">
+                        ${canRetry ? `<button onclick="retryEmailFailure('${item.id}')" class="bg-emerald-600/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/20 text-xs px-4 py-2.5 rounded-xl font-bold">重新寄送</button>` : ''}
+                        <button onclick="copyEmailFailureMessage('${item.id}')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs px-4 py-2.5 rounded-xl font-bold">複製內容</button>
+                        ${status !== 'handled' ? `<button onclick="markEmailFailureHandled('${item.id}')" class="bg-slate-800 hover:bg-amber-950/40 text-slate-400 hover:text-amber-300 border border-slate-700 text-xs px-4 py-2.5 rounded-xl font-bold">標記已處理</button>` : ''}
+                    </div>`;
+                listContainer.appendChild(card);
+            });
+        }
+
         window.renderApplications = function() {
             const listContainer = document.getElementById('admin-list');
             const filterValue = document.getElementById('filter-status').value;
@@ -552,6 +613,11 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
 
             if (filterValue === 'account_delete_requests') {
                 renderAccountDeletionRequests(listContainer);
+                return;
+            }
+
+            if (filterValue === 'email_failures') {
+                renderEmailFailures(listContainer);
                 return;
             }
 
@@ -1069,6 +1135,48 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
             return labels[templateKey] || '會員通知';
         }
 
+        function formatEmailError(error) {
+            if (!error) return '未知錯誤';
+            if (typeof error === 'string') return error;
+            const status = error.status || error.code || '';
+            const text = error.text || error.message || error.name || '';
+            const combined = `${status} ${text}`.trim();
+            if (combined) return combined;
+            try {
+                return JSON.stringify(error).slice(0, 600);
+            } catch (err) {
+                return String(error).slice(0, 600);
+            }
+        }
+
+        async function writeEmailFailure(error, context = {}) {
+            if (!db) return;
+            try {
+                const userData = context.userData || {};
+                const failureRef = doc(collection(db, 'secretg_apps', appId, 'email_failures'));
+                await setDoc(failureRef, {
+                    status: 'failed',
+                    toEmail: context.targetEmail || userData.email || '',
+                    toName: userData.nickname || userData.userId || 'SecretRoom Member',
+                    memberId: userData.id || userData.userId || context.memberId || '',
+                    title: context.title || 'SecretRoom 通知',
+                    message: context.messageText || '',
+                    templateKey: context.templateKey || '',
+                    templateId: context.templateId || '',
+                    emailType: getEmailTypeLabel(context.templateKey || ''),
+                    errorMessage: formatEmailError(error),
+                    errorRaw: (() => { try { return JSON.stringify(error).slice(0, 1200); } catch (err) { return String(error).slice(0, 1200); } })(),
+                    retryCount: 0,
+                    createdAt: serverTimestamp(),
+                    createdAtMs: Date.now(),
+                    createdBy: currentAdminId || 'admin'
+                });
+                await writeAdminLog('email_failure_recorded', userData.id || userData.userId || context.memberId || failureRef.id, { failureId: failureRef.id, templateKey: context.templateKey || '', error: formatEmailError(error) });
+            } catch (err) {
+                console.warn('寫入 Email 失敗紀錄失敗:', err);
+            }
+        }
+
         async function sendEmailNotification(userData, status, title = "審核通知", customMsg = null, templateKey = null) {
             const targetEmail = String(userData && userData.email ? userData.email : '').trim();
             if (!targetEmail) {
@@ -1099,7 +1207,16 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                 showToast(`Email 通知已寄送至 ${targetEmail}`, "success");
             } catch (error) {
                 console.error("Email 發送失敗:", error);
-                showToast("通知信發送失敗，請確認 EmailJS 模板設定", "error");
+                await writeEmailFailure(error, {
+                    userData,
+                    status,
+                    title,
+                    messageText,
+                    templateKey: resolvedTemplateKey,
+                    templateId: resolvedTemplateId,
+                    targetEmail
+                });
+                showToast("通知信發送失敗，已記錄於 Email 失敗清單", "error");
             }
         }
 
@@ -1127,6 +1244,75 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                 await sendEmailToUserId(reporterId, 'approved', title, message, templateKey);
             }
         }
+
+        window.retryEmailFailure = async function(failureId) {
+            const item = allEmailFailures.find(f => f.id === failureId);
+            if (!item) { showToast('找不到該筆 Email 失敗紀錄', 'error'); return; }
+            if (!emailjsConfig.publicKey || emailjsConfig.publicKey === "YOUR_EMAILJS_PUBLIC_KEY") { showToast('EmailJS 尚未設定完成', 'error'); return; }
+            const templateKey = item.templateKey || 'registrationApproved';
+            const templateId = item.templateId || getEmailTemplateId(templateKey);
+            try {
+                await emailjs.send(emailjsConfig.serviceId, templateId, {
+                    to_email: item.toEmail,
+                    to_name: item.toName || item.memberId || 'SecretRoom Member',
+                    status_text: item.title || 'SecretRoom 通知',
+                    message: item.message || '',
+                    email_type: item.emailType || getEmailTypeLabel(templateKey),
+                    member_id: item.memberId || ''
+                });
+                await updateDoc(doc(db, 'secretg_apps', appId, 'email_failures', failureId), {
+                    status: 'sent',
+                    sentAt: serverTimestamp(),
+                    sentAtMs: Date.now(),
+                    retriedAt: serverTimestamp(),
+                    retriedAtMs: Date.now(),
+                    retriedBy: currentAdminId || 'admin',
+                    retryCount: Number(item.retryCount || 0) + 1,
+                    lastError: ''
+                });
+                await writeAdminLog('retry_email_success', failureId, { memberId: item.memberId || '', toEmail: item.toEmail || '', templateKey });
+                showToast('Email 已重新寄送成功', 'success');
+            } catch (error) {
+                const message = formatEmailError(error);
+                await updateDoc(doc(db, 'secretg_apps', appId, 'email_failures', failureId), {
+                    status: 'failed',
+                    lastError: message,
+                    lastFailedAt: serverTimestamp(),
+                    lastFailedAtMs: Date.now(),
+                    retryCount: Number(item.retryCount || 0) + 1
+                });
+                await writeAdminLog('retry_email_failed', failureId, { memberId: item.memberId || '', toEmail: item.toEmail || '', error: message });
+                showToast('補寄失敗，已更新失敗原因', 'error');
+            }
+        };
+
+        window.markEmailFailureHandled = async function(failureId) {
+            if (!db) return;
+            try {
+                await updateDoc(doc(db, 'secretg_apps', appId, 'email_failures', failureId), {
+                    status: 'handled',
+                    handledAt: serverTimestamp(),
+                    handledAtMs: Date.now(),
+                    handledBy: currentAdminId || 'admin'
+                });
+                await writeAdminLog('mark_email_failure_handled', failureId, {});
+                showToast('已標記為手動處理', 'success');
+            } catch (error) {
+                showToast('更新失敗: ' + error.message, 'error');
+            }
+        };
+
+        window.copyEmailFailureMessage = async function(failureId) {
+            const item = allEmailFailures.find(f => f.id === failureId);
+            if (!item) { showToast('找不到該筆 Email 失敗紀錄', 'error'); return; }
+            const text = buildEmailFailureText(item);
+            try {
+                await navigator.clipboard.writeText(text);
+                showToast('已複製信件內容', 'success');
+            } catch (error) {
+                prompt('請手動複製以下信件內容：', text);
+            }
+        };
 
         window.approveAvatarChange = async function(userId) {
             if (!db) return;
