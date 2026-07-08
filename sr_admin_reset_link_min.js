@@ -1,0 +1,1 @@
+window.completePasswordResetRequest=async function(id){alert('reset link sender placeholder '+id)};
