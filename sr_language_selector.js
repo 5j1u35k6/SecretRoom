@@ -35,7 +35,7 @@
     wrap.setAttribute('translate', 'no');
     wrap.innerHTML = `
       <i class="fa-solid fa-globe text-amber-400 text-xs"></i>
-      <select id="sr-language-selector" class="notranslate bg-transparent text-[11px] font-black text-amber-200 outline-none max-w-[150px] cursor-pointer" translate="no" aria-label="Language selector">
+      <select id="sr-language-selector" class="notranslate bg-transparent text-[11px] font-black text-amber-200 outline-none cursor-pointer" translate="no" aria-label="Language selector">
         ${languages.map(([code, label]) => `<option class="notranslate" translate="no" lang="${code}" value="${code}">${label}</option>`).join('')}
       </select>
       <div id="google_translate_element" class="hidden"></div>
@@ -74,16 +74,17 @@
     body > .skiptranslate, iframe.goog-te-banner-frame { display: none !important; }
     body { top: 0 !important; }
     #sr-language-selector-wrap {
-      top: 8.75rem !important;
-      left: 2.5rem !important;
+      top: 5.05rem !important;
+      left: 2.05rem !important;
       bottom: auto !important;
       right: auto !important;
-      width: 16.5rem !important;
+      width: 13.75rem !important;
       justify-content: center !important;
       font-family: Inter, "Noto Serif TC", "Noto Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
     }
     #sr-language-selector {
-      width: 12.25rem !important;
+      width: 10.25rem !important;
+      max-width: 10.25rem !important;
       font-family: Inter, "Noto Serif TC", "Noto Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
       letter-spacing: 0.02em;
     }
@@ -94,14 +95,14 @@
     }
     @media (max-width: 640px) {
       #sr-language-selector-wrap {
-        top: 8.15rem !important;
-        left: 1.45rem !important;
-        width: 14rem !important;
-        max-width: calc(100vw - 2.9rem);
+        top: 4.85rem !important;
+        left: 1.35rem !important;
+        width: 12.8rem !important;
+        max-width: calc(100vw - 2.7rem);
         padding-left: 0.65rem;
         padding-right: 0.65rem;
       }
-      #sr-language-selector { width: 10.5rem !important; max-width: 10.5rem; font-size: 10px; }
+      #sr-language-selector { width: 9.7rem !important; max-width: 9.7rem !important; font-size: 10px; }
     }
   `;
   document.head.appendChild(css);
