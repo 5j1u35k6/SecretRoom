@@ -21,7 +21,6 @@
     document.cookie = `${COOKIE_NAME}=${value}; path=/SecretRoom/; max-age=${maxAge}`;
     localStorage.setItem(STORAGE_KEY, lang);
   }
-
   function getCookieLang() {
     const cookie = document.cookie.split('; ').find(row => row.startsWith(`${COOKIE_NAME}=`));
     if (!cookie) return localStorage.getItem(STORAGE_KEY) || '';
@@ -29,7 +28,6 @@
     const parts = value.split('/').filter(Boolean);
     return parts[1] || localStorage.getItem(STORAGE_KEY) || '';
   }
-
   function normalizeLocale(value) {
     const raw = String(value || '').trim();
     if (!raw) return '';
@@ -42,7 +40,6 @@
     if (supported.has(base)) return base;
     return regionMap[region] || '';
   }
-
   function detectDeviceLanguage() {
     const saved = localStorage.getItem(STORAGE_KEY) || getCookieLang();
     if (saved && supported.has(saved)) return saved;
@@ -55,7 +52,6 @@
     if (tz && timeZoneMap[tz]) return timeZoneMap[tz];
     return 'en';
   }
-
   function ensureInitialLanguage() {
     const saved = localStorage.getItem(STORAGE_KEY) || getCookieLang();
     if (saved && supported.has(saved)) return saved;
@@ -63,7 +59,6 @@
     setCookie(detected);
     return detected;
   }
-
   function buildSelector() {
     if (document.getElementById('sr-language-selector-wrap')) return;
     const wrap = document.createElement('div');
@@ -85,7 +80,6 @@
     select.value = getCookieLang() || ensureInitialLanguage();
     select.onchange = () => { setCookie(select.value); window.location.reload(); };
   }
-
   function loadGoogleTranslate() {
     if (document.getElementById('sr-google-translate-script')) return;
     const script = document.createElement('script');
@@ -94,7 +88,6 @@
     script.async = true;
     document.head.appendChild(script);
   }
-
   function loadUniversalFonts() {
     if (document.getElementById('sr-universal-fonts')) return;
     const link = document.createElement('link');
@@ -103,11 +96,14 @@
     link.href = 'https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;600;700;800;900&family=Noto+Sans+JP:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap';
     document.head.appendChild(link);
   }
-
   function applyTranslatedLayoutFixes() {
+    document.querySelectorAll('.sr-spec-two-line-pill').forEach(el => {
+      if (el.closest('#aside-tab-spec-vault, #aside-tab-badge-progress, aside')) el.classList.remove('sr-spec-two-line-pill');
+    });
     const nodes = document.querySelectorAll('button, a, span, div');
     nodes.forEach(el => {
       if (el.id === 'sr-language-selector-wrap' || el.closest('#sr-language-selector-wrap')) return;
+      if (el.closest('#aside-tab-spec-vault, #aside-tab-badge-progress, aside')) return;
       const text = (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim();
       if (!text || text.length > 70) return;
       const isGoldSpec = /黃金|黄金|Spec|spec|Specifo|Golden|Limigita|限定|認證|认证/i.test(text);
@@ -133,24 +129,8 @@
     #sr-language-selector-wrap, #sr-language-selector-wrap * { font-family: var(--sr-unified-font) !important; }
     #sr-language-selector { letter-spacing: 0.02em; }
     #sr-language-selector option { background: #020204; color: #f8e7b0; font-family: var(--sr-unified-font) !important; }
-    .sr-spec-two-line-pill {
-      width: 9.75rem !important;
-      max-width: 9.75rem !important;
-      min-height: 3.15rem !important;
-      white-space: normal !important;
-      overflow: visible !important;
-      text-overflow: clip !important;
-      line-height: 1.12 !important;
-      text-align: center !important;
-      display: inline-flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      flex-wrap: wrap !important;
-      word-break: normal !important;
-      overflow-wrap: anywhere !important;
-      padding-left: 0.9rem !important;
-      padding-right: 0.9rem !important;
-    }
+    .sr-spec-two-line-pill { width: 9.75rem !important; max-width: 9.75rem !important; min-height: 3.15rem !important; white-space: normal !important; overflow: visible !important; text-overflow: clip !important; line-height: 1.12 !important; text-align: center !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; flex-wrap: wrap !important; word-break: normal !important; overflow-wrap: anywhere !important; padding-left: 0.9rem !important; padding-right: 0.9rem !important; }
+    aside .sr-spec-two-line-pill, #aside-tab-spec-vault .sr-spec-two-line-pill, #aside-tab-badge-progress .sr-spec-two-line-pill { width: auto !important; max-width: none !important; min-height: unset !important; padding: inherit !important; }
     @media (max-width: 640px) {
       #sr-language-selector-wrap { right: 0.75rem !important; bottom: 0.75rem !important; width: 12.75rem !important; max-width: calc(100vw - 1.5rem); padding: 0.65rem 0.75rem; }
       #sr-language-selector { font-size: 10px; }
