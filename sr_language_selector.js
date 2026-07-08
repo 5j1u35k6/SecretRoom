@@ -19,13 +19,19 @@
     document.cookie = `${COOKIE_NAME}=${value}; path=/; max-age=${maxAge}`;
     document.cookie = `${COOKIE_NAME}=${value}; path=/SecretRoom/; max-age=${maxAge}`;
   }
+  function clearTranslateCookie() {
+    writeTranslateCookie('', 0);
+  }
   function setCookie(lang) {
     const target = supported.has(lang) ? lang : 'en';
-    const maxAge = 60 * 60 * 24 * 365;
-    const value = `/${SOURCE_LANG}/${target}`;
-    writeTranslateCookie(value, maxAge);
     localStorage.setItem(STORAGE_KEY, target);
     document.documentElement.setAttribute('lang', target);
+    if (target === SOURCE_LANG) {
+      clearTranslateCookie();
+      return;
+    }
+    const maxAge = 60 * 60 * 24 * 365;
+    writeTranslateCookie(`/${SOURCE_LANG}/${target}`, maxAge);
   }
   function getCookieLang() {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -63,13 +69,26 @@
   }
   function ensureInitialLanguage() {
     const saved = localStorage.getItem(STORAGE_KEY) || getCookieLang();
-    if (saved && supported.has(saved)) {
-      setCookie(saved);
-      return saved;
+    const lang = saved && supported.has(saved) ? saved : detectDeviceLanguage();
+    setCookie(lang);
+    return lang;
+  }
+  function applyGoogleCombo(lang, attempt = 0) {
+    const target = supported.has(lang) ? lang : 'en';
+    const combo = document.querySelector('select.goog-te-combo');
+    if (!combo) {
+      if (attempt < 40) setTimeout(() => applyGoogleCombo(target, attempt + 1), 250);
+      return;
     }
-    const detected = detectDeviceLanguage();
-    setCookie(detected);
-    return detected;
+    if (target === SOURCE_LANG) {
+      combo.value = '';
+      combo.dispatchEvent(new Event('change', { bubbles: true }));
+      return;
+    }
+    if (combo.value !== target) {
+      combo.value = target;
+      combo.dispatchEvent(new Event('change', { bubbles: true }));
+    }
   }
   function buildSelector() {
     if (document.getElementById('sr-language-selector-wrap')) return;
@@ -90,7 +109,12 @@
     document.body.appendChild(wrap);
     const select = document.getElementById('sr-language-selector');
     select.value = ensureInitialLanguage();
-    select.onchange = () => { setCookie(select.value); window.location.reload(); };
+    select.onchange = () => {
+      const lang = select.value;
+      setCookie(lang);
+      applyGoogleCombo(lang);
+      if (lang === SOURCE_LANG) setTimeout(() => window.location.reload(), 300);
+    };
   }
   function loadGoogleTranslate() {
     if (document.getElementById('sr-google-translate-script')) return;
@@ -123,10 +147,10 @@
       if (isGoldSpec && looksLikePill) el.classList.add('sr-spec-two-line-pill');
     });
   }
-
   window.googleTranslateElementInit = function() {
     if (!window.google || !window.google.translate) return;
     new window.google.translate.TranslateElement({ pageLanguage: SOURCE_LANG, includedLanguages: included, autoDisplay: false, layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE }, 'google_translate_element');
+    setTimeout(() => applyGoogleCombo(getCookieLang() || ensureInitialLanguage()), 500);
   };
 
   const css = document.createElement('style');
@@ -152,7 +176,6 @@
   document.head.appendChild(css);
 
   loadUniversalFonts();
-  ensureInitialLanguage();
   buildSelector();
   loadGoogleTranslate();
   applyTranslatedLayoutFixes();
