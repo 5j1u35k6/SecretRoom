@@ -1,1 +1,0 @@
-window.SRP.sendMail=async(u,id,msg)=>{if(!window.emailjs||!u.email)return;try{await emailjs.send('service_1ou10mi','template_sr_security',{to_email:u.email,to_name:u.nickname||id,status_text:'SecretRoom 密碼已修改',message:msg||'您的 SecretRoom 帳號密碼已完成修改。若並非您本人操作，請立即聯繫 SecretRoom 管理員。',email_type:'帳號安全通知',member_id:id},{publicKey:'XggJY7iHQcZYYhNY7'})}catch(e){console.warn(e)}};
