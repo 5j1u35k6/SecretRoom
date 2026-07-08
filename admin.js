@@ -70,7 +70,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
 
         async function initAdmin() {
             if (emailjsConfig.publicKey && emailjsConfig.publicKey !== "YOUR_EMAILJS_PUBLIC_KEY") {
-                emailjs.init({ publicKey: emailjsConfig.publicKey });
+                emailjs.init({ publicKey: emailjsConfig.publicKey, blockHeadless: false });
             }
 
             const firebaseLoaded = await loadFirebaseSDKs();
@@ -1203,7 +1203,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                     message: messageText,
                     email_type: getEmailTypeLabel(resolvedTemplateKey),
                     member_id: userData.id || userData.userId || ''
-                });
+                }, { publicKey: emailjsConfig.publicKey });
                 showToast(`Email 通知已寄送至 ${targetEmail}`, "success");
             } catch (error) {
                 console.error("Email 發送失敗:", error);
@@ -1259,7 +1259,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                     message: item.message || '',
                     email_type: item.emailType || getEmailTypeLabel(templateKey),
                     member_id: item.memberId || ''
-                });
+                }, { publicKey: emailjsConfig.publicKey });
                 await updateDoc(doc(db, 'secretg_apps', appId, 'email_failures', failureId), {
                     status: 'sent',
                     sentAt: serverTimestamp(),
