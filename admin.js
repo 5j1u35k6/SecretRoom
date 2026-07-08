@@ -11,7 +11,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
         };
 
         const emailjsConfig = {
-    publicKey: "ZEp9d-hAeYdFujDZy",
+    publicKey: "XggJY7iHQcZYYhNY7",
     serviceId: "service_1ou10mi",
     defaultTemplateId: "template_sr_notice",
     templates: {
