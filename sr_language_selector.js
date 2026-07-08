@@ -31,7 +31,7 @@
     if (document.getElementById('sr-language-selector-wrap')) return;
     const wrap = document.createElement('div');
     wrap.id = 'sr-language-selector-wrap';
-    wrap.className = 'notranslate fixed top-4 left-[5.75rem] z-[160] flex items-center gap-2 rounded-full border border-amber-500/20 bg-slate-950/90 px-3 py-2 shadow-2xl backdrop-blur-md';
+    wrap.className = 'notranslate fixed z-[160] flex items-center gap-2 rounded-full border border-amber-500/20 bg-slate-950/90 px-3 py-2 shadow-2xl backdrop-blur-md';
     wrap.setAttribute('translate', 'no');
     wrap.innerHTML = `
       <i class="fa-solid fa-globe text-amber-400 text-xs"></i>
@@ -74,13 +74,16 @@
     body > .skiptranslate, iframe.goog-te-banner-frame { display: none !important; }
     body { top: 0 !important; }
     #sr-language-selector-wrap {
-      top: 1rem !important;
-      left: 5.75rem !important;
+      top: 8.75rem !important;
+      left: 2.5rem !important;
       bottom: auto !important;
       right: auto !important;
+      width: 16.5rem !important;
+      justify-content: center !important;
       font-family: Inter, "Noto Serif TC", "Noto Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
     }
     #sr-language-selector {
+      width: 12.25rem !important;
       font-family: Inter, "Noto Serif TC", "Noto Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
       letter-spacing: 0.02em;
     }
@@ -91,13 +94,14 @@
     }
     @media (max-width: 640px) {
       #sr-language-selector-wrap {
-        top: 0.75rem !important;
-        left: 4.9rem !important;
-        max-width: calc(100vw - 9.5rem);
+        top: 8.15rem !important;
+        left: 1.45rem !important;
+        width: 14rem !important;
+        max-width: calc(100vw - 2.9rem);
         padding-left: 0.65rem;
         padding-right: 0.65rem;
       }
-      #sr-language-selector { max-width: 112px; font-size: 10px; }
+      #sr-language-selector { width: 10.5rem !important; max-width: 10.5rem; font-size: 10px; }
     }
   `;
   document.head.appendChild(css);
