@@ -143,20 +143,20 @@
             <h3 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
                 <i class="fa-solid fa-circle-question text-amber-500"></i> 選擇審核拒絕原因
             </h3>
-            <p class="text-slate-400 text-xs mb-4">這項原因將會自動代入並發送給對方的通知信中。</p>
-            
-            <div class="space-y-2 mb-6">
+            <p class="text-slate-400 text-sm mb-4 leading-relaxed">請選擇一個原因，系統會將此原因寫入申請紀錄。</p>
+
+            <div class="space-y-2 mb-5">
                 <label class="flex items-center gap-3 p-2.5 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800 transition">
-                    <input type="radio" name="rejection-reason" value="註冊大頭照不清晰、未露出五官，或涉嫌冒用他人照片。" class="accent-amber-500" required checked>
-                    <span class="text-xs text-slate-300 font-semibold">頭像不合規</span>
+                    <input type="radio" name="rejection-reason" value="頭像照片不符合本站規範，請重新上傳清楚且真實的個人照片。" class="accent-amber-500" required>
+                    <span class="text-xs text-slate-300 font-semibold">頭像照片不符合規範</span>
                 </label>
                 <label class="flex items-center gap-3 p-2.5 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800 transition">
-                    <input type="radio" name="rejection-reason" value="經審核填寫之年齡不符，本站僅限滿 18 歲之成年人加入。" class="accent-amber-500" required>
-                    <span class="text-xs text-slate-300 font-semibold">年齡未滿 18 歲</span>
+                    <input type="radio" name="rejection-reason" value="暱稱或個人資料含有不合適內容，請重新提交。" class="accent-amber-500" required>
+                    <span class="text-xs text-slate-300 font-semibold">暱稱或個人資料不合適</span>
                 </label>
                 <label class="flex items-center gap-3 p-2.5 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800 transition">
-                    <input type="radio" name="rejection-reason" value="您的身體尺寸、身高體重或通知信箱等欄位資訊填寫不實。" class="accent-amber-500" required>
-                    <span class="text-xs text-slate-300 font-semibold">資料填寫不實</span>
+                    <input type="radio" name="rejection-reason" value="資料填寫不完整或無法驗證，請補充後再申請。" class="accent-amber-500" required>
+                    <span class="text-xs text-slate-300 font-semibold">資料不完整或無法驗證</span>
                 </label>
                 <label class="flex items-center gap-3 p-2.5 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800 transition">
                     <input type="radio" name="rejection-reason" value="不符本站審核政策。如有任何疑問請聯繫官方管理信箱。" class="accent-amber-500" required>
@@ -189,5 +189,6 @@
 
     <script type="module" src="admin.js?v=20260708-emailjs-key2"></script>
     <script type="module" src="sr_admin_recovery.js?v=20260708-password-change"></script>
+    <script type="module" src="sr_admin_improvements.js?v=20260708-admin-ui-v1"></script>
 </body>
 </html>
