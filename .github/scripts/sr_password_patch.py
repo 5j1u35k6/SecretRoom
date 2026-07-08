@@ -1,0 +1,245 @@
+from pathlib import Path
+import re
+
+VERSION = '20260708-password-change'
+app_path = Path('app.js')
+admin_path = Path('admin.js')
+index_path = Path('index.html')
+workflow_path = Path('.github/workflows/sr-run-password-patch.yml')
+script_path = Path('.github/scripts/sr_password_patch.py')
+old_workflow_path = Path('.github/workflows/sr-password-change-workflow.yml')
+
+app = app_path.read_text(encoding='utf-8')
+app = app.replace("emailjs.init({ publicKey: emailjsConfig.publicKey });", "emailjs.init({ publicKey: emailjsConfig.publicKey, blockHeadless: false });")
+
+helper_marker = "        window.showToast = showToast;\n"
+if 'function validateSecretRoomPassword' not in app:
+    helper_code = r'''
+
+        function validateSecretRoomPassword(password) {
+            return String(password || '').length >= 8 && /[A-Z]/.test(password || '') && /[!@#$%^&*(),.?":{}|<>]/.test(password || '');
+        }
+
+        function getPasswordStrengthMessage() {
+            return '密碼需至少 8 碼，包含 1 個英文大寫字母與 1 個特殊符號。';
+        }
+
+        function memberNeedsPasswordChange(userData) {
+            return !!(userData && (userData.mustChangePassword === true || userData.forcePasswordChange === true || userData.tempPasswordActive === true || userData.passwordChangeRequired === true));
+        }
+
+        async function sendMemberSecurityEmail(userData, userId, title, messageText) {
+            const targetEmail = String(userData && userData.email ? userData.email : '').trim();
+            if (!targetEmail || !emailjsConfig.publicKey || emailjsConfig.publicKey === 'YOUR_EMAILJS_PUBLIC_KEY') return;
+            try {
+                const templateId = (emailjsConfig.templates && (emailjsConfig.templates.security || emailjsConfig.templates.passwordReset)) || emailjsConfig.defaultTemplateId || 'template_sr_security';
+                await emailjs.send(emailjsConfig.serviceId, templateId, {
+                    to_email: targetEmail,
+                    to_name: userData.nickname || userId || 'SecretRoom Member',
+                    status_text: title,
+                    message: messageText,
+                    email_type: '帳號安全通知',
+                    member_id: userId || ''
+                }, { publicKey: emailjsConfig.publicKey });
+            } catch (err) {
+                console.warn('帳號安全 Email 發送失敗:', err);
+            }
+        }
+
+        async function finishMemberLogin(userId, userData, modal = null) {
+            window.state.userData = userData;
+            window.state.applicationId = userId;
+            localStorage.setItem('sr_username', userId);
+            if (modal && modal.remove) modal.remove();
+            showToast('登入成功！正在載入俱樂部...', 'success');
+            if (userData.status === 'pending') navigate('pending');
+            else if (userData.status === 'rejected') navigate('rejected');
+            else if (userData.status === 'approved' || userData.status === 'active') {
+                if (!userData.telegramInfo) navigate('telegram-bind');
+                else navigate('dashboard');
+            } else {
+                showToast('帳號狀態尚未啟用，請等待審核。', 'error');
+            }
+        }
+
+        function showForcedPasswordChangeModal(userId, userData, previousModal = null) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md';
+            modal.innerHTML = `
+                <div class="glass-panel border border-amber-500/25 rounded-3xl p-6 w-[92vw] max-w-sm shadow-2xl relative crystal-border">
+                    <h3 class="text-lg font-black text-white mb-1 font-luxury"><i class="fa-solid fa-key text-amber-500 mr-2"></i>設定新密碼</h3>
+                    <p class="text-xs text-slate-400 leading-relaxed mb-5">您目前使用的是管理員設定的臨時密碼。為了帳號安全，請先設定自己的新密碼後再進入平台。</p>
+                    <div class="space-y-3">
+                        <input id="forced-new-password" type="password" class="w-full bg-slate-900 border border-amber-500/10 rounded-xl px-3.5 py-3 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="新密碼">
+                        <input id="forced-confirm-password" type="password" class="w-full bg-slate-900 border border-amber-500/10 rounded-xl px-3.5 py-3 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="再次輸入新密碼">
+                        <div class="text-[10px] text-slate-500 leading-relaxed">${getPasswordStrengthMessage()}</div>
+                        <button id="btn-forced-password-save" class="w-full brushed-gold font-bold text-sm py-3.5 rounded-xl crystal-border hover-breath click-press">儲存新密碼並進入</button>
+                        <button id="btn-forced-password-logout" class="w-full bg-slate-900 text-slate-400 font-bold text-xs py-3 rounded-xl border border-slate-800 hover-breath click-press">稍後再處理並返回登入</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            document.getElementById('btn-forced-password-logout').onclick = () => {
+                localStorage.removeItem('sr_username');
+                modal.remove();
+                if (previousModal && previousModal.remove) previousModal.remove();
+                navigate('landing');
+            };
+            document.getElementById('btn-forced-password-save').onclick = async () => {
+                const newPassword = document.getElementById('forced-new-password').value;
+                const confirmPassword = document.getElementById('forced-confirm-password').value;
+                if (!newPassword || !confirmPassword) { showToast('請輸入並確認新密碼。', 'error'); return; }
+                if (newPassword !== confirmPassword) { showToast('兩次輸入的新密碼不一致。', 'error'); return; }
+                if (newPassword === userData.password) { showToast('新密碼不可與臨時密碼相同。', 'error'); return; }
+                if (!validateSecretRoomPassword(newPassword)) { showToast(getPasswordStrengthMessage(), 'error'); return; }
+                if (!db) { showToast('伺服器尚未完成連線，請稍後再試。', 'error'); return; }
+                showLoading();
+                try {
+                    const userRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+                    const updates = { password: newPassword, mustChangePassword: false, forcePasswordChange: false, tempPasswordActive: false, passwordChangeRequired: false, passwordChangedAt: serverTimestamp(), passwordChangedAtMs: Date.now(), passwordChangedBy: 'member', lastPasswordChangeMethod: 'temporary_login' };
+                    await updateDoc(userRef, updates);
+                    const updatedUserData = { ...userData, ...updates };
+                    await createUserNotification({ type: 'account', tone: 'account', title: '密碼已修改', message: '您已使用臨時密碼登入並完成新密碼設定。若並非您本人操作，請立即聯繫 SecretRoom 管理員。', status: '已完成' });
+                    await sendMemberSecurityEmail(updatedUserData, userId, 'SecretRoom 密碼已修改', '您的 SecretRoom 帳號密碼已於登入後完成修改。若並非您本人操作，請立即聯繫 SecretRoom 管理員。');
+                    modal.remove();
+                    if (previousModal && previousModal.remove) previousModal.remove();
+                    await finishMemberLogin(userId, updatedUserData, null);
+                } catch (err) {
+                    console.error('強制修改密碼失敗:', err);
+                    showToast('密碼修改失敗：' + err.message, 'error');
+                } finally { hideLoading(); }
+            };
+        }
+'''
+    if helper_marker not in app:
+        raise SystemExit('helper marker not found')
+    app = app.replace(helper_marker, helper_marker + helper_code, 1)
+
+login_pattern = r"if \(data\.password === passwordInput\) \{\n[\s\S]*?\n\s*\} else \{"
+app, n = re.subn(login_pattern, """if (data.password === passwordInput) {
+                            if (memberNeedsPasswordChange(data)) {
+                                await showForcedPasswordChangeModal(usernameInput, data, modal);
+                                return;
+                            }
+                            await finishMemberLogin(usernameInput, data, modal);
+                        } else {""", app, count=1)
+if n != 1 and 'memberNeedsPasswordChange(data)' not in app:
+    raise SystemExit(f'login replacement count={n}')
+
+if 'id="edit-current-password"' not in app:
+    marker = """                        <div>
+                            
+                            <label class="block text-xs font-bold text-slate-400 mb-1.5 tracking-wider">感興趣的主題與偏好標籤</label>"""
+    insert = r'''                        <div class="p-4 bg-slate-900/40 border border-amber-500/10 rounded-2xl space-y-3">
+                            <span class="text-xs font-bold text-amber-500 tracking-widest block"><i class="fa-solid fa-key mr-1"></i> 修改登入密碼</span>
+                            <p class="text-[10px] text-slate-500 leading-relaxed">不需要修改密碼時請留空；若要修改，需輸入目前密碼與新密碼。</p>
+                            <input type="password" id="edit-current-password" class="w-full bg-slate-900 border border-amber-500/10 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" placeholder="目前密碼">
+                            <input type="password" id="edit-new-password" class="w-full bg-slate-900 border border-amber-500/10 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" placeholder="新密碼">
+                            <input type="password" id="edit-confirm-password" class="w-full bg-slate-900 border border-amber-500/10 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition" placeholder="再次輸入新密碼">
+                            <div class="text-[10px] text-slate-500 leading-relaxed">密碼需至少 8 碼，包含 1 個英文大寫字母與 1 個特殊符號。</div>
+                        </div>
+
+'''
+    if marker not in app:
+        raise SystemExit('edit html marker not found')
+    app = app.replace(marker, insert + marker, 1)
+
+if "const currentPassword = document.getElementById('edit-current-password')" not in app:
+    app = app.replace("""                const girth = document.getElementById('edit-girth').value;
+
+                const selectedKinks = [];""", """                const girth = document.getElementById('edit-girth').value;
+                const currentPassword = document.getElementById('edit-current-password')?.value || '';
+                const newPassword = document.getElementById('edit-new-password')?.value || '';
+                const confirmPassword = document.getElementById('edit-confirm-password')?.value || '';
+                const passwordChangeRequested = !!(currentPassword || newPassword || confirmPassword);
+
+                const selectedKinks = [];""", 1)
+
+if "若要修改密碼，請完整填寫目前密碼" not in app:
+    app = app.replace("""                if (selectedKinks.length === 0) {
+                    showToast('請至少選擇一項感興趣的主題標籤！', 'error');
+                    return;
+                }
+
+                showLoading();""", """                if (selectedKinks.length === 0) {
+                    showToast('請至少選擇一項感興趣的主題標籤！', 'error');
+                    return;
+                }
+                if (passwordChangeRequested) {
+                    if (!currentPassword || !newPassword || !confirmPassword) { showToast('若要修改密碼，請完整填寫目前密碼、新密碼與確認密碼。', 'error'); return; }
+                    if (currentPassword !== window.state.userData.password) { showToast('目前密碼不正確。', 'error'); return; }
+                    if (newPassword !== confirmPassword) { showToast('兩次輸入的新密碼不一致。', 'error'); return; }
+                    if (newPassword === currentPassword) { showToast('新密碼不可與目前密碼相同。', 'error'); return; }
+                    if (!validateSecretRoomPassword(newPassword)) { showToast(getPasswordStrengthMessage(), 'error'); return; }
+                }
+
+                showLoading();""", 1)
+
+if "lastPasswordChangeMethod = 'profile_edit'" not in app:
+    app = app.replace("""                    if (pendingBase64) {
+                        updates.avatarPending = pendingBase64;
+                        updates.avatarStatus = 'pending';
+                    }
+
+                    await updateDoc(userRef, updates);""", """                    if (pendingBase64) {
+                        updates.avatarPending = pendingBase64;
+                        updates.avatarStatus = 'pending';
+                    }
+                    if (passwordChangeRequested) {
+                        updates.password = newPassword;
+                        updates.mustChangePassword = false;
+                        updates.forcePasswordChange = false;
+                        updates.tempPasswordActive = false;
+                        updates.passwordChangeRequired = false;
+                        updates.passwordChangedAt = serverTimestamp();
+                        updates.passwordChangedAtMs = Date.now();
+                        updates.passwordChangedBy = 'member';
+                        updates.lastPasswordChangeMethod = 'profile_edit';
+                    }
+
+                    await updateDoc(userRef, updates);""", 1)
+
+if "密碼已由個人資料頁面完成修改" not in app:
+    app = app.replace("""                    if (pendingBase64) {
+                        await createUserNotification({
+                            type: 'avatar',
+                            tone: 'pending',
+                            title: '大頭照更換已送審',
+                            message: '您的新頭像已提交管理員審核，通過後會自動更新到個人頁面。',
+                            status: '審查中'
+                        });
+                    }
+
+                    window.state.userData = { ...window.state.userData, ...updates };""", """                    if (pendingBase64) {
+                        await createUserNotification({
+                            type: 'avatar',
+                            tone: 'pending',
+                            title: '大頭照更換已送審',
+                            message: '您的新頭像已提交管理員審核，通過後會自動更新到個人頁面。',
+                            status: '審查中'
+                        });
+                    }
+                    if (passwordChangeRequested) {
+                        await createUserNotification({ type: 'account', tone: 'account', title: '密碼已修改', message: '您的密碼已由個人資料頁面完成修改。若並非您本人操作，請立即聯繫 SecretRoom 管理員。', status: '已完成' });
+                        await sendMemberSecurityEmail({ ...window.state.userData, ...updates }, window.state.applicationId, 'SecretRoom 密碼已修改', '您的 SecretRoom 帳號密碼已由個人資料頁面完成修改。若並非您本人操作，請立即聯繫 SecretRoom 管理員。');
+                    }
+
+                    window.state.userData = { ...window.state.userData, ...updates };""", 1)
+
+app_path.write_text(app, encoding='utf-8')
+
+admin = admin_path.read_text(encoding='utf-8')
+admin, n = re.subn(r"await updateDoc\(([^,]+),\s*\{\s*password:\s*newPassword\s*\}\);", "await updateDoc(\\1, { password: newPassword, mustChangePassword: true, forcePasswordChange: true, tempPasswordActive: true, passwordChangeRequired: true, passwordChangedAt: serverTimestamp(), passwordChangedAtMs: Date.now(), passwordChangedBy: currentAdminId || 'admin', lastPasswordChangeMethod: 'admin_temporary' });", admin)
+if n == 0 and "lastPasswordChangeMethod: 'admin_temporary'" not in admin:
+    admin, n = re.subn(r"await updateDoc\(([^,]+),\s*\{\s*password:\s*tempPassword\s*\}\);", "await updateDoc(\\1, { password: tempPassword, mustChangePassword: true, forcePasswordChange: true, tempPasswordActive: true, passwordChangeRequired: true, passwordChangedAt: serverTimestamp(), passwordChangedAtMs: Date.now(), passwordChangedBy: currentAdminId || 'admin', lastPasswordChangeMethod: 'admin_temporary' });", admin)
+if n == 0 and "lastPasswordChangeMethod: 'admin_temporary'" not in admin:
+    print('Warning: temporary password update pattern not found')
+admin_path.write_text(admin, encoding='utf-8')
+
+index = index_path.read_text(encoding='utf-8')
+index = re.sub(r'src="app\.js(?:\?v=[^"]*)?"', f'src="app.js?v={VERSION}"', index)
+index_path.write_text(index, encoding='utf-8')
+
+workflow_path.unlink(missing_ok=True)
+old_workflow_path.unlink(missing_ok=True)
+script_path.unlink(missing_ok=True)
