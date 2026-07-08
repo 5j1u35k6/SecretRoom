@@ -1,25 +1,37 @@
 // SecretRoom URL-based i18n router
-// Routes: /zh/, /en/, /ja/, /ko/, /eo/
+// Routes: /zh/, /zh-CN/, /en/, /ja/, /ko/, /eo/, /vi/, /th/, /id/, /ms/, /fil/
 
 (() => {
   const SUPPORTED = {
     'zh': 'zh-TW',
     'zh-TW': 'zh-TW',
+    'zh-CN': 'zh-CN',
     'en': 'en',
     'ja': 'ja',
     'ko': 'ko',
-    'eo': 'eo'
+    'eo': 'eo',
+    'vi': 'vi',
+    'th': 'th',
+    'id': 'id',
+    'ms': 'ms',
+    'fil': 'fil'
   };
   const LABELS = {
     'zh': '繁體中文',
+    'zh-CN': '简体中文',
     'en': 'English',
     'ja': '日本語',
     'ko': '한국어',
-    'eo': 'Esperanto'
+    'eo': 'Esperanto',
+    'vi': 'Tiếng Việt',
+    'th': 'ไทย',
+    'id': 'Bahasa Indonesia',
+    'ms': 'Bahasa Melayu',
+    'fil': 'Filipino'
   };
   const STORAGE_KEY = 'sr_locale';
   const DEFAULT_LANG = 'zh-TW';
-  const ROUTE_CODES = ['zh', 'en', 'ja', 'ko', 'eo'];
+  const ROUTE_CODES = ['zh', 'zh-CN', 'en', 'ja', 'ko', 'eo', 'vi', 'th', 'id', 'ms', 'fil'];
   const BRAND_PATTERNS = [/SecretRoom/i, /S\+\s*\.\s*S\s*\.\s*G/i, /S\+\.S\.G/i, /D\.G|C\.G|B\.G|A\.G|S\.G|S\+\.G|SSR\.G|Z\.G/i];
   const state = { lang: DEFAULT_LANG, dict: {}, applying: false };
 
@@ -132,7 +144,7 @@
     if (lang === DEFAULT_LANG) return {};
     const code = routeCode(lang);
     try {
-      const response = await fetch(`i18n/${code}.json?v=20260708-i18n-routes-v1`, { cache: 'no-cache' });
+      const response = await fetch(`i18n/${code}.json?v=20260708-i18n-routes-v2`, { cache: 'no-cache' });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return await response.json();
     } catch (error) {
