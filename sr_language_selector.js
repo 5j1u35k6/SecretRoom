@@ -31,11 +31,12 @@
     if (document.getElementById('sr-language-selector-wrap')) return;
     const wrap = document.createElement('div');
     wrap.id = 'sr-language-selector-wrap';
-    wrap.className = 'fixed left-4 bottom-4 z-[160] flex items-center gap-2 rounded-full border border-amber-500/20 bg-slate-950/90 px-3 py-2 shadow-2xl backdrop-blur-md';
+    wrap.className = 'notranslate fixed top-4 left-[5.75rem] z-[160] flex items-center gap-2 rounded-full border border-amber-500/20 bg-slate-950/90 px-3 py-2 shadow-2xl backdrop-blur-md';
+    wrap.setAttribute('translate', 'no');
     wrap.innerHTML = `
       <i class="fa-solid fa-globe text-amber-400 text-xs"></i>
-      <select id="sr-language-selector" class="bg-transparent text-[11px] font-black text-amber-200 outline-none max-w-[150px] cursor-pointer">
-        ${languages.map(([code, label]) => `<option value="${code}">${label}</option>`).join('')}
+      <select id="sr-language-selector" class="notranslate bg-transparent text-[11px] font-black text-amber-200 outline-none max-w-[150px] cursor-pointer" translate="no" aria-label="Language selector">
+        ${languages.map(([code, label]) => `<option class="notranslate" translate="no" lang="${code}" value="${code}">${label}</option>`).join('')}
       </select>
       <div id="google_translate_element" class="hidden"></div>
     `;
@@ -72,8 +73,32 @@
   css.textContent = `
     body > .skiptranslate, iframe.goog-te-banner-frame { display: none !important; }
     body { top: 0 !important; }
-    #sr-language-selector option { background: #020204; color: #f8e7b0; }
-    @media (max-width: 640px) { #sr-language-selector-wrap { left: 0.75rem; bottom: 0.75rem; max-width: calc(100vw - 1.5rem); } }
+    #sr-language-selector-wrap {
+      top: 1rem !important;
+      left: 5.75rem !important;
+      bottom: auto !important;
+      right: auto !important;
+      font-family: Inter, "Noto Serif TC", "Noto Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+    }
+    #sr-language-selector {
+      font-family: Inter, "Noto Serif TC", "Noto Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+      letter-spacing: 0.02em;
+    }
+    #sr-language-selector option {
+      background: #020204;
+      color: #f8e7b0;
+      font-family: Inter, "Noto Serif TC", "Noto Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+    }
+    @media (max-width: 640px) {
+      #sr-language-selector-wrap {
+        top: 0.75rem !important;
+        left: 4.9rem !important;
+        max-width: calc(100vw - 9.5rem);
+        padding-left: 0.65rem;
+        padding-right: 0.65rem;
+      }
+      #sr-language-selector { max-width: 112px; font-size: 10px; }
+    }
   `;
   document.head.appendChild(css);
 
