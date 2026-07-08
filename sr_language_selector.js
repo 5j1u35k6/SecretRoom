@@ -1,6 +1,7 @@
 (() => {
   const STORAGE_KEY = 'sr_selected_language';
   const COOKIE_NAME = 'googtrans';
+  const SOURCE_LANG = 'zh-TW';
   const languages = [
     ['zh-TW', '繁體中文'], ['zh-CN', '简体中文'], ['en', 'English'], ['eo', 'Esperanto'],
     ['ja', '日本語'], ['ko', '한국어'], ['vi', 'Tiếng Việt'], ['th', 'ไทย'], ['id', 'Bahasa Indonesia'], ['ms', 'Bahasa Melayu'], ['fil', 'Filipino'],
@@ -14,19 +15,27 @@
   const regionMap = { TW:'zh-TW', HK:'zh-TW', MO:'zh-TW', CN:'zh-CN', SG:'zh-CN', JP:'ja', KR:'ko', VN:'vi', TH:'th', ID:'id', MY:'ms', BN:'ms', PH:'fil', MM:'my', KH:'km', LA:'lo', NP:'ne', LK:'si', IN:'hi', PK:'ur', BD:'bn', IR:'fa', IL:'he', TR:'tr', AZ:'az', AM:'hy', GE:'ka', KZ:'kk', KG:'ky', TJ:'tg', UZ:'uz', MN:'mn', AF:'ps', SA:'ar', AE:'ar', QA:'ar', KW:'ar', BH:'ar', OM:'ar', JO:'ar', LB:'ar', IQ:'ar', SY:'ar', YE:'ar', RU:'ru' };
   const timeZoneMap = { 'Asia/Taipei':'zh-TW','Asia/Hong_Kong':'zh-TW','Asia/Macau':'zh-TW','Asia/Shanghai':'zh-CN','Asia/Singapore':'zh-CN','Asia/Tokyo':'ja','Asia/Seoul':'ko','Asia/Ho_Chi_Minh':'vi','Asia/Bangkok':'th','Asia/Jakarta':'id','Asia/Kuala_Lumpur':'ms','Asia/Manila':'fil','Asia/Yangon':'my','Asia/Phnom_Penh':'km','Asia/Vientiane':'lo','Asia/Kathmandu':'ne','Asia/Colombo':'si','Asia/Kolkata':'hi','Asia/Karachi':'ur','Asia/Dhaka':'bn','Asia/Tehran':'fa','Asia/Jerusalem':'he','Asia/Istanbul':'tr','Asia/Baku':'az','Asia/Yerevan':'hy','Asia/Tbilisi':'ka','Asia/Almaty':'kk','Asia/Astana':'kk','Asia/Bishkek':'ky','Asia/Dushanbe':'tg','Asia/Tashkent':'uz','Asia/Ulaanbaatar':'mn','Asia/Kabul':'ps','Asia/Riyadh':'ar','Asia/Dubai':'ar','Asia/Qatar':'ar','Asia/Kuwait':'ar','Asia/Bahrain':'ar','Asia/Muscat':'ar','Asia/Amman':'ar','Asia/Beirut':'ar','Asia/Baghdad':'ar','Asia/Damascus':'ar','Asia/Aden':'ar' };
 
-  function setCookie(lang) {
-    const value = lang === 'zh-TW' ? '/auto/zh-TW' : `/auto/${lang}`;
-    const maxAge = 60 * 60 * 24 * 365;
+  function writeTranslateCookie(value, maxAge) {
     document.cookie = `${COOKIE_NAME}=${value}; path=/; max-age=${maxAge}`;
     document.cookie = `${COOKIE_NAME}=${value}; path=/SecretRoom/; max-age=${maxAge}`;
-    localStorage.setItem(STORAGE_KEY, lang);
+  }
+  function setCookie(lang) {
+    const target = supported.has(lang) ? lang : 'en';
+    const maxAge = 60 * 60 * 24 * 365;
+    const value = `/${SOURCE_LANG}/${target}`;
+    writeTranslateCookie(value, maxAge);
+    localStorage.setItem(STORAGE_KEY, target);
+    document.documentElement.setAttribute('lang', target);
   }
   function getCookieLang() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved && supported.has(saved)) return saved;
     const cookie = document.cookie.split('; ').find(row => row.startsWith(`${COOKIE_NAME}=`));
-    if (!cookie) return localStorage.getItem(STORAGE_KEY) || '';
+    if (!cookie) return '';
     const value = decodeURIComponent(cookie.split('=')[1] || '');
     const parts = value.split('/').filter(Boolean);
-    return parts[1] || localStorage.getItem(STORAGE_KEY) || '';
+    const target = parts.length >= 2 ? parts[1] : '';
+    return supported.has(target) ? target : '';
   }
   function normalizeLocale(value) {
     const raw = String(value || '').trim();
@@ -54,7 +63,10 @@
   }
   function ensureInitialLanguage() {
     const saved = localStorage.getItem(STORAGE_KEY) || getCookieLang();
-    if (saved && supported.has(saved)) return saved;
+    if (saved && supported.has(saved)) {
+      setCookie(saved);
+      return saved;
+    }
     const detected = detectDeviceLanguage();
     setCookie(detected);
     return detected;
@@ -77,7 +89,7 @@
     `;
     document.body.appendChild(wrap);
     const select = document.getElementById('sr-language-selector');
-    select.value = getCookieLang() || ensureInitialLanguage();
+    select.value = ensureInitialLanguage();
     select.onchange = () => { setCookie(select.value); window.location.reload(); };
   }
   function loadGoogleTranslate() {
@@ -114,7 +126,7 @@
 
   window.googleTranslateElementInit = function() {
     if (!window.google || !window.google.translate) return;
-    new window.google.translate.TranslateElement({ pageLanguage: 'zh-TW', includedLanguages: included, autoDisplay: false, layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE }, 'google_translate_element');
+    new window.google.translate.TranslateElement({ pageLanguage: SOURCE_LANG, includedLanguages: included, autoDisplay: false, layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE }, 'google_translate_element');
   };
 
   const css = document.createElement('style');
