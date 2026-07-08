@@ -1,5 +1,5 @@
 (() => {
-  const VERSION = '20260708-ui-improve-v1';
+  const VERSION = '20260708-ui-improve-v2';
   const brandTerms = ['SecretRoom', 'S+ . S . G', 'S+.S.G', 'Gold Spec', 'Golden Spec', '黃金 Spec', '黃金Spec', 'Badge'];
 
   function textOf(el) {
@@ -16,41 +16,45 @@
     document.querySelectorAll('h1,h2,h3,h4,button,span,a,div').forEach(el => {
       const t = textOf(el);
       if (!t || t.length > 90) return;
-      const hasBrand = brandTerms.some(term => t.includes(term));
-      if (hasBrand) markNoTranslate(el);
+      if (brandTerms.some(term => t.includes(term))) markNoTranslate(el);
     });
 
     const specTab = document.getElementById('aside-tab-spec-vault');
     if (specTab) {
       markNoTranslate(specTab);
-      specTab.classList.add('sr-nav-item-stable', 'sr-nav-spec-item');
-      const pill = Array.from(specTab.querySelectorAll('span')).find(s => /黃金|黄金|Spec|spec|Golden|Limigita|Specifo|限定/i.test(textOf(s)) && s !== specTab.querySelector('span'));
+      specTab.classList.add('sr-nav-stable', 'sr-nav-spec-item');
+      const main = specTab.querySelector('span:first-child');
+      if (main) markNoTranslate(main);
+      const pill = Array.from(specTab.querySelectorAll('span')).find(s => s !== main && /黃金|黄金|Spec|spec|Golden|Limigita|Specifo|限定/i.test(textOf(s)));
       if (pill) {
-        pill.classList.add('sr-spec-two-line-pill', 'notranslate');
-        pill.setAttribute('translate', 'no');
-        if (/黃金/.test(textOf(pill))) pill.textContent = '黃金 Spec 限定';
+        markNoTranslate(pill);
+        pill.classList.remove('sr-spec-two-line-pill');
+        pill.classList.add('sr-spec-nav-pill');
+        pill.textContent = '黃金 Spec\n限定';
       }
     }
 
     const badgeTab = document.getElementById('aside-tab-badge-progress');
     if (badgeTab) {
-      badgeTab.classList.add('sr-nav-item-stable');
+      badgeTab.classList.add('sr-nav-stable', 'sr-nav-badge-item');
+      const main = badgeTab.querySelector('span:first-child');
+      if (main) main.classList.add('sr-nav-main-label');
       const badge = Array.from(badgeTab.querySelectorAll('span')).find(s => /^Badge$/i.test(textOf(s)) || /Insigno/i.test(textOf(s)));
       if (badge) {
         markNoTranslate(badge);
         badge.textContent = 'Badge';
-        badge.classList.add('sr-badge-left-pill');
+        badge.classList.remove('sr-badge-left-pill');
+        badge.classList.add('sr-badge-nav-pill');
       }
     }
 
     ['aside-tab-feed','aside-tab-ranking','aside-tab-notifications'].forEach(id => {
       const el = document.getElementById(id);
-      if (el) el.classList.add('sr-nav-item-stable');
+      if (el) el.classList.add('sr-nav-stable');
     });
   }
 
   function improveLoginModal() {
-    const modal = document.getElementById('sr-login-modal') || document.querySelector('#btn-login-submit')?.closest('.fixed');
     const btn = document.getElementById('btn-login-submit');
     if (!btn) return;
     btn.classList.add('sr-two-line-button');
@@ -62,6 +66,7 @@
       forgot.classList.add('sr-two-line-button');
     }
 
+    const modal = document.querySelector('#btn-login-submit')?.closest('.fixed');
     if (modal && !document.getElementById('sr-temp-login-hint')) {
       const box = document.createElement('div');
       box.id = 'sr-temp-login-hint';
@@ -71,18 +76,13 @@
       if (forgotParent && !forgotParent.querySelector('#sr-temp-login-hint')) forgotParent.appendChild(box);
     }
 
-    const errorBox = document.getElementById('login-error-box');
-    if (errorBox) errorBox.classList.add('sr-persistent-error-box');
+    document.getElementById('login-error-box')?.classList.add('sr-persistent-error-box');
   }
 
   function improveFeedAndSearch() {
-    const searchOverlay = document.getElementById('search-results-overlay');
-    if (searchOverlay) searchOverlay.classList.add('sr-search-drawer');
-    document.querySelectorAll('#filter-btn-recommended,#filter-btn-highly-rated,#filter-btn-popular,.sub-rank-btn').forEach(btn => {
-      btn.classList.add('sr-two-line-pill');
-    });
-    const rankingTabs = document.getElementById('ranking-sub-tabs');
-    if (rankingTabs) rankingTabs.classList.add('sr-collapsible-tag-row');
+    document.getElementById('search-results-overlay')?.classList.add('sr-search-drawer');
+    document.querySelectorAll('#filter-btn-recommended,#filter-btn-highly-rated,#filter-btn-popular,.sub-rank-btn').forEach(btn => btn.classList.add('sr-two-line-pill'));
+    document.getElementById('ranking-sub-tabs')?.classList.add('sr-collapsible-tag-row');
   }
 
   function improveRankCopy() {
@@ -99,19 +99,12 @@
     });
   }
 
-  function markSpecCards() {
-    document.querySelectorAll('.spec-vault-card, #dashboard-tab-content').forEach(el => {
-      if (textOf(el).includes('S+ . S . G')) el.classList.add('sr-spec-content-safe');
-    });
-  }
-
   function apply() {
     normalizeBrandAndNav();
     improveLoginModal();
     improveFeedAndSearch();
     improveRankCopy();
     fixWatermarkText();
-    markSpecCards();
     document.documentElement.dataset.srUiImprove = VERSION;
   }
 
@@ -119,46 +112,63 @@
   css.id = 'sr-ui-improvements-style';
   css.textContent = `
     #aside-tab-feed, #aside-tab-ranking, #aside-tab-notifications, #aside-tab-spec-vault, #aside-tab-badge-progress {
-      min-height: 4.1rem !important;
-      display: grid !important;
-      grid-template-columns: minmax(0, 1fr) auto !important;
+      display: flex !important;
+      flex-direction: row !important;
       align-items: center !important;
-      gap: 0.65rem !important;
-    }
-    #aside-tab-feed, #aside-tab-ranking { grid-template-columns: minmax(0, 1fr) !important; }
-    #aside-tab-feed > i, #aside-tab-ranking > i { margin-right: 0.75rem; }
-    #aside-tab-notifications > span:first-child, #aside-tab-spec-vault > span:first-child, #aside-tab-badge-progress > span:first-child {
-      min-width: 0 !important;
-      display: grid !important;
-      grid-template-columns: 1.35rem minmax(0,1fr) !important;
-      align-items: center !important;
-      gap: 0.75rem !important;
-      text-align: left !important;
-      line-height: 1.16 !important;
+      min-height: unset !important;
       white-space: normal !important;
     }
-    .sr-spec-two-line-pill, .sr-badge-left-pill {
-      justify-self: start !important;
-      align-self: center !important;
-      margin-left: 0 !important;
-      margin-right: auto !important;
+    #aside-tab-feed, #aside-tab-ranking {
+      justify-content: flex-start !important;
+      gap: .75rem !important;
+    }
+    #aside-tab-notifications, #aside-tab-spec-vault, #aside-tab-badge-progress {
+      justify-content: space-between !important;
+      gap: .75rem !important;
+    }
+    #aside-tab-notifications > span:first-child,
+    #aside-tab-spec-vault > span:first-child,
+    #aside-tab-badge-progress > span:first-child {
+      flex: 1 1 auto !important;
+      min-width: 0 !important;
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      gap: .75rem !important;
+      text-align: left !important;
+      line-height: 1.18 !important;
+      white-space: normal !important;
+    }
+    #aside-tab-notifications > span:first-child i,
+    #aside-tab-spec-vault > span:first-child i,
+    #aside-tab-badge-progress > span:first-child i {
+      width: 1.25rem !important;
+      min-width: 1.25rem !important;
       text-align: center !important;
     }
-    .sr-spec-two-line-pill {
-      width: 9.4rem !important;
-      max-width: 9.4rem !important;
-      min-height: 3rem !important;
-      white-space: normal !important;
+    .sr-spec-nav-pill {
+      flex: 0 0 5.65rem !important;
+      width: 5.65rem !important;
+      max-width: 5.65rem !important;
+      min-height: 2.18rem !important;
+      margin-left: .25rem !important;
+      padding: .32rem .45rem !important;
+      white-space: pre-line !important;
       line-height: 1.08 !important;
+      font-size: 9px !important;
+      text-align: center !important;
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
-      overflow-wrap: anywhere !important;
-      padding: 0.62rem 0.85rem !important;
+      overflow: hidden !important;
+      text-overflow: clip !important;
     }
-    .sr-badge-left-pill {
-      min-width: 4rem !important;
-      white-space: normal !important;
+    .sr-badge-nav-pill {
+      flex: 0 0 auto !important;
+      margin-left: .5rem !important;
+      margin-right: 0 !important;
+      white-space: nowrap !important;
+      text-align: center !important;
     }
     .sr-two-line-button, .sr-two-line-pill {
       white-space: normal !important;
@@ -169,16 +179,16 @@
     }
     .sr-search-drawer {
       position: sticky !important;
-      top: 0.5rem !important;
+      top: .5rem !important;
       max-height: min(58vh, 450px) !important;
       z-index: 70 !important;
     }
     .sr-collapsible-tag-row { max-height: 4.25rem; }
     .sr-persistent-error-box { display: block; min-height: 0; }
     @media (max-width: 768px) {
-      #aside-tab-feed, #aside-tab-ranking, #aside-tab-notifications, #aside-tab-spec-vault, #aside-tab-badge-progress { min-height: 3.65rem !important; }
-      .sr-spec-two-line-pill { width: 8.7rem !important; max-width: 8.7rem !important; font-size: 10px !important; }
       #sr-language-selector-wrap { transform: scale(.92); transform-origin: right bottom; }
+      .sr-spec-nav-pill { flex-basis: 5.2rem !important; width: 5.2rem !important; max-width: 5.2rem !important; font-size: 8.5px !important; }
+      .sr-badge-nav-pill { font-size: 9px !important; }
     }
   `;
   document.head.appendChild(css);
