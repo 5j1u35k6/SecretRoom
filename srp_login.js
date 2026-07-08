@@ -26,4 +26,4 @@ function SRP_patchLogin(){
 }
 new MutationObserver(SRP_patchLogin).observe(document.documentElement,{childList:true,subtree:true});
 setInterval(SRP_patchLogin,800);
-import('./sr_language_selector.js?v=20260708-i18n-asia-v8').catch(console.warn);
+import('./sr_language_selector.js?v=20260708-i18n-asia-v9').catch(console.warn);
