@@ -1,8 +1,8 @@
 // SecretRoom frontend UI overlay
-// Merged from sr_rank_rules.js and sr_ui_improvements.js. Multilingual selector removed.
+// Merged from rank rules and user-interface refinements. Multilingual selector removed.
 
 (() => {
-  const VERSION = '20260708-frontend-ui-merged-v1';
+  const VERSION = '20260709-frontend-ui-merged-v2';
   const tiers = [
     { code: 'D.G', promote: 0, keep: 0, tone: 'from-stone-300 via-amber-200 to-stone-500' },
     { code: 'C.G', promote: 120, keep: 60, tone: 'from-slate-200 via-slate-300 to-amber-100' },
@@ -15,7 +15,7 @@
   ];
 
   function esc(v) { return String(v ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
-  function js(v) { return String(v ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/\r/g, '\\r'); }
+  function js(v) { return String(v ?? '').replace(/\/g, '\\').replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/\r/g, '\\r'); }
   function textOf(el) { return String(el?.innerText || el?.textContent || '').replace(/\s+/g, ' ').trim(); }
   function timeValue(v) {
     if (v && v.seconds) return v.seconds * 1000;
@@ -114,8 +114,11 @@
     const badgeTab = document.getElementById('aside-tab-badge-progress');
     if (badgeTab) {
       badgeTab.classList.add('sr-nav-stable', 'sr-nav-badge-item');
-      const badge = Array.from(badgeTab.querySelectorAll('span')).find(s => /^Badge$/i.test(textOf(s)));
-      if (badge) badge.classList.add('sr-badge-nav-pill');
+      const badge = Array.from(badgeTab.querySelectorAll('span')).find(s => /^Badge$/i.test(textOf(s)) || /徽章|進度/.test(textOf(s)));
+      if (badge) {
+        badge.classList.add('sr-badge-nav-pill');
+        badge.textContent = textOf(badge).includes('徽章') ? textOf(badge) : 'Badge';
+      }
     }
   }
   function improveLoginModal() {
@@ -139,7 +142,40 @@
   }
   function improveFeedAndSearch() {
     document.getElementById('search-results-overlay')?.classList.add('sr-search-drawer');
-    document.querySelectorAll('#filter-btn-recommended,#filter-btn-highly-rated,#filter-btn-popular,.sub-rank-btn').forEach(btn => btn.classList.add('sr-two-line-pill'));
+    const labelMap = {
+      'filter-btn-recommended': '推薦內容',
+      'filter-btn-highly-rated': '高評分',
+      'filter-btn-popular': '最多按讚'
+    };
+    Object.entries(labelMap).forEach(([id, label]) => {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+      btn.classList.add('sr-two-line-pill');
+      if (!btn.dataset.srRelabeled) { btn.dataset.srRelabeled = '1'; btn.textContent = label; }
+    });
+    document.querySelectorAll('.sub-rank-btn').forEach(btn => btn.classList.add('sr-two-line-pill'));
+    const filterRoot = document.getElementById('filter-btn-recommended')?.parentElement;
+    if (filterRoot && !document.getElementById('sr-feed-filter-hint')) {
+      const hint = document.createElement('div');
+      hint.id = 'sr-feed-filter-hint';
+      hint.className = 'sr-feed-filter-hint';
+      hint.textContent = '新會員建議先瀏覽「全部」，熟悉後再依推薦、評分或按讚篩選。';
+      filterRoot.insertAdjacentElement('afterend', hint);
+    }
+  }
+  function improveTextAndFormAreas() {
+    const replacements = [
+      ['勾選後，大廳相片將預設以高精度毛玻璃覆蓋，點擊才會手動解密觀看。', '勾選後，照片預設模糊顯示，需點擊後才會開啟。'],
+      ['發布近期動態。發布相片時將自動生成淡色、較隱性的「SecretRomm @使用者帳號」滿版 45 度浮水印；若原始圖片本身已有其他浮水印，系統不會自動移除。', '發布近況或相片。上傳圖片會自動加入 SecretRoom 浮水印；原圖既有浮水印不會移除。'],
+      ['相片加載後將自動生成淡色、較隱性的「SecretRomm @使用者帳號」滿版 45 度浮水印；若原始圖片本身已有其他浮水印，系統不會自動移除。', '相片上傳後會自動加入 SecretRoom 浮水印；原圖既有浮水印不會移除。']
+    ];
+    document.querySelectorAll('p,div,span,label').forEach(el => {
+      if (el.children.length > 1) return;
+      const t = textOf(el);
+      const found = replacements.find(([from]) => t.includes(from));
+      if (found && !el.dataset.srCopyOptimized) { el.dataset.srCopyOptimized = '1'; el.textContent = t.replace(found[0], found[1]); }
+    });
+    document.querySelectorAll('textarea,input[type="text"],input[type="password"],input[type="email"],input:not([type])').forEach(el => el.classList.add('sr-readable-field'));
   }
   function fixWatermarkText() {
     document.querySelectorAll('.sr-watermark-grid span').forEach(s => { if (s.textContent.includes('SecretRomm')) s.textContent = s.textContent.replaceAll('SecretRomm', 'SecretRoom'); });
@@ -148,6 +184,7 @@
     normalizeBrandAndNav();
     improveLoginModal();
     improveFeedAndSearch();
+    improveTextAndFormAreas();
     fixWatermarkText();
     document.documentElement.dataset.srFrontendUi = VERSION;
   }
@@ -156,12 +193,15 @@
   css.id = 'sr-frontend-ui-style';
   css.textContent = `
     #aside-tab-feed,#aside-tab-ranking,#aside-tab-notifications,#aside-tab-spec-vault,#aside-tab-badge-progress{display:flex!important;flex-direction:row!important;align-items:center!important;white-space:normal!important;}
-    #aside-tab-feed,#aside-tab-ranking{justify-content:flex-start!important;gap:.75rem!important;}
-    #aside-tab-notifications,#aside-tab-spec-vault,#aside-tab-badge-progress{justify-content:space-between!important;gap:.75rem!important;}
-    #aside-tab-notifications>span:first-child,#aside-tab-spec-vault>span:first-child,#aside-tab-badge-progress>span:first-child{flex:1 1 auto!important;min-width:0!important;display:flex!important;flex-direction:row!important;align-items:center!important;gap:.75rem!important;text-align:left!important;line-height:1.18!important;white-space:normal!important;}
+    #aside-tab-feed,#aside-tab-ranking,#aside-tab-badge-progress{justify-content:flex-start!important;gap:.75rem!important;text-align:left!important;}
+    #aside-tab-notifications,#aside-tab-spec-vault{justify-content:space-between!important;gap:.75rem!important;}
+    #aside-tab-feed>span:first-child,#aside-tab-ranking>span:first-child,#aside-tab-badge-progress>span:first-child{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:.75rem!important;text-align:left!important;}
+    #aside-tab-notifications>span:first-child,#aside-tab-spec-vault>span:first-child{flex:1 1 auto!important;min-width:0!important;display:flex!important;flex-direction:row!important;align-items:center!important;gap:.75rem!important;text-align:left!important;line-height:1.18!important;white-space:normal!important;}
     .sr-spec-nav-pill{flex:0 0 5.65rem!important;width:5.65rem!important;max-width:5.65rem!important;min-height:2.18rem!important;margin-left:.25rem!important;padding:.32rem .45rem!important;white-space:pre-line!important;line-height:1.08!important;font-size:9px!important;text-align:center!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;}
-    .sr-badge-nav-pill{flex:0 0 auto!important;margin-left:.5rem!important;margin-right:0!important;white-space:nowrap!important;text-align:center!important;}
+    .sr-badge-nav-pill{flex:0 0 auto!important;margin-left:0!important;margin-right:.35rem!important;white-space:nowrap!important;text-align:left!important;order:-1!important;}
     .sr-two-line-button,.sr-two-line-pill{white-space:normal!important;line-height:1.18!important;min-height:2.65rem!important;text-align:center!important;overflow-wrap:anywhere!important;}
+    .sr-feed-filter-hint{margin:.4rem 0 .75rem 0;padding:.55rem .75rem;border:1px solid rgba(245,158,11,.12);border-radius:1rem;background:rgba(245,158,11,.045);color:rgba(226,232,240,.72);font-size:10.5px;line-height:1.45;text-align:left;}
+    .sr-readable-field{line-height:1.45!important;}
     .sr-search-drawer{position:sticky!important;top:.5rem!important;max-height:min(58vh,450px)!important;z-index:70!important;}
     @media(max-width:768px){.sr-spec-nav-pill{flex-basis:5.2rem!important;width:5.2rem!important;max-width:5.2rem!important;font-size:8.5px!important}.sr-badge-nav-pill{font-size:9px!important}}
   `;
