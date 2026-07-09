@@ -41,6 +41,20 @@
     } catch (_) {}
   }
 
+  function stopKnownObjects(isMuted) {
+    const keys = ['luxuryBgm', 'srBgm', 'bgm', 'audioEngine', 'musicEngine'];
+    keys.forEach(key => {
+      const obj = window[key];
+      if (!obj) return;
+      try { obj.isPlaying = !isMuted; } catch (_) {}
+      try { obj.enabled = !isMuted; } catch (_) {}
+      try { obj.muted = isMuted; } catch (_) {}
+      try { obj.volume = isMuted ? 0 : (obj.volume || 0.45); } catch (_) {}
+      ['audio', 'music', 'player', 'element'].forEach(k => { if (obj[k]) muteMediaElement(obj[k], isMuted); });
+      if (isMuted) ['stop', 'pause', 'mute', 'destroy'].forEach(fn => { try { obj[fn]?.(); } catch (_) {} });
+    });
+  }
+
   function applyMuted(isMuted = muted()) {
     localStorage.setItem(KEY, isMuted ? '1' : '0');
     document.querySelectorAll('audio,video').forEach(el => muteMediaElement(el, isMuted));
@@ -51,17 +65,7 @@
         if (!isMuted && ctx.state === 'suspended') ctx.resume?.().catch(() => {});
       } catch (_) {}
     });
-    const bgm = window.luxuryBgm || window.srBgm || window.bgm || null;
-    if (bgm) {
-      try { bgm.isPlaying = !isMuted; } catch (_) {}
-      try { bgm.enabled = !isMuted; } catch (_) {}
-      try { bgm.muted = isMuted; } catch (_) {}
-      if (bgm.audio) muteMediaElement(bgm.audio, isMuted);
-      if (isMuted) {
-        try { bgm.stop?.(); } catch (_) {}
-        try { bgm.pause?.(); } catch (_) {}
-      }
-    }
+    stopKnownObjects(isMuted);
     updateUi(isMuted);
   }
 
@@ -110,17 +114,28 @@
     applyMuted(!muted());
   }, true);
 
-  document.addEventListener('DOMContentLoaded', () => {
-    applyMuted(muted());
+  function installStyle() {
+    if (document.getElementById('sr-audio-control-style')) return;
     const style = document.createElement('style');
     style.id = 'sr-audio-control-style';
     style.textContent = `
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;650;700;800;900&family=Noto+Sans+SC:wght@300;400;500;700;900&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Noto+Sans+JP:wght@300;400;500;700;900&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
       html.sr-bgm-muted #bgm-controller-widget{opacity:.72!important;filter:saturate(.7)!important;}
       html.sr-bgm-muted .bgm-bar{animation:none!important;transform:scaleY(.55)!important;}
+      html[lang="zh-CN"] body,html[lang="zh-CN"] body *,html[lang="zh-CN"] .font-luxury,html[lang="zh-CN"] .font-serif{font-family:Inter,"Noto Sans SC","Noto Sans TC",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;}
+      html[lang="ja"] body,html[lang="ja"] body *,html[lang="ja"] .font-luxury,html[lang="ja"] .font-serif{font-family:Inter,"Noto Sans JP","Noto Sans TC",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;}
+      html[lang="ko"] body,html[lang="ko"] body *,html[lang="ko"] .font-luxury,html[lang="ko"] .font-serif{font-family:Inter,"Noto Sans KR","Noto Sans TC",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;}
+      html[lang="en"] body,html[lang="en"] body *,html[lang="en"] .font-luxury,html[lang="en"] .font-serif{font-family:Inter,"Noto Sans TC",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;}
+      i.fa-solid,i.fa-regular,i.fa-brands{font-family:"Font Awesome 6 Free","Font Awesome 6 Brands"!important;}
     `;
     document.head.appendChild(style);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    installStyle();
+    applyMuted(muted());
   });
 
-  setInterval(() => { if (muted()) applyMuted(true); }, 700);
+  setInterval(() => { if (muted()) applyMuted(true); }, 500);
   window.SR_AUDIO = { muted, setMuted: applyMuted, contexts, media };
 })();
