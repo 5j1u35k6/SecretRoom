@@ -74,15 +74,66 @@ window.rejectPasswordResetRequest = async function rejectPasswordResetRequest(id
 };
 
 (() => {
-  const VERSION = '20260709-admin-tools-merged-v3';
+  const VERSION = '20260709-admin-tools-merged-v4';
   const groups = { member: ['pending','avatar_pending','spec_pending','approved','active','rejected','all'], safety: ['reported_posts','reported_comments'], security: ['password_reset_requests','account_delete_requests','email_failures'], system: ['all'] };
   const labels = { all:'全部資料', pending:'待審核帳號', avatar_pending:'待審核頭像', spec_pending:'待審核 Spec 認證', reported_posts:'被檢舉貼文', reported_comments:'被檢舉留言', account_delete_requests:'帳號刪除申請', password_reset_requests:'忘記密碼申請', email_failures:'Email 發送失敗', approved:'已核准', active:'已啟用', rejected:'已拒絕' };
   const qs = id => document.getElementById(id);
   const tx = v => String(v || '').replace(/\s+/g, ' ').trim();
   const current = () => qs('filter-status')?.value || 'pending';
   const groupOf = v => groups.safety.includes(v) ? 'safety' : groups.security.includes(v) ? 'security' : 'member';
+  const isExplicitAdmin = data => !!data && data.enabled !== false && (data.role === 'admin' || data.isAdmin === true || data.canAdmin === true || data.adminApproved === true);
+
   function sync(value = current()) { document.querySelectorAll('[data-sr-admin-group]').forEach(b => b.classList.toggle('sr-admin-group-active', b.dataset.srAdminGroup === groupOf(value))); }
   function setFilter(value) { const s = qs('filter-status'); if (!s) return; s.value = value; typeof window.filterApplications === 'function' ? window.filterApplications() : s.dispatchEvent(new Event('change', { bubbles:true })); sync(value); }
+
+  async function refreshAdminMetric() {
+    const el = qs('count-admins');
+    if (!el || el.dataset.srCounting === '1') return;
+    el.dataset.srCounting = '1';
+    try {
+      const { db, fs } = await T();
+      const snap = await fs.getDocs(fs.collection(db, 'secretg_apps', AID, 'admins'));
+      const active = [];
+      snap.forEach(d => { const data = d.data() || {}; if (isExplicitAdmin(data)) active.push(d.id); });
+      el.textContent = active.length;
+      el.title = active.length ? `明確後台名錄 admins：${active.join(', ')}` : 'admins 名錄內目前沒有啟用的管理員';
+      const card = el.closest('.rounded-2xl, .bg-slate-950\/60') || el.parentElement;
+      if (card && !card.querySelector('.sr-admin-count-note')) {
+        const note = document.createElement('div');
+        note.className = 'sr-admin-count-note text-[10px] text-slate-500 mt-1 leading-snug';
+        note.textContent = '僅計 admins 名錄；會員資料中的舊權限旗標不列入。';
+        card.appendChild(note);
+      }
+    } catch (err) {
+      console.warn('後台管理員數量校正失敗:', err);
+    } finally { el.dataset.srCounting = '0'; }
+  }
+
+  function enforceExplicitAdminLogin() {
+    const btn = qs('admin-login-submit');
+    if (!btn || btn.dataset.srAdminGuard === '1') return;
+    const original = btn.onclick;
+    btn.dataset.srAdminGuard = '1';
+    btn.onclick = async function(event) {
+      const adminId = qs('admin-login-id')?.value?.trim();
+      if (!adminId || !original) return original?.call(this, event);
+      try {
+        const { db, fs } = await T();
+        const snap = await fs.getDoc(fs.doc(db, 'secretg_apps', AID, 'admins', adminId));
+        if (!snap.exists() || !isExplicitAdmin(snap.data() || {})) {
+          event?.preventDefault?.();
+          event?.stopPropagation?.();
+          const msg = `此帳號不在 admins 明確名錄內，已阻擋後台登入：${adminId}`;
+          const box = qs('admin-login-error');
+          if (box) { box.textContent = msg; box.classList.remove('hidden'); }
+          if (window.showToast) showToast(msg, 'error');
+          return;
+        }
+      } catch (err) { console.warn('管理員名錄預檢失敗，交由原登入流程處理:', err); }
+      return original.call(this, event);
+    };
+  }
+
   function addHeader() {
     const header = document.querySelector('#admin-main header');
     const status = qs('connection-status');
@@ -159,14 +210,14 @@ window.rejectPasswordResetRequest = async function rejectPasswordResetRequest(id
       if (/待審核|審查中|申請/.test(t)) card.classList.add('sr-admin-pending-card');
     });
   }
-  function apply() { addHeader(); addStatsLabel(); addGroups(); enhanceBroadcast(); addToolbar(); improveResetCards(); improveCards(); sync(); document.documentElement.dataset.srAdminUi = VERSION; }
+  function apply() { enforceExplicitAdminLogin(); addHeader(); addStatsLabel(); addGroups(); enhanceBroadcast(); addToolbar(); improveResetCards(); improveCards(); refreshAdminMetric(); sync(); document.documentElement.dataset.srAdminUi = VERSION; }
   const css = document.createElement('style'); css.id = 'sr-admin-tools-style'; css.textContent = `
     #admin-main header{position:sticky;top:0;z-index:35;background:linear-gradient(180deg,rgba(2,2,4,.96),rgba(2,2,4,.78));backdrop-filter:blur(16px);padding-top:.5rem;border-radius:0 0 1.25rem 1.25rem}
     .sr-admin-group-btn{display:flex;align-items:center;justify-content:center;gap:.45rem;min-height:2.75rem;border-radius:1rem;border:1px solid rgba(245,158,11,.12);background:rgba(2,6,23,.45);color:#94a3b8;font-size:11px;font-weight:900;transition:.2s}.sr-admin-group-btn:hover,.sr-admin-group-active{color:#fcd34d;border-color:rgba(245,158,11,.36);background:rgba(245,158,11,.08)}
     .sr-admin-subfilter{flex:0 0 auto;border:1px solid rgba(148,163,184,.16);background:rgba(15,23,42,.55);color:#94a3b8;border-radius:.85rem;padding:.55rem .8rem;font-size:10px;font-weight:800;white-space:nowrap}.sr-admin-subfilter-active{color:#020617;background:linear-gradient(90deg,#f8d36a,#d99a23);border-color:#f8d36a}
     #admin-search,#filter-status{min-height:2.65rem}#admin-list>div{scroll-margin-top:6rem}.admin-stat-mini,#admin-main .grid>div{overflow:hidden}
     #admin-list{display:grid;gap:1rem}.sr-admin-review-card{border-color:rgba(223,183,108,.16)!important;background:linear-gradient(145deg,rgba(15,23,42,.72),rgba(8,10,16,.62))!important;box-shadow:0 18px 45px rgba(0,0,0,.28)}.sr-admin-risk-card{border-left:4px solid rgba(244,63,94,.72)!important}.sr-admin-security-card{border-left:4px solid rgba(251,191,36,.76)!important}.sr-admin-pending-card{border-left:4px solid rgba(34,211,238,.55)!important}
-    #broadcast-message{line-height:1.55!important}#broadcast-history{scrollbar-width:thin}.glass-panel h2,.glass-panel h3{letter-spacing:.02em}
+    #broadcast-message{line-height:1.55!important}#broadcast-history{scrollbar-width:thin}.glass-panel h2,.glass-panel h3{letter-spacing:.02em}.sr-admin-count-note{font-weight:700;letter-spacing:.02em}
     @media(max-width:768px){#sr-admin-env-badge{width:100%}#sr-admin-task-groups{position:sticky;top:.5rem;z-index:30;backdrop-filter:blur(14px)}#admin-main header{position:relative}.flex.items-center.justify-between{align-items:flex-start!important}#admin-search,#filter-status{width:100%!important}}
   `;
   document.head.appendChild(css);
