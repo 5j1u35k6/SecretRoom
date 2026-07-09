@@ -13,7 +13,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="sr_selectable.css?v=20260709-select-v1">
+    <style>
+        html, body, #app, #app * { -webkit-user-select: text !important; user-select: text !important; }
+        input, textarea, select, option, button { -webkit-user-select: auto !important; user-select: auto !important; }
+        img, svg, canvas, video, audio, i.fa-solid, i.fa-regular, i.fa-brands { -webkit-user-select: none !important; user-select: none !important; }
+    </style>
 </head>
 <body class="min-h-screen w-full flex flex-col p-0 m-0 overflow-hidden club-groove-bg">
     <div id="app" class="w-full h-[100dvh] md:h-screen overflow-hidden relative flex flex-col bg-transparent transition-all duration-300">
