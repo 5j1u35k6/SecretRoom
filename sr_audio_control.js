@@ -1,0 +1,126 @@
+// SecretRoom early audio/BGM control
+// Loaded before app.js so generated audio and WebAudio can be muted before playback starts.
+(() => {
+  const KEY = 'sr_bgm_muted';
+  const contexts = new Set();
+  const media = new Set();
+  const NativeAudioContext = window.AudioContext || window.webkitAudioContext;
+  const NativeOfflineAudioContext = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+  const nativePlay = window.HTMLMediaElement?.prototype?.play;
+
+  function muted() { return localStorage.getItem(KEY) === '1'; }
+
+  function rememberMedia(el) {
+    if (el) media.add(el);
+    return el;
+  }
+
+  function updateUi(isMuted = muted()) {
+    document.documentElement.classList.toggle('sr-bgm-muted', isMuted);
+    const widget = document.getElementById('bgm-controller-widget');
+    widget?.classList.toggle('sr-bgm-muted', isMuted);
+    const icon = document.getElementById('bgm-icon');
+    if (icon) icon.className = `fa-solid ${isMuted ? 'fa-volume-xmark' : 'fa-play'} text-[9px]`;
+    const status = document.getElementById('bgm-status-text');
+    if (status) status.textContent = isMuted ? 'Audio Muted' : 'Bgm Audio';
+    const bars = document.getElementById('bgm-bars');
+    bars?.classList.toggle('bgm-active', !isMuted);
+    const mobileText = document.getElementById('mobile-menu-bgm-text');
+    if (mobileText) mobileText.textContent = isMuted ? 'Audio Muted' : 'Premium Vip Lounge';
+  }
+
+  function muteMediaElement(el, isMuted = muted()) {
+    if (!el) return;
+    rememberMedia(el);
+    try {
+      if (el.dataset && el.dataset.srOriginalVolume === undefined) el.dataset.srOriginalVolume = String(el.volume || 0.45);
+      el.muted = isMuted;
+      el.defaultMuted = isMuted;
+      el.volume = isMuted ? 0 : Math.min(Math.max(Number(el.dataset?.srOriginalVolume || 0.45), 0.18), 0.75);
+      if (isMuted) el.pause?.();
+    } catch (_) {}
+  }
+
+  function applyMuted(isMuted = muted()) {
+    localStorage.setItem(KEY, isMuted ? '1' : '0');
+    document.querySelectorAll('audio,video').forEach(el => muteMediaElement(el, isMuted));
+    media.forEach(el => muteMediaElement(el, isMuted));
+    contexts.forEach(ctx => {
+      try {
+        if (isMuted && ctx.state !== 'closed') ctx.suspend?.();
+        if (!isMuted && ctx.state === 'suspended') ctx.resume?.().catch(() => {});
+      } catch (_) {}
+    });
+    const bgm = window.luxuryBgm || window.srBgm || window.bgm || null;
+    if (bgm) {
+      try { bgm.isPlaying = !isMuted; } catch (_) {}
+      try { bgm.enabled = !isMuted; } catch (_) {}
+      try { bgm.muted = isMuted; } catch (_) {}
+      if (bgm.audio) muteMediaElement(bgm.audio, isMuted);
+      if (isMuted) {
+        try { bgm.stop?.(); } catch (_) {}
+        try { bgm.pause?.(); } catch (_) {}
+      }
+    }
+    updateUi(isMuted);
+  }
+
+  if (NativeAudioContext) {
+    const WrappedAudioContext = function(...args) {
+      const ctx = new NativeAudioContext(...args);
+      contexts.add(ctx);
+      if (muted()) setTimeout(() => { try { ctx.suspend?.(); } catch (_) {} }, 0);
+      return ctx;
+    };
+    WrappedAudioContext.prototype = NativeAudioContext.prototype;
+    Object.setPrototypeOf(WrappedAudioContext, NativeAudioContext);
+    window.AudioContext = WrappedAudioContext;
+    if (window.webkitAudioContext) window.webkitAudioContext = WrappedAudioContext;
+  }
+
+  if (NativeOfflineAudioContext) {
+    const WrappedOfflineAudioContext = function(...args) {
+      const ctx = new NativeOfflineAudioContext(...args);
+      contexts.add(ctx);
+      return ctx;
+    };
+    WrappedOfflineAudioContext.prototype = NativeOfflineAudioContext.prototype;
+    Object.setPrototypeOf(WrappedOfflineAudioContext, NativeOfflineAudioContext);
+    window.OfflineAudioContext = WrappedOfflineAudioContext;
+    if (window.webkitOfflineAudioContext) window.webkitOfflineAudioContext = WrappedOfflineAudioContext;
+  }
+
+  if (nativePlay) {
+    window.HTMLMediaElement.prototype.play = function(...args) {
+      rememberMedia(this);
+      if (muted()) {
+        muteMediaElement(this, true);
+        return Promise.resolve();
+      }
+      return nativePlay.apply(this, args);
+    };
+  }
+
+  document.addEventListener('click', event => {
+    const hit = event.target?.closest?.('#bgm-controller-widget,#bgm-toggle-btn,#mobile-menu-bgm-toggle,[data-sr-bgm-toggle]');
+    if (!hit) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    applyMuted(!muted());
+  }, true);
+
+  document.addEventListener('DOMContentLoaded', () => {
+    applyMuted(muted());
+    const style = document.createElement('style');
+    style.id = 'sr-audio-control-style';
+    style.textContent = `
+      html.sr-bgm-muted #bgm-controller-widget{opacity:.72!important;filter:saturate(.7)!important;}
+      html.sr-bgm-muted .bgm-bar{animation:none!important;transform:scaleY(.55)!important;}
+    `;
+    document.head.appendChild(style);
+  });
+
+  setInterval(() => { if (muted()) applyMuted(true); }, 700);
+  window.SR_AUDIO = { muted, setMuted: applyMuted, contexts, media };
+})();
