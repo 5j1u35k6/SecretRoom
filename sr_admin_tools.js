@@ -74,7 +74,7 @@ window.rejectPasswordResetRequest = async function rejectPasswordResetRequest(id
 };
 
 (() => {
-  const VERSION = '20260708-admin-tools-merged-v2';
+  const VERSION = '20260709-admin-tools-merged-v3';
   const groups = { member: ['pending','avatar_pending','spec_pending','approved','active','rejected','all'], safety: ['reported_posts','reported_comments'], security: ['password_reset_requests','account_delete_requests','email_failures'], system: ['all'] };
   const labels = { all:'全部資料', pending:'待審核帳號', avatar_pending:'待審核頭像', spec_pending:'待審核 Spec 認證', reported_posts:'被檢舉貼文', reported_comments:'被檢舉留言', account_delete_requests:'帳號刪除申請', password_reset_requests:'忘記密碼申請', email_failures:'Email 發送失敗', approved:'已核准', active:'已啟用', rejected:'已拒絕' };
   const qs = id => document.getElementById(id);
@@ -148,8 +148,27 @@ window.rejectPasswordResetRequest = async function rejectPasswordResetRequest(id
     bar.innerHTML = '<span><i class="fa-solid fa-arrows-rotate text-amber-400 mr-1.5"></i> 即時同步中；優先處理紅色與橘色項目。</span><span>建議排序：時間新 → 風險高 → 待處理。</span>';
     list.parentElement.insertBefore(bar, list);
   }
-  function apply() { addHeader(); addStatsLabel(); addGroups(); enhanceBroadcast(); addToolbar(); improveResetCards(); sync(); document.documentElement.dataset.srAdminUi = VERSION; }
-  const css = document.createElement('style'); css.id = 'sr-admin-tools-style'; css.textContent = `.sr-admin-group-btn{display:flex;align-items:center;justify-content:center;gap:.45rem;min-height:2.75rem;border-radius:1rem;border:1px solid rgba(245,158,11,.12);background:rgba(2,6,23,.45);color:#94a3b8;font-size:11px;font-weight:900;transition:.2s}.sr-admin-group-btn:hover,.sr-admin-group-active{color:#fcd34d;border-color:rgba(245,158,11,.36);background:rgba(245,158,11,.08)}.sr-admin-subfilter{flex:0 0 auto;border:1px solid rgba(148,163,184,.16);background:rgba(15,23,42,.55);color:#94a3b8;border-radius:.85rem;padding:.55rem .8rem;font-size:10px;font-weight:800;white-space:nowrap}.sr-admin-subfilter-active{color:#020617;background:linear-gradient(90deg,#f8d36a,#d99a23);border-color:#f8d36a}#admin-search,#filter-status{min-height:2.65rem}#admin-list>div{scroll-margin-top:1rem}.admin-stat-mini,#admin-main .grid>div{overflow:hidden}@media(max-width:768px){#sr-admin-env-badge{width:100%}#sr-admin-task-groups{position:sticky;top:.5rem;z-index:20;backdrop-filter:blur(14px)}}`;
+  function improveCards() {
+    document.querySelectorAll('#admin-list > div').forEach(card => {
+      if (card.dataset.srCardImproved) return;
+      card.dataset.srCardImproved = '1';
+      card.classList.add('sr-admin-review-card');
+      const t = tx(card);
+      if (/檢舉|安全|風險/.test(t)) card.classList.add('sr-admin-risk-card');
+      if (/忘記密碼|臨時密碼|Email 發送失敗/.test(t)) card.classList.add('sr-admin-security-card');
+      if (/待審核|審查中|申請/.test(t)) card.classList.add('sr-admin-pending-card');
+    });
+  }
+  function apply() { addHeader(); addStatsLabel(); addGroups(); enhanceBroadcast(); addToolbar(); improveResetCards(); improveCards(); sync(); document.documentElement.dataset.srAdminUi = VERSION; }
+  const css = document.createElement('style'); css.id = 'sr-admin-tools-style'; css.textContent = `
+    #admin-main header{position:sticky;top:0;z-index:35;background:linear-gradient(180deg,rgba(2,2,4,.96),rgba(2,2,4,.78));backdrop-filter:blur(16px);padding-top:.5rem;border-radius:0 0 1.25rem 1.25rem}
+    .sr-admin-group-btn{display:flex;align-items:center;justify-content:center;gap:.45rem;min-height:2.75rem;border-radius:1rem;border:1px solid rgba(245,158,11,.12);background:rgba(2,6,23,.45);color:#94a3b8;font-size:11px;font-weight:900;transition:.2s}.sr-admin-group-btn:hover,.sr-admin-group-active{color:#fcd34d;border-color:rgba(245,158,11,.36);background:rgba(245,158,11,.08)}
+    .sr-admin-subfilter{flex:0 0 auto;border:1px solid rgba(148,163,184,.16);background:rgba(15,23,42,.55);color:#94a3b8;border-radius:.85rem;padding:.55rem .8rem;font-size:10px;font-weight:800;white-space:nowrap}.sr-admin-subfilter-active{color:#020617;background:linear-gradient(90deg,#f8d36a,#d99a23);border-color:#f8d36a}
+    #admin-search,#filter-status{min-height:2.65rem}#admin-list>div{scroll-margin-top:6rem}.admin-stat-mini,#admin-main .grid>div{overflow:hidden}
+    #admin-list{display:grid;gap:1rem}.sr-admin-review-card{border-color:rgba(223,183,108,.16)!important;background:linear-gradient(145deg,rgba(15,23,42,.72),rgba(8,10,16,.62))!important;box-shadow:0 18px 45px rgba(0,0,0,.28)}.sr-admin-risk-card{border-left:4px solid rgba(244,63,94,.72)!important}.sr-admin-security-card{border-left:4px solid rgba(251,191,36,.76)!important}.sr-admin-pending-card{border-left:4px solid rgba(34,211,238,.55)!important}
+    #broadcast-message{line-height:1.55!important}#broadcast-history{scrollbar-width:thin}.glass-panel h2,.glass-panel h3{letter-spacing:.02em}
+    @media(max-width:768px){#sr-admin-env-badge{width:100%}#sr-admin-task-groups{position:sticky;top:.5rem;z-index:30;backdrop-filter:blur(14px)}#admin-main header{position:relative}.flex.items-center.justify-between{align-items:flex-start!important}#admin-search,#filter-status{width:100%!important}}
+  `;
   document.head.appendChild(css);
   apply(); new MutationObserver(() => setTimeout(apply, 100)).observe(document.documentElement, { childList:true, subtree:true }); setInterval(apply, 1500);
 })();
