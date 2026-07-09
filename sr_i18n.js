@@ -1,43 +1,25 @@
 // SecretRoom URL-based i18n router
-// Routes: /zh/, /zh-CN/, /en/, /ja/, /ko/, /eo/, /vi/, /th/, /id/, /ms/, /fil/
+// Routes: /zh/, /zh-CN/, /en/, /ja/, /ko/, /eo/, plus selected Asia routes.
 
 (() => {
   const SUPPORTED = {
-    'zh': 'zh-TW',
-    'zh-TW': 'zh-TW',
-    'zh-CN': 'zh-CN',
-    'en': 'en',
-    'ja': 'ja',
-    'ko': 'ko',
-    'eo': 'eo',
-    'vi': 'vi',
-    'th': 'th',
-    'id': 'id',
-    'ms': 'ms',
-    'fil': 'fil'
+    'zh': 'zh-TW', 'zh-TW': 'zh-TW', 'zh-CN': 'zh-CN', 'en': 'en', 'ja': 'ja', 'ko': 'ko', 'eo': 'eo',
+    'vi': 'vi', 'th': 'th', 'id': 'id', 'ms': 'ms', 'fil': 'fil',
+    'my': 'my', 'km': 'km', 'lo': 'lo', 'ne': 'ne', 'hi': 'hi', 'bn': 'bn', 'ta': 'ta', 'ur': 'ur', 'ar': 'ar', 'fa': 'fa', 'tr': 'tr'
   };
   const LABELS = {
-    'zh': '繁體中文',
-    'zh-CN': '简体中文',
-    'en': 'English',
-    'ja': '日本語',
-    'ko': '한국어',
-    'eo': 'Esperanto',
-    'vi': 'Tiếng Việt',
-    'th': 'ไทย',
-    'id': 'Bahasa Indonesia',
-    'ms': 'Bahasa Melayu',
-    'fil': 'Filipino'
+    'zh': '繁體中文', 'zh-CN': '简体中文', 'en': 'English', 'ja': '日本語', 'ko': '한국어', 'eo': 'Esperanto',
+    'vi': 'Tiếng Việt', 'th': 'ไทย', 'id': 'Bahasa Indonesia', 'ms': 'Bahasa Melayu', 'fil': 'Filipino',
+    'my': 'မြန်မာ', 'km': 'ភាសាខ្មែរ', 'lo': 'ລາວ', 'ne': 'नेपाली', 'hi': 'हिन्दी', 'bn': 'বাংলা', 'ta': 'தமிழ்', 'ur': 'اردو', 'ar': 'العربية', 'fa': 'فارسی', 'tr': 'Türkçe'
   };
   const STORAGE_KEY = 'sr_locale';
   const DEFAULT_LANG = 'zh-TW';
-  const ROUTE_CODES = ['zh', 'zh-CN', 'en', 'ja', 'ko', 'eo', 'vi', 'th', 'id', 'ms', 'fil'];
+  const ROUTE_CODES = Object.keys(LABELS);
   const BRAND_PATTERNS = [/SecretRoom/i, /S\+\s*\.\s*S\s*\.\s*G/i, /S\+\.S\.G/i, /D\.G|C\.G|B\.G|A\.G|S\.G|S\+\.G|SSR\.G|Z\.G/i];
+  const MOBILE_QUERY = '(max-width: 768px)';
   const state = { lang: DEFAULT_LANG, dict: {}, applying: false };
 
-  function cleanText(value) {
-    return String(value || '').replace(/\s+/g, ' ').trim();
-  }
+  function cleanText(value) { return String(value || '').replace(/\s+/g, ' ').trim(); }
 
   function routeInfo() {
     const parts = location.pathname.split('/').filter(Boolean);
@@ -49,9 +31,7 @@
     return { route, base: base === '/' ? '' : base };
   }
 
-  function normalizeLang(value) {
-    return SUPPORTED[value] || DEFAULT_LANG;
-  }
+  function normalizeLang(value) { return SUPPORTED[value] || DEFAULT_LANG; }
 
   function currentLang() {
     const url = new URL(location.href);
@@ -64,10 +44,7 @@
     return DEFAULT_LANG;
   }
 
-  function routeCode(lang) {
-    if (lang === 'zh-TW') return 'zh';
-    return lang;
-  }
+  function routeCode(lang) { return lang === 'zh-TW' ? 'zh' : lang; }
 
   function routeUrl(code) {
     const info = routeInfo();
@@ -83,15 +60,8 @@
     return false;
   }
 
-  function protect(text) {
-    return BRAND_PATTERNS.some(re => re.test(text));
-  }
-
-  function lookup(text) {
-    const key = cleanText(text);
-    if (!key || protect(key)) return text;
-    return state.dict[key] || text;
-  }
+  function protect(text) { return BRAND_PATTERNS.some(re => re.test(text)); }
+  function lookup(text) { const key = cleanText(text); return !key || protect(key) ? text : (state.dict[key] || text); }
 
   function translateTextNode(node) {
     if (!node || !node.parentElement || skipElement(node.parentElement)) return;
@@ -99,8 +69,7 @@
     const raw = node.__srOriginalText;
     const trim = cleanText(raw);
     if (!trim) return;
-    const translated = lookup(trim);
-    node.nodeValue = raw.replace(trim, translated);
+    node.nodeValue = raw.replace(trim, lookup(trim));
   }
 
   function translateAttribute(el, attr) {
@@ -135,22 +104,25 @@
         translateAttribute(el, 'title');
         translateAttribute(el, 'aria-label');
       });
-    } finally {
-      state.applying = false;
-    }
+    } finally { state.applying = false; }
   }
 
   async function loadDict(lang) {
     if (lang === DEFAULT_LANG) return {};
     const code = routeCode(lang);
     try {
-      const response = await fetch(`i18n/${code}.json?v=20260708-i18n-routes-v2`, { cache: 'no-cache' });
+      const response = await fetch(`i18n/${code}.json?v=20260709-i18n-routes-v3`, { cache: 'no-cache' });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return await response.json();
     } catch (error) {
       console.warn('[SecretRoom i18n] dictionary load failed:', error);
       return {};
     }
+  }
+
+  function goToLanguage(code) {
+    localStorage.setItem(STORAGE_KEY, normalizeLang(code));
+    location.href = routeUrl(code);
   }
 
   function buildSwitcher() {
@@ -160,18 +132,41 @@
     wrap.className = 'fixed right-4 bottom-4 z-[160] rounded-3xl border border-amber-500/25 bg-slate-950/92 px-4 py-3 shadow-2xl backdrop-blur-md notranslate';
     wrap.setAttribute('translate', 'no');
     wrap.innerHTML = `
-      <div class="text-[10px] font-black tracking-[0.18em] text-amber-400/80 mb-2"><i class="fa-solid fa-globe text-amber-400 text-xs mr-1.5"></i>Language</div>
+      <div class="sr-i18n-title text-[10px] font-black tracking-[0.18em] text-amber-400/80 mb-2"><i class="fa-solid fa-globe text-amber-400 text-xs mr-1.5"></i>Language</div>
       <select id="sr-i18n-select" class="w-full bg-slate-950/70 border border-amber-500/20 rounded-2xl px-3 py-2 text-[12px] font-black text-amber-200 outline-none cursor-pointer">
         ${ROUTE_CODES.map(code => `<option value="${code}">${LABELS[code]}</option>`).join('')}
-      </select>`;
+      </select>
+      <button id="sr-i18n-mobile-globe" type="button" aria-label="Language" title="Language"><i class="fa-solid fa-globe"></i></button>
+      <div id="sr-i18n-mobile-menu">${ROUTE_CODES.map(code => `<button type="button" data-lang="${code}">${LABELS[code]}</button>`).join('')}</div>`;
     document.body.appendChild(wrap);
     const select = document.getElementById('sr-i18n-select');
+    const globe = document.getElementById('sr-i18n-mobile-globe');
+    const menu = document.getElementById('sr-i18n-mobile-menu');
     select.value = routeCode(state.lang);
-    select.onchange = () => {
-      const code = select.value;
-      localStorage.setItem(STORAGE_KEY, normalizeLang(code));
-      location.href = routeUrl(code);
-    };
+    select.onchange = () => goToLanguage(select.value);
+    globe.onclick = (event) => { event.stopPropagation(); wrap.classList.toggle('sr-i18n-open'); };
+    menu.querySelectorAll('[data-lang]').forEach(btn => btn.onclick = () => goToLanguage(btn.dataset.lang));
+    document.addEventListener('click', event => { if (!wrap.contains(event.target)) wrap.classList.remove('sr-i18n-open'); });
+    placeSwitcher();
+  }
+
+  function findNotificationTab() {
+    return document.getElementById('aside-tab-notifications') || Array.from(document.querySelectorAll('button,a,div')).find(el => cleanText(el).includes('通知') && /bell|notification/i.test(String(el.id || el.className || '')));
+  }
+
+  function placeSwitcher() {
+    const wrap = document.getElementById('sr-i18n-switcher');
+    if (!wrap) return;
+    const isMobile = window.matchMedia(MOBILE_QUERY).matches;
+    if (isMobile) {
+      const target = findNotificationTab();
+      if (target?.parentElement && wrap.parentElement !== target.parentElement) target.insertAdjacentElement('afterend', wrap);
+      wrap.dataset.mobilePlacement = target ? 'notifications' : 'fallback';
+    } else {
+      if (wrap.parentElement !== document.body) document.body.appendChild(wrap);
+      wrap.dataset.mobilePlacement = 'desktop';
+      wrap.classList.remove('sr-i18n-open');
+    }
   }
 
   const style = document.createElement('style');
@@ -179,7 +174,16 @@
     #sr-i18n-switcher{width:14.75rem!important;font-family:Inter,"Noto Serif TC","Noto Sans TC",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;}
     #sr-i18n-switcher *{font-family:inherit!important;}
     #sr-i18n-select option{background:#020204;color:#f8e7b0;}
-    @media(max-width:640px){#sr-i18n-switcher{right:.75rem!important;bottom:.75rem!important;width:12.75rem!important;max-width:calc(100vw - 1.5rem);padding:.65rem .75rem;}#sr-i18n-select{font-size:10px;}}
+    #sr-i18n-mobile-globe,#sr-i18n-mobile-menu{display:none;}
+    @media(max-width:768px){
+      #sr-i18n-switcher{position:relative!important;right:auto!important;bottom:auto!important;top:auto!important;left:auto!important;z-index:80!important;width:auto!important;min-width:0!important;max-width:none!important;padding:0!important;margin:0!important;border:0!important;background:transparent!important;box-shadow:none!important;backdrop-filter:none!important;}
+      #sr-i18n-switcher .sr-i18n-title,#sr-i18n-select{display:none!important;}
+      #sr-i18n-mobile-globe{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:2.35rem!important;height:2.35rem!important;border-radius:999px!important;border:1px solid rgba(245,158,11,.22)!important;background:rgba(15,23,42,.72)!important;color:#fbbf24!important;font-size:1rem!important;}
+      #sr-i18n-mobile-menu{position:absolute!important;right:0!important;bottom:calc(100% + .5rem)!important;width:12.25rem!important;max-height:16rem!important;overflow:auto!important;padding:.45rem!important;border-radius:1rem!important;border:1px solid rgba(245,158,11,.28)!important;background:rgba(2,6,23,.96)!important;box-shadow:0 18px 45px rgba(0,0,0,.48)!important;z-index:180!important;}
+      #sr-i18n-switcher.sr-i18n-open #sr-i18n-mobile-menu{display:grid!important;gap:.25rem!important;}
+      #sr-i18n-mobile-menu button{width:100%!important;text-align:left!important;border-radius:.75rem!important;padding:.55rem .65rem!important;color:#f8e7b0!important;font-size:11px!important;font-weight:800!important;background:transparent!important;}
+      #sr-i18n-mobile-menu button:hover{background:rgba(245,158,11,.12)!important;}
+    }
   `;
   document.head.appendChild(style);
 
@@ -189,7 +193,9 @@
     state.dict = await loadDict(state.lang);
     buildSwitcher();
     apply();
-    new MutationObserver(() => setTimeout(() => apply(), 80)).observe(document.documentElement, { childList: true, subtree: true, characterData: true });
-    setInterval(apply, 1600);
+    const observer = new MutationObserver(() => { setTimeout(() => apply(), 80); setTimeout(placeSwitcher, 100); });
+    observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+    window.addEventListener('resize', placeSwitcher);
+    setInterval(() => { apply(); placeSwitcher(); }, 1600);
   })();
 })();
