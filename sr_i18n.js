@@ -17,7 +17,7 @@
   const ROUTE_CODES = Object.keys(LABELS);
   const BRAND_PATTERNS = [/SecretRoom/i, /S\+\s*\.\s*S\s*\.\s*G/i, /S\+\.S\.G/i, /D\.G|C\.G|B\.G|A\.G|S\.G|S\+\.G|SSR\.G|Z\.G/i];
   const MOBILE_QUERY = '(max-width: 768px)';
-  const state = { lang: DEFAULT_LANG, dict: {}, applying: false };
+  const state = { lang: DEFAULT_LANG, dict: {}, keys: [], applying: false };
 
   function cleanText(value) { return String(value || '').replace(/\s+/g, ' ').trim(); }
 
@@ -61,7 +61,18 @@
   }
 
   function protect(text) { return BRAND_PATTERNS.some(re => re.test(text)); }
-  function lookup(text) { const key = cleanText(text); return !key || protect(key) ? text : (state.dict[key] || text); }
+
+  function lookup(text) {
+    const key = cleanText(text);
+    if (!key || protect(key)) return text;
+    if (state.dict[key]) return state.dict[key];
+    let result = key;
+    for (const src of state.keys) {
+      if (src.length < 2 || !result.includes(src) || protect(src)) continue;
+      result = result.split(src).join(state.dict[src]);
+    }
+    return result === key ? text : result;
+  }
 
   function translateTextNode(node) {
     if (!node || !node.parentElement || skipElement(node.parentElement)) return;
@@ -91,7 +102,7 @@
           const parent = node.parentElement;
           if (!parent || skipElement(parent)) return NodeFilter.FILTER_REJECT;
           const text = cleanText(node.nodeValue);
-          if (!text || text.length > 240) return NodeFilter.FILTER_REJECT;
+          if (!text || text.length > 260) return NodeFilter.FILTER_REJECT;
           return NodeFilter.FILTER_ACCEPT;
         }
       });
@@ -111,7 +122,7 @@
     if (lang === DEFAULT_LANG) return {};
     const code = routeCode(lang);
     try {
-      const response = await fetch(`i18n/${code}.json?v=20260709-i18n-routes-v3`, { cache: 'no-cache' });
+      const response = await fetch(`i18n/${code}.json?v=20260709-i18n-routes-v4`, { cache: 'no-cache' });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return await response.json();
     } catch (error) {
@@ -191,6 +202,7 @@
     state.lang = currentLang();
     localStorage.setItem(STORAGE_KEY, state.lang);
     state.dict = await loadDict(state.lang);
+    state.keys = Object.keys(state.dict).sort((a, b) => b.length - a.length);
     buildSwitcher();
     apply();
     const observer = new MutationObserver(() => { setTimeout(() => apply(), 80); setTimeout(placeSwitcher, 100); });
