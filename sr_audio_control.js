@@ -2,16 +2,33 @@
 // Loaded before app.js so generated audio and WebAudio can be muted before playback starts.
 (() => {
   const KEY = 'sr_bgm_muted';
+  const LEGACY_KEY = 'sr_bgm_enabled';
   const contexts = new Set();
   const media = new Set();
   const NativeAudioContext = window.AudioContext || window.webkitAudioContext;
   const NativeOfflineAudioContext = window.OfflineAudioContext || window.webkitOfflineAudioContext;
   const nativePlay = window.HTMLMediaElement?.prototype?.play;
+  const nativeSetItem = window.localStorage?.setItem?.bind(window.localStorage);
+  let applyingMuteState = false;
+  let luxuryBgmRef = null;
 
   function muted() {
     const saved = localStorage.getItem(KEY);
-    if (saved === null) return true; // Default to quiet. User can explicitly enable BGM.
-    return saved !== '0';
+    if (saved !== null) return saved !== '0';
+    const legacy = localStorage.getItem(LEGACY_KEY);
+    if (legacy === 'false') return true;
+    if (legacy === 'true') return false;
+    return true; // Default to quiet. User can explicitly enable BGM.
+  }
+
+  function syncLegacy(isMuted) {
+    try {
+      applyingMuteState = true;
+      nativeSetItem?.(KEY, isMuted ? '1' : '0');
+      nativeSetItem?.(LEGACY_KEY, isMuted ? 'false' : 'true');
+    } finally {
+      applyingMuteState = false;
+    }
   }
 
   function rememberMedia(el) {
@@ -23,6 +40,7 @@
     document.documentElement.classList.toggle('sr-bgm-muted', isMuted);
     const widget = document.getElementById('bgm-controller-widget');
     widget?.classList.toggle('sr-bgm-muted', isMuted);
+    widget?.classList.toggle('bgm-active', !isMuted);
     const icon = document.getElementById('bgm-icon');
     if (icon) icon.className = `fa-solid ${isMuted ? 'fa-volume-xmark' : 'fa-play'} text-[9px]`;
     const status = document.getElementById('bgm-status-text');
@@ -46,10 +64,8 @@
   }
 
   function stopKnownObjects(isMuted) {
-    const keys = ['luxuryBgm', 'srBgm', 'bgm', 'audioEngine', 'musicEngine'];
-    keys.forEach(key => {
-      const obj = window[key];
-      if (!obj) return;
+    const objects = [luxuryBgmRef, window.srBgm, window.bgm, window.audioEngine, window.musicEngine].filter(Boolean);
+    objects.forEach(obj => {
       try { obj.isPlaying = !isMuted; } catch (_) {}
       try { obj.enabled = !isMuted; } catch (_) {}
       try { obj.muted = isMuted; } catch (_) {}
@@ -60,7 +76,7 @@
   }
 
   function applyMuted(isMuted = muted()) {
-    localStorage.setItem(KEY, isMuted ? '1' : '0');
+    syncLegacy(isMuted);
     document.querySelectorAll('audio,video').forEach(el => muteMediaElement(el, isMuted));
     media.forEach(el => muteMediaElement(el, isMuted));
     contexts.forEach(ctx => {
@@ -72,6 +88,26 @@
     stopKnownObjects(isMuted);
     updateUi(isMuted);
   }
+
+  if (nativeSetItem) {
+    window.localStorage.setItem = function(key, value) {
+      if (!applyingMuteState && key === LEGACY_KEY && String(value) === 'true' && muted()) {
+        return nativeSetItem(LEGACY_KEY, 'false');
+      }
+      return nativeSetItem(key, value);
+    };
+  }
+
+  try {
+    Object.defineProperty(window, 'luxuryBgm', {
+      configurable: true,
+      get() { return luxuryBgmRef; },
+      set(value) {
+        luxuryBgmRef = value;
+        setTimeout(() => applyMuted(muted()), 0);
+      }
+    });
+  } catch (_) {}
 
   if (NativeAudioContext) {
     const WrappedAudioContext = function(...args) {
@@ -134,6 +170,6 @@
     applyMuted(muted());
   });
 
-  setInterval(() => { if (muted()) applyMuted(true); }, 500);
+  setInterval(() => { if (muted()) applyMuted(true); }, 300);
   window.SR_AUDIO = { muted, setMuted: applyMuted, contexts, media };
 })();
