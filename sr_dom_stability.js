@@ -62,7 +62,7 @@
   function simplifyCoreRank(container) {
     if (!container || window.state?.currentTab !== 'rank') return;
     container.dataset.srRankVersion = FRONTEND_RANK_VERSION;
-    if (container.dataset.srCoreRankSimplified === '1') return;
+    if (container.dataset.srCoreRankSimplified === '1' && document.getElementById('sr-core-rank-progress')) return;
     if (!container.textContent.includes('Weekly Grade System')) return;
 
     const root = container.firstElementChild;
