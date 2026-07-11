@@ -44,11 +44,11 @@
     const icon = document.getElementById('bgm-icon');
     if (icon) icon.className = `fa-solid ${isMuted ? 'fa-volume-xmark' : 'fa-play'} text-[9px]`;
     const status = document.getElementById('bgm-status-text');
-    if (status) status.textContent = isMuted ? 'Audio Muted' : 'Bgm Audio';
+    if (status) status.textContent = isMuted ? '音樂已關閉' : '背景音樂';
     const bars = document.getElementById('bgm-bars');
     bars?.classList.toggle('bgm-active', !isMuted);
     const mobileText = document.getElementById('mobile-menu-bgm-text');
-    if (mobileText) mobileText.textContent = isMuted ? 'Audio Muted' : 'Premium Vip Lounge';
+    if (mobileText) mobileText.textContent = isMuted ? '音樂已關閉' : '貴賓室音樂';
   }
 
   function muteMediaElement(el, isMuted = muted()) {
