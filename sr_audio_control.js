@@ -8,9 +8,11 @@
   const NativeAudioContext = window.AudioContext || window.webkitAudioContext;
   const NativeOfflineAudioContext = window.OfflineAudioContext || window.webkitOfflineAudioContext;
   const nativePlay = window.HTMLMediaElement?.prototype?.play;
+  const nativeResume = NativeAudioContext?.prototype?.resume;
   const nativeSetItem = window.localStorage?.setItem?.bind(window.localStorage);
   let applyingMuteState = false;
   let luxuryBgmRef = null;
+  let scheduled = false;
 
   function muted() {
     const saved = localStorage.getItem(KEY);
@@ -18,7 +20,7 @@
     const legacy = localStorage.getItem(LEGACY_KEY);
     if (legacy === 'false') return true;
     if (legacy === 'true') return false;
-    return true; // Default to quiet. User can explicitly enable BGM.
+    return true;
   }
 
   function syncLegacy(isMuted) {
@@ -31,9 +33,9 @@
     }
   }
 
-  function rememberMedia(el) {
-    if (el) media.add(el);
-    return el;
+  function rememberMedia(element) {
+    if (element) media.add(element);
+    return element;
   }
 
   function updateUi(isMuted = muted()) {
@@ -51,50 +53,62 @@
     if (mobileText) mobileText.textContent = isMuted ? '音樂已關閉' : '貴賓室音樂';
   }
 
-  function muteMediaElement(el, isMuted = muted()) {
-    if (!el) return;
-    rememberMedia(el);
+  function muteMediaElement(element, isMuted = muted()) {
+    if (!element) return;
+    rememberMedia(element);
     try {
-      if (el.dataset && el.dataset.srOriginalVolume === undefined) el.dataset.srOriginalVolume = String(el.volume || 0.45);
-      el.muted = isMuted;
-      el.defaultMuted = isMuted;
-      el.volume = isMuted ? 0 : Math.min(Math.max(Number(el.dataset?.srOriginalVolume || 0.45), 0.18), 0.75);
-      if (isMuted) el.pause?.();
+      if (element.dataset && element.dataset.srOriginalVolume === undefined) element.dataset.srOriginalVolume = String(element.volume || 0.45);
+      element.muted = isMuted;
+      element.defaultMuted = isMuted;
+      element.volume = isMuted ? 0 : Math.min(Math.max(Number(element.dataset?.srOriginalVolume || 0.45), 0.18), 0.75);
+      if (isMuted) element.pause?.();
     } catch (_) {}
   }
 
   function stopKnownObjects(isMuted) {
     const objects = [luxuryBgmRef, window.srBgm, window.bgm, window.audioEngine, window.musicEngine].filter(Boolean);
-    objects.forEach(obj => {
-      try { obj.isPlaying = !isMuted; } catch (_) {}
-      try { obj.enabled = !isMuted; } catch (_) {}
-      try { obj.muted = isMuted; } catch (_) {}
-      try { obj.volume = isMuted ? 0 : (obj.volume || 0.45); } catch (_) {}
-      ['audio', 'music', 'player', 'element'].forEach(k => { if (obj[k]) muteMediaElement(obj[k], isMuted); });
-      if (isMuted) ['stop', 'pause', 'mute'].forEach(fn => { try { obj[fn]?.(); } catch (_) {} });
+    objects.forEach(object => {
+      try { object.isPlaying = !isMuted; } catch (_) {}
+      try { object.enabled = !isMuted; } catch (_) {}
+      try { object.muted = isMuted; } catch (_) {}
+      try { object.volume = isMuted ? 0 : (object.volume || 0.45); } catch (_) {}
+      ['audio', 'music', 'player', 'element'].forEach(key => { if (object[key]) muteMediaElement(object[key], isMuted); });
+      if (isMuted) ['stop', 'pause', 'mute'].forEach(name => { try { object[name]?.(); } catch (_) {} });
     });
   }
 
   function applyMuted(isMuted = muted()) {
     syncLegacy(isMuted);
-    document.querySelectorAll('audio,video').forEach(el => muteMediaElement(el, isMuted));
-    media.forEach(el => muteMediaElement(el, isMuted));
-    contexts.forEach(ctx => {
+    document.querySelectorAll('audio,video').forEach(element => muteMediaElement(element, isMuted));
+    media.forEach(element => muteMediaElement(element, isMuted));
+    contexts.forEach(context => {
       try {
-        if (isMuted && ctx.state !== 'closed') ctx.suspend?.();
-        if (!isMuted && ctx.state === 'suspended') ctx.resume?.().catch(() => {});
+        if (isMuted && context.state !== 'closed') context.suspend?.();
+        if (!isMuted && context.state === 'suspended') nativeResume?.call(context)?.catch?.(() => {});
       } catch (_) {}
     });
     stopKnownObjects(isMuted);
     updateUi(isMuted);
   }
 
+  function scheduleApply() {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(() => {
+      scheduled = false;
+      applyMuted(muted());
+    });
+  }
+
   if (nativeSetItem) {
     window.localStorage.setItem = function(key, value) {
       if (!applyingMuteState && key === LEGACY_KEY && String(value) === 'true' && muted()) {
+        scheduleApply();
         return nativeSetItem(LEGACY_KEY, 'false');
       }
-      return nativeSetItem(key, value);
+      const result = nativeSetItem(key, value);
+      if (key === KEY || key === LEGACY_KEY) scheduleApply();
+      return result;
     };
   }
 
@@ -104,29 +118,43 @@
       get() { return luxuryBgmRef; },
       set(value) {
         luxuryBgmRef = value;
-        setTimeout(() => applyMuted(muted()), 0);
+        scheduleApply();
       }
     });
   } catch (_) {}
 
   if (NativeAudioContext) {
     const WrappedAudioContext = function(...args) {
-      const ctx = new NativeAudioContext(...args);
-      contexts.add(ctx);
-      if (muted()) setTimeout(() => { try { ctx.suspend?.(); } catch (_) {} }, 0);
-      return ctx;
+      const context = new NativeAudioContext(...args);
+      contexts.add(context);
+      if (muted()) queueMicrotask(() => { try { context.suspend?.(); } catch (_) {} });
+      return context;
     };
     WrappedAudioContext.prototype = NativeAudioContext.prototype;
     Object.setPrototypeOf(WrappedAudioContext, NativeAudioContext);
     window.AudioContext = WrappedAudioContext;
     if (window.webkitAudioContext) window.webkitAudioContext = WrappedAudioContext;
+
+    if (nativeResume && !nativeResume.__srGuarded) {
+      const guardedResume = function(...args) {
+        contexts.add(this);
+        if (muted()) {
+          try { this.suspend?.(); } catch (_) {}
+          scheduleApply();
+          return Promise.resolve();
+        }
+        return nativeResume.apply(this, args);
+      };
+      guardedResume.__srGuarded = true;
+      NativeAudioContext.prototype.resume = guardedResume;
+    }
   }
 
   if (NativeOfflineAudioContext) {
     const WrappedOfflineAudioContext = function(...args) {
-      const ctx = new NativeOfflineAudioContext(...args);
-      contexts.add(ctx);
-      return ctx;
+      const context = new NativeOfflineAudioContext(...args);
+      contexts.add(context);
+      return context;
     };
     WrappedOfflineAudioContext.prototype = NativeOfflineAudioContext.prototype;
     Object.setPrototypeOf(WrappedOfflineAudioContext, NativeOfflineAudioContext);
@@ -168,8 +196,16 @@
   document.addEventListener('DOMContentLoaded', () => {
     installStyle();
     applyMuted(muted());
+    new MutationObserver(records => {
+      if (!muted()) return;
+      const relevant = records.some(record => [...record.addedNodes].some(node => node instanceof Element && (node.matches?.('audio,video,#bgm-controller-widget,#mobile-menu-bgm-toggle') || node.querySelector?.('audio,video,#bgm-controller-widget,#mobile-menu-bgm-toggle'))));
+      if (relevant) scheduleApply();
+    }).observe(document.body, { childList: true, subtree: true });
   });
 
-  setInterval(() => { if (muted()) applyMuted(true); }, 300);
+  window.addEventListener('storage', event => {
+    if (event.key === KEY || event.key === LEGACY_KEY) scheduleApply();
+  });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) scheduleApply(); });
   window.SR_AUDIO = { muted, setMuted: applyMuted, contexts, media };
 })();
