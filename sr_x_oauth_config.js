@@ -2,7 +2,7 @@
 // Client ID is public for a Single Page App. Never place an X Client Secret in this repository.
 (() => {
   const settings = Object.freeze({
-    clientId: '',
+    clientId: 'T3NtaWJ5cy1jTUh3Nk1ZNnlkY0c6MTpjaQ',
     redirectUri: 'https://5j1u35k6.github.io/SecretRoom/',
     scopes: Object.freeze(['tweet.read', 'users.read'])
   });
