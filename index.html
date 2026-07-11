@@ -12,12 +12,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;650;750;800&family=Cinzel:wght@600;700;900&family=Noto+Serif+TC:wght@400;600;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-    <link rel="stylesheet" href="style.css?v=20260709-frontend-cache-v3">
-    <link rel="stylesheet" href="sr_frontend_entry.css?v=20260709-entry-v1">
+    <link rel="stylesheet" href="style.css?v=20260711-frontend-cache-v4">
     <style>
         html, body, #app, #app * { -webkit-user-select: text !important; user-select: text !important; }
         input, textarea, select, option, button { -webkit-user-select: auto !important; user-select: auto !important; }
         img, svg, canvas, video, audio, i.fa-solid, i.fa-regular, i.fa-brands { -webkit-user-select: none !important; user-select: none !important; }
+        #aside-tab-feed,#aside-tab-ranking,#aside-tab-notifications,#aside-tab-spec-vault,#aside-tab-badge-progress{display:flex!important;flex-direction:row!important;align-items:center!important;white-space:normal!important;}
+        #aside-tab-feed,#aside-tab-ranking,#aside-tab-badge-progress{justify-content:flex-start!important;gap:.75rem!important;text-align:left!important;}
+        #aside-tab-notifications,#aside-tab-spec-vault{justify-content:space-between!important;gap:.75rem!important;}
+        #aside-tab-feed>span:first-child,#aside-tab-ranking>span:first-child,#aside-tab-badge-progress>span:first-child{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:.75rem!important;text-align:left!important;}
+        #aside-tab-notifications>span:first-child,#aside-tab-spec-vault>span:first-child{flex:1 1 auto!important;min-width:0!important;display:flex!important;flex-direction:row!important;align-items:center!important;gap:.75rem!important;text-align:left!important;line-height:1.18!important;white-space:normal!important;}
+        .sr-spec-nav-pill{flex:0 0 5.65rem!important;width:5.65rem!important;max-width:5.65rem!important;min-height:2.18rem!important;margin-left:.25rem!important;padding:.32rem .45rem!important;white-space:pre-line!important;line-height:1.08!important;font-size:9px!important;text-align:center!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;}
+        .sr-badge-nav-pill{flex:0 0 auto!important;margin-left:0!important;margin-right:.35rem!important;white-space:nowrap!important;text-align:left!important;order:-1!important;}
+        .sr-two-line-button,.sr-two-line-pill{white-space:normal!important;line-height:1.18!important;min-height:2.65rem!important;text-align:center!important;overflow-wrap:anywhere!important;}
+        .sr-feed-filter-hint{margin:.4rem 0 .75rem 0;padding:.55rem .75rem;border:1px solid rgba(245,158,11,.12);border-radius:1rem;background:rgba(245,158,11,.045);color:rgba(226,232,240,.72);font-size:10.5px;line-height:1.45;text-align:left;}
+        .sr-readable-field{line-height:1.45!important;}
+        .sr-search-drawer{position:sticky!important;top:.5rem!important;max-height:min(58vh,450px)!important;z-index:70!important;}
+        @media(max-width:768px){.sr-spec-nav-pill{flex-basis:5.2rem!important;width:5.2rem!important;max-width:5.2rem!important;font-size:8.5px!important}.sr-badge-nav-pill{font-size:9px!important}}
     </style>
 </head>
 <body class="min-h-screen w-full flex flex-col p-0 m-0 overflow-hidden club-groove-bg">
@@ -48,7 +59,7 @@
         </div>
     </div>
     <script src="sr_audio_control.js?v=20260709-audio-stable-v4"></script>
-    <script type="module" src="app.js?v=20260709-frontend-cache-v3"></script>
+    <script type="module" src="app.js?v=20260711-frontend-cache-v4"></script>
     <script type="module" src="sr_password_flow.js?v=20260708-merged-v1"></script>
     <script type="module" src="sr_frontend_entry.js?v=20260709-entry-v1"></script>
 </body>
