@@ -18,8 +18,13 @@ npm run check
 cd "$ROOT_DIR"
 
 echo "[3/5] 登入 Firebase"
-echo "瀏覽器開啟後，請使用可管理 secretroom-ef728 的 Google 帳號登入。"
-npx firebase-tools@latest login
+echo "請使用可管理 secretroom-ef728 的 Google 帳號完成授權。"
+if [[ -n "${DEVSHELL_PROJECT_ID:-}" || -n "${CLOUD_SHELL:-}" ]]; then
+  echo "偵測到 Google Cloud Shell，將使用遠端登入模式。"
+  npx firebase-tools@latest login --no-localhost
+else
+  npx firebase-tools@latest login
+fi
 
 echo "[4/5] 選用 Firebase 專案 secretroom-ef728"
 npx firebase-tools@latest use secretroom-ef728
@@ -30,5 +35,4 @@ echo "X_REDIRECT_URI 請直接採用預設值：https://5j1u35k6.github.io/Secre
 npx firebase-tools@latest deploy --only functions:xOAuthStart,functions:xOAuthComplete
 
 echo
-
 echo "部署完成。請強制重新整理 SecretRoom，再測試『驗證 X』。"
