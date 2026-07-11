@@ -5,7 +5,7 @@
   const APP_ID='secretg-production-node-tw',VERSION='20260711-admin-phase2-case-drawer-v1',SESSION='sr_admin_session_id_v2';
   const qs=id=>document.getElementById(id),tx=v=>String(v||'').replace(/\s+/g,' ').trim(),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),toast=(m,t='info')=>window.showToast?.(m,t);
   const adminId=()=>window.SRAdminPhase2?.adminId||sessionStorage.getItem(SESSION)||'';
-  const can=a=>window.SRAdminPhase2?.can?window.SRAdminPhase2.can(a):true;
+  const can=a=>window.SRAdminPhase2?.can?window.SRAdminPhase2.can(a):a==='view';
   async function tools(){if(window.SRAdminCaseWorkspace?.tools)return window.SRAdminCaseWorkspace.tools();const a=await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js'),fs=await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js'),app=a.getApps()[0];if(!app)throw Error('Firebase 尚未初始化');return{db:fs.getFirestore(app),fs};}
   function fallbackCaseId(card){const attrs=[...card.querySelectorAll('[onclick]')].map(n=>n.getAttribute('onclick')||'').join(' ');return attrs.match(/\(['"]([^'"]+)['"]/)?.[1]||tx(card).match(/@([A-Za-z0-9_.-]+)/)?.[1]||tx(card).slice(0,80);}
   function fallbackCaseKey(card){return`${qs('filter-status')?.value||'all'}:${fallbackCaseId(card)}`;}
