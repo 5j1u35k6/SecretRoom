@@ -81,7 +81,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                     const app = initializeApp(firebaseConfig);
                     db = getFirestore(app);
                     statusEl.className = "self-start px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 flex items-center gap-2";
-                    statusEl.innerHTML = '<i class="fa-solid fa-circle text-[8px] animate-pulse"></i> 安全連線已建立 - 節點驗證成功 ✓';
+                    statusEl.innerHTML = '<i class="fa-solid fa-circle text-[8px] animate-pulse"></i> 安全連線已建立 ✓';
                     
                     initAdminGate();
                 } catch (error) {
@@ -127,7 +127,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
             } else {
                 const appRef = doc(db, 'secretg_apps', appId, 'applications', adminId);
                 const appSnap = await getDoc(appRef);
-                if (!appSnap.exists()) throw new Error('查無此管理員帳號。請先在 Firestore 建立 admins/' + adminId + '，或在 applications/' + adminId + ' 授予管理員權限。');
+                if (!appSnap.exists()) throw new Error('查無此管理員帳號。請先透過其他管理員建立 admins/' + adminId + '，或在 applications/' + adminId + ' 授予管理員權限。');
                 data = appSnap.data();
                 source = 'applications';
             }
@@ -836,7 +836,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                             </label>
                             <label class="flex items-center gap-1.5 cursor-pointer">
                                 <input type="checkbox" onchange="toggleManualBadge('${appData.id}', 'isPioneer', this.checked)" ${appData.isPioneer ? 'checked' : ''} class="rounded border-slate-700 bg-slate-900 text-amber-500 focus:ring-amber-500">
-                                <span class="text-[11px] text-slate-300">創始元老 🛡️</span>
+                                <span class="text-[11px] text-slate-300">創始會員 🛡️</span>
                             </label>
                         </div>
                     </div>
@@ -1003,7 +1003,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                     });
                     await writeAdminLog('approve_spec', userId, { length: data.length, girth: data.girth });
                     showToast("Spec Elite 徽章核准完成！", "success");
-                    await sendEmailNotification(data, 'approved', "黃金 Spec 審核通過", "您的 SecretRoom 黃金 Spec Elite 勳章申請已正式核准，已即刻渲染在您的個人暱稱下方！", 'specApproved');
+                    await sendEmailNotification(data, 'approved', "黃金 Spec 審核通過", "您的 SecretRoom 黃金 Spec Elite 勳章申請已正式核准", 'specApproved');
                 }
             } catch (err) {
                 console.error("核發失敗:", err);
@@ -1029,7 +1029,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                     });
                     await writeAdminLog('reject_spec', userId, { reason: 'spec_rejected' });
                     showToast("Spec Elite 申請已被退回。", "info");
-                    await sendEmailNotification(data, 'rejected', "黃金 Spec 審核退回", "您申請的 SecretRoom 黃金 Spec Elite 勳章經管理員檢視照片與規格未通過核可。", 'specRejected');
+                    await sendEmailNotification(data, 'rejected', "黃金 Spec 審核退回", "您申請的 SecretRoom 黃金 Spec Elite 勳章經管理員檢視照片或其他因素未通過。", 'specRejected');
                 }
             } catch (err) {
                 console.error("拒絕出錯:", err);
@@ -1333,8 +1333,8 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                         avatarReviewedBy: currentAdminId
                     });
                     await writeAdminLog('approve_avatar', userId, {});
-                    showToast("頭像變更已核准啟用！", "success");
-                    await sendEmailNotification(data, 'approved', "頭像變更審核通過", "您的 SecretRoom 新頭像更換申請已通過管理員審核，已立刻套用！", 'avatarApproved');
+                    showToast("頭像變更已通過！", "success");
+                    await sendEmailNotification(data, 'approved', "頭像變更審核通過", "您的 SecretRoom 新頭像更換申請已通過管理員審核，已更新！", 'avatarApproved');
                 }
             } catch (err) {
                 console.error("核准頭像出錯:", err);
@@ -1422,7 +1422,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                 await deleteDoc(docRef);
                 await writeAdminLog('delete_account', userId, { reason, deletedPosts: deletePromises.length });
                 
-                showToast(`帳號 @${userId} 及其 ${deletePromises.length} 則分享貼文已安全且徹底永久銷毀`, "success");
+                showToast(`帳號 @${userId} 及其 ${deletePromises.length} 則分享貼文已永久刪除`, "success");
             } catch (err) {
                 console.error("刪除失敗:", err);
                 showToast("刪除失敗: " + err.message, "error");
