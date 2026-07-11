@@ -2,7 +2,8 @@
 (() => {
   if (window.__SR_PHASE2_ONBOARDING__) return;
   window.__SR_PHASE2_ONBOARDING__ = true;
-  const VERSION = '20260711-phase2-onboarding-v2';
+
+  const VERSION = '20260711-phase2-onboarding-telegram-v3';
   const KEY = 'sr_phase2_onboarding_dismissed';
   let queued = false;
   const qs = id => document.getElementById(id);
@@ -12,13 +13,16 @@
     const id = String(window.state?.applicationId || '');
     return posts.filter(post => String(post.userId) === id);
   };
+  const telegramBound = () => typeof window.SRTelegramBound === 'function'
+    ? window.SRTelegramBound(window.state?.userData || {})
+    : Boolean(window.state?.userData?.telegramInfo);
 
   function progress() {
     const user = window.state?.userData || {};
     const items = [
-      ['profile', '基本資料', !!user.nickname && !!user.email && Array.isArray(user.kinks) && user.kinks.length > 0],
-      ['avatar', '大頭照', !!user.avatar],
-      ['x', 'X 官方驗證', user.xInfo?.verificationStatus === 'oauth_verified'],
+      ['profile', '基本資料', Boolean(user.nickname && user.email && Array.isArray(user.kinks) && user.kinks.length)],
+      ['avatar', '大頭照', Boolean(user.avatar)],
+      ['telegram', 'Telegram 綁定', telegramBound()],
       ['post', '第一篇貼文', ownPosts().length > 0],
       ['notifications', '查看通知', localStorage.getItem('sr_phase2_notifications_seen') === '1'],
       ['safety', '安全設定', localStorage.getItem('sr_phase2_safety_seen') === '1']
@@ -36,10 +40,7 @@
 
   function action(name) {
     if (name === 'profile' || name === 'avatar') clickFirst(['aside-profile-trigger', 'mobile-tab-profile']);
-    if (name === 'x') {
-      if (typeof window.SRPhase3OpenXOAuth === 'function') window.SRPhase3OpenXOAuth();
-      else window.SRPhase2OpenXBinding?.();
-    }
+    if (name === 'telegram') window.SROpenTelegramBinding?.();
     if (name === 'post') clickFirst(['aside-btn-share', 'mobile-btn-share']);
     if (name === 'notifications') {
       localStorage.setItem('sr_phase2_notifications_seen', '1');
@@ -72,14 +73,14 @@
     const root = qs('dashboard-tab-content');
     if (!root || qs('sr-profile-completion')) return;
     const current = progress();
-    const verified = window.state?.userData?.xInfo?.verificationStatus === 'oauth_verified';
+    const bound = telegramBound();
     const card = document.createElement('section');
     card.id = 'sr-profile-completion';
     card.className = 'glass-panel crystal-border rounded-3xl p-5 border border-cyan-500/15 mb-4';
-    card.innerHTML = `<div class="flex items-center justify-between gap-4"><div><div class="text-xs text-cyan-300 font-black">資料完成度</div><div class="text-2xl text-white font-black mt-1">${current.percent}%</div></div><div class="flex gap-2"><button id="sr-profile-edit-shortcut" class="min-h-[44px] px-4 rounded-xl border border-amber-500/20 text-amber-300 text-xs font-black">編輯資料</button><button id="sr-profile-x-shortcut" class="min-h-[44px] px-4 rounded-xl bg-white text-black text-xs font-black">${verified ? '重新驗證 X' : '驗證 X'}</button></div></div><div class="h-2 rounded-full bg-slate-900 overflow-hidden mt-4"><span class="block h-full bg-gradient-to-r from-cyan-500 to-amber-400" style="width:${current.percent}%"></span></div><div class="flex flex-wrap gap-2 mt-3">${current.items.map(item => `<span class="px-2.5 py-1 rounded-full text-[11px] border ${item.done ? 'border-emerald-500/20 text-emerald-300' : 'border-slate-700 text-slate-500'}">${item.done ? '✓' : '○'} ${esc(item.label)}</span>`).join('')}</div>`;
+    card.innerHTML = `<div class="flex items-center justify-between gap-4"><div><div class="text-xs text-cyan-300 font-black">資料完成度</div><div class="text-2xl text-white font-black mt-1">${current.percent}%</div></div><div class="flex gap-2"><button id="sr-profile-edit-shortcut" class="min-h-[44px] px-4 rounded-xl border border-amber-500/20 text-amber-300 text-xs font-black">編輯資料</button><button id="sr-profile-telegram-shortcut" class="min-h-[44px] px-4 rounded-xl bg-[#229ED9] text-white text-xs font-black">${bound ? '開啟 Telegram' : '綁定 Telegram'}</button></div></div><div class="h-2 rounded-full bg-slate-900 overflow-hidden mt-4"><span class="block h-full bg-gradient-to-r from-cyan-500 to-amber-400" style="width:${current.percent}%"></span></div><div class="flex flex-wrap gap-2 mt-3">${current.items.map(item => `<span class="px-2.5 py-1 rounded-full text-[11px] border ${item.done ? 'border-emerald-500/20 text-emerald-300' : 'border-slate-700 text-slate-500'}">${item.done ? '✓' : '○'} ${esc(item.label)}</span>`).join('')}</div>`;
     root.insertBefore(card, root.firstElementChild);
     qs('sr-profile-edit-shortcut').onclick = () => window.showProfileEditModal?.();
-    qs('sr-profile-x-shortcut').onclick = () => action('x');
+    qs('sr-profile-telegram-shortcut').onclick = () => window.SROpenTelegramBinding?.();
   }
 
   function style() {
