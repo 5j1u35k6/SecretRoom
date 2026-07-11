@@ -3,7 +3,7 @@
   if (window.__SR_PHASE2_DIRECTORY_X__) return;
   window.__SR_PHASE2_DIRECTORY_X__ = true;
   const APP_ID = 'secretg-production-node-tw';
-  const VERSION = '20260711-phase2-directory-x-v1';
+  const VERSION = '20260711-phase2-directory-x-v2';
   const directory = new Map();
   let unsubscribe = null;
   let queued = false;
@@ -37,6 +37,9 @@
     const needle=term.toLocaleLowerCase('zh-TW');
     return [member.id,member.nickname,member.xInfo?.handle,...(member.kinks||[])].filter(Boolean).join(' ').toLocaleLowerCase('zh-TW').includes(needle);
   }
+  function memberRow(member,compact=false) {
+    return `<button type="button" data-sr-member-id="${esc(member.id)}" class="w-full ${compact?'min-h-[52px] p-2':'min-h-[64px] p-3'} flex items-center justify-between gap-3 bg-slate-900/60 border border-amber-500/10 rounded-2xl text-left"><span class="flex items-center gap-3 min-w-0"><img src="${esc(member.avatar||'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2')}" class="${compact?'w-8 h-8':'w-10 h-10'} rounded-full object-cover"><span class="min-w-0"><strong class="block text-sm text-slate-200 truncate">${esc(member.nickname)}</strong><span class="block text-xs text-slate-500 font-mono">@${esc(member.id)}</span>${member.xInfo?.handle?`<span class="block text-[11px] text-sky-300">X @${esc(member.xInfo.handle)}</span>`:''}</span></span><i class="fa-solid fa-chevron-right text-amber-400/70"></i></button>`;
+  }
   function renderSearch() {
     const input=qs('feed-search-input'), overlay=qs('search-results-overlay');
     if(!input||!overlay||overlay.classList.contains('hidden')) return;
@@ -45,11 +48,17 @@
     const rows=Array.from(directory.values()).filter(m=>matches(m,term)).slice(0,40);
     const tab=overlay.querySelector(`button[onclick*="setSearchTab('users')"]`);
     if(tab&&tab.textContent!==`帳號 (${rows.length})`) tab.textContent=`帳號 (${rows.length})`;
+    let preview=overlay.querySelector('#sr-account-match-preview');
+    if(rows.length){
+      if(!preview){preview=document.createElement('section');preview.id='sr-account-match-preview';preview.className='rounded-2xl border border-sky-500/15 bg-sky-500/5 p-3';const tabRow=tab?.parentElement;tabRow?.insertAdjacentElement('afterend',preview);}
+      const previewKey=`${term}:${rows.slice(0,3).map(r=>r.id).join('|')}`;
+      if(preview.dataset.key!==previewKey){preview.dataset.key=previewKey;preview.innerHTML=`<div class="flex items-center justify-between gap-3 mb-2"><strong class="text-xs text-sky-300">符合的帳號</strong><button type="button" id="sr-view-all-account-results" class="text-xs text-amber-300 font-black">查看全部 ${rows.length} 個</button></div><div class="space-y-2">${rows.slice(0,3).map(m=>memberRow(m,true)).join('')}</div>`;preview.querySelector('#sr-view-all-account-results').onclick=()=>window.setSearchTab?.('users');}
+    } else preview?.remove();
     if(window.state?.searchTab!=='users') return;
     const list=overlay.querySelector('.overflow-y-auto'); if(!list) return;
     const key=`${term}:${rows.map(r=>r.id).join('|')}`; if(list.dataset.srDirectoryKey===key) return;
     list.dataset.srDirectoryKey=key;
-    list.innerHTML=rows.length?rows.map(m=>`<button type="button" data-sr-member-id="${esc(m.id)}" class="w-full min-h-[64px] flex items-center justify-between gap-3 p-3 bg-slate-900/60 border border-amber-500/10 rounded-2xl text-left"><span class="flex items-center gap-3 min-w-0"><img src="${esc(m.avatar||'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2')}" class="w-10 h-10 rounded-full object-cover"><span class="min-w-0"><strong class="block text-sm text-slate-200 truncate">${esc(m.nickname)}</strong><span class="block text-xs text-slate-500 font-mono">@${esc(m.id)}</span>${m.xInfo?.handle?`<span class="block text-[11px] text-sky-300">X @${esc(m.xInfo.handle)}</span>`:''}</span></span><i class="fa-solid fa-chevron-right text-amber-400/70"></i></button>`).join(''):'<div class="py-8 text-center text-slate-500"><i class="fa-solid fa-user-magnifying-glass text-2xl text-amber-500/50"></i><strong class="block text-sm text-slate-300 mt-3">找不到符合的帳號</strong><span class="block text-xs mt-1">可搜尋帳號 ID、暱稱或 X 帳號。</span></div>';
+    list.innerHTML=rows.length?rows.map(m=>memberRow(m)).join(''):'<div class="py-8 text-center text-slate-500"><i class="fa-solid fa-user-magnifying-glass text-2xl text-amber-500/50"></i><strong class="block text-sm text-slate-300 mt-3">找不到符合的帳號</strong><span class="block text-xs mt-1">可搜尋帳號 ID、暱稱或 X 帳號。</span></div>';
   }
   window.SRPhase2OpenProfile=id=>{
     const member=directory.get(String(id));
