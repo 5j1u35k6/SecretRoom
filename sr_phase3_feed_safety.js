@@ -4,7 +4,7 @@
   window.__SR_PHASE3_FEED_SAFETY__ = true;
 
   const APP_ID = 'secretg-production-node-tw';
-  const VERSION = '20260711-phase3-feed-safety-v1';
+  const VERSION = '20260711-phase3-feed-safety-v2';
   let queued = false;
   let normalizedPosts = false;
 
@@ -12,6 +12,9 @@
   const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char]));
   const toast = (message, type = 'info') => window.showToast?.(message, type);
   const currentId = () => String(window.state?.applicationId || localStorage.getItem('sr_username') || '');
+  const telegramBound = user => typeof window.SRTelegramBound === 'function'
+    ? window.SRTelegramBound(user || window.state?.userData || {})
+    : Boolean((user || window.state?.userData || {}).telegramInfo);
 
   async function tools() {
     if (window.SRP?.tools) return window.SRP.tools();
@@ -206,7 +209,7 @@
     const ownPosts = fullPosts().filter(post => String(post.userId || '') === currentId());
     const steps = [];
     if (!user.avatar) steps.push(['profile', '補上大頭照']);
-    if (user.xInfo?.verificationStatus !== 'oauth_verified') steps.push(['x', '完成 X 官方驗證']);
+    if (!telegramBound(user)) steps.push(['telegram', '完成 Telegram 綁定']);
     if (!ownPosts.length) steps.push(['post', '發布第一篇貼文']);
     if (!user.isSpecElite && user.specEliteStatus !== 'pending') steps.push(['spec', '申請黃金 Spec']);
     const card = document.createElement('section');
@@ -217,7 +220,7 @@
     card.querySelectorAll('[data-sr-next]').forEach(button => button.onclick = () => {
       const action = button.dataset.srNext;
       if (action === 'profile') (qs('aside-profile-trigger') || qs('mobile-tab-profile'))?.click();
-      if (action === 'x') window.SRPhase3OpenXOAuth?.();
+      if (action === 'telegram') window.SROpenTelegramBinding?.();
       if (action === 'post') (qs('aside-btn-share') || qs('mobile-btn-share'))?.click();
       if (action === 'spec') window.showSpecApplyModal?.();
     });
