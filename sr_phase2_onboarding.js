@@ -5,7 +5,7 @@
   const VERSION='20260711-phase2-onboarding-v1',KEY='sr_phase2_onboarding_dismissed';
   let queued=false;
   const qs=id=>document.getElementById(id);
-  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const ownPosts=()=>{const posts=window.SRPhase2RawPosts?.()||window.state?.posts||[],id=String(window.state?.applicationId||'');return posts.filter(p=>String(p.userId)===id);};
   function progress(){const u=window.state?.userData||{};const items=[['profile','基本資料',!!u.nickname&&!!u.email&&Array.isArray(u.kinks)&&u.kinks.length>0],['avatar','大頭照',!!u.avatar],['x','X 帳號',!!u.xInfo?.handle],['post','第一篇貼文',ownPosts().length>0],['notifications','查看通知',localStorage.getItem('sr_phase2_notifications_seen')==='1'],['safety','安全設定',localStorage.getItem('sr_phase2_safety_seen')==='1']].map(([key,label,done])=>({key,label,done}));const done=items.filter(i=>i.done).length;return{items,done,percent:Math.round(done/items.length*100)};}
   function clickFirst(ids){for(const id of ids){const n=qs(id);if(n){n.click();return;}}}
