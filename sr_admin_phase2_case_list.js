@@ -8,7 +8,7 @@
   const qs=id=>document.getElementById(id),tx=v=>String(v||'').replace(/\s+/g,' ').trim(),toast=(m,t='info')=>window.showToast?.(m,t);
   async function tools(){const a=await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js'),fs=await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js'),app=a.getApps()[0];if(!app)throw Error('Firebase 尚未初始化');return{db:fs.getFirestore(app),fs};}
   const adminId=()=>window.SRAdminPhase2?.adminId||sessionStorage.getItem(SESSION)||qs('admin-login-id')?.value.trim()||'';
-  const can=a=>window.SRAdminPhase2?.can?window.SRAdminPhase2.can(a):true;
+  const can=a=>window.SRAdminPhase2?.can?window.SRAdminPhase2.can(a):a==='view';
   function caseId(card){const attrs=[...card.querySelectorAll('[onclick]')].map(n=>n.getAttribute('onclick')||'').join(' '),quoted=attrs.match(/\(['"]([^'"]+)['"]/),account=tx(card).match(/@([A-Za-z0-9_.-]+)/)?.[1],post=tx(card).match(/貼文 ID[:：]\s*([^\s·]+)/)?.[1];return quoted?.[1]||post||account||tx(card).slice(0,80);}
   function caseKey(card){return`${qs('filter-status')?.value||'all'}:${caseId(card)}`;}
   function hash(v){let h=5381;for(let i=0;i<v.length;i++)h=((h<<5)+h)^v.charCodeAt(i);return`case_${(h>>>0).toString(36)}`;}
