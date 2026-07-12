@@ -3,7 +3,7 @@
   if (window.__SR_UI_REGRESSION_FIXES__) return;
   window.__SR_UI_REGRESSION_FIXES__ = true;
 
-  const VERSION = '20260712-ui-regression-v1';
+  const VERSION = '20260712-ui-regression-v2';
   let queued = false;
   const qs = id => document.getElementById(id);
   const toast = (message, type = 'info') => window.showToast?.(message, type);
@@ -192,3 +192,5 @@
   new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true });
   apply();
 })();
+
+import('./sr_rank_formula_v2.js?v=20260712-v2').catch(error => console.error('位階公式模組載入失敗', error));
