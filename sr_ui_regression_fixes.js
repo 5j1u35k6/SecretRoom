@@ -1,12 +1,32 @@
-// SecretRoom UI regression fixes: scrolling, eligibility and sidebar alignment.
+// SecretRoom frontend UI runtime: readiness, scrolling, eligibility and sidebar alignment.
 (() => {
   if (window.__SR_UI_REGRESSION_FIXES__) return;
   window.__SR_UI_REGRESSION_FIXES__ = true;
 
-  const VERSION = '20260712-ui-regression-v3';
+  const VERSION = '20260712-ui-regression-v4';
   let queued = false;
   const qs = id => document.getElementById(id);
   const toast = (message, type = 'info') => window.showToast?.(message, type);
+
+  function installFirebaseReadinessGuard() {
+    const original = window.SRP?.tools;
+    if (!original || original.__srReadyWrapped) return;
+    const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+    const wrapped = async () => {
+      let lastError = null;
+      for (let attempt = 0; attempt < 60; attempt += 1) {
+        try { return await original(); }
+        catch (error) {
+          lastError = error;
+          if (!/Firebase 尚未初始化|no Firebase App/i.test(String(error?.message || error))) throw error;
+          await wait(100);
+        }
+      }
+      throw lastError || new Error('Firebase 初始化逾時');
+    };
+    wrapped.__srReadyWrapped = true;
+    window.SRP.tools = wrapped;
+  }
 
   function numberValue(value) {
     const parsed = Number.parseFloat(String(value ?? '').replace(',', '.'));
@@ -104,56 +124,19 @@
     const style = document.createElement('style');
     style.id = 'sr-ui-regression-style';
     style.textContent = `
-      #aside-tab-spec-vault,#aside-tab-badge-progress{
-        display:grid!important;
-        grid-template-columns:minmax(0,1fr) auto!important;
-        align-items:center!important;
-        column-gap:.5rem!important;
-        padding-left:.75rem!important;
-        padding-right:.75rem!important;
-      }
-      #aside-tab-spec-vault>.sr-sidebar-label-fixed,#aside-tab-badge-progress>.sr-sidebar-label-fixed{
-        display:flex!important;
-        align-items:center!important;
-        gap:.625rem!important;
-        min-width:0!important;
-        margin:0!important;
-        white-space:nowrap!important;
-        line-height:1.15!important;
-        order:initial!important;
-      }
+      #aside-tab-spec-vault,#aside-tab-badge-progress{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;column-gap:.5rem!important;padding-left:.75rem!important;padding-right:.75rem!important}
+      #aside-tab-spec-vault>.sr-sidebar-label-fixed,#aside-tab-badge-progress>.sr-sidebar-label-fixed{display:flex!important;align-items:center!important;gap:.625rem!important;min-width:0!important;margin:0!important;white-space:nowrap!important;line-height:1.15!important;order:initial!important}
       #aside-tab-spec-vault>.sr-sidebar-label-fixed{font-size:.82rem!important;letter-spacing:-.01em!important}
-      #aside-tab-spec-vault>.sr-sidebar-label-fixed i,#aside-tab-badge-progress>.sr-sidebar-label-fixed i{
-        width:1.2rem!important;
-        min-width:1.2rem!important;
-        text-align:center!important;
-      }
-      #aside-tab-spec-vault>.sr-sidebar-pill-fixed{
-        width:auto!important;
-        max-width:none!important;
-        min-height:2rem!important;
-        flex:none!important;
-        margin:0!important;
-        padding:.38rem .62rem!important;
-        white-space:nowrap!important;
-        line-height:1!important;
-        font-size:8.5px!important;
-        order:initial!important;
-      }
-      #aside-tab-badge-progress>.sr-sidebar-pill-fixed{
-        width:auto!important;
-        flex:none!important;
-        margin:0!important;
-        white-space:nowrap!important;
-        line-height:1!important;
-        order:initial!important;
-      }
+      #aside-tab-spec-vault>.sr-sidebar-label-fixed i,#aside-tab-badge-progress>.sr-sidebar-label-fixed i{width:1.2rem!important;min-width:1.2rem!important;text-align:center!important}
+      #aside-tab-spec-vault>.sr-sidebar-pill-fixed{width:auto!important;max-width:none!important;min-height:2rem!important;flex:none!important;margin:0!important;padding:.38rem .62rem!important;white-space:nowrap!important;line-height:1!important;font-size:8.5px!important;order:initial!important}
+      #aside-tab-badge-progress>.sr-sidebar-pill-fixed{width:auto!important;flex:none!important;margin:0!important;white-space:nowrap!important;line-height:1!important;order:initial!important}
     `;
     document.head.appendChild(style);
   }
 
   function apply() {
     queued = false;
+    installFirebaseReadinessGuard();
     installStyles();
     repairCompletionCard();
     repairSpecActions();
