@@ -3,7 +3,7 @@
   if (window.__SR_UI_REGRESSION_FIXES__) return;
   window.__SR_UI_REGRESSION_FIXES__ = true;
 
-  const VERSION = '20260712-ui-regression-v2';
+  const VERSION = '20260712-ui-regression-v3';
   let queued = false;
   const qs = id => document.getElementById(id);
   const toast = (message, type = 'info') => window.showToast?.(message, type);
@@ -193,4 +193,4 @@
   apply();
 })();
 
-import('./sr_rank_formula_v2.js?v=20260712-v2').catch(error => console.error('位階公式模組載入失敗', error));
+import('./sr_rank_policy.js?v=20260712-v1').catch(error => console.error('位階規則模組載入失敗', error));
