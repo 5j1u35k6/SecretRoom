@@ -3,7 +3,7 @@
   if (window.__SR_PHASE2_ONBOARDING__) return;
   window.__SR_PHASE2_ONBOARDING__ = true;
 
-  const VERSION = '20260711-phase2-onboarding-telegram-v3';
+  const VERSION = '20260712-phase2-onboarding-telegram-v4';
   const KEY = 'sr_phase2_onboarding_dismissed';
   let queued = false;
   const qs = id => document.getElementById(id);
@@ -54,11 +54,19 @@
   }
 
   function renderOnboarding() {
-    if (window.state?.currentTab !== 'feed' || localStorage.getItem(KEY) === '1') return;
+    const existing = qs('sr-phase2-onboarding');
+    if (window.state?.currentTab !== 'feed' || localStorage.getItem(KEY) === '1') {
+      existing?.remove();
+      return;
+    }
     const root = qs('dashboard-tab-content');
-    if (!root || qs('sr-phase2-onboarding')) return;
+    if (!root) return;
     const current = progress();
-    if (current.percent === 100) return;
+    if (current.percent >= 100) {
+      existing?.remove();
+      return;
+    }
+    if (existing) return;
     const card = document.createElement('section');
     card.id = 'sr-phase2-onboarding';
     card.className = 'glass-panel crystal-border rounded-3xl p-5 border border-cyan-500/15';
@@ -69,10 +77,19 @@
   }
 
   function renderProfile() {
-    if (window.state?.currentTab !== 'profile') return;
+    const existing = qs('sr-profile-completion');
+    if (window.state?.currentTab !== 'profile') {
+      existing?.remove();
+      return;
+    }
     const root = qs('dashboard-tab-content');
-    if (!root || qs('sr-profile-completion')) return;
+    if (!root) return;
     const current = progress();
+    if (current.percent >= 100) {
+      existing?.remove();
+      return;
+    }
+    if (existing) return;
     const bound = telegramBound();
     const card = document.createElement('section');
     card.id = 'sr-profile-completion';
