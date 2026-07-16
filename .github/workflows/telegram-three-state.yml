@@ -1,0 +1,44 @@
+name: Build Telegram three-state activation
+
+on:
+  push:
+    branches: [feature/telegram-three-state-activation]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message || github.event.pull_request.title, '[telegram-three-state-generated]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/telegram-three-state-activation
+          fetch-depth: 0
+      - run: python3 tools/telegram_three_state_patch.py
+      - run: node --check app.js
+      - run: |
+          grep -q 'Telegram 身分已驗證' app.js
+          grep -q 'Telegram 通知已啟用' app.js
+          grep -q '綁定 Telegram 並啟用通知' app.js
+          grep -q "telegramServiceState" app.js
+          ! grep -q 'clearStaleBindingFields' app.js
+      - run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          import re
+          s=re.sub(r'app\.js\?v=[^"\']+', 'app.js?v=20260716-telegram-three-state-v1', s, count=1)
+          p.write_text(s, encoding='utf-8')
+          PY
+      - run: |
+          rm -f tools/telegram_three_state_patch.py .github/workflows/telegram-three-state.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Add Telegram three-state activation [telegram-three-state-generated]"
+          git push origin HEAD:feature/telegram-three-state-activation
