@@ -7003,7 +7003,7 @@ schedule();
       grid.id = 'sr-profile-action-grid';
       actionHost.insertBefore(grid, edit);
     }
-    grid.className = 'grid grid-cols-2 gap-3 w-full mt-4';
+    grid.className = 'grid grid-cols-2 gap-3 w-full mt-4 col-span-2';
     grid.style.width = '100%';
     grid.style.maxWidth = 'none';
 
