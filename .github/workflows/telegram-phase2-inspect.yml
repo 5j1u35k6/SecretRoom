@@ -1,9 +1,8 @@
 name: Inspect Telegram Phase 2 integration points
 
 on:
-  pull_request:
-    branches: [main]
-    types: [opened, synchronize, reopened]
+  push:
+    branches: [feature/telegram-phase2-integration]
 
 permissions:
   contents: write
@@ -61,8 +60,7 @@ jobs:
               selected = []
               for name, start, end in functions(text):
                   body = text[start:end]
-                  if TERMS.search(body):
-                      selected.append((name, body))
+                  if TERMS.search(body): selected.append((name, body))
               out.append(f'Relevant functions: {len(selected)}\n')
               for name, body in selected:
                   body_lines = body.splitlines()
@@ -80,8 +78,7 @@ jobs:
                   if key in emitted: continue
                   emitted.add(key)
                   out.append(f'\n[{filename}:{start+1}-{end}]\n')
-                  for n in range(start, end):
-                      out.append(f'{n+1:05d}: {lines[n]}\n')
+                  for n in range(start, end): out.append(f'{n+1:05d}: {lines[n]}\n')
 
           Path('telegram/phase2-inspection.txt').write_text(''.join(out), encoding='utf-8')
           PY
