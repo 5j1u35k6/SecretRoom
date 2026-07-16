@@ -1,5 +1,6 @@
 from pathlib import Path
 
+# Phase 2.1 cache version ensures browsers fetch the repaired app runtime.
 path = Path('index.html')
 text = path.read_text(encoding='utf-8')
 old = 'app.js?v=20260716-telegram-phase2-v1'
