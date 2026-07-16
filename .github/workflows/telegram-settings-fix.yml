@@ -3,13 +3,15 @@ name: Refresh Telegram settings frontend cache
 on:
   push:
     branches: [fix/telegram-settings-latency]
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: write
 
 jobs:
   refresh:
-    if: ${{ !contains(github.event.head_commit.message, '[telegram-cache-generated]') }}
+    if: ${{ !contains(github.event.pull_request.title || github.event.head_commit.message, '[telegram-cache-generated]') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
