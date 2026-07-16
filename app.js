@@ -24,7 +24,7 @@
     register(task) { if (typeof task === 'function') tasks.add(task); schedule(); return () => tasks.delete(task); },
     schedule
   });
-  window.SRRuntime?.register(schedule);
+  new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true });
   document.addEventListener('DOMContentLoaded', schedule, { once: true });
 
   document.addEventListener('click', event => {
