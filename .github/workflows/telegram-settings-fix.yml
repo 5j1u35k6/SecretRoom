@@ -1,0 +1,33 @@
+name: Repair Telegram settings responsiveness
+
+on:
+  push:
+    branches: [fix/telegram-settings-latency]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message || github.event.pull_request.title, '[telegram-settings-generated]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/telegram-settings-latency
+          fetch-depth: 0
+      - run: python3 tools/telegram_phase2_1_frontend_patch.py
+      - run: node --check app.js
+      - run: |
+          grep -q 'data-sr-tg-open="1"' app.js
+          grep -q '正在載入 Telegram 設定' app.js
+          grep -q 'Telegram 設定讀取逾時' app.js
+      - run: |
+          rm -f noop.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Fix Telegram settings responsiveness [telegram-settings-generated]"
+          git push origin HEAD:fix/telegram-settings-latency
