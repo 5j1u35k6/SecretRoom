@@ -17,78 +17,76 @@ jobs:
           ref: feature/telegram-phase2-integration
           fetch-depth: 0
 
-      - name: Build targeted code report
+      - name: Build focused reports
         shell: bash
         run: |
-          mkdir -p telegram
+          mkdir -p telegram/inspect
           python3 <<'PY'
           from pathlib import Path
           import re
 
-          TERMS = re.compile(r'emailjs|telegram|approve|reject|avatar|spec|password|forgot|reset|notification|applications|account.?status|suspend|delete', re.I)
-
-          def functions(text):
-              starts = []
-              pattern = re.compile(r'(?m)^\s*(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\([^)]*\)\s*\{')
+          def extract_functions(text):
+              found=[]
+              pattern=re.compile(r'(?m)^\s*(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\([^)]*\)\s*\{')
               for m in pattern.finditer(text):
-                  depth = 0
-                  quote = None
-                  esc = False
-                  i = m.end() - 1
+                  depth=0; quote=None; esc=False; i=m.end()-1
                   while i < len(text):
-                      c = text[i]
+                      c=text[i]
                       if quote:
-                          if esc: esc = False
-                          elif c == '\\': esc = True
-                          elif c == quote: quote = None
+                          if esc: esc=False
+                          elif c=='\\': esc=True
+                          elif c==quote: quote=None
                       else:
-                          if c in "'\"`": quote = c
-                          elif c == '{': depth += 1
-                          elif c == '}':
-                              depth -= 1
-                              if depth == 0:
-                                  starts.append((m.group(1), m.start(), i + 1))
+                          if c in "'\"`": quote=c
+                          elif c=='{': depth+=1
+                          elif c=='}':
+                              depth-=1
+                              if depth==0:
+                                  found.append((m.group(1), text[m.start():i+1]))
                                   break
-                      i += 1
-              return starts
+                      i+=1
+              return found
 
-          out = []
-          for filename in ['app.js', 'admin.js']:
-              text = Path(filename).read_text(encoding='utf-8')
-              lines = text.splitlines()
-              out.append(f'\n===== {filename} =====\n')
-              selected = []
-              for name, start, end in functions(text):
-                  body = text[start:end]
-                  if TERMS.search(body): selected.append((name, body))
-              out.append(f'Relevant functions: {len(selected)}\n')
-              for name, body in selected:
-                  body_lines = body.splitlines()
-                  if len(body_lines) > 260:
-                      body_lines = body_lines[:180] + ['// ... truncated middle ...'] + body_lines[-60:]
-                  out.append(f'\n--- FUNCTION {name} ({len(body.splitlines())} lines) ---\n')
-                  out.append('\n'.join(body_lines) + '\n')
+          def report_functions(filename, outname, pattern):
+              text=Path(filename).read_text(encoding='utf-8')
+              rx=re.compile(pattern,re.I)
+              out=[]
+              for name,body in extract_functions(text):
+                  if rx.search(name) or rx.search(body):
+                      lines=body.splitlines()
+                      if len(lines)>320: lines=lines[:220]+['// ... middle omitted ...']+lines[-80:]
+                      out.append(f'\n===== {filename} :: {name} ({len(body.splitlines())} lines) =====\n')
+                      out.append('\n'.join(lines)+'\n')
+              Path(outname).write_text(''.join(out),encoding='utf-8')
 
-              out.append('\n--- RAW KEYWORD CONTEXTS ---\n')
-              hit_lines = [i for i, line in enumerate(lines) if TERMS.search(line)]
-              emitted = set()
-              for i in hit_lines:
-                  start = max(0, i - 8); end = min(len(lines), i + 9)
-                  key = (start, end)
-                  if key in emitted: continue
-                  emitted.add(key)
-                  out.append(f'\n[{filename}:{start+1}-{end}]\n')
-                  for n in range(start, end): out.append(f'{n+1:05d}: {lines[n]}\n')
+          def report_context(filename,outname,terms,radius=18):
+              lines=Path(filename).read_text(encoding='utf-8').splitlines()
+              rx=re.compile(terms,re.I)
+              hits=[i for i,l in enumerate(lines) if rx.search(l)]
+              ranges=[]
+              for i in hits:
+                  a=max(0,i-radius); b=min(len(lines),i+radius+1)
+                  if ranges and a<=ranges[-1][1]+4: ranges[-1]=(ranges[-1][0],max(ranges[-1][1],b))
+                  else: ranges.append((a,b))
+              out=[]
+              for a,b in ranges:
+                  out.append(f'\n===== {filename}:{a+1}-{b} =====\n')
+                  out.extend(f'{n+1:05d}: {lines[n]}\n' for n in range(a,b))
+              Path(outname).write_text(''.join(out),encoding='utf-8')
 
-          Path('telegram/phase2-inspection.txt').write_text(''.join(out), encoding='utf-8')
+          report_functions('app.js','telegram/inspect/app-member-telegram.txt',r'telegram|member|profile|account|settings|notification|password|avatar|spec')
+          report_context('app.js','telegram/inspect/app-telegram-context.txt',r'telegram|emailjs|passwordReset|forgot|avatarStatus|specStatus',22)
+          report_functions('admin.js','telegram/inspect/admin-email-actions.txt',r'emailjs|approve|reject|avatar|spec|password|reset|suspend|delete|status|notification')
+          report_context('admin.js','telegram/inspect/admin-email-context.txt',r'emailjs\.send|approve|reject|avatarStatus|specStatus|password|reset|suspend|telegram',24)
+          report_functions('admin.js','telegram/inspect/admin-rendering.txt',r'render|dashboard|notification|history|log|retry|outbox')
           PY
 
-      - name: Commit report
+      - name: Commit reports
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add telegram/phase2-inspection.txt
+          git add telegram/inspect
           if git diff --cached --quiet; then exit 0; fi
-          git commit -m "Add Telegram Phase 2 integration inspection [generated]"
+          git commit -m "Add focused Telegram Phase 2 inspection reports [generated]"
           git push origin HEAD:feature/telegram-phase2-integration
