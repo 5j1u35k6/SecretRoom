@@ -1,0 +1,40 @@
+name: Finalize profile grid width
+
+on:
+  push:
+    branches: [fix/profile-telegram-layout-v2]
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    if: ${{ !contains(github.event.head_commit.message, '[profile-grid-width-generated]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/profile-telegram-layout-v2
+          fetch-depth: 0
+      - shell: bash
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          path = Path('app.js')
+          text = path.read_text(encoding='utf-8')
+          old = "grid.className = 'grid grid-cols-2 gap-3 w-full mt-4';"
+          new = "grid.className = 'grid grid-cols-2 gap-3 w-full mt-4 col-span-2';"
+          if old not in text:
+              raise SystemExit('Profile grid class was not found')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+          node --check app.js
+          grep -q "grid grid-cols-2 gap-3 w-full mt-4 col-span-2" app.js
+      - shell: bash
+        run: |
+          rm -f .github/workflows/finalize-profile-grid-width.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Restore full-width profile action grid [profile-grid-width-generated]"
+          git push origin HEAD:fix/profile-telegram-layout-v2
