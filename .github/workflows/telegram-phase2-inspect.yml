@@ -27,9 +27,15 @@ jobs:
 
           def extract_functions(text):
               found=[]
-              pattern=re.compile(r'(?m)^\s*(?:window\.)?([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?function\s*\([^)]*\)\s*\{|(?m)^\s*(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\([^)]*\)\s*\{')
-              for m in pattern.finditer(text):
-                  name=m.group(1) or m.group(2)
+              patterns=[
+                  re.compile(r'(?m)^\s*window\.([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?function\s*\([^)]*\)\s*\{'),
+                  re.compile(r'(?m)^\s*(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\([^)]*\)\s*\{')
+              ]
+              matches=[]
+              for pattern in patterns:
+                  matches.extend((m.start(),m) for m in pattern.finditer(text))
+              for _,m in sorted(matches,key=lambda item:item[0]):
+                  name=m.group(1)
                   depth=0; quote=None; esc=False; i=m.end()-1
                   while i < len(text):
                       c=text[i]
@@ -50,23 +56,16 @@ jobs:
           text=Path('admin.js').read_text(encoding='utf-8')
           funcs=extract_functions(text)
           name_rx=re.compile(r'(status|approve|reject|avatar|spec|password|reset|account|email|notification|retry|delete|suspend)',re.I)
-          names=[name for name,_ in funcs if name_rx.search(name)]
-          Path('telegram/inspect/admin-action-names.txt').write_text('\n'.join(names),encoding='utf-8')
+          Path('telegram/inspect/admin-action-names.txt').write_text('\n'.join(name for name,_ in funcs if name_rx.search(name)),encoding='utf-8')
           body_rx=re.compile(r'^(updateStatus|updateStatusWithReason|approveAvatarChange|rejectAvatarChange|approveSpecElite|rejectSpecElite|retryEmailFailure|markEmailFailureHandled|processPassword|approve.*Password|reject.*Password|approve.*Account|reject.*Account|executeDelete|sendEmailNotification|sendRecoveryMail)$',re.I)
-          out=[]
-          for name,body in funcs:
-              if body_rx.search(name): out.append(f'\n===== {name} =====\n{body}\n')
-          Path('telegram/inspect/admin-target-actions.txt').write_text(''.join(out),encoding='utf-8')
+          Path('telegram/inspect/admin-target-actions.txt').write_text(''.join(f'\n===== {name} =====\n{body}\n' for name,body in funcs if body_rx.search(name)),encoding='utf-8')
 
           app=Path('app.js').read_text(encoding='utf-8')
           app_funcs=extract_functions(app)
           app_name_rx=re.compile(r'(telegram|profile|dashboard|account|password|notification|spec|avatar)',re.I)
           Path('telegram/inspect/app-action-names.txt').write_text('\n'.join(name for name,_ in app_funcs if app_name_rx.search(name)),encoding='utf-8')
           app_body_rx=re.compile(r'^(renderTelegramBind|renderDashboard|patchProfile|sendMail|createUserNotification|navigate|checkExistingApplication)$',re.I)
-          out=[]
-          for name,body in app_funcs:
-              if app_body_rx.search(name): out.append(f'\n===== {name} =====\n{body}\n')
-          Path('telegram/inspect/app-target-actions.txt').write_text(''.join(out),encoding='utf-8')
+          Path('telegram/inspect/app-target-actions.txt').write_text(''.join(f'\n===== {name} =====\n{body}\n' for name,body in app_funcs if app_body_rx.search(name)),encoding='utf-8')
           PY
 
       - name: Commit reports
