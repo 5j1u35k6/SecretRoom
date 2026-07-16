@@ -6413,8 +6413,8 @@ schedule();
     return posts.filter(post => String(post.userId) === id);
   };
   const telegramBound = () => typeof window.SRTelegramBound === 'function'
-    ? window.SRTelegramBound(window.state?.userData || {})
-    : Boolean(window.state?.userData?.telegramInfo);
+    ? Boolean(window.SRTelegramBound())
+    : false;
 
   function progress() {
     const user = window.state?.userData || {};
@@ -6425,6 +6425,16 @@ schedule();
       ['post', '第一篇貼文', ownPosts().length > 0],
       ['notifications', '查看通知', localStorage.getItem('sr_phase2_notifications_seen') === '1'],
       ['safety', '安全設定', localStorage.getItem('sr_phase2_safety_seen') === '1']
+    ].map(([key, label, done]) => ({ key, label, done }));
+    const done = items.filter(item => item.done).length;
+    return { items, done, percent: Math.round(done / items.length * 100) };
+  }
+
+  function profileProgress() {
+    const user = window.state?.userData || {};
+    const items = [
+      ['profile', '基本資料', Boolean(user.nickname && user.email && Array.isArray(user.kinks) && user.kinks.length)],
+      ['avatar', '大頭照', Boolean(user.avatar)]
     ].map(([key, label, done]) => ({ key, label, done }));
     const done = items.filter(item => item.done).length;
     return { items, done, percent: Math.round(done / items.length * 100) };
@@ -6483,7 +6493,7 @@ schedule();
     }
     const root = qs('dashboard-tab-content');
     if (!root) return;
-    const current = progress();
+    const current = profileProgress();
     if (current.percent >= 100) {
       existing?.remove();
       return;
@@ -6562,7 +6572,22 @@ schedule();
   const accountId = () => String(window.state?.applicationId || localStorage.getItem('sr_username') || '').trim();
   const isMemberArea = () => ['pending', 'dashboard', 'telegram-bind'].includes(String(window.state?.currentView || ''));
   const isDashboard = () => String(window.state?.currentView || '') === 'dashboard';
-  const isBoundData = data => Boolean(data?.telegramBound === true || data?.telegramInfo?.id || data?.telegramUserId);
+  const hasActiveBinding = snapshot => {
+    const binding = snapshot?.binding;
+    return Boolean(
+      binding &&
+      String(binding.status || '').toLowerCase() === 'active' &&
+      String(binding.telegramUserId || '').trim() &&
+      String(binding.telegramChatId || '').trim()
+    );
+  };
+  const hasLegacyBindingFields = member => Boolean(
+    member?.telegramBound === true ||
+    member?.telegramInfo ||
+    member?.telegramUserId ||
+    member?.telegramChatId ||
+    member?.telegramUsername
+  );
   const toast = (message, type = 'info') => window.showToast?.(message, type);
 
   async function tools() {
@@ -6598,6 +6623,29 @@ schedule();
     })[key] || key;
   }
 
+  async function clearStaleBindingFields(snapshot, db, fs) {
+    if (!snapshot || hasActiveBinding(snapshot) || !hasLegacyBindingFields(snapshot.member)) return snapshot;
+    const cleared = {
+      telegramBound: false,
+      telegramInfo: null,
+      telegramUserId: null,
+      telegramChatId: null,
+      telegramUsername: null,
+      telegramLinkStatus: 'unbound',
+      telegramLegacyClearedAtMs: Date.now()
+    };
+    try {
+      await fs.setDoc(fs.doc(db, 'secretg_apps', APP_ID, 'applications', snapshot.id), cleared, { merge: true });
+    } catch (error) {
+      console.warn('無法清除過期 Telegram 相容欄位，但介面仍以正式 binding 為準:', error);
+    }
+    snapshot.member = { ...(snapshot.member || {}), ...cleared };
+    if (String(window.state?.applicationId || '') === snapshot.id) {
+      window.state.userData = { ...(window.state?.userData || {}), ...cleared };
+    }
+    return snapshot;
+  }
+
   async function loadSnapshot(force = false) {
     const id = accountId();
     if (!id) return null;
@@ -6611,13 +6659,15 @@ schedule();
     const member = memberSnap.exists() ? memberSnap.data() : {};
     const binding = bindingSnap.exists() ? bindingSnap.data() : null;
     const preferences = { ...DEFAULT_PREFERENCES, ...(preferenceSnap.exists() ? preferenceSnap.data() : {}) };
-    lastSnapshot = { id, member, binding, preferences };
+    const snapshot = { id, member, binding, preferences };
+    await clearStaleBindingFields(snapshot, db, fs);
+    lastSnapshot = snapshot;
     lastSnapshotAt = Date.now();
     return lastSnapshot;
   }
 
   async function reconcileLegacyFields(snapshot) {
-    if (!snapshot?.binding || snapshot.binding.status !== 'active') return;
+    if (!hasActiveBinding(snapshot)) return;
     const member = snapshot.member || {};
     if (member.telegramInfo?.id && member.telegramBound === true) return;
     const { db, fs } = await tools();
@@ -6708,7 +6758,7 @@ schedule();
       attempts += 1;
       try {
         const snapshot = await loadSnapshot(true);
-        if (snapshot?.binding?.status === 'active') {
+        if (hasActiveBinding(snapshot)) {
           clearInterval(pollingTimer);
           pollingTimer = null;
           await reconcileLegacyFields(snapshot);
@@ -6723,7 +6773,13 @@ schedule();
 
   async function unbindTelegram() {
     const snapshot = await loadSnapshot(true);
-    if (!snapshot?.binding || snapshot.binding.status !== 'active') return toast('目前沒有有效的 Telegram 綁定', 'info');
+    if (!hasActiveBinding(snapshot)) {
+      lastSnapshot = null;
+      const refreshed = await loadSnapshot(true);
+      renderModal(refreshed);
+      ensureCard(refreshed);
+      return toast('目前沒有有效的 Telegram 綁定', 'info');
+    }
     if (!window.confirm('確定解除 Telegram 綁定？解除後將停止接收 Telegram 通知。')) return;
     const { db, fs } = await tools();
     const now = Date.now();
@@ -6798,7 +6854,7 @@ schedule();
       modal.className = 'fixed inset-0 z-[260] hidden items-center justify-center bg-black/90 backdrop-blur-md p-4';
       document.body.appendChild(modal);
     }
-    const bound = snapshot?.binding?.status === 'active' || isBoundData(snapshot?.member);
+    const bound = hasActiveBinding(snapshot);
     const preferences = { ...DEFAULT_PREFERENCES, ...(snapshot?.preferences || {}) };
     const toggles = Object.keys(DEFAULT_PREFERENCES).filter(key => !['securityNotifications', 'digestMode'].includes(key)).map(key => `
       <label class="sr-tg-pref-row">
@@ -6861,6 +6917,26 @@ schedule();
     modal.onclick = event => { if (event.target === modal) close(); };
   }
 
+  const TELEGRAM_INTENT_KEY = 'sr_telegram_settings_intent';
+
+  function captureTelegramIntent() {
+    try {
+      const url = new URL(location.href);
+      const intent = String(url.searchParams.get('telegram') || '').toLowerCase();
+      if (!['settings', 'bind'].includes(intent)) return;
+      sessionStorage.setItem(TELEGRAM_INTENT_KEY, intent);
+      url.searchParams.delete('telegram');
+      history.replaceState(null, '', url.pathname + (url.search ? url.search : '') + url.hash);
+    } catch (_) {}
+  }
+
+  function consumeTelegramIntent() {
+    const intent = sessionStorage.getItem(TELEGRAM_INTENT_KEY);
+    if (!intent || !accountId() || !isMemberArea()) return;
+    sessionStorage.removeItem(TELEGRAM_INTENT_KEY);
+    setTimeout(() => openModal(), 80);
+  }
+
   async function openModal() {
     const requestId = ++modalRequestId;
     showModalState('帳號綁定與通知', '正在載入 Telegram 設定…');
@@ -6907,7 +6983,7 @@ schedule();
       card.className = 'sr-tg-member-card';
       host.prepend(card);
     }
-    const bound = snapshot?.binding?.status === 'active' || isBoundData(snapshot?.member || window.state?.userData);
+    const bound = hasActiveBinding(snapshot);
     const signature = `${id}|${view}|${bound ? 'bound' : 'unbound'}`;
     if (card.dataset.srTgSignature === signature) return;
     card.dataset.srTgSignature = signature;
@@ -6930,10 +7006,11 @@ schedule();
     patchLegacyBindView();
     ensureCard();
     if (!accountId() || !isMemberArea()) return;
+    consumeTelegramIntent();
     if (!lastSnapshot || Date.now() - lastSnapshotAt > REFRESH_MS) {
       try {
         const snapshot = await loadSnapshot();
-        if (snapshot?.binding?.status === 'active') await reconcileLegacyFields(snapshot);
+        if (hasActiveBinding(snapshot)) await reconcileLegacyFields(snapshot);
         ensureCard(snapshot);
         if (window.state?.currentView === 'telegram-bind' && snapshot?.binding?.status === 'active') {
           setTimeout(() => location.reload(), 250);
@@ -6953,7 +7030,10 @@ schedule();
     openModal();
   }, true);
 
-  window.SRTelegramPhase2 = Object.freeze({ open: openModal, createLink: generateBindingLink, unbind: unbindTelegram, refresh: () => loadSnapshot(true), queueSecurityNotification });
+  window.SRTelegramBound = () => hasActiveBinding(lastSnapshot);
+  window.SROpenTelegramBinding = openModal;
+  window.SRTelegramPhase2 = Object.freeze({ open: openModal, createLink: generateBindingLink, unbind: unbindTelegram, refresh: () => loadSnapshot(true), queueSecurityNotification, isBound: () => hasActiveBinding(lastSnapshot) });
+  captureTelegramIntent();
   window.SRRuntime?.register(apply);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { lastSnapshotAt = 0; window.SRRuntime?.schedule?.(); } });
   apply();
