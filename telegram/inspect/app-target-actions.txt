@@ -1,0 +1,508 @@
+
+===== createUserNotification =====
+
+        async function createUserNotification(payload) {
+            if (!db || !window.state.applicationId) return;
+            try {
+                const notifRef = doc(collection(db, 'secretg_apps', appId, 'notifications'));
+                await setDoc(notifRef, { target: 'user', recipientId: window.state.applicationId, createdAt: serverTimestamp(), createdAtMs: Date.now(), ...payload });
+            } catch (err) {
+                console.warn('通知寫入失敗:', err);
+            }
+        }
+
+===== checkExistingApplication =====
+  
+        async function checkExistingApplication() {
+            if(!db) { hideLoading(); navigate('landing'); return; }
+            try {
+                const cachedUser = localStorage.getItem('sr_username');
+                if (cachedUser) {
+                    const appRef = doc(db, 'secretg_apps', appId, 'applications', cachedUser);
+                    const docSnap = await getDoc(appRef);
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        window.state.userData = data;
+                        window.state.applicationId = cachedUser;
+                        
+                        if (data.status === 'pending') navigate('pending');
+                        else if (data.status === 'rejected') navigate('rejected');
+                        else if (data.status === 'approved' || data.status === 'active') {
+                            if (!data.telegramInfo) navigate('telegram-bind');
+                            else navigate('dashboard');
+                        }
+                        hideLoading();
+                        return;
+                    }
+                }
+                hideLoading();
+                navigate('landing');
+            } catch (e) {
+                console.error(e);
+                hideLoading();
+                navigate('landing');
+            }
+        }
+
+===== navigate =====
+  
+        function navigate(viewName) {
+            window.state.currentView = viewName;
+            
+            if (viewName !== 'dashboard') {
+                if (window.state.unsubscribeListener) {
+                    window.state.unsubscribeListener();
+                    window.state.unsubscribeListener = null;
+                }
+                if (window.state.unsubscribeUsersListener) {
+                    window.state.unsubscribeUsersListener();
+                    window.state.unsubscribeUsersListener = null;
+                }
+                if (window.state.unsubscribeVisitorsListener) {
+                    window.state.unsubscribeVisitorsListener();
+                    window.state.unsubscribeVisitorsListener = null;
+                }
+                if (window.state.unsubscribeNotificationsListener) {
+                    window.state.unsubscribeNotificationsListener();
+                    window.state.unsubscribeNotificationsListener = null;
+                }
+            }
+  
+            if (window.syncBGM) {
+                window.syncBGM();
+                if (localStorage.getItem('sr_bgm_enabled') !== 'false' && window.luxuryBgm && window.luxuryBgm.isPlaying) {
+                    const wantsTrack = (viewName === 'dashboard') ? 'lounge' : 'mysterious';
+                    window.luxuryBgm.start(wantsTrack);
+                }
+            }
+
+            renderView();
+        }
+
+===== renderTelegramBind =====
+
+        function renderTelegramBind(container) {
+            container.innerHTML = `
+                <div class="flex flex-col items-center justify-center min-h-[100dvh] w-full px-6 bg-transparent">
+                    
+                    <div class="w-[92vw] max-w-md glass-panel rounded-3xl p-8 relative text-center space-y-6 crystal-border">
+                        
+                        <button id="btn-bind-cancel" class="absolute top-5 left-5 text-slate-400 hover:text-white transition text-xs font-semibold flex items-center gap-1 hover-breath click-press">
+                            <i class="fa-solid fa-arrow-left text-amber-500"></i> 返回首頁
+                        </button>
+
+                        <div class="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center text-blue-400 text-3xl mx-auto border border-blue-500/20 animate-pulse mt-4">
+                            <i class="fa-brands fa-telegram"></i>
+                        </div>
+                        <div class="space-y-2.5">
+                            
+                            <h2 class="text-xl font-bold text-white font-luxury">Telegram Binding</h2>
+                            <p class="text-sm text-slate-300 leading-relaxed px-4">
+                                為開啟高級警報防護與即時密語傳輸，請在下方透過 Telegram 官方進行安全登入綁定。
+                            </p>
+                        </div>
+                        
+                        <div class="p-6 bg-slate-900/40 border border-amber-500/10 rounded-2xl flex flex-col items-center justify-center space-y-4">
+                            <p class="text-xs text-slate-400 leading-relaxed text-center">請點擊下方按鈕以安全登入並關聯您的 Telegram 帳號：</p>
+                            <div id="telegram-widget-anchor" class="min-h-[44px] flex items-center justify-center transition duration-300">
+                                <span class="text-xs text-amber-500/50 flex items-center gap-1.5 animate-pulse">
+                                    <i class="fa-solid fa-circle-notch text-amber-500 animate-spin"></i> 正在加載官方驗證入口...
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('btn-bind-cancel').onclick = () => {
+                localStorage.removeItem('sr_username');
+                window.state.userData = {};
+                window.state.applicationId = null;
+                navigate('landing');
+            };
+
+            setTimeout(() => {
+                const anchor = document.getElementById('telegram-widget-anchor');
+                if (anchor) {
+                    anchor.innerHTML = ''; 
+                    const script = document.createElement('script');
+                    script.async = true;
+                    script.src = "https://telegram.org/js/telegram-widget.js?22";
+                    script.setAttribute('data-telegram-login', telegramBotName);
+                    script.setAttribute('data-size', 'large');
+                    script.setAttribute('data-radius', '12');
+                    script.setAttribute('data-userpic', 'true');
+                    script.setAttribute('data-onauth', 'onTelegramAuth(user)');
+                    script.setAttribute('data-request-access', 'write');
+                    anchor.appendChild(script);
+                }
+            }, 300);
+
+            window.onTelegramAuth = async function(user) {
+                if (!user) {
+                    showToast('Telegram 授權驗證失敗，請重試！', 'error');
+                    return;
+                }
+                showLoading();
+                try {
+                    if (db) {
+                        const appsRef = collection(db, 'secretg_apps', appId, 'applications');
+                        const querySnapshot = await getDocs(appsRef);
+                        
+                        let isAlreadyBound = false;
+                        let boundUserNickname = '';
+                        
+                        querySnapshot.forEach((docSnap) => {
+                            const data = docSnap.data();
+                            if (docSnap.id !== window.state.applicationId && data.telegramInfo && String(data.telegramInfo.id) === String(user.id)) {
+                                isAlreadyBound = true;
+                                boundUserNickname = data.nickname || docSnap.id;
+                            }
+                        });
+
+                        if (isAlreadyBound) {
+                            showToast(`此 Telegram 帳號已被使用者 @${boundUserNickname} 綁定，無法重複綁定！`, 'error');
+                            hideLoading();
+                            return;
+                        }
+
+                        const appRef = doc(db, 'secretg_apps', appId, 'applications', window.state.applicationId);
+                        const telegramPayload = {
+                            id: user.id,
+                            first_name: user.first_name || '',
+                            last_name: user.last_name || '',
+                            username: user.username || '',
+                            photo_url: user.photo_url || '',
+                            auth_date: user.auth_date || 0,
+                            hash: user.hash || ''
+                        };
+
+                        await updateDoc(appRef, {
+                            telegramInfo: telegramPayload
+                        });
+
+                        window.state.userData.telegramInfo = telegramPayload;
+                        showToast('Telegram 官方授權與防護網已安全啟用 ✓', 'success');
+                        navigate('dashboard');
+                    }
+                } catch (err) {
+                    console.error("更新 Telegram 綁定失敗:", err);
+                    showToast('綁定資料傳輸失敗：' + err.message, 'error');
+                } finally {
+                    hideLoading();
+                }
+            };
+        }
+
+===== renderDashboard =====
+
+        function renderDashboard(container) {
+            container.innerHTML = `
+                
+                <div class="sr-dashboard-shell w-full h-[100dvh] md:h-screen flex flex-row overflow-hidden relative bg-transparent ambient-spotlight">
+
+                    <aside class="sr-dashboard-left flex flex-col justify-between w-64 border-r border-amber-500/15 glass-panel p-5 shrink-0 select-none rounded-r-3xl my-3 ml-3">
+                        <div class="space-y-8">
+                            <div class="flex items-center gap-3 hover-breath cursor-pointer" onclick="backToFeed()">
+                                <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-10 h-10 rounded-full border border-amber-500/30 object-cover animate-gentle-logo shadow-[0_0_15px_rgba(223,183,108,0.15)]">
+                                <div>
+                                    <h2 class="text-lg font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-amber-400 tracking-widest italic font-luxury">SecretRoom</h2>
+                                    
+                                    <span class="text-[10px] text-amber-500/60 font-bold tracking-[0.2em] block font-luxury">Private Club</span>
+                                </div>
+                            </div>
+  
+                            <nav class="space-y-2.5">
+                                <button id="aside-tab-feed" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 text-sm transition-all duration-300 font-bold hover-breath click-press ${window.state.currentTab === 'feed' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500 shadow-[0_0_20px_rgba(223,183,108,0.1)]' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
+                                    <i class="fa-solid fa-house-chimney text-amber-500/80"></i> 首頁
+                                </button>
+                                <button id="aside-tab-ranking" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center gap-3 text-sm transition-all duration-300 font-bold hover-breath click-press ${window.state.currentTab === 'rank' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500 shadow-[0_0_20px_rgba(223,183,108,0.1)]' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
+                                    <i class="fa-solid fa-ranking-star text-amber-500/80"></i> 位階
+                                </button>
+                                <button id="aside-tab-notifications" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center justify-between gap-3 text-sm transition-all duration-300 font-bold hover-breath click-press ${window.state.currentTab === 'notifications' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500 shadow-[0_0_20px_rgba(223,183,108,0.1)]' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
+                                    <span class="flex items-center gap-3"><i class="fa-solid fa-bell text-amber-500/80"></i> 通知</span>
+                                    <span id="aside-notification-count" class="hidden min-w-[1.25rem] h-5 px-1.5 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center shadow-[0_0_12px_rgba(239,68,68,0.5)]"></span>
+                                </button>
+                                <button id="aside-tab-spec-vault" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center justify-between gap-3 text-sm transition-all duration-300 font-bold hover-breath click-press ${window.state.currentTab === 'spec-vault' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500 shadow-[0_0_20px_rgba(223,183,108,0.1)]' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
+                                    <span class="flex items-center gap-3"><i class="fa-solid fa-medal text-amber-500/80"></i> S+ . S . G</span>
+                                    <span class="text-[9px] px-2 py-1 rounded-full brushed-gold crystal-border shrink-0">黃金Spec限定</span>
+                                </button>
+                                <button id="aside-tab-badge-progress" class="w-full text-left px-4 py-3.5 rounded-2xl flex items-center justify-between gap-3 text-sm transition-all duration-300 font-bold hover-breath click-press ${window.state.currentTab === 'badge-progress' ? 'bg-gradient-to-r from-amber-500/15 to-transparent text-amber-400 border-l-2 border-amber-500 shadow-[0_0_20px_rgba(223,183,108,0.1)]' : 'text-slate-400 hover:bg-slate-900/40 hover:text-white'}">
+                                    <span class="flex items-center gap-3"><i class="fa-solid fa-award text-amber-500/80"></i> 徽章進度</span>
+                                    <span class="text-[9px] px-2 py-1 rounded-full border border-amber-500/20 text-amber-300/80 shrink-0">Badge</span>
+                                </button>
+                            </nav>
+
+                            <button id="aside-btn-share" class="w-full brushed-gold font-bold text-sm py-3.5 px-4 rounded-2xl transition duration-300 flex items-center justify-center gap-2 crystal-border hover-breath click-press">
+                                <i class="fa-solid fa-circle-plus"></i> 分享動態
+                            </button>
+                        </div>
+  
+                        <div class="space-y-4">
+                            
+                            <div id="aside-profile-trigger" class="flex items-center gap-3 p-3 bg-slate-900/40 border ${window.state.currentTab === 'profile' ? 'border-amber-500 bg-amber-500/10 shadow-[0_0_15px_rgba(223,183,108,0.15)]' : 'border-amber-500/15'} rounded-2xl relative overflow-hidden cursor-pointer transition-all duration-300 hover-breath click-press">
+                                <div class="absolute top-0 right-0 w-2 h-2 bg-emerald-500 rounded-full m-2 shadow-[0_0_8px_#10b981]"></div>
+                                <img src="${window.state.userData.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-9 h-9 rounded-full object-cover border border-amber-500/30">
+                                <div class="overflow-hidden">
+                                    <div class="flex items-center gap-1">
+                                        <h4 class="font-bold text-sm ${window.state.currentTab === 'profile' ? 'text-amber-400' : 'text-slate-200'} truncate">${window.state.userData.nickname}</h4>
+                                    </div>
+                                    <p class="text-[10px] text-slate-400 truncate font-mono mt-0.5">@${window.state.applicationId}</p>
+                                </div>
+                            </div>
+
+                            <div id="sidebar-bgm-btn" class="flex items-center justify-between bg-slate-950/60 border border-amber-500/20 rounded-2xl p-3 md:p-3.5 transition duration-300 cursor-pointer shadow-[0_4px_25px_rgba(212,175,55,0.05)] backdrop-blur-md group hover-breath click-press">
+                                <div class="flex items-center gap-2">
+                                    <div class="flex items-center gap-[3px] h-3 w-4" id="sidebar-bgm-bars">
+                                        <div class="w-[2px] h-1.5 bg-amber-500 rounded-full bgm-bar"></div>
+                                        <div class="w-[2px] h-3 bg-amber-500 rounded-full bgm-bar"></div>
+                                        <div class="w-[2px] h-1 bg-amber-500 rounded-full bgm-bar"></div>
+                                        <div class="w-[2px] h-2 bg-amber-500 rounded-full bgm-bar"></div>
+                                    </div>
+                                    
+                                    <span class="text-[10px] font-bold text-amber-500/80 tracking-wider font-luxury select-none" id="sidebar-bgm-text">
+                                        Bgm Audio
+                                    </span>
+                                </div>
+                                <button class="w-6 h-6 rounded-full bg-amber-500/10 flex items-center justify-center border border-amber-500/20 text-amber-500 transition-all duration-300">
+                                    <i class="fa-solid fa-play text-[9px]" id="sidebar-bgm-icon"></i>
+                                </button>
+                            </div>
+
+                            <button id="aside-btn-logout" class="w-full bg-red-950/10 text-red-400 border border-red-500/10 font-bold text-sm py-3.5 px-4 rounded-2xl transition flex items-center justify-center gap-2 shadow-sm hover-breath click-press">
+                                <i class="fa-solid fa-power-off"></i> 登出俱樂部
+                            </button>
+                        </div>
+                    </aside>
+  
+                    <main class="sr-dashboard-main flex-1 h-full flex flex-col bg-transparent overflow-hidden">
+
+                        <header class="sr-mobile-dashboard-header flex md:hidden items-center justify-between px-4 py-3 border-b border-amber-500/15 glass-panel shrink-0">
+                            <div class="flex items-center gap-2.5">
+                                <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-8 h-8 rounded-full border border-amber-500/30 object-cover animate-gentle-logo">
+                                <h1 class="text-lg font-black text-white tracking-[0.15em] italic font-luxury">SecretRoom</h1>
+                            </div>
+                            
+                            <div class="flex items-center gap-2">
+                                <button id="mobile-btn-notifications" class="w-9 h-9 bg-slate-950/55 border border-amber-500/25 text-amber-300 font-bold rounded-full flex items-center justify-center shadow-lg transition click-press hover-breath relative" aria-label="開啟通知">
+                                    <i class="fa-solid fa-bell text-sm"></i>
+                                    <span id="mobile-notification-count" class="hidden absolute -top-1 -right-1 min-w-[1.15rem] h-[1.15rem] px-1 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center shadow-[0_0_10px_rgba(239,68,68,0.55)]"></span>
+                                </button>
+                                <button id="mobile-btn-menu" class="w-9 h-9 bg-slate-950/55 border border-amber-500/25 text-amber-300 font-bold rounded-full flex items-center justify-center shadow-lg transition click-press hover-breath" aria-label="開啟完整功能表">
+                                    <i class="fa-solid fa-bars text-sm"></i>
+                                </button>
+                            </div>
+                        </header>
+
+                        ${renderMobileFeatureMenuHtml()}
+  
+                        <div class="flex-1 overflow-y-auto scrollbar-hide px-3 md:px-6 py-4 md:py-5" id="main-content-scroll">
+                            <div class="max-w-2xl mx-auto w-full space-y-4 md:space-y-6" id="dashboard-tab-content">
+                            </div>
+                        </div>
+
+                        <nav class="sr-mobile-dashboard-nav flex md:hidden items-center justify-around border-t border-amber-500/15 glass-panel p-2.5 pb-safe-bottom shrink-0 select-none rounded-t-3xl">
+                            <button id="mobile-tab-feed" class="flex flex-col items-center gap-1 transition-all click-press ${window.state.currentTab === 'feed' ? 'text-amber-500 scale-105 font-bold' : 'text-slate-500'}">
+                                <i class="fa-solid fa-house-chimney text-sm"></i>
+                                <span class="text-[10px] font-bold tracking-wider">首頁</span>
+                            </button>
+                            <button id="mobile-tab-ranking" class="flex flex-col items-center gap-1 transition-all click-press ${window.state.currentTab === 'rank' ? 'text-amber-500 scale-105 font-bold' : 'text-slate-500'}">
+                                <i class="fa-solid fa-trophy text-sm"></i>
+                                <span class="text-[10px] font-bold tracking-wider">位階</span>
+                            </button>
+                            <button id="mobile-btn-share" class="sr-mobile-menu-create-button brushed-gold crystal-border shadow-xl transition-all click-press" aria-label="新增貼文">
+                                <i class="fa-solid fa-plus text-lg"></i>
+                            </button>
+                            <button id="mobile-tab-profile" class="flex flex-col items-center gap-1 transition-all click-press ${window.state.currentTab === 'profile' ? 'text-amber-500 scale-105 font-bold' : 'text-slate-500'}">
+                                <i class="fa-solid fa-user-circle text-sm"></i>
+                                <span class="text-[10px] font-bold tracking-wider">個人主頁</span>
+                            </button>
+                            <button id="mobile-btn-logout" class="flex flex-col items-center gap-1 text-slate-600 hover:text-red-400 transition-all click-press">
+                                <i class="fa-solid fa-power-off text-sm"></i>
+                                <span class="text-[10px] font-bold tracking-wider">登出</span>
+                            </button>
+                        </nav>
+                    </main>
+
+                    <aside class="sr-dashboard-right flex flex-col gap-6 w-80 border-l border-amber-500/15 glass-panel p-5 shrink-0 overflow-y-auto select-none rounded-l-3xl my-3 mr-3">
+                        
+                        <div class="bg-slate-900/40 border border-amber-500/15 p-5 rounded-3xl space-y-3.5 relative overflow-hidden">
+                            <div class="absolute -top-6 -right-6 w-16 h-16 bg-amber-500/5 rounded-full blur-xl"></div>
+                            
+                            <h3 class="text-xs font-bold text-amber-500 flex items-center gap-2 tracking-wider font-luxury">
+                                <i class="fa-solid fa-compass text-xs"></i> 熱門主題探索
+                            </h3>
+                            <div class="flex flex-wrap gap-2">
+                                ${window.state.kinksOptions.slice(0, 6).map((k) => `
+                                    <button onclick="setGlobalFilter('${k}')" class="text-xs font-bold bg-slate-950/40 border border-amber-500/10 px-3 py-2 rounded-full text-slate-400 transition duration-300 hover-breath click-press">
+                                        # ${k}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+  
+                        <div class="bg-slate-900/40 border border-amber-500/15 p-5 rounded-3xl space-y-4">
+                            
+                            <h3 class="text-xs font-bold text-amber-500 flex items-center gap-2 tracking-wider font-luxury">
+                                <i class="fa-solid fa-user-group text-xs"></i> 線上活躍帳號
+                            </h3>
+                            <div class="space-y-3.5" id="active-users-list-aside">
+                                <div class="text-xs text-slate-400 text-center py-4 font-light">正在更新線上帳號...</div>
+                            </div>
+                        </div>
+                    </aside>
+  
+                </div>
+            `;
+  
+            const bindTabEvents = (id, tabName, filterName = null) => {
+                const el = document.getElementById(id);
+                if (el) el.onclick = () => { 
+                    window.state.currentTab = tabName; 
+                    if (filterName) {
+                        window.state.currentFilter = filterName;
+                        if (filterName === 'elite-ranking' && !window.state.currentRankTag) {
+                            window.state.currentRankTag = window.state.kinksOptions[0];
+                        }
+                    } else if (tabName === 'feed') {
+                        window.state.currentFilter = 'recommended';
+                        window.state.currentRankTag = null;
+                    }
+                    window.state.singlePostFocusId = null; 
+                    renderDashboard(container); 
+                };
+            };
+  
+            bindTabEvents('aside-tab-feed', 'feed', 'recommended');
+            bindTabEvents('aside-tab-notifications', 'notifications');
+            bindTabEvents('aside-tab-ranking', 'rank');
+            bindTabEvents('aside-tab-spec-vault', 'spec-vault');
+            bindTabEvents('aside-tab-badge-progress', 'badge-progress');
+            bindTabEvents('mobile-tab-feed', 'feed', 'recommended');
+            bindTabEvents('mobile-tab-ranking', 'rank');
+            bindTabEvents('mobile-tab-profile', 'profile');
+            bindTabEvents('mobile-btn-notifications', 'notifications');
+  
+            const logoutAction = () => {
+                localStorage.removeItem('sr_username');
+                window.state.userData = {};
+                window.state.applicationId = null;
+                showToast('已安全退出 SecretRoom 俱樂部。', 'info');
+                navigate('landing');
+            };
+  
+            const logoutBtnAside = document.getElementById('aside-btn-logout');
+            if (logoutBtnAside) logoutBtnAside.onclick = logoutAction;
+  
+            const logoutBtnMobile = document.getElementById('mobile-btn-logout');
+            if (logoutBtnMobile) logoutBtnMobile.onclick = logoutAction;
+  
+            const shareBtnAside = document.getElementById('aside-btn-share');
+            if (shareBtnAside) shareBtnAside.onclick = () => showSharePostModal();
+  
+            const shareBtnMobile = document.getElementById('mobile-btn-share');
+            if (shareBtnMobile) shareBtnMobile.onclick = () => showSharePostModal();
+
+            const mobileMenuBtn = document.getElementById('mobile-btn-menu');
+            const mobileMenu = document.getElementById('mobile-feature-menu');
+            const mobileMenuBackdrop = document.getElementById('mobile-feature-menu-backdrop');
+            const mobileMenuClose = document.getElementById('mobile-feature-menu-close');
+            const mobileMenuBgm = document.getElementById('mobile-menu-bgm-toggle');
+            const mobileMenuSpec = document.getElementById('mobile-menu-spec-vault');
+            const mobileMenuBadge = document.getElementById('mobile-menu-badge-progress');
+            const closeMobileFeatureMenu = () => { if (mobileMenu) mobileMenu.classList.add('hidden'); };
+            if (mobileMenuBtn) mobileMenuBtn.onclick = () => { if (mobileMenu) mobileMenu.classList.toggle('hidden'); };
+            if (mobileMenuBackdrop) mobileMenuBackdrop.onclick = closeMobileFeatureMenu;
+            if (mobileMenuClose) mobileMenuClose.onclick = closeMobileFeatureMenu;
+            if (mobileMenuBgm) mobileMenuBgm.onclick = (e) => { e.stopPropagation(); window.toggleBGMState(); };
+            if (mobileMenuSpec) mobileMenuSpec.onclick = () => { closeMobileFeatureMenu(); window.state.currentTab = 'spec-vault'; window.state.singlePostFocusId = null; renderDashboard(container); };
+            if (mobileMenuBadge) mobileMenuBadge.onclick = () => { closeMobileFeatureMenu(); window.state.currentTab = 'badge-progress'; window.state.singlePostFocusId = null; renderDashboard(container); };
+
+            const sidebarBgmBtn = document.getElementById('sidebar-bgm-btn');
+            if (sidebarBgmBtn) {
+                sidebarBgmBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    window.toggleBGMState();
+                };
+            }
+
+            const profileTrigger = document.getElementById('aside-profile-trigger');
+            if (profileTrigger) {
+                profileTrigger.onclick = () => {
+                    window.state.currentTab = 'profile';
+                    renderDashboard(container);
+                };
+            }
+  
+            const tabContentContainer = document.getElementById('dashboard-tab-content');
+            if (window.state.currentTab === 'feed') {
+                renderFeedTab(tabContentContainer);
+            } else if (window.state.currentTab === 'rank') {
+                renderRankTab(tabContentContainer);
+            } else if (window.state.currentTab === 'notifications') {
+                renderNotificationsTab(tabContentContainer);
+            } else if (window.state.currentTab === 'profile') {
+                renderProfileTab(tabContentContainer, window.state.applicationId);
+            } else if (window.state.currentTab === 'spec-vault') {
+                renderSpecVaultTab(tabContentContainer);
+            } else if (window.state.currentTab === 'badge-progress') {
+                renderBadgeProgressTab(tabContentContainer);
+            } else if (window.state.currentTab === 'other-profile') {
+                renderProfileTab(tabContentContainer, window.state.viewTargetUserId);
+            }
+  
+            startRealtimeSnapshotSync();
+        }
+
+===== patchProfile =====
+
+  function patchProfile() {
+    const submitButton = document.getElementById('btn-submit-profile-edit');
+    if (!submitButton || document.getElementById('srp-profile-pass')) return;
+    const box = document.createElement('div');
+    box.id = 'srp-profile-pass';
+    box.className = 'p-4 bg-slate-900/40 border border-amber-500/10 rounded-2xl space-y-3';
+    box.innerHTML = `<span class="text-xs font-bold text-amber-500 tracking-widest block"><i class="fa-solid fa-key mr-1"></i> 更改登入密碼</span><p class="text-xs text-slate-500 leading-relaxed">先輸入目前密碼，再設定新密碼。</p>${passwordFieldHtml('srp-old', '目前密碼')}${passwordFieldHtml('srp-newp', '新密碼')}${passwordFieldHtml('srp-newp2', '再輸入一次新密碼')}<div class="text-xs text-slate-500 leading-relaxed">至少 8 碼，並包含 1 個大寫英文字母和 1 個特殊符號。</div><button type="button" id="srp-save-pass" class="w-full min-h-[44px] bg-slate-950/60 text-amber-300 font-bold text-xs py-3 px-4 rounded-xl border border-amber-500/15 transition hover-breath click-press">更新密碼</button>`;
+    submitButton.parentElement.insertBefore(box, submitButton);
+    bindPasswordToggles(box);
+    document.getElementById('srp-save-pass').onclick = async () => {
+      const saveButton = document.getElementById('srp-save-pass');
+      const id = localStorage.getItem('sr_username');
+      const oldPassword = document.getElementById('srp-old').value;
+      const first = document.getElementById('srp-newp').value;
+      const second = document.getElementById('srp-newp2').value;
+      if (!oldPassword || !first || !second) return SRP.toast('目前密碼、新密碼和確認欄位都要填。', 'error');
+      if (first !== second) return SRP.toast('兩次輸入不一樣，再確認一下。', 'error');
+      if (first === oldPassword) return SRP.toast('新密碼不能和目前密碼一樣。', 'error');
+      if (!SRP.valid(first)) return SRP.toast('密碼格式不符：至少 8 碼，並包含 1 個大寫英文字母和 1 個特殊符號。', 'error');
+      setButtonBusy(saveButton, true, '正在更新...');
+      try {
+        const { db, fs } = await SRP.tools();
+        const ref = fs.doc(db, 'secretg_apps', SRP.app, 'applications', id);
+        const snapshot = await fs.getDoc(ref);
+        if (!snapshot.exists()) throw new Error('找不到你的帳號資料。');
+        const user = snapshot.data() || {};
+        if (user.password !== oldPassword) throw new Error('目前密碼不對。');
+        const updates = {
+          password: first,
+          mustChangePassword: false,
+          forcePasswordChange: false,
+          tempPasswordActive: false,
+          passwordChangeRequired: false,
+          passwordChangedAt: fs.serverTimestamp(),
+          passwordChangedAtMs: Date.now(),
+          passwordChangedBy: 'member',
+          lastPasswordChangeMethod: 'profile_edit'
+        };
+        await fs.updateDoc(ref, updates);
+        await SRP.sendMail({ ...user, ...updates }, id);
+        SRP.toast('密碼換好了，安全提醒也寄出了。', 'success');
+        ['srp-old', 'srp-newp', 'srp-newp2'].forEach(fieldId => { const field = document.getElementById(fieldId); if (field) field.value = ''; });
+      } catch (error) {
+        console.error(error);
+        SRP.toast('密碼沒換成功：' + error.message, 'error');
+      } finally {
+        setButtonBusy(saveButton, false);
+      }
+    };
+  }
