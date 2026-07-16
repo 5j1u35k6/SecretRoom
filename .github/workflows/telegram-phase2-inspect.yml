@@ -1,4 +1,4 @@
-name: Inspect Telegram Phase 2 integration points
+name: Build Telegram Phase 2
 
 on:
   push:
@@ -8,7 +8,7 @@ permissions:
   contents: write
 
 jobs:
-  inspect:
+  build:
     if: ${{ github.actor != 'github-actions[bot]' }}
     runs-on: ubuntu-latest
     steps:
@@ -16,64 +16,49 @@ jobs:
         with:
           ref: feature/telegram-phase2-integration
           fetch-depth: 0
-
-      - name: Build exact action reports
+      - name: Merge staged Telegram modules
         shell: bash
         run: |
-          mkdir -p telegram/inspect
           python3 <<'PY'
           from pathlib import Path
           import re
-
-          def extract_functions(text):
-              found=[]
-              patterns=[
-                  re.compile(r'(?m)^\s*window\.([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?function\s*\([^)]*\)\s*\{'),
-                  re.compile(r'(?m)^\s*(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\([^)]*\)\s*\{')
-              ]
-              matches=[]
-              for pattern in patterns:
-                  matches.extend((m.start(),m) for m in pattern.finditer(text))
-              for _,m in sorted(matches,key=lambda item:item[0]):
-                  name=m.group(1)
-                  depth=0; quote=None; esc=False; i=m.end()-1
-                  while i < len(text):
-                      c=text[i]
-                      if quote:
-                          if esc: esc=False
-                          elif c=='\\': esc=True
-                          elif c==quote: quote=None
-                      else:
-                          if c in "'\"`": quote=c
-                          elif c=='{': depth+=1
-                          elif c=='}':
-                              depth-=1
-                              if depth==0:
-                                  found.append((name,text[m.start():i+1])); break
-                      i+=1
-              return found
-
-          text=Path('admin.js').read_text(encoding='utf-8')
-          funcs=extract_functions(text)
-          name_rx=re.compile(r'(status|approve|reject|avatar|spec|password|reset|account|email|notification|retry|delete|suspend)',re.I)
-          Path('telegram/inspect/admin-action-names.txt').write_text('\n'.join(name for name,_ in funcs if name_rx.search(name)),encoding='utf-8')
-          body_rx=re.compile(r'^(updateStatus|updateStatusWithReason|approveAvatarChange|rejectAvatarChange|approveSpecElite|rejectSpecElite|retryEmailFailure|markEmailFailureHandled|processPassword|approve.*Password|reject.*Password|approve.*Account|reject.*Account|executeDelete|sendEmailNotification|sendRecoveryMail)$',re.I)
-          Path('telegram/inspect/admin-target-actions.txt').write_text(''.join(f'\n===== {name} =====\n{body}\n' for name,body in funcs if body_rx.search(name)),encoding='utf-8')
-
           app=Path('app.js').read_text(encoding='utf-8')
-          app_funcs=extract_functions(app)
-          app_name_rx=re.compile(r'(telegram|profile|dashboard|account|password|notification|spec|avatar)',re.I)
-          Path('telegram/inspect/app-action-names.txt').write_text('\n'.join(name for name,_ in app_funcs if app_name_rx.search(name)),encoding='utf-8')
-          app_body_rx=re.compile(r'^(renderTelegramBind|renderDashboard|patchProfile|sendMail|createUserNotification|navigate|checkExistingApplication)$',re.I)
-          Path('telegram/inspect/app-target-actions.txt').write_text(''.join(f'\n===== {name} =====\n{body}\n' for name,body in app_funcs if app_body_rx.search(name)),encoding='utf-8')
+          admin=Path('admin.js').read_text(encoding='utf-8')
+          css=Path('style.css').read_text(encoding='utf-8')
+          acss=Path('admin.css').read_text(encoding='utf-8')
+          front=Path('telegram/build/frontend_phase2.js').read_text(encoding='utf-8')
+          console=Path('telegram/build/admin_delivery_ui.js').read_text(encoding='utf-8')
+          fcss=Path('telegram/build/frontend_phase2.css').read_text(encoding='utf-8')
+          uicss=Path('telegram/build/admin_phase2.css').read_text(encoding='utf-8')
+          old="if (!data.telegramInfo) navigate('telegram-bind');"
+          new="if (!data.telegramInfo && data.telegramBound !== true && !data.telegramUserId) navigate('telegram-bind');"
+          if old not in app: raise SystemExit('Telegram compatibility condition missing')
+          app=app.replace(old,new)
+          if 'SecretRoom Telegram Phase 2 member integration' not in app: app=app.rstrip()+'\n\n'+front.rstrip()+'\n'
+          if 'SecretRoom Telegram Phase 2 delivery console' not in admin: admin=admin.rstrip()+'\n\n'+console.rstrip()+'\n'
+          if 'SecretRoom Telegram Phase 2 member styles' not in css: css=css.rstrip()+'\n\n'+fcss.rstrip()+'\n'
+          if 'SecretRoom Telegram Phase 2 admin styles' not in acss: acss=acss.rstrip()+'\n\n'+uicss.rstrip()+'\n'
+          index=Path('index.html').read_text(encoding='utf-8')
+          portal=Path('portal_sr_x892.html').read_text(encoding='utf-8')
+          index=re.sub(r'style\.css\?v=[^"\']+','style.css?v=20260716-telegram-phase2-v1',index)
+          index=re.sub(r'app\.js\?v=[^"\']+','app.js?v=20260716-telegram-phase2-v1',index)
+          portal=re.sub(r'admin\.css\?v=[^"\']+','admin.css?v=20260716-telegram-phase2-v1',portal)
+          portal=re.sub(r'admin\.js\?v=[^"\']+','admin.js?v=20260716-telegram-phase2-v1',portal)
+          for path,data in [('app.js',app),('admin.js',admin),('style.css',css),('admin.css',acss),('index.html',index),('portal_sr_x892.html',portal)]: Path(path).write_text(data,encoding='utf-8')
           PY
-
-      - name: Commit reports
+      - name: Verify
+        shell: bash
+        run: |
+          node --check app.js
+          node --check admin.js
+          test "$(grep -c 'SecretRoom Telegram Phase 2 member integration' app.js)" -eq 1
+          test "$(grep -c 'SecretRoom Telegram Phase 2 delivery console' admin.js)" -eq 1
+          ! grep -q "if (!data.telegramInfo) navigate('telegram-bind');" app.js
+      - name: Commit
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add telegram/inspect
-          if git diff --cached --quiet; then exit 0; fi
-          git commit -m "Add exact Telegram Phase 2 action reports [generated]"
+          git add app.js admin.js style.css admin.css index.html portal_sr_x892.html
+          git commit -m "Integrate Telegram Phase 2 member and delivery features [generated]"
           git push origin HEAD:feature/telegram-phase2-integration
