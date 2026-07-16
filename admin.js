@@ -2605,3 +2605,21 @@ window.rejectPasswordResetRequest = async function rejectPasswordResetRequest(id
 })();
 
 })();
+
+/* ===== SecretRoom Telegram Phase 2 delivery console ===== */
+;(() => {
+  if (window.__SR_TELEGRAM_DELIVERY_CONSOLE__) return;
+  window.__SR_TELEGRAM_DELIVERY_CONSOLE__ = true;
+  const A='secretg-production-node-tw'; let P=null,started=false,items=[];
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+  const toast=(m,t='info')=>window.showToast?.(m,t);
+  async function T(){return P||(P=Promise.all([import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js'),import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js')]).then(([a,fs])=>({db:fs.getFirestore(a.getApps()[0]),fs})));}
+  function host(){const list=document.getElementById('admin-list');if(!list)return null;let p=document.getElementById('sr-telegram-delivery-panel');if(!p){p=document.createElement('section');p.id='sr-telegram-delivery-panel';p.className='sr-tg-admin-panel';list.parentElement?.parentElement?.insertBefore(p,list.parentElement);}return p;}
+  function when(v){const n=v?.toDate?v.toDate().getTime():Number(v||0);return n?new Date(n).toLocaleString('zh-TW',{hour12:false}):'尚未處理';}
+  function render(){const p=host();if(!p)return;const a=[...items].sort((x,y)=>Number(y.createdAtMs||0)-Number(x.createdAtMs||0)),c=a.reduce((o,x)=>(o[x.status||'pending']=(o[x.status||'pending']||0)+1,o),{});p.innerHTML=`<div class="sr-tg-admin-header"><div><div class="sr-tg-admin-eyebrow"><i class="fa-brands fa-telegram"></i> Telegram 發送中心</div><h2>通知紀錄與失敗重送</h2></div><button id="sr-tg-retry-all" class="sr-tg-admin-button" ${c.failed?'':'disabled'}>重送全部失敗</button></div><div class="sr-tg-admin-stats"><span>待送 ${c.pending||0}</span><span>成功 ${c.sent||0}</span><span>失敗 ${c.failed||0}</span><span>略過 ${c.skipped||0}</span></div><details class="sr-tg-admin-details"><summary>查看最近 ${Math.min(a.length,40)} 筆紀錄</summary><div class="sr-tg-admin-list">${a.slice(0,40).map(x=>`<article class="sr-tg-log-card sr-tg-log-${esc(x.status||'pending')}"><div class="sr-tg-log-main"><strong>${esc(x.title||'SecretRoom 通知')}</strong><span>@${esc(x.accountId||'')} · ${esc(x.category||'notice')} · ${esc(x.status||'pending')}</span><p>${esc(x.message||'')}</p>${x.lastError?`<code>${esc(x.lastError)}</code>`:''}<small>${when(x.sentAt||x.sentAtMs||x.createdAt||x.createdAtMs)} · 嘗試 ${Number(x.attemptCount||0)} 次</small></div>${x.status==='failed'?`<button data-tg-retry="${esc(x.id)}" class="sr-tg-admin-button">重新傳送</button>`:''}</article>`).join('')||'<div class="text-xs text-slate-500 py-4">尚無 Telegram 發送紀錄</div>'}</div></details>`;p.querySelectorAll('[data-tg-retry]').forEach(b=>b.onclick=()=>retry(b.dataset.tgRetry));p.querySelector('#sr-tg-retry-all')?.addEventListener('click',retryAll);}
+  async function retry(id){const{db,fs}=await T();await fs.setDoc(fs.doc(db,'secretg_apps',A,'telegram_outbox',id),{status:'pending',attemptCount:0,nextAttemptAtMs:0,lastError:'',forceSend:true,retriedAt:fs.serverTimestamp(),retriedAtMs:Date.now()},{merge:true});toast('Telegram 通知已排入重送','success');}
+  async function retryAll(){const a=items.filter(x=>x.status==='failed');if(!a.length||!confirm(`確定重送 ${a.length} 筆 Telegram 失敗通知？`))return;for(const x of a)await retry(x.id);}
+  async function start(){if(started||document.getElementById('admin-main')?.classList.contains('hidden'))return;started=true;const{db,fs}=await T();fs.onSnapshot(fs.collection(db,'secretg_apps',A,'telegram_outbox'),s=>{items=[];s.forEach(x=>items.push({id:x.id,...(x.data()||{})}));render();},e=>console.warn('Telegram outbox listener failed',e));}
+  function apply(){if(!document.getElementById('admin-main')?.classList.contains('hidden'))start();if(started)render();}
+  window.SRTelegramDeliveryConsole=Object.freeze({retry,retryAll,refresh:render});window.SRAdminRuntime?.register(apply);apply();
+})();
