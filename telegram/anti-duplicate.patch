@@ -1,0 +1,188 @@
+--- Code.gs.phase1
++++ Code.gs.phase1.1
+@@
+ const SR_TG = Object.freeze({
+   projectId: 'secretroom-ef728',
+   appId: 'secretg-production-node-tw',
+   botUsername: 'SecretRoomtwBot',
+   platformUrl: 'https://5j1u35k6.github.io/SecretRoom/',
+   outboxBatchSize: 20,
+-  maxAttempts: 5
++  maxAttempts: 5,
++  updateDedupSeconds: 21600,
++  actionDebounceSeconds: 3
+ });
+@@
+     const update = JSON.parse(e.postData?.contents || '{}');
++    if (!claimTelegramUpdate_(update)) {
++      return jsonOutput_({ ok: true, duplicate: true });
++    }
+     handleTelegramUpdate_(update);
+@@
+   telegramApi_('setWebhook', {
+     url: webhookUrl,
+     allowed_updates: ['message', 'callback_query'],
+-    drop_pending_updates: false
++    drop_pending_updates: true
+   });
+@@
+ function removeTelegramWebhook() {
+   return telegramApi_('deleteWebhook', { drop_pending_updates: false });
+ }
++
++function resetTelegramWebhookAndDropPending() {
++  telegramApi_('deleteWebhook', { drop_pending_updates: true });
++  Utilities.sleep(350);
++  return setupTelegramBot();
++}
+@@
+ function handleCallbackQuery_(query) {
+   const data = String(query.data || '');
+   const chatId = query.message?.chat?.id;
+-  answerCallback_(query.id);
+-  if (!chatId) return;
++  const messageId = query.message?.message_id;
++  if (!chatId) {
++    answerCallback_(query.id);
++    return;
++  }
++  if (!claimCallbackAction_(query)) {
++    answerCallback_(query.id, '處理中，請稍候');
++    return;
++  }
++  answerCallback_(query.id);
+ 
+-  if (data === 'home') return sendHomeMenu_(chatId, 'SecretRoom 會員服務');
+-  if (data === 'account') return sendAccountSummary_(query.from, chatId);
+-  if (data === 'status') return sendReviewStatus_(query.from, chatId);
+-  if (data === 'rank') return sendRankSummary_(query.from, chatId);
+-  if (data === 'settings') return sendSettings_(query.from, chatId);
++  if (data === 'home') return sendHomeMenu_(chatId, 'SecretRoom 會員服務', messageId);
++  if (data === 'account') return sendAccountSummary_(query.from, chatId, messageId);
++  if (data === 'status') return sendReviewStatus_(query.from, chatId, messageId);
++  if (data === 'rank') return sendRankSummary_(query.from, chatId, messageId);
++  if (data === 'settings') return sendSettings_(query.from, chatId, messageId);
+   if (data.startsWith('pref:')) {
+     const key = data.slice(5);
+-    togglePreference_(query.from, chatId, key);
++    togglePreference_(query.from, chatId, key, messageId);
+   }
+ }
+@@
+-function sendHomeMenu_(chatId, lead) {
++function sendHomeMenu_(chatId, lead, messageId) {
+   const config = getConfig_();
+-  sendMessage_(chatId, `${lead}\n\n請選擇功能：`, {
++  sendOrEditMessage_(chatId, messageId, `${lead}\n\n請選擇功能：`, {
+@@
+-function sendAccountSummary_(from, chatId) {
++function sendAccountSummary_(from, chatId, messageId) {
+   const context = getBoundAccount_(from.id);
+-  if (!context) return sendNotBound_(chatId);
++  if (!context) return sendNotBound_(chatId, messageId);
+@@
+-  sendMessage_(chatId,
++  sendOrEditMessage_(chatId, messageId,
+@@
+-function sendReviewStatus_(from, chatId) {
++function sendReviewStatus_(from, chatId, messageId) {
+   const context = getBoundAccount_(from.id);
+-  if (!context) return sendNotBound_(chatId);
++  if (!context) return sendNotBound_(chatId, messageId);
+@@
+-  sendMessage_(chatId, `📝 審核進度\n\n${rows.join('\n')}`, {
++  sendOrEditMessage_(chatId, messageId, `📝 審核進度\n\n${rows.join('\n')}`, {
+@@
+-function sendRankSummary_(from, chatId) {
++function sendRankSummary_(from, chatId, messageId) {
+   const context = getBoundAccount_(from.id);
+-  if (!context) return sendNotBound_(chatId);
++  if (!context) return sendNotBound_(chatId, messageId);
+@@
+-  sendMessage_(chatId, `🏆 本週位階\n\n目前位階：${escapeText_(rank)}\n目前分數：${escapeText_(scoreText)}`, {
++  sendOrEditMessage_(chatId, messageId, `🏆 本週位階\n\n目前位階：${escapeText_(rank)}\n目前分數：${escapeText_(scoreText)}`, {
+@@
+-function sendSettings_(from, chatId) {
++function sendSettings_(from, chatId, messageId) {
+   const context = getBoundAccount_(from.id);
+-  if (!context) return sendNotBound_(chatId);
++  if (!context) return sendNotBound_(chatId, messageId);
+@@
+-  sendMessage_(chatId, '🔔 通知設定\n\n安全通知固定開啟；其他通知可切換。', {
++  sendOrEditMessage_(chatId, messageId, '🔔 通知設定\n\n安全通知固定開啟；其他通知可切換。', {
+@@
+-function togglePreference_(from, chatId, key) {
++function togglePreference_(from, chatId, key, messageId) {
+@@
+-  if (!context) return sendNotBound_(chatId);
++  if (!context) return sendNotBound_(chatId, messageId);
+@@
+-  sendSettings_(from, chatId);
++  sendSettings_(from, chatId, messageId);
+ }
+@@
+-function sendNotBound_(chatId) {
+-  sendMessage_(chatId, '此 Telegram 尚未綁定 SecretRoom 帳號。\n\n請先登入 SecretRoom，從會員中心產生專屬綁定連結。', {
++function sendNotBound_(chatId, messageId) {
++  sendOrEditMessage_(chatId, messageId, '此 Telegram 尚未綁定 SecretRoom 帳號。\n\n請先登入 SecretRoom，從會員中心產生專屬綁定連結。', {
+     inline_keyboard: [[{ text: '🌐 開啟 SecretRoom', url: getConfig_().platformUrl }]]
+   });
+ }
++
++function sendOrEditMessage_(chatId, messageId, text, replyMarkup, disablePreview) {
++  if (!messageId) return sendMessage_(chatId, text, replyMarkup, disablePreview);
++  const payload = {
++    chat_id: String(chatId),
++    message_id: Number(messageId),
++    text: String(text || ''),
++    parse_mode: 'HTML',
++    disable_web_page_preview: Boolean(disablePreview)
++  };
++  if (replyMarkup) payload.reply_markup = replyMarkup;
++  try {
++    return telegramApi_('editMessageText', payload);
++  } catch (error) {
++    if (/message is not modified/i.test(String(error?.message || error))) {
++      return { ok: true, unchanged: true };
++    }
++    return sendMessage_(chatId, text, replyMarkup, disablePreview);
++  }
++}
+@@
+-function answerCallback_(callbackQueryId) {
+-  try { telegramApi_('answerCallbackQuery', { callback_query_id: callbackQueryId }); } catch (_) {}
++function answerCallback_(callbackQueryId, text) {
++  const payload = { callback_query_id: callbackQueryId, cache_time: 1 };
++  if (text) payload.text = String(text).slice(0, 180);
++  try { telegramApi_('answerCallbackQuery', payload); } catch (_) {}
++}
++
++function claimTelegramUpdate_(update) {
++  const updateId = update?.update_id;
++  const fallback = update?.callback_query?.id || update?.message?.message_id;
++  const keyPart = updateId !== undefined && updateId !== null ? String(updateId) : String(fallback || '');
++  if (!keyPart) return true;
++  return claimCacheKey_(`sr_tg_update_${keyPart}`, SR_TG.updateDedupSeconds);
++}
++
++function claimCallbackAction_(query) {
++  const chatId = query?.message?.chat?.id;
++  const messageId = query?.message?.message_id;
++  const data = String(query?.data || '');
++  if (!chatId || !messageId || !data) return true;
++  return claimCacheKey_(`sr_tg_action_${chatId}_${messageId}_${data}`, SR_TG.actionDebounceSeconds);
++}
++
++function claimCacheKey_(key, seconds) {
++  const cache = CacheService.getScriptCache();
++  if (cache.get(key)) return false;
++  const lock = LockService.getScriptLock();
++  if (!lock.tryLock(3000)) return false;
++  try {
++    if (cache.get(key)) return false;
++    cache.put(key, '1', Math.max(1, Math.min(Number(seconds) || 1, 21600)));
++    return true;
++  } finally {
++    lock.releaseLock();
++  }
+ }
