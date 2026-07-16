@@ -6827,7 +6827,7 @@ schedule();
 
   async function queueSecurityNotification(title, message) {
     const snapshot = await loadSnapshot(true).catch(() => null);
-    if (!snapshot?.binding || snapshot.binding.status !== 'active') return;
+    if (!hasActiveBinding(snapshot)) return;
     const { db, fs } = await tools();
     const ref = fs.doc(fs.collection(db, 'secretg_apps', APP_ID, 'telegram_outbox'));
     await fs.setDoc(ref, {
@@ -6869,7 +6869,7 @@ schedule();
         </div>
         <div class="sr-tg-status ${bound ? 'sr-tg-bound' : 'sr-tg-unbound'}">
           <strong>${bound ? '已完成綁定' : '尚未綁定'}</strong>
-          <span>${bound ? `Telegram @${esc(snapshot?.binding?.telegramUsername || snapshot?.member?.telegramUsername || '已驗證帳號')}` : '產生短效專屬連結後，至 Telegram 完成一次性驗證。'}</span>
+          <span>${bound ? `Telegram @${esc(snapshot?.binding?.telegramUsername || '已驗證帳號')}` : '產生短效專屬連結後，至 Telegram 完成一次性驗證。'}</span>
         </div>
         ${bound ? `
           <div class="sr-tg-settings"><div class="sr-tg-section-title">通知偏好</div>
@@ -7012,7 +7012,7 @@ schedule();
         const snapshot = await loadSnapshot();
         if (hasActiveBinding(snapshot)) await reconcileLegacyFields(snapshot);
         ensureCard(snapshot);
-        if (window.state?.currentView === 'telegram-bind' && snapshot?.binding?.status === 'active') {
+        if (window.state?.currentView === 'telegram-bind' && hasActiveBinding(snapshot)) {
           setTimeout(() => location.reload(), 250);
         }
       } catch (error) {
