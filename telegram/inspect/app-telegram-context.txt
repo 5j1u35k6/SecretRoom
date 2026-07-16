@@ -1,0 +1,1408 @@
+
+===== app.js:250-304 =====
+00250:   });
+00251:   document.addEventListener('visibilitychange', () => { if (!document.hidden) scheduleApply(); });
+00252:   window.SR_AUDIO = { muted, setMuted: applyMuted, contexts, media };
+00253: })();
+00254: })();
+00255: 
+00256: /* ===== Consolidated source: app.js ===== */
+00257: ;(() => {
+00258: let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
+00259:         let getFirestore, doc, setDoc, getDoc, collection, query, onSnapshot, updateDoc, getDocs, where, deleteDoc, serverTimestamp;
+00260:   
+00261:         const appId = 'secretg-production-node-tw'; 
+00262:         
+00263:         const firebaseConfig = {
+00264:             apiKey: "AIzaSyCNgJxYjC90DjtvTSaze5CREJf1Vt32aYQ",
+00265:             authDomain: "secretroom-ef728.firebaseapp.com",
+00266:             projectId: "secretroom-ef728",
+00267:             storageBucket: "secretroom-ef728.firebasestorage.app",
+00268:             messagingSenderId: "22006617218",
+00269:             appId: "1:22006617218:web:9e9af5c6558ea57dcb109b"
+00270:         };
+00271:   
+00272:         const emailjsConfig = {
+00273:   publicKey: "XggJY7iHQcZYYhNY7",
+00274:   serviceId: "service_1ou10mi",
+00275:   defaultTemplateId: "template_sr_notice",
+00276:   templates: {
+00277:     notice: "template_sr_notice",
+00278:     security: "template_sr_security"
+00279:   }
+00280: };
+00281:   
+00282:         const telegramBotName = "SecretRoomtwBot"; 
+00283: 
+00284:         async function processAndCompressImageFile(file, maxDim = 300, quality = 0.7, addWatermarkText = null) {
+00285:             if (!file || !/^image\/(jpeg|png|webp)$/i.test(file.type || '')) throw new Error('僅支援 JPG、PNG 或 WebP 圖片格式。');
+00286:             if (file.size > 8 * 1024 * 1024) throw new Error('單張圖片不可超過 8MB。');
+00287:             return new Promise((resolve, reject) => {
+00288:                 const reader = new FileReader();
+00289:                 reader.onerror = () => reject(new Error("File reading failed"));
+00290:                 reader.onload = (e) => {
+00291:                     const img = new Image();
+00292:                     img.onerror = () => reject(new Error("Image loading failed"));
+00293:                     img.onload = () => {
+00294:                         const canvas = document.createElement('canvas');
+00295:                         let w = img.width;
+00296:                         let h = img.height;
+00297:                         if (w > maxDim || h > maxDim) {
+00298:                             if (w > h) {
+00299:                                 h = Math.round((h * maxDim) / w);
+00300:                                 w = maxDim;
+00301:                             } else {
+00302:                                 w = Math.round((w * maxDim) / h);
+00303:                                 h = maxDim;
+00304:                             }
+
+===== app.js:630-685 =====
+00630:                 platform: '官方通知',
+00631:                 report: '檢舉進度',
+00632:                 spec: '黃金 Spec',
+00633:                 avatar: '頭像審核',
+00634:                 account: '帳號安全',
+00635:                 system: '系統提醒'
+00636:             };
+00637:             return labels[typeKey] || labels.platform;
+00638:         }
+00639: 
+00640:         function localStatusTimeFallback(user, keys) {
+00641:             for (const key of keys) {
+00642:                 const value = user[key];
+00643:                 const parsed = parseNotificationTimeValue(value);
+00644:                 if (parsed) return parsed;
+00645:             }
+00646:             return Date.now();
+00647:         }
+00648: 
+00649:         function getLocalStatusNotifications() {
+00650:             const user = window.state.userData || {};
+00651:             const items = [];
+00652:             const avatarStatus = String(user.avatarStatus || '').toLowerCase();
+00653:             const specStatus = String(user.specEliteStatus || '').toLowerCase();
+00654:             const pushLocal = (item, fallbackKeys) => {
+00655:                 const fallback = localStatusTimeFallback(user, fallbackKeys);
+00656:                 items.push({ ...item, createdAtMs: getStableLocalNotificationTime(item.id, fallback) });
+00657:             };
+00658:             if (avatarStatus === 'pending') pushLocal({ id: `avatar-${window.state.applicationId}-pending`, type: 'avatar', tone: 'pending', title: '大頭照更換審核中', message: '新的個人大頭照已送交管理員審核，通過後會自動套用。' }, ['avatarSubmittedAt', 'avatarPendingAt', 'avatarUpdatedAt', 'updatedAt', 'createdAt']);
+00659:             else if (avatarStatus === 'approved') pushLocal({ id: `avatar-${window.state.applicationId}-approved`, type: 'avatar', tone: 'success', title: '大頭照更換已通過', message: '您的新頭像已完成審核並正式啟用。' }, ['avatarReviewedAt', 'avatarApprovedAt', 'avatarUpdatedAt', 'updatedAt', 'createdAt']);
+00660:             else if (avatarStatus === 'rejected') pushLocal({ id: `avatar-${window.state.applicationId}-rejected`, type: 'avatar', tone: 'error', title: '大頭照更換未通過', message: '本次大頭照更換未通過審核，您可以重新提交清晰且符合規範的照片。' }, ['avatarReviewedAt', 'avatarRejectedAt', 'avatarUpdatedAt', 'updatedAt', 'createdAt']);
+00661:             if (specStatus === 'pending') pushLocal({ id: `spec-${window.state.applicationId}-pending`, type: 'spec', tone: 'pending', title: '黃金 Spec 認證審核中', message: '您的黃金 Spec 認證照片已送出，管理員將依據規格證明進行人工核查。' }, ['specSubmittedAt', 'specEliteSubmittedAt', 'specUpdatedAt', 'updatedAt', 'createdAt']);
+00662:             else if (isGoldSpecApproved(user)) pushLocal({ id: `spec-${window.state.applicationId}-approved`, type: 'spec', tone: 'success', title: '黃金 Spec 認證已通過', message: '您已取得黃金 Spec 認證，S+ . S . G 功能已自動開啟。' }, ['specReviewedAt', 'specEliteReviewedAt', 'specApprovedAt', 'specUpdatedAt', 'updatedAt', 'createdAt']);
+00663:             else if (specStatus === 'rejected') pushLocal({ id: `spec-${window.state.applicationId}-rejected`, type: 'spec', tone: 'error', title: '黃金 Spec 認證未通過', message: '本次黃金 Spec 認證未通過，請確認照片清晰度與尺規參考後再重新申請。' }, ['specReviewedAt', 'specEliteReviewedAt', 'specRejectedAt', 'specUpdatedAt', 'updatedAt', 'createdAt']);
+00664:             return items;
+00665:         }
+00666: 
+00667:         function notificationMatchesCurrentUser(item) {
+00668:             if (!item) return false;
+00669:             const target = String(item.target || item.audience || '').toLowerCase();
+00670:             if (target === 'all' || target === 'everyone' || target === '全體會員') return true;
+00671:             if ((target === 'sg' || target === 's_plus_s_g' || target === 's.s+.g' || target === 's+ . s . g') && canAccessSpecVault()) return true;
+00672:             if (target === 'user' && String(item.recipientId || item.userId || '') === String(window.state.applicationId || '')) return true;
+00673:             if (!target && String(item.recipientId || '') === String(window.state.applicationId || '')) return true;
+00674:             return false;
+00675:         }
+00676: 
+00677:         function getNotificationItems() {
+00678:             const remoteItems = (window.state.notifications || []).filter(item => !item.revoked).filter(notificationMatchesCurrentUser);
+00679:             return [...remoteItems, ...getLocalStatusNotifications()].map(item => ({ ...item, id: String(item.id || item.notificationId || `${item.type || 'notice'}-${notificationSortValue(item)}`) })).sort((a, b) => notificationSortValue(b) - notificationSortValue(a));
+00680:         }
+00681: 
+00682:         function getUnreadNotificationCount() {
+00683:             const readSet = getNotificationReadSet();
+00684:             return getNotificationItems().filter(item => !readSet.has(item.id)).length;
+00685:         }
+
+===== app.js:948-1035 =====
+00948: 
+00949:             const autoStartOnInteraction = () => {
+00950:                 if (localStorage.getItem('sr_bgm_enabled') !== 'false') {
+00951:                     localStorage.setItem('sr_bgm_enabled', 'true');
+00952:                     window.luxuryBgm.isPlaying = true;
+00953:                     const view = window.state.currentView;
+00954:                     const wantsTrack = (view === 'dashboard') ? 'lounge' : 'mysterious';
+00955:                     window.luxuryBgm.start(wantsTrack);
+00956:                 }
+00957:                 ['click', 'touchstart', 'mousedown', 'keydown'].forEach(evtName => {
+00958:                     window.removeEventListener(evtName, autoStartOnInteraction);
+00959:                     document.removeEventListener(evtName, autoStartOnInteraction);
+00960:                 });
+00961:             };
+00962: 
+00963:             ['click', 'touchstart', 'mousedown', 'keydown'].forEach(evtName => {
+00964:                 window.addEventListener(evtName, autoStartOnInteraction, { passive: true });
+00965:                 document.addEventListener(evtName, autoStartOnInteraction, { passive: true });
+00966:             });
+00967:         };
+00968:   
+00969:         async function initApp() {
+00970:             if (emailjsConfig.publicKey && emailjsConfig.publicKey !== "YOUR_EMAILJS_PUBLIC_KEY") {
+00971:                 emailjs.init({ publicKey: emailjsConfig.publicKey });
+00972:             }
+00973:   
+00974:             const firebaseLoaded = await loadFirebaseSDKs();
+00975:             
+00976:             if (firebaseLoaded) {
+00977:                 try {
+00978:                     app = initializeApp(firebaseConfig || {});
+00979:                     db = getFirestore(app);
+00980:                     auth = getAuth(app);
+00981:   
+00982:                     await signInAnonymously(auth);
+00983:                     onAuthStateChanged(auth, (user) => {
+00984:                         if (user) {
+00985:                             window.state.userId = user.uid;
+00986:                             checkExistingApplication();
+00987:                         }
+00988:                     });
+00989:                 } catch (error) {
+00990:                     console.error("連線超時:", error);
+00991:                     showToast('伺服器連線異常，請稍後重試。', 'error');
+00992:                 }
+00993:             } else {
+00994:                 showToast('無法建立通訊協定', 'error');
+00995:             }
+00996:         }
+00997:   
+00998:         async function checkExistingApplication() {
+00999:             if(!db) { hideLoading(); navigate('landing'); return; }
+01000:             try {
+01001:                 const cachedUser = localStorage.getItem('sr_username');
+01002:                 if (cachedUser) {
+01003:                     const appRef = doc(db, 'secretg_apps', appId, 'applications', cachedUser);
+01004:                     const docSnap = await getDoc(appRef);
+01005:                     if (docSnap.exists()) {
+01006:                         const data = docSnap.data();
+01007:                         window.state.userData = data;
+01008:                         window.state.applicationId = cachedUser;
+01009:                         
+01010:                         if (data.status === 'pending') navigate('pending');
+01011:                         else if (data.status === 'rejected') navigate('rejected');
+01012:                         else if (data.status === 'approved' || data.status === 'active') {
+01013:                             if (!data.telegramInfo) navigate('telegram-bind');
+01014:                             else navigate('dashboard');
+01015:                         }
+01016:                         hideLoading();
+01017:                         return;
+01018:                     }
+01019:                 }
+01020:                 hideLoading();
+01021:                 navigate('landing');
+01022:             } catch (e) {
+01023:                 console.error(e);
+01024:                 hideLoading();
+01025:                 navigate('landing');
+01026:             }
+01027:         }
+01028:   
+01029:         function hideLoading() {
+01030:             const ls = document.getElementById('loading-screen');
+01031:             if (ls) ls.classList.add('hidden');
+01032:         }
+01033:   
+01034:         function showLoading() {
+01035:             const ls = document.getElementById('loading-screen');
+
+===== app.js:1070-1115 =====
+01070:         }
+01071:   
+01072:         function renderView() {
+01073:             const view = window.state.currentView;
+01074:             appContainer.innerHTML = '';
+01075:   
+01076:             const transitionContainer = document.createElement('div');
+01077:             if (view === 'register') {
+01078:                 transitionContainer.className = 'w-full h-full overflow-y-auto scrollbar-hide fade-enter-active';
+01079:             } else {
+01080:                 transitionContainer.className = 'w-full h-full fade-enter-active';
+01081:             }
+01082:             appContainer.appendChild(transitionContainer);
+01083:   
+01084:             if (view === 'landing') {
+01085:                 renderLanding(transitionContainer);
+01086:             } else if (view === 'register') {
+01087:                 renderRegister(transitionContainer);
+01088:             } else if (view === 'pending') {
+01089:                 renderPending(transitionContainer);
+01090:             } else if (view === 'rejected') {
+01091:                 renderRejected(transitionContainer);
+01092:             } else if (view === 'telegram-bind') {
+01093:                 renderTelegramBind(transitionContainer);
+01094:             } else if (view === 'dashboard') {
+01095:                 renderDashboard(transitionContainer);
+01096:             }
+01097:         }
+01098:   
+01099:         function renderLanding(container) {
+01100:             container.innerHTML = `
+01101:                 
+01102:                 <div class="flex flex-col items-center justify-center min-h-[100dvh] w-full px-6 py-6 relative bg-transparent overflow-y-auto scrollbar-hide">
+01103:                     
+01104:                     <div class="z-10 max-w-sm w-full flex flex-col items-center">
+01105:                         <div class="w-36 h-36 md:w-40 md:h-40 rounded-full border border-amber-500/30 flex items-center justify-center p-2.5 bg-slate-950/90 shadow-[0_0_60px_rgba(223,183,108,0.22)] mb-8 animate-gentle-logo overflow-hidden">
+01106:                             <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-full h-full rounded-full object-cover">
+01107:                         </div>
+01108:                         
+01109:                         <div class="px-5 py-1.5 rounded-full bg-amber-500/5 border border-amber-500/20 mb-3">
+01110:                             
+01111:                             <span class="text-[10px] font-bold text-amber-500/80 tracking-[0.25em] font-luxury">Established Seclusion</span>
+01112:                         </div>
+01113:                         
+01114:                         <h1 class="text-4xl md:text-5xl font-black tracking-[0.28em] text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-amber-500 font-luxury mb-2.5 select-none italic text-center">SecretRoom</h1>
+01115:                         <p class="text-amber-500/95 text-xs font-extrabold tracking-[0.4em] text-center">頂級會員制 · 私生活交流俱樂部</p>
+
+===== app.js:1168-1269 =====
+01168:                     <div id="login-error-box" class="hidden mb-4 p-3 rounded-2xl bg-red-500/10 border border-red-400/25 text-red-200 text-xs font-bold leading-relaxed"></div>
+01169:                     
+01170:                     <div class="space-y-4">
+01171:                         <div>
+01172:                             
+01173:                             <label class="block text-xs font-bold text-slate-400 mb-1.5 tracking-wider">帳號</label>
+01174:                             <input type="text" id="login-username" class="w-full bg-slate-900/60 border border-slate-800 rounded-xl px-3.5 py-3 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
+01175:                         </div>
+01176:                         <div>
+01177:                             
+01178:                             <label class="block text-xs font-bold text-slate-400 mb-1.5 tracking-wider">密碼</label>
+01179:                             <div class="relative">
+01180:                                 <input type="password" id="login-password" class="w-full bg-slate-900/60 border border-slate-800 rounded-xl pl-3.5 pr-10 py-3 text-sm text-white focus:outline-none focus:border-amber-500 transition" required>
+01181:                                 <button type="button" onclick="togglePasswordVisibility('login-password', this)" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-amber-500 transition focus:outline-none">
+01182:                                     <i class="fa-solid fa-eye-slash text-xs"></i>
+01183:                                 </button>
+01184:                             </div>
+01185:                         </div>
+01186:                         
+01187:                         <button id="btn-login-submit" class="w-full brushed-gold font-bold text-sm py-4 rounded-xl transition tracking-wider crystal-border hover-breath click-press">
+01188:                             進入俱樂部
+01189:                         </button>
+01190:                         <button type="button" id="btn-forgot-password" class="w-full text-xs text-slate-400 hover:text-amber-300 transition font-bold py-1.5 click-press">
+01191:                             忘記密碼
+01192:                         </button>
+01193:                     </div>
+01194:                 </div>
+01195:             `;
+01196:             document.body.appendChild(modal);
+01197:   
+01198:             document.getElementById('close-login').onclick = () => modal.remove();
+01199:             const forgotBtn = document.getElementById('btn-forgot-password');
+01200:             if (forgotBtn) forgotBtn.onclick = () => showPasswordResetRequestModal(modal);
+01201:   
+01202:             const loginSubmitBtn = document.getElementById('btn-login-submit');
+01203:             const showLoginError = (message) => {
+01204:                 showToast(message, 'error');
+01205:                 const errorBox = document.getElementById('login-error-box');
+01206:                 if (errorBox) {
+01207:                     errorBox.textContent = message;
+01208:                     errorBox.classList.remove('hidden');
+01209:                 }
+01210:             };
+01211:             const handleLoginSubmit = async () => {
+01212:                 const usernameInput = document.getElementById('login-username').value.trim();
+01213:                 const passwordInput = document.getElementById('login-password').value;
+01214:   
+01215:                 if (!usernameInput || !passwordInput) {
+01216:                     showLoginError('請填寫完整登入資訊！');
+01217:                     return;
+01218:                 }
+01219:   
+01220:                 if (!db) {
+01221:                     showLoginError('伺服器尚未完成連線，請稍後再登入。');
+01222:                     return;
+01223:                 }
+01224:   
+01225:                 loginSubmitBtn.disabled = true;
+01226:                 loginSubmitBtn.classList.add('opacity-60', 'cursor-not-allowed');
+01227:                 const originalText = loginSubmitBtn.innerHTML;
+01228:                 loginSubmitBtn.innerHTML = '驗證中...';
+01229:                 showLoading();
+01230:                 try {
+01231:                     const appRef = doc(db, 'secretg_apps', appId, 'applications', usernameInput);
+01232:                     const docSnap = await withTimeout(getDoc(appRef), 12000, '登入驗證逾時，請檢查網路或稍後重試。');
+01233:   
+01234:                     if (docSnap.exists()) {
+01235:                         const data = docSnap.data();
+01236:                         if (data.password === passwordInput) {
+01237:                             window.state.userData = data;
+01238:                             window.state.applicationId = usernameInput;
+01239:                             localStorage.setItem('sr_username', usernameInput);
+01240:                             
+01241:                             modal.remove();
+01242:                             showToast('登入成功！正在載入俱樂部...', 'success');
+01243:   
+01244:                             if (data.status === 'pending') navigate('pending');
+01245:                             else if (data.status === 'rejected') navigate('rejected');
+01246:                             else if (data.status === 'approved' || data.status === 'active') {
+01247:                                 if (!data.telegramInfo) navigate('telegram-bind');
+01248:                                 else navigate('dashboard');
+01249:                             } else {
+01250:                                 showLoginError('帳號狀態尚未啟用，請等待審核。');
+01251:                             }
+01252:                         } else {
+01253:                             showLoginError('密碼不正確，請重新檢查。');
+01254:                         }
+01255:                     } else {
+01256:                         showLoginError('該帳號未完成帳號申請。');
+01257:                     }
+01258:                 } catch (err) {
+01259:                     console.error("登入驗證錯誤:", err);
+01260:                     showLoginError(err.message || '驗證異常，請稍後重試。');
+01261:                 } finally {
+01262:                     hideLoading();
+01263:                     if (document.body.contains(loginSubmitBtn)) {
+01264:                         loginSubmitBtn.disabled = false;
+01265:                         loginSubmitBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+01266:                         loginSubmitBtn.innerHTML = originalText;
+01267:                     }
+01268:                 }
+01269:             };
+
+===== app.js:1570-1614 =====
+01570:                     const checkRef = doc(db, 'secretg_apps', appId, 'applications', username);
+01571:                     const checkSnap = await getDoc(checkRef);
+01572:                     if (checkSnap.exists()) {
+01573:                         showToast('該帳號已存在！請更換其他設定帳號。', 'error');
+01574:                         hideLoading();
+01575:                         return;
+01576:                     }
+01577:   
+01578:                     const appPayload = {
+01579:                         status: 'pending',
+01580:                         password,
+01581:                         nickname,
+01582:                         email, 
+01583:                         birthYear: year,
+01584:                         birthMonth: month,
+01585:                         birthDay: day,
+01586:                         height,
+01587:                         weight,
+01588:                         length,
+01589:                         girth,
+01590:                         kinks: selectedKinks,
+01591:                         avatar: base64Avatar,
+01592:                         avatarStatus: 'approved', 
+01593:                         createdAt: serverTimestamp()
+01594:                     };
+01595:   
+01596:                     await setDoc(checkRef, appPayload);
+01597:   
+01598:                     window.state.userData = appPayload;
+01599:                     window.state.applicationId = username;
+01600:                     localStorage.setItem('sr_username', username);
+01601:   
+01602:                     showToast('申請資料提交成功！請靜待審核查驗。', 'success');
+01603:                     navigate('pending');
+01604:                 } catch (err) {
+01605:                     console.error("資料寫入錯誤:", err);
+01606:                     showToast('寫入失敗: ' + err.message, 'error');
+01607:                 } finally {
+01608:                     hideLoading();
+01609:                 }
+01610:             };
+01611:         }
+01612:   
+01613:         function renderPending(container) {
+01614:             container.innerHTML = `
+
+===== app.js:1716-1865 =====
+01716:   
+01717:                     if (uInput) { uInput.value = window.state.applicationId; uInput.disabled = true; }
+01718:                     if (nInput) nInput.value = draft.nickname || '';
+01719:                     if (hInput) hInput.value = draft.height || '';
+01720:                     if (wInput) wInput.value = draft.weight || '';
+01721:                     if (lInput) lInput.value = draft.length || '';
+01722:                     if (gInput) gInput.value = draft.girth || '';
+01723:   
+01724:                     if (draft.birthYear) document.getElementById('reg-year').value = draft.birthYear;
+01725:                     if (draft.birthMonth) document.getElementById('reg-month').value = draft.birthMonth;
+01726:                     if (draft.birthDay) document.getElementById('reg-day').value = draft.birthDay;
+01727:   
+01728:                     if (draft.kinks && draft.kinks.length > 0) {
+01729:                         draft.kinks.forEach(k => {
+01730:                             const cb = document.querySelector(`input[name="reg-kink"][value="${k}"]`);
+01731:                             if (cb) cb.checked = true;
+01732:                         });
+01733:                     }
+01734:                 }, 100);
+01735:             };
+01736:         }
+01737: 
+01738:         function renderTelegramBind(container) {
+01739:             container.innerHTML = `
+01740:                 <div class="flex flex-col items-center justify-center min-h-[100dvh] w-full px-6 bg-transparent">
+01741:                     
+01742:                     <div class="w-[92vw] max-w-md glass-panel rounded-3xl p-8 relative text-center space-y-6 crystal-border">
+01743:                         
+01744:                         <button id="btn-bind-cancel" class="absolute top-5 left-5 text-slate-400 hover:text-white transition text-xs font-semibold flex items-center gap-1 hover-breath click-press">
+01745:                             <i class="fa-solid fa-arrow-left text-amber-500"></i> 返回首頁
+01746:                         </button>
+01747: 
+01748:                         <div class="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center text-blue-400 text-3xl mx-auto border border-blue-500/20 animate-pulse mt-4">
+01749:                             <i class="fa-brands fa-telegram"></i>
+01750:                         </div>
+01751:                         <div class="space-y-2.5">
+01752:                             
+01753:                             <h2 class="text-xl font-bold text-white font-luxury">Telegram Binding</h2>
+01754:                             <p class="text-sm text-slate-300 leading-relaxed px-4">
+01755:                                 為開啟高級警報防護與即時密語傳輸，請在下方透過 Telegram 官方進行安全登入綁定。
+01756:                             </p>
+01757:                         </div>
+01758:                         
+01759:                         <div class="p-6 bg-slate-900/40 border border-amber-500/10 rounded-2xl flex flex-col items-center justify-center space-y-4">
+01760:                             <p class="text-xs text-slate-400 leading-relaxed text-center">請點擊下方按鈕以安全登入並關聯您的 Telegram 帳號：</p>
+01761:                             <div id="telegram-widget-anchor" class="min-h-[44px] flex items-center justify-center transition duration-300">
+01762:                                 <span class="text-xs text-amber-500/50 flex items-center gap-1.5 animate-pulse">
+01763:                                     <i class="fa-solid fa-circle-notch text-amber-500 animate-spin"></i> 正在加載官方驗證入口...
+01764:                                 </span>
+01765:                             </div>
+01766:                         </div>
+01767:                     </div>
+01768:                 </div>
+01769:             `;
+01770: 
+01771:             document.getElementById('btn-bind-cancel').onclick = () => {
+01772:                 localStorage.removeItem('sr_username');
+01773:                 window.state.userData = {};
+01774:                 window.state.applicationId = null;
+01775:                 navigate('landing');
+01776:             };
+01777: 
+01778:             setTimeout(() => {
+01779:                 const anchor = document.getElementById('telegram-widget-anchor');
+01780:                 if (anchor) {
+01781:                     anchor.innerHTML = ''; 
+01782:                     const script = document.createElement('script');
+01783:                     script.async = true;
+01784:                     script.src = "https://telegram.org/js/telegram-widget.js?22";
+01785:                     script.setAttribute('data-telegram-login', telegramBotName);
+01786:                     script.setAttribute('data-size', 'large');
+01787:                     script.setAttribute('data-radius', '12');
+01788:                     script.setAttribute('data-userpic', 'true');
+01789:                     script.setAttribute('data-onauth', 'onTelegramAuth(user)');
+01790:                     script.setAttribute('data-request-access', 'write');
+01791:                     anchor.appendChild(script);
+01792:                 }
+01793:             }, 300);
+01794: 
+01795:             window.onTelegramAuth = async function(user) {
+01796:                 if (!user) {
+01797:                     showToast('Telegram 授權驗證失敗，請重試！', 'error');
+01798:                     return;
+01799:                 }
+01800:                 showLoading();
+01801:                 try {
+01802:                     if (db) {
+01803:                         const appsRef = collection(db, 'secretg_apps', appId, 'applications');
+01804:                         const querySnapshot = await getDocs(appsRef);
+01805:                         
+01806:                         let isAlreadyBound = false;
+01807:                         let boundUserNickname = '';
+01808:                         
+01809:                         querySnapshot.forEach((docSnap) => {
+01810:                             const data = docSnap.data();
+01811:                             if (docSnap.id !== window.state.applicationId && data.telegramInfo && String(data.telegramInfo.id) === String(user.id)) {
+01812:                                 isAlreadyBound = true;
+01813:                                 boundUserNickname = data.nickname || docSnap.id;
+01814:                             }
+01815:                         });
+01816: 
+01817:                         if (isAlreadyBound) {
+01818:                             showToast(`此 Telegram 帳號已被使用者 @${boundUserNickname} 綁定，無法重複綁定！`, 'error');
+01819:                             hideLoading();
+01820:                             return;
+01821:                         }
+01822: 
+01823:                         const appRef = doc(db, 'secretg_apps', appId, 'applications', window.state.applicationId);
+01824:                         const telegramPayload = {
+01825:                             id: user.id,
+01826:                             first_name: user.first_name || '',
+01827:                             last_name: user.last_name || '',
+01828:                             username: user.username || '',
+01829:                             photo_url: user.photo_url || '',
+01830:                             auth_date: user.auth_date || 0,
+01831:                             hash: user.hash || ''
+01832:                         };
+01833: 
+01834:                         await updateDoc(appRef, {
+01835:                             telegramInfo: telegramPayload
+01836:                         });
+01837: 
+01838:                         window.state.userData.telegramInfo = telegramPayload;
+01839:                         showToast('Telegram 官方授權與防護網已安全啟用 ✓', 'success');
+01840:                         navigate('dashboard');
+01841:                     }
+01842:                 } catch (err) {
+01843:                     console.error("更新 Telegram 綁定失敗:", err);
+01844:                     showToast('綁定資料傳輸失敗：' + err.message, 'error');
+01845:                 } finally {
+01846:                     hideLoading();
+01847:                 }
+01848:             };
+01849:         }
+01850:   
+01851:         function renderMobileFeatureMenuHtml() {
+01852:             const users = (window.state.activeUsers || [])
+01853:                 .filter(u => u && u.id && u.id !== window.state.applicationId)
+01854:                 .slice(0, 8);
+01855:             const bgmEnabled = !!(window.luxuryBgm && window.luxuryBgm.audio && !window.luxuryBgm.audio.paused && window.luxuryBgm.isPlaying);
+01856:             const tagButtons = window.state.kinksOptions.slice(0, 10).map(k => `
+01857:                 <button onclick="mobileSelectTag('${escapeJsString(k)}')" class="text-[11px] font-bold bg-slate-950/55 border border-amber-500/15 px-3 py-2 rounded-full text-slate-300 transition hover-breath click-press">
+01858:                     # ${escapeHtml(k)}
+01859:                 </button>
+01860:             `).join('');
+01861:             const userCards = users.length === 0 ? `
+01862:                 <div class="text-xs text-slate-500 py-3 text-center border border-amber-500/10 rounded-2xl bg-slate-950/35">目前尚無其他活躍帳號</div>
+01863:             ` : users.map(user => `
+01864:                 <button onclick="mobileOpenUserProfile('${escapeJsString(user.id)}')" class="w-full flex items-center justify-between p-2.5 bg-slate-950/45 rounded-2xl border border-amber-500/10 transition hover-breath click-press">
+01865:                     <span class="flex items-center gap-2.5 min-w-0 text-left">
+
+===== app.js:3320-3364 =====
+03320:                     </div>
+03321:   
+03322:                     <div class="space-y-1.5 pt-1 flex flex-col items-center">
+03323:                         <h2 class="text-xl font-bold text-white tracking-wide flex items-center gap-1.5 justify-center">
+03324:                             <span>${profileUser.nickname}</span>
+03325:                         </h2>
+03326:                         <span class="text-sm text-slate-550 block font-mono">@${profileUserId}</span>
+03327:                         
+03328:                         <div class="flex items-center justify-center gap-2 mt-4.5 flex-wrap">
+03329:                             ${getBadgeHTML(profileUser, true)}
+03330:                         </div>
+03331:                     </div>
+03332:   
+03333:                     <div class="grid grid-cols-2 gap-3 w-full bg-slate-950/60 p-4 border border-amber-500/10 rounded-2xl text-sm text-left text-slate-300 shadow-inner">
+03334:                         <div><span class="text-slate-500 font-semibold mr-1">身高體重:</span> <span class="text-amber-500 font-bold">${profileUser.height} cm / ${profileUser.weight} kg</span></div>
+03335:                         <div><span class="text-slate-500 font-semibold mr-1">私密數字:</span> <span class="text-amber-500 font-bold">長 ${profileUser.length} cm / 粗 ${profileUser.girth} cm</span></div>
+03336:                         <div class="col-span-2 pt-2 border-t border-amber-500/10 mt-2">
+03337:                             <span class="text-slate-500 font-semibold">偏好主題:</span>
+03338:                             <p class="text-slate-200 mt-1.5 text-xs leading-relaxed font-semibold">${kinksStr}</p>
+03339:                         </div>
+03340:                     </div>
+03341:   
+03342:                     ${isMe && profileUser.avatarStatus === 'pending' ? `
+03343:                         <div class="w-full p-3 bg-purple-500/5 border border-purple-500/10 rounded-xl text-xs text-purple-400 font-bold flex items-center justify-center gap-1.5 select-none animate-pulse">
+03344:                             <i class="fa-solid fa-camera"></i> 新大頭相片正在背景人工審核中... (暫以原頭像顯示)
+03345:                         </div>
+03346:                     ` : ''}
+03347:   
+03348:                     ${specApplyBtnHtml}
+03349:   
+03350:                     ${isMe ? `
+03351:                         <button onclick="showEditProfileModal()" class="w-full bg-slate-900 text-slate-300 font-semibold text-xs py-3 px-4 rounded-xl border border-slate-800 transition duration-300 hover-breath click-press">
+03352:                             修改個人資料
+03353:                         </button>
+03354:                         <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-2">
+03355:                             <button onclick="exportMyData()" class="w-full bg-slate-950/60 text-slate-400 font-semibold text-xs py-3 px-4 rounded-xl border border-amber-500/10 transition duration-300 hover-breath click-press">
+03356:                                 匯出個人資料
+03357:                             </button>
+03358:                             ${profileUser.accountDeletionStatus === 'pending' ? `
+03359:                                 <button class="w-full bg-rose-500/5 text-rose-300/70 font-bold text-xs py-3 px-4 rounded-xl border border-rose-500/15 cursor-not-allowed">刪除申請審核中</button>
+03360:                             ` : `
+03361:                                 <button onclick="showAccountDeletionRequestModal()" class="w-full bg-rose-500/5 text-rose-300 font-bold text-xs py-3 px-4 rounded-xl border border-rose-500/20 transition duration-300 hover-breath click-press">
+03362:                                     申請刪除帳號
+03363:                                 </button>
+03364:                             `}
+
+===== app.js:3929-3973 =====
+03929:                         kinks: selectedKinks,
+03930:                         likes: {},
+03931:                         likeCount: 0,
+03932:                         ratings: {},
+03933:                         comments: {},
+03934:                         viewCount: 0,
+03935:                         reports: [],
+03936:                         reportCount: 0,
+03937:                         createdAt: serverTimestamp()
+03938:                     });
+03939:   
+03940:                     modal.remove();
+03941:                     showToast('動態已發布', 'success');
+03942:                 } catch (err) {
+03943:                     console.error("貼文失敗:", err);
+03944:                     showToast('貼文失敗: ' + err.message, 'error');
+03945:                 } finally {
+03946:                     hideLoading();
+03947:                 }
+03948:             };
+03949:         }
+03950:   
+03951:         window.showPasswordResetRequestModal = function(previousModal = null) {
+03952:             const modal = document.createElement('div');
+03953:             modal.className = 'fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md';
+03954:             modal.innerHTML = `
+03955:                 <div class="glass-panel border border-amber-500/20 rounded-3xl p-6 w-[92vw] max-w-sm shadow-2xl relative crystal-border">
+03956:                     <button id="close-reset-request" class="absolute top-4 right-4 text-slate-550 hover:text-white text-2xl transition hover-breath click-press">&times;</button>
+03957:                     <h3 class="text-lg font-black text-white mb-1 font-luxury"><i class="fa-solid fa-user-lock text-amber-500 mr-2"></i>忘記密碼</h3>
+03958:                     <p class="text-xs text-slate-400 leading-relaxed mb-5">請輸入會員帳號與註冊時綁定的通知信箱。系統會先比對既有會員資料，只有資料相符才會送出重新設定申請。</p>
+03959:                     <div class="space-y-3">
+03960:                         <input id="reset-request-id" class="w-full bg-slate-900 border border-amber-500/10 rounded-xl px-3.5 py-3 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="會員帳號 ID">
+03961:                         <input id="reset-request-email" type="email" class="w-full bg-slate-900 border border-amber-500/10 rounded-xl px-3.5 py-3 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="註冊綁定信箱">
+03962:                         <button id="btn-submit-reset-request" class="w-full brushed-gold font-bold text-sm py-3.5 rounded-xl crystal-border hover-breath click-press">送出忘記密碼申請</button>
+03963:                     </div>
+03964:                 </div>
+03965:             `;
+03966:             document.body.appendChild(modal);
+03967:             document.getElementById('close-reset-request').onclick = () => modal.remove();
+03968:             document.getElementById('btn-submit-reset-request').onclick = async () => {
+03969:                 const userId = document.getElementById('reset-request-id').value.trim();
+03970:                 const email = document.getElementById('reset-request-email').value.trim().toLowerCase();
+03971:                 if (!userId || !email) { showToast('請填寫帳號與註冊綁定信箱。', 'error'); return; }
+03972:                 if (!/^\S+@\S+\.\S+$/.test(email)) { showToast('請輸入有效的 Email 格式。', 'error'); return; }
+03973:                 if (!db) { showToast('伺服器尚未完成連線，請稍後再試。', 'error'); return; }
+
+===== app.js:3984-4028 =====
+03984:                     if (!boundEmail || boundEmail !== email) {
+03985:                         showToast('查無符合的會員帳號或綁定信箱，請確認後再送出。', 'error');
+03986:                         return;
+03987:                     }
+03988:                     const memberStatus = String(userData.status || '').toLowerCase();
+03989:                     if (memberStatus && !['approved', 'active'].includes(memberStatus)) {
+03990:                         showToast('此帳號尚未通過審核，無法使用忘記密碼功能。', 'error');
+03991:                         return;
+03992:                     }
+03993:                     const existingQuery = query(collection(db, 'secretg_apps', appId, 'password_reset_requests'), where('userId', '==', userId), where('status', '==', 'pending'));
+03994:                     const existingSnap = await getDocs(existingQuery);
+03995:                     if (!existingSnap.empty) {
+03996:                         showToast('此帳號已有待處理的忘記密碼申請，請等待處理。', 'info');
+03997:                         modal.remove();
+03998:                         if (previousModal && previousModal.remove) previousModal.remove();
+03999:                         return;
+04000:                     }
+04001:                     const reqRef = doc(collection(db, 'secretg_apps', appId, 'password_reset_requests'));
+04002:                     await setDoc(reqRef, {
+04003:                         userId,
+04004:                         email,
+04005:                         status: 'pending',
+04006:                         type: 'forgot_password',
+04007:                         verifiedMember: true,
+04008:                         userDisplayName: userData.nickname || userData.displayName || userId,
+04009:                         memberStatus: userData.status || '',
+04010:                         createdAt: serverTimestamp(),
+04011:                         createdAtMs: Date.now(),
+04012:                         userAgent: navigator.userAgent || ''
+04013:                     });
+04014:                     modal.remove();
+04015:                     if (previousModal && previousModal.remove) previousModal.remove();
+04016:                     showToast('忘記密碼申請已送出，請等待管理員協助設定新密碼。', 'success');
+04017:                 } catch (err) {
+04018:                     console.error('忘記密碼申請失敗:', err);
+04019:                     showToast('申請送出失敗：' + err.message, 'error');
+04020:                 } finally {
+04021:                     hideLoading();
+04022:                 }
+04023:             };
+04024:         };
+04025: 
+04026:         window.exportMyData = function() {
+04027:             const payload = {
+04028:                 exportedAt: new Date().toISOString(),
+
+===== app.js:4220-4281 =====
+04220:                     showToast('暱稱不能為空！', 'error');
+04221:                     return;
+04222:                 }
+04223:                 if (selectedKinks.length === 0) {
+04224:                     showToast('請至少選擇一項感興趣的主題標籤！', 'error');
+04225:                     return;
+04226:                 }
+04227: 
+04228:                 showLoading();
+04229:                 try {
+04230:                     const userRef = doc(db, 'secretg_apps', appId, 'applications', window.state.applicationId);
+04231:                     const updates = {
+04232:                         nickname,
+04233:                         height,
+04234:                         weight,
+04235:                         length,
+04236:                         girth,
+04237:                         kinks: selectedKinks
+04238:                     };
+04239: 
+04240:                     if (pendingBase64) {
+04241:                         updates.avatarPending = pendingBase64;
+04242:                         updates.avatarStatus = 'pending';
+04243:                     }
+04244: 
+04245:                     await updateDoc(userRef, updates);
+04246:                     if (pendingBase64) {
+04247:                         await createUserNotification({
+04248:                             type: 'avatar',
+04249:                             tone: 'pending',
+04250:                             title: '大頭照更換已送審',
+04251:                             message: '您的新頭像已提交管理員審核，通過後會自動更新到個人頁面。',
+04252:                             status: '審查中'
+04253:                         });
+04254:                     }
+04255: 
+04256:                     window.state.userData = { ...window.state.userData, ...updates };
+04257:                     if (pendingBase64) {
+04258:                         window.state.userData.avatarPending = pendingBase64;
+04259:                         window.state.userData.avatarStatus = 'pending';
+04260:                     }
+04261: 
+04262:                     modal.remove();
+04263:                     showToast('個人資料已成功更新！', 'success');
+04264:                     renderDashboard(appContainer);
+04265:                 } catch (err) {
+04266:                     console.error("更新檔案失敗:", err);
+04267:                     showToast('更新失敗，請稍後重試: ' + err.message, 'error');
+04268:                 } finally {
+04269:                     hideLoading();
+04270:                 }
+04271:             };
+04272:         };
+04273: 
+04274:         window.showSpecApplyModal = () => {
+04275:             const modal = document.createElement('div');
+04276:             modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md';
+04277:             modal.innerHTML = `
+04278:                 
+04279:                 <div class="glass-panel border border-amber-500/20 rounded-3xl p-6 w-[92vw] max-w-sm shadow-2xl relative crystal-border">
+04280:                     <button id="close-spec" class="absolute top-4 right-4 text-slate-550 hover:text-white text-2xl transition hover-breath click-press">&times;</button>
+04281:                     
+
+===== app.js:4571-4617 =====
+04571:       button.innerHTML = button.dataset.srOriginalText || '登入';
+04572:     }
+04573:   }
+04574: 
+04575:   function showLoginError(message) {
+04576:     const box = document.getElementById('login-error-box');
+04577:     if (box) {
+04578:       box.textContent = message;
+04579:       box.classList.remove('hidden');
+04580:     }
+04581:     SRP.toast(message, 'error');
+04582:   }
+04583: 
+04584:   function clearLoginError() {
+04585:     const box = document.getElementById('login-error-box');
+04586:     if (box) {
+04587:       box.textContent = '';
+04588:       box.classList.add('hidden');
+04589:     }
+04590:   }
+04591: 
+04592:   window.SRP.sendMail = async (user, id, message) => {
+04593:     if (!window.emailjs || !user?.email) return;
+04594:     try {
+04595:       await emailjs.send('service_1ou10mi', 'template_sr_security', {
+04596:         to_email: user.email,
+04597:         to_name: user.nickname || id,
+04598:         status_text: 'SecretRoom 密碼已更新',
+04599:         message: message || '你的 SecretRoom 密碼剛剛已更新。不是你本人操作的話，請盡快聯絡管理員。',
+04600:         email_type: '帳號安全提醒',
+04601:         member_id: id
+04602:       }, { publicKey: 'XggJY7iHQcZYYhNY7' });
+04603:     } catch (error) {
+04604:       console.warn('密碼安全提醒寄送失敗:', error);
+04605:     }
+04606:   };
+04607: 
+04608:   window.SRP_enter = function(id) {
+04609:     localStorage.setItem('sr_username', id);
+04610:     localStorage.setItem(LAST_LOGIN_KEY, id);
+04611:     SRP.toast('登入成功，正在帶你進去。', 'success');
+04612:     setTimeout(() => location.reload(), 450);
+04613:   };
+04614: 
+04615:   function passwordFieldHtml(id, placeholder) {
+04616:     return `<div class="relative"><input id="${id}" type="password" class="w-full bg-slate-900 border border-amber-500/10 rounded-xl pl-3.5 pr-11 py-3 text-sm text-white focus:outline-none focus:border-amber-500" placeholder="${placeholder}"><button type="button" data-sr-toggle-password="${id}" class="absolute inset-y-0 right-0 min-w-[44px] flex items-center justify-center text-slate-400 hover:text-amber-300" aria-label="顯示或隱藏密碼"><i class="fa-solid fa-eye-slash text-xs"></i></button></div>`;
+04617:   }
+
+===== app.js:4758-4864 =====
+04758:       try {
+04759:         const { db, fs } = await SRP.tools();
+04760:         const userRef = fs.doc(db, 'secretg_apps', SRP.app, 'applications', userId);
+04761:         const userSnapshot = await fs.getDoc(userRef);
+04762:         if (!userSnapshot.exists()) throw new Error('帳號或註冊信箱不相符。');
+04763:         const user = userSnapshot.data() || {};
+04764:         const boundEmail = String(user.email || user.boundEmail || user.notificationEmail || '').trim().toLowerCase();
+04765:         if (!boundEmail || boundEmail !== email) throw new Error('帳號或註冊信箱不相符。');
+04766:         const status = String(user.status || '').toLowerCase();
+04767:         if (status && !['approved', 'active'].includes(status)) throw new Error('這個帳號尚未通過審核。');
+04768:         const pendingQuery = fs.query(
+04769:           fs.collection(db, 'secretg_apps', SRP.app, 'password_reset_requests'),
+04770:           fs.where('userId', '==', userId),
+04771:           fs.where('status', '==', 'pending')
+04772:         );
+04773:         const pendingSnapshot = await fs.getDocs(pendingQuery);
+04774:         if (pendingSnapshot.empty) {
+04775:           const requestRef = fs.doc(fs.collection(db, 'secretg_apps', SRP.app, 'password_reset_requests'));
+04776:           await fs.setDoc(requestRef, {
+04777:             userId,
+04778:             email,
+04779:             status: 'pending',
+04780:             type: 'forgot_password',
+04781:             verifiedMember: true,
+04782:             userDisplayName: user.nickname || user.displayName || userId,
+04783:             memberStatus: user.status || '',
+04784:             createdAt: fs.serverTimestamp(),
+04785:             createdAtMs: Date.now(),
+04786:             userAgent: navigator.userAgent || ''
+04787:           });
+04788:         }
+04789:         renderResetStep(modal, 2, `<div class="text-center py-2"><div class="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-check text-xl"></i></div><h4 class="text-base font-black text-white">申請已送出</h4><p class="text-xs text-slate-400 leading-relaxed mt-2">臨時密碼會寄到 <span class="text-amber-300">${esc(email.replace(/(^.).*(@.*$)/, '$1***$2'))}</span>。收到後，請在 10 分鐘內回來登入。</p><div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-5"><button id="sr-reset-wait" class="min-h-[44px] bg-slate-900 text-slate-300 border border-slate-700 rounded-xl text-xs font-bold">先關閉</button><button id="sr-reset-received" class="min-h-[44px] brushed-gold rounded-xl text-xs font-black crystal-border">我已收到臨時密碼</button></div></div>`);
+04790:         document.getElementById('sr-reset-wait').onclick = () => modal.remove();
+04791:         document.getElementById('sr-reset-received').onclick = () => {
+04792:           renderResetStep(modal, 3, `<div class="text-center py-2"><div class="w-14 h-14 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 flex items-center justify-center mx-auto mb-4"><i class="fa-solid fa-right-to-bracket text-xl"></i></div><h4 class="text-base font-black text-white">用臨時密碼登入</h4><p class="text-xs text-slate-400 leading-relaxed mt-2">登入後，系統會請你立刻換成自己的新密碼。</p><button id="sr-reset-back-login" class="w-full min-h-[44px] brushed-gold rounded-xl text-sm font-black crystal-border mt-5">回到登入</button></div>`);
+04793:           document.getElementById('sr-reset-back-login').onclick = () => openLoginFromReset(modal, userId);
+04794:         };
+04795:         previousModal?.remove?.();
+04796:       } catch (error) {
+04797:         console.error('忘記密碼申請失敗:', error);
+04798:         SRP.toast(error.message || '申請沒有送出，請稍後再試。', 'error');
+04799:         setButtonBusy(button, false);
+04800:       }
+04801:     };
+04802:   };
+04803: 
+04804:   window.showPasswordResetRequestModal = window.SRP_showResetFlow;
+04805: 
+04806:   function patchLogin() {
+04807:     const button = document.getElementById('btn-login-submit');
+04808:     const idInput = document.getElementById('login-username');
+04809:     const passwordInput = document.getElementById('login-password');
+04810:     const forgot = document.getElementById('btn-forgot-password');
+04811:     if (!button || !idInput || !passwordInput) return;
+04812: 
+04813:     button.textContent = '登入';
+04814:     button.classList.add('min-h-[44px]');
+04815:     window.__srHandleLoginSubmit = SRP_login;
+04816:     button.onclick = SRP_login;
+04817: 
+04818:     if (!idInput.dataset.srLoginBound) {
+04819:       idInput.dataset.srLoginBound = '1';
+04820:       if (!idInput.value) idInput.value = localStorage.getItem(LAST_LOGIN_KEY) || '';
+04821:       idInput.addEventListener('input', () => localStorage.setItem(LAST_LOGIN_KEY, idInput.value.trim()));
+04822:     }
+04823: 
+04824:     if (!passwordInput.dataset.srCapsBound) {
+04825:       passwordInput.dataset.srCapsBound = '1';
+04826:       const hint = document.createElement('div');
+04827:       hint.id = 'sr-caps-lock-hint';
+04828:       hint.className = 'hidden mt-1.5 text-xs text-amber-300';
+04829:       hint.textContent = 'Caps Lock 已開啟';
+04830:       passwordInput.closest('div')?.parentElement?.appendChild(hint);
+04831:       const updateCaps = event => hint.classList.toggle('hidden', !event.getModifierState?.('CapsLock'));
+04832:       passwordInput.addEventListener('keydown', updateCaps);
+04833:       passwordInput.addEventListener('keyup', updateCaps);
+04834:       passwordInput.addEventListener('blur', () => hint.classList.add('hidden'));
+04835:     }
+04836: 
+04837:     if (forgot) {
+04838:       forgot.textContent = '忘記密碼？';
+04839:       forgot.classList.add('min-h-[44px]');
+04840:       forgot.onclick = event => {
+04841:         event.preventDefault();
+04842:         window.SRP_showResetFlow(forgot.closest('.fixed'));
+04843:       };
+04844:     }
+04845:     bindPasswordToggles(document);
+04846:     document.documentElement.dataset.srAuthUi = VERSION;
+04847:   }
+04848: 
+04849:   function patchProfile() {
+04850:     const submitButton = document.getElementById('btn-submit-profile-edit');
+04851:     if (!submitButton || document.getElementById('srp-profile-pass')) return;
+04852:     const box = document.createElement('div');
+04853:     box.id = 'srp-profile-pass';
+04854:     box.className = 'p-4 bg-slate-900/40 border border-amber-500/10 rounded-2xl space-y-3';
+04855:     box.innerHTML = `<span class="text-xs font-bold text-amber-500 tracking-widest block"><i class="fa-solid fa-key mr-1"></i> 更改登入密碼</span><p class="text-xs text-slate-500 leading-relaxed">先輸入目前密碼，再設定新密碼。</p>${passwordFieldHtml('srp-old', '目前密碼')}${passwordFieldHtml('srp-newp', '新密碼')}${passwordFieldHtml('srp-newp2', '再輸入一次新密碼')}<div class="text-xs text-slate-500 leading-relaxed">至少 8 碼，並包含 1 個大寫英文字母和 1 個特殊符號。</div><button type="button" id="srp-save-pass" class="w-full min-h-[44px] bg-slate-950/60 text-amber-300 font-bold text-xs py-3 px-4 rounded-xl border border-amber-500/15 transition hover-breath click-press">更新密碼</button>`;
+04856:     submitButton.parentElement.insertBefore(box, submitButton);
+04857:     bindPasswordToggles(box);
+04858:     document.getElementById('srp-save-pass').onclick = async () => {
+04859:       const saveButton = document.getElementById('srp-save-pass');
+04860:       const id = localStorage.getItem('sr_username');
+04861:       const oldPassword = document.getElementById('srp-old').value;
+04862:       const first = document.getElementById('srp-newp').value;
+04863:       const second = document.getElementById('srp-newp2').value;
+04864:       if (!oldPassword || !first || !second) return SRP.toast('目前密碼、新密碼和確認欄位都要填。', 'error');
+
+===== app.js:5884-6175 =====
+05884:       };
+05885:       toggle.__rankV4 = true;
+05886:       window.toggleLikePost = toggle;
+05887:     }
+05888:   }
+05889: 
+05890:   let queued = false;
+05891:   function schedule() {
+05892:     if (queued) return;
+05893:     queued = true;
+05894:     requestAnimationFrame(() => {
+05895:       queued = false;
+05896:       installInteractionGuards();
+05897:       render();
+05898:     });
+05899:   }
+05900: 
+05901:   window.SRRankPolicy = Object.freeze({ version:'v4', maxPosts:TOP_POSTS, maxRatingsPerReviewerAuthor:REVIEW_CAP, tiers, data:rankData, render });
+05902:   window.SRRuntime?.register(schedule);
+05903:   schedule();
+05904: })();
+05905: 
+05906: /* ===== Consolidated source: sr_phase2_directory_telegram.js ===== */
+05907: ;(() => {
+05908: // SecretRoom phase two: complete member directory search and Telegram binding.
+05909: (() => {
+05910:   if (window.__SR_PHASE2_DIRECTORY_TELEGRAM__) return;
+05911:   window.__SR_PHASE2_DIRECTORY_TELEGRAM__ = true;
+05912: 
+05913:   const APP_ID = 'secretg-production-node-tw';
+05914:   const BOT_NAME = 'SecretRoomtwBot';
+05915:   const VERSION = '20260711-phase2-directory-telegram-v4';
+05916:   const directory = new Map();
+05917:   let unsubscribe = null;
+05918:   let queued = false;
+05919:   let migrationRunning = false;
+05920: 
+05921:   const qs = id => document.getElementById(id);
+05922:   const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({
+05923:     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+05924:   }[char]));
+05925:   const currentId = () => String(window.state?.applicationId || localStorage.getItem('sr_username') || '').trim();
+05926:   const toast = (message, type = 'info') => window.showToast?.(message, type);
+05927: 
+05928:   async function tools() {
+05929:     if (window.SRP?.tools) return window.SRP.tools();
+05930:     const appMod = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js');
+05931:     const fs = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js');
+05932:     const app = appMod.getApps()[0];
+05933:     if (!app) throw new Error('Firebase 尚未初始化');
+05934:     return { db: fs.getFirestore(app), fs };
+05935:   }
+05936: 
+05937:   function isLegacyXBridge(info) {
+05938:     if (!info || typeof info !== 'object') return false;
+05939:     const provider = String(info.provider || '').toLowerCase();
+05940:     return provider.startsWith('x-') || provider.startsWith('x_') || Boolean(info.xHandle || info.xUserId);
+05941:   }
+05942: 
+05943:   function getTelegramInfo(data = {}) {
+05944:     const info = data.telegramInfo;
+05945:     return info && typeof info === 'object' && !isLegacyXBridge(info) ? info : null;
+05946:   }
+05947: 
+05948:   function telegramUsername(data = {}) {
+05949:     const info = getTelegramInfo(data) || {};
+05950:     return String(info.username || info.telegramUsername || info.handle || '').replace(/^@+/, '').trim();
+05951:   }
+05952: 
+05953:   function telegramBound(data = {}) {
+05954:     return Boolean(getTelegramInfo(data));
+05955:   }
+05956: 
+05957:   function minimal(id, data = {}) {
+05958:     return {
+05959:       id,
+05960:       nickname: data.nickname || data.displayName || id,
+05961:       avatar: data.avatar || '',
+05962:       status: data.status || '',
+05963:       kinks: Array.isArray(data.kinks) ? data.kinks : [],
+05964:       isSpecElite: Boolean(data.isSpecElite),
+05965:       role: data.role || '',
+05966:       isAdmin: Boolean(data.isAdmin),
+05967:       telegramInfo: getTelegramInfo(data)
+05968:     };
+05969:   }
+05970: 
+05971:   function includeCurrent() {
+05972:     const id = currentId();
+05973:     if (id) directory.set(id, minimal(id, window.state?.userData || {}));
+05974:   }
+05975: 
+05976:   async function syncDirectory() {
+05977:     if (unsubscribe || !window.state) return;
+05978:     try {
+05979:       const { db, fs } = await tools();
+05980:       const request = fs.query(
+05981:         fs.collection(db, 'secretg_apps', APP_ID, 'applications'),
+05982:         fs.where('status', 'in', ['approved', 'active'])
+05983:       );
+05984:       unsubscribe = fs.onSnapshot(request, snapshot => {
+05985:         directory.clear();
+05986:         snapshot.forEach(docSnap => directory.set(docSnap.id, minimal(docSnap.id, docSnap.data() || {})));
+05987:         includeCurrent();
+05988:         schedule();
+05989:       }, error => console.warn('帳號目錄同步失敗', error));
+05990:     } catch (error) {
+05991:       console.warn('帳號目錄無法啟動', error);
+05992:       includeCurrent();
+05993:     }
+05994:   }
+05995: 
+05996:   // Temporary migration only: remove compatibility data written during the retired X trial.
+05997:   async function migrateLegacySocialData() {
+05998:     if (migrationRunning || !window.state?.applicationId) return;
+05999:     const user = window.state.userData || {};
+06000:     const provider = String(user.socialBindingProvider || '').toLowerCase();
+06001:     const legacyTelegram = user.telegramInfo;
+06002:     const hasLegacyData = isLegacyXBridge(legacyTelegram) || Boolean(user.xInfo) || provider.startsWith('x');
+06003:     if (!hasLegacyData) return;
+06004: 
+06005:     migrationRunning = true;
+06006:     try {
+06007:       const realTelegram = telegramBound(user);
+06008:       const { db, fs } = await tools();
+06009:       const updates = {
+06010:         xInfo: null,
+06011:         socialBindingProvider: realTelegram ? 'telegram' : null,
+06012:         socialBindingUpdatedAt: fs.serverTimestamp(),
+06013:         socialBindingUpdatedAtMs: Date.now()
+06014:       };
+06015:       if (isLegacyXBridge(legacyTelegram)) updates.telegramInfo = null;
+06016:       await fs.updateDoc(fs.doc(db, 'secretg_apps', APP_ID, 'applications', currentId()), updates);
+06017:       window.state.userData = { ...user, ...updates };
+06018:       if (isLegacyXBridge(legacyTelegram)) {
+06019:         toast('已改回 Telegram 綁定，請完成 Telegram 驗證。', 'info');
+06020:         setTimeout(() => location.reload(), 350);
+06021:       }
+06022:     } catch (error) {
+06023:       console.warn('舊社群綁定資料清理失敗', error);
+06024:       migrationRunning = false;
+06025:     }
+06026:   }
+06027: 
+06028:   function matches(member, term) {
+06029:     const needle = term.toLocaleLowerCase('zh-TW');
+06030:     return [member.id, member.nickname, telegramUsername(member), ...(member.kinks || [])]
+06031:       .filter(Boolean)
+06032:       .join(' ')
+06033:       .toLocaleLowerCase('zh-TW')
+06034:       .includes(needle);
+06035:   }
+06036: 
+06037:   function memberRow(member, compact = false) {
+06038:     const username = telegramUsername(member);
+06039:     return `<button type="button" data-sr-member-id="${esc(member.id)}" class="w-full ${compact ? 'min-h-[52px] p-2' : 'min-h-[64px] p-3'} flex items-center justify-between gap-3 bg-slate-900/60 border border-amber-500/10 rounded-2xl text-left"><span class="flex items-center gap-3 min-w-0"><img src="${esc(member.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2')}" class="${compact ? 'w-8 h-8' : 'w-10 h-10'} rounded-full object-cover"><span class="min-w-0"><strong class="block text-sm text-slate-200 truncate">${esc(member.nickname)}</strong><span class="block text-xs text-slate-500 font-mono">@${esc(member.id)}</span>${username ? `<span class="block text-[11px] text-sky-300">Telegram @${esc(username)}</span>` : ''}</span></span><i class="fa-solid fa-chevron-right text-amber-400/70"></i></button>`;
+06040:   }
+06041: 
+06042:   function renderSearch() {
+06043:     const input = qs('feed-search-input');
+06044:     const overlay = qs('search-results-overlay');
+06045:     if (!input || !overlay || overlay.classList.contains('hidden')) return;
+06046:     const term = input.value.trim();
+06047:     if (!term) return;
+06048: 
+06049:     includeCurrent();
+06050:     const rows = Array.from(directory.values()).filter(member => matches(member, term)).slice(0, 40);
+06051:     const tab = overlay.querySelector(`button[onclick*="setSearchTab('users')"]`);
+06052:     if (tab && tab.textContent !== `帳號 (${rows.length})`) tab.textContent = `帳號 (${rows.length})`;
+06053: 
+06054:     let preview = overlay.querySelector('#sr-account-match-preview');
+06055:     if (rows.length) {
+06056:       if (!preview) {
+06057:         preview = document.createElement('section');
+06058:         preview.id = 'sr-account-match-preview';
+06059:         preview.className = 'rounded-2xl border border-sky-500/15 bg-sky-500/5 p-3';
+06060:         tab?.parentElement?.insertAdjacentElement('afterend', preview);
+06061:       }
+06062:       const key = `${term}:${rows.slice(0, 3).map(row => row.id).join('|')}`;
+06063:       if (preview.dataset.key !== key) {
+06064:         preview.dataset.key = key;
+06065:         preview.innerHTML = `<div class="flex items-center justify-between gap-3 mb-2"><strong class="text-xs text-sky-300">符合的帳號</strong><button type="button" id="sr-view-all-account-results" class="text-xs text-amber-300 font-black">查看全部 ${rows.length} 個</button></div><div class="space-y-2">${rows.slice(0, 3).map(member => memberRow(member, true)).join('')}</div>`;
+06066:         preview.querySelector('#sr-view-all-account-results').onclick = () => window.setSearchTab?.('users');
+06067:       }
+06068:     } else {
+06069:       preview?.remove();
+06070:     }
+06071: 
+06072:     if (window.state?.searchTab !== 'users') return;
+06073:     const list = overlay.querySelector('.overflow-y-auto');
+06074:     if (!list) return;
+06075:     const key = `${term}:${rows.map(row => row.id).join('|')}`;
+06076:     if (list.dataset.srDirectoryKey === key) return;
+06077:     list.dataset.srDirectoryKey = key;
+06078:     list.innerHTML = rows.length
+06079:       ? rows.map(member => memberRow(member)).join('')
+06080:       : '<div class="py-8 text-center text-slate-500"><i class="fa-solid fa-user-magnifying-glass text-2xl text-amber-500/50"></i><strong class="block text-sm text-slate-300 mt-3">找不到符合的帳號</strong><span class="block text-xs mt-1">可搜尋帳號 ID、暱稱或 Telegram 帳號。</span></div>';
+06081:   }
+06082: 
+06083:   window.SRTelegramBound = data => telegramBound(data || window.state?.userData || {});
+06084:   window.SROpenTelegramBinding = () => {
+06085:     const user = window.state?.userData || {};
+06086:     if (telegramBound(user)) {
+06087:       window.open(`https://t.me/${BOT_NAME}`, '_blank', 'noopener,noreferrer');
+06088:       return;
+06089:     }
+06090:     if (window.state) window.state.currentView = 'telegram-bind';
+06091:     if (typeof window.renderApp === 'function') window.renderApp();
+06092:     else location.reload();
+06093:   };
+06094: 
+06095:   window.SRPhase2OpenProfile = id => {
+06096:     const member = directory.get(String(id));
+06097:     if (member && window.state) {
+06098:       const list = Array.isArray(window.state.activeUsers) ? [...window.state.activeUsers] : [];
+06099:       if (!list.some(item => item.id === member.id)) list.push(member);
+06100:       window.state.activeUsers = list;
+06101:     }
+06102:     window.viewUserProfile?.(String(id));
+06103:   };
+06104: 
+06105:   function apply() {
+06106:     queued = false;
+06107:     syncDirectory();
+06108:     migrateLegacySocialData();
+06109:     renderSearch();
+06110:     document.documentElement.dataset.srPhase2DirectoryTelegram = VERSION;
+06111:   }
+06112: 
+06113:   function schedule() {
+06114:     if (queued) return;
+06115:     queued = true;
+06116:     requestAnimationFrame(apply);
+06117:   }
+06118: 
+06119:   document.addEventListener('click', event => {
+06120:     const row = event.target?.closest?.('[data-sr-member-id]');
+06121:     if (!row) return;
+06122:     event.preventDefault();
+06123:     event.stopPropagation();
+06124:     window.SRPhase2OpenProfile(row.dataset.srMemberId);
+06125:   }, true);
+06126:   document.addEventListener('input', event => {
+06127:     if (event.target?.id === 'feed-search-input') setTimeout(schedule, 170);
+06128:   }, true);
+06129:   window.SRRuntime?.register(schedule);
+06130:   apply();
+06131: })();
+06132: 
+06133: })();
+06134: 
+06135: /* ===== Consolidated source: sr_phase3_feed_safety.js ===== */
+06136: ;(() => {
+06137: // SecretRoom phase three: feed-only hiding, restore controls and Badge next steps.
+06138: (() => {
+06139:   if (window.__SR_PHASE3_FEED_SAFETY__) return;
+06140:   window.__SR_PHASE3_FEED_SAFETY__ = true;
+06141: 
+06142:   const APP_ID = 'secretg-production-node-tw';
+06143:   const VERSION = '20260711-phase3-feed-safety-v2';
+06144:   let queued = false;
+06145:   let normalizedPosts = false;
+06146: 
+06147:   const qs = id => document.getElementById(id);
+06148:   const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char]));
+06149:   const toast = (message, type = 'info') => window.showToast?.(message, type);
+06150:   const currentId = () => String(window.state?.applicationId || localStorage.getItem('sr_username') || '');
+06151:   const telegramBound = user => typeof window.SRTelegramBound === 'function'
+06152:     ? window.SRTelegramBound(user || window.state?.userData || {})
+06153:     : Boolean((user || window.state?.userData || {}).telegramInfo);
+06154: 
+06155:   async function tools() {
+06156:     if (window.SRP?.tools) return window.SRP.tools();
+06157:     const appMod = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js');
+06158:     const fs = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js');
+06159:     const app = appMod.getApps()[0];
+06160:     if (!app) throw new Error('Firebase 尚未初始化');
+06161:     return { db: fs.getFirestore(app), fs };
+06162:   }
+06163: 
+06164:   function fullPosts() {
+06165:     return Array.isArray(window.state?.posts) ? window.state.posts : [];
+06166:   }
+06167: 
+06168:   function normalizePostState() {
+06169:     if (normalizedPosts || !window.state) return;
+06170:     const descriptor = Object.getOwnPropertyDescriptor(window.state, 'posts');
+06171:     if (descriptor?.get && typeof window.SRPhase2RawPosts === 'function') {
+06172:       const raw = window.SRPhase2RawPosts();
+06173:       Object.defineProperty(window.state, 'posts', {
+06174:         configurable: true,
+06175:         enumerable: true,
+
+===== app.js:6326-6464 =====
+06326:     button.className = `w-full min-h-[44px] rounded-xl border ${blocked ? 'border-emerald-500/20 text-emerald-300' : 'border-rose-500/20 text-rose-300'} text-xs font-black mb-4`;
+06327:     button.textContent = blocked ? `解除封鎖 @${target}` : `封鎖 @${target}`;
+06328:     root.insertBefore(button, root.firstElementChild);
+06329:     button.onclick = async () => {
+06330:       try {
+06331:         await saveList('blockedUserIds', target, !blocked);
+06332:         toast(blocked ? `已解除封鎖 @${target}` : `已封鎖 @${target}`, 'success');
+06333:         (qs('aside-tab-feed') || qs('mobile-tab-feed'))?.click();
+06334:       } catch (error) {
+06335:         toast('封鎖設定失敗：' + error.message, 'error');
+06336:       }
+06337:     };
+06338:   }
+06339: 
+06340:   function addBadgeSteps() {
+06341:     if (window.state?.currentTab !== 'badge-progress') return;
+06342:     const root = qs('dashboard-tab-content');
+06343:     if (!root || qs('sr-phase3-badge-steps')) return;
+06344:     const user = window.state?.userData || {};
+06345:     const ownPosts = fullPosts().filter(post => String(post.userId || '') === currentId());
+06346:     const steps = [];
+06347:     if (!user.avatar) steps.push(['profile', '補上大頭照']);
+06348:     if (!telegramBound(user)) steps.push(['telegram', '完成 Telegram 綁定']);
+06349:     if (!ownPosts.length) steps.push(['post', '發布第一篇貼文']);
+06350:     if (!user.isSpecElite && user.specEliteStatus !== 'pending') steps.push(['spec', '申請黃金 Spec']);
+06351:     const card = document.createElement('section');
+06352:     card.id = 'sr-phase3-badge-steps';
+06353:     card.className = 'glass-panel crystal-border rounded-3xl p-5 mb-4 border border-amber-500/15';
+06354:     card.innerHTML = `<div class="text-xs text-amber-300 font-black">下一步</div><h3 class="text-lg text-white font-black mt-1">${steps.length ? '完成這些項目可解鎖更多功能' : '目前主要項目都完成了'}</h3><div class="flex flex-wrap gap-2 mt-4">${steps.map(([action, label]) => `<button data-sr-next="${action}" class="min-h-[44px] px-4 rounded-xl border border-amber-500/20 text-amber-300 text-xs font-black">${label}</button>`).join('')}</div>`;
+06355:     root.insertBefore(card, root.firstElementChild);
+06356:     card.querySelectorAll('[data-sr-next]').forEach(button => button.onclick = () => {
+06357:       const action = button.dataset.srNext;
+06358:       if (action === 'profile') (qs('aside-profile-trigger') || qs('mobile-tab-profile'))?.click();
+06359:       if (action === 'telegram') window.SROpenTelegramBinding?.();
+06360:       if (action === 'post') (qs('aside-btn-share') || qs('mobile-btn-share'))?.click();
+06361:       if (action === 'spec') window.showSpecApplyModal?.();
+06362:     });
+06363:   }
+06364: 
+06365:   function installStyles() {
+06366:     if (qs('sr-phase3-feed-safety-style')) return;
+06367:     const style = document.createElement('style');
+06368:     style.id = 'sr-phase3-feed-safety-style';
+06369:     style.textContent = '#sr-feed-compose-card{display:none!important}';
+06370:     document.head.appendChild(style);
+06371:   }
+06372: 
+06373:   function apply() {
+06374:     queued = false;
+06375:     installStyles();
+06376:     normalizePostState();
+06377:     suppressDuplicateComposer();
+06378:     addHideButtons();
+06379:     applyFeedVisibility();
+06380:     addProfileManager();
+06381:     addBlockButton();
+06382:     addBadgeSteps();
+06383:     document.documentElement.dataset.srPhase3FeedSafety = VERSION;
+06384:   }
+06385: 
+06386:   function schedule() {
+06387:     if (queued) return;
+06388:     queued = true;
+06389:     requestAnimationFrame(apply);
+06390:   }
+06391: 
+06392:   window.SRRuntime?.register(schedule);
+06393:   apply();
+06394: })();
+06395: 
+06396: })();
+06397: 
+06398: /* ===== Consolidated source: sr_phase2_onboarding.js ===== */
+06399: ;(() => {
+06400: // SecretRoom phase two: onboarding and profile completion.
+06401: (() => {
+06402:   if (window.__SR_PHASE2_ONBOARDING__) return;
+06403:   window.__SR_PHASE2_ONBOARDING__ = true;
+06404: 
+06405:   const VERSION = '20260712-phase2-onboarding-telegram-v4';
+06406:   const KEY = 'sr_phase2_onboarding_dismissed';
+06407:   let queued = false;
+06408:   const qs = id => document.getElementById(id);
+06409:   const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char]));
+06410:   const ownPosts = () => {
+06411:     const posts = window.SRPhase2RawPosts?.() || window.state?.posts || [];
+06412:     const id = String(window.state?.applicationId || '');
+06413:     return posts.filter(post => String(post.userId) === id);
+06414:   };
+06415:   const telegramBound = () => typeof window.SRTelegramBound === 'function'
+06416:     ? window.SRTelegramBound(window.state?.userData || {})
+06417:     : Boolean(window.state?.userData?.telegramInfo);
+06418: 
+06419:   function progress() {
+06420:     const user = window.state?.userData || {};
+06421:     const items = [
+06422:       ['profile', '基本資料', Boolean(user.nickname && user.email && Array.isArray(user.kinks) && user.kinks.length)],
+06423:       ['avatar', '大頭照', Boolean(user.avatar)],
+06424:       ['telegram', 'Telegram 綁定', telegramBound()],
+06425:       ['post', '第一篇貼文', ownPosts().length > 0],
+06426:       ['notifications', '查看通知', localStorage.getItem('sr_phase2_notifications_seen') === '1'],
+06427:       ['safety', '安全設定', localStorage.getItem('sr_phase2_safety_seen') === '1']
+06428:     ].map(([key, label, done]) => ({ key, label, done }));
+06429:     const done = items.filter(item => item.done).length;
+06430:     return { items, done, percent: Math.round(done / items.length * 100) };
+06431:   }
+06432: 
+06433:   function clickFirst(ids) {
+06434:     for (const id of ids) {
+06435:       const node = qs(id);
+06436:       if (node) { node.click(); return; }
+06437:     }
+06438:   }
+06439: 
+06440:   function action(name) {
+06441:     if (name === 'profile' || name === 'avatar') clickFirst(['aside-profile-trigger', 'mobile-tab-profile']);
+06442:     if (name === 'telegram') window.SROpenTelegramBinding?.();
+06443:     if (name === 'post') clickFirst(['aside-btn-share', 'mobile-btn-share']);
+06444:     if (name === 'notifications') {
+06445:       localStorage.setItem('sr_phase2_notifications_seen', '1');
+06446:       clickFirst(['aside-tab-notifications', 'mobile-btn-notifications']);
+06447:     }
+06448:     if (name === 'safety') {
+06449:       localStorage.setItem('sr_phase2_safety_seen', '1');
+06450:       window.showToast?.('可從個人頁的「隱藏與封鎖」管理已隱藏內容。', 'info');
+06451:       schedule();
+06452:     }
+06453:   }
+06454: 
+06455:   function renderOnboarding() {
+06456:     const existing = qs('sr-phase2-onboarding');
+06457:     if (window.state?.currentTab !== 'feed' || localStorage.getItem(KEY) === '1') {
+06458:       existing?.remove();
+06459:       return;
+06460:     }
+06461:     const root = qs('dashboard-tab-content');
+06462:     if (!root) return;
+06463:     const current = progress();
+06464:     if (current.percent >= 100) {
+
+===== app.js:6470-6521 =====
+06470:     card.id = 'sr-phase2-onboarding';
+06471:     card.className = 'glass-panel crystal-border rounded-3xl p-5 border border-cyan-500/15';
+06472:     card.innerHTML = `<div class="flex items-start justify-between gap-3"><div><div class="text-xs text-cyan-300 font-black">新帳號導覽</div><h3 class="text-lg text-white font-black mt-1">完成你的 SecretRoom 設定</h3><p class="text-xs text-slate-500 mt-1">已完成 ${current.done}/${current.items.length} 項。</p></div><button id="sr-onboarding-dismiss" class="w-10 h-10 rounded-full border border-slate-700 text-slate-400"><i class="fa-solid fa-xmark"></i></button></div><div class="h-2 rounded-full bg-slate-900 overflow-hidden mt-4"><span class="block h-full bg-gradient-to-r from-cyan-500 to-amber-400" style="width:${current.percent}%"></span></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4">${current.items.map(item => `<button data-sr-onboard="${item.key}" class="min-h-[44px] rounded-xl border ${item.done ? 'border-emerald-500/20 bg-emerald-500/5 text-emerald-300' : 'border-slate-800 bg-slate-950/45 text-slate-300'} text-left px-3 text-xs font-black"><i class="fa-solid ${item.done ? 'fa-circle-check' : 'fa-circle'} mr-2"></i>${esc(item.label)}</button>`).join('')}</div>`;
+06473:     root.insertBefore(card, root.firstElementChild);
+06474:     qs('sr-onboarding-dismiss').onclick = () => { localStorage.setItem(KEY, '1'); card.remove(); };
+06475:     card.querySelectorAll('[data-sr-onboard]').forEach(button => button.onclick = () => action(button.dataset.srOnboard));
+06476:   }
+06477: 
+06478:   function renderProfile() {
+06479:     const existing = qs('sr-profile-completion');
+06480:     if (window.state?.currentTab !== 'profile') {
+06481:       existing?.remove();
+06482:       return;
+06483:     }
+06484:     const root = qs('dashboard-tab-content');
+06485:     if (!root) return;
+06486:     const current = progress();
+06487:     if (current.percent >= 100) {
+06488:       existing?.remove();
+06489:       return;
+06490:     }
+06491:     if (existing) return;
+06492:     const bound = telegramBound();
+06493:     const card = document.createElement('section');
+06494:     card.id = 'sr-profile-completion';
+06495:     card.className = 'glass-panel crystal-border rounded-3xl p-5 border border-cyan-500/15 mb-4';
+06496:     card.innerHTML = `<div class="flex items-center justify-between gap-4"><div><div class="text-xs text-cyan-300 font-black">資料完成度</div><div class="text-2xl text-white font-black mt-1">${current.percent}%</div></div><div class="flex gap-2"><button id="sr-profile-edit-shortcut" class="min-h-[44px] px-4 rounded-xl border border-amber-500/20 text-amber-300 text-xs font-black">編輯資料</button><button id="sr-profile-telegram-shortcut" class="min-h-[44px] px-4 rounded-xl bg-[#229ED9] text-white text-xs font-black">${bound ? '開啟 Telegram' : '綁定 Telegram'}</button></div></div><div class="h-2 rounded-full bg-slate-900 overflow-hidden mt-4"><span class="block h-full bg-gradient-to-r from-cyan-500 to-amber-400" style="width:${current.percent}%"></span></div><div class="flex flex-wrap gap-2 mt-3">${current.items.map(item => `<span class="px-2.5 py-1 rounded-full text-[11px] border ${item.done ? 'border-emerald-500/20 text-emerald-300' : 'border-slate-700 text-slate-500'}">${item.done ? '✓' : '○'} ${esc(item.label)}</span>`).join('')}</div>`;
+06497:     root.insertBefore(card, root.firstElementChild);
+06498:     qs('sr-profile-edit-shortcut').onclick = () => window.showProfileEditModal?.();
+06499:     qs('sr-profile-telegram-shortcut').onclick = () => window.SROpenTelegramBinding?.();
+06500:   }
+06501: 
+06502:   function style() {
+06503:     if (qs('sr-phase2-onboarding-style')) return;
+06504:     const sheet = document.createElement('style');
+06505:     sheet.id = 'sr-phase2-onboarding-style';
+06506:     sheet.textContent = '@media(max-width:640px){#sr-profile-completion>.flex{align-items:flex-start;flex-direction:column}#sr-profile-completion>.flex>div:last-child{width:100%;display:grid;grid-template-columns:1fr 1fr}}';
+06507:     document.head.appendChild(sheet);
+06508:   }
+06509: 
+06510:   function apply() {
+06511:     queued = false;
+06512:     style();
+06513:     renderOnboarding();
+06514:     renderProfile();
+06515:     if (window.state?.currentTab === 'notifications') localStorage.setItem('sr_phase2_notifications_seen', '1');
+06516:     document.documentElement.dataset.srPhase2Onboarding = VERSION;
+06517:   }
+06518: 
+06519:   function schedule() {
+06520:     if (queued) return;
+06521:     queued = true;

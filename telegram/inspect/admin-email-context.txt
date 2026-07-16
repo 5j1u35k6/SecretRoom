@@ -1,0 +1,1765 @@
+
+===== admin.js:26-221 =====
+00026:   });
+00027:   new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true });
+00028:   document.addEventListener('DOMContentLoaded', schedule, { once: true });
+00029: })();
+00030: 
+00031: /* ===== Consolidated source: admin.js ===== */
+00032: ;(() => {
+00033: let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc, deleteDoc, query, where, getDocs, setDoc, serverTimestamp;
+00034: 
+00035:         const appId = 'secretg-production-node-tw';
+00036:         const firebaseConfig = {
+00037:             apiKey: "AIzaSyCNgJxYjC90DjtvTSaze5CREJf1Vt32aYQ",
+00038:             authDomain: "secretroom-ef728.firebaseapp.com",
+00039:             projectId: "secretroom-ef728",
+00040:             storageBucket: "secretroom-ef728.firebasestorage.app",
+00041:             messagingSenderId: "22006617218",
+00042:             appId: "1:22006617218:web:9e9af5c6558ea57dcb109b"
+00043:         };
+00044: 
+00045:         const emailjsConfig = {
+00046:     publicKey: "XggJY7iHQcZYYhNY7",
+00047:     serviceId: "service_1ou10mi",
+00048:     defaultTemplateId: "template_sr_notice",
+00049:     templates: {
+00050:         registrationApproved: "template_sr_notice",
+00051:         registrationRejected: "template_sr_notice",
+00052:         specApproved: "template_sr_notice",
+00053:         specRejected: "template_sr_notice",
+00054:         avatarApproved: "template_sr_notice",
+00055:         avatarRejected: "template_sr_notice",
+00056:         reportAccepted: "template_sr_notice",
+00057:         reportDismissed: "template_sr_notice",
+00058:         passwordReset: "template_sr_security",
+00059:         accountRequest: "template_sr_security"
+00060:     }
+00061: };
+00062: 
+00063:         async function loadFirebaseSDKs() {
+00064:             try {
+00065:                 const [appMod, firestoreMod] = await Promise.all([
+00066:                     import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"),
+00067:                     import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js")
+00068:                 ]);
+00069: 
+00070:                 initializeApp = appMod.initializeApp;
+00071:                 getFirestore = firestoreMod.getFirestore;
+00072:                 doc = firestoreMod.doc;
+00073:                 collection = firestoreMod.collection;
+00074:                 onSnapshot = firestoreMod.onSnapshot;
+00075:                 updateDoc = firestoreMod.updateDoc;
+00076:                 getDoc = firestoreMod.getDoc;
+00077:                 deleteDoc = firestoreMod.deleteDoc; 
+00078:                 query = firestoreMod.query;
+00079:                 where = firestoreMod.where;
+00080:                 getDocs = firestoreMod.getDocs;
+00081:                 setDoc = firestoreMod.setDoc;
+00082:                 serverTimestamp = firestoreMod.serverTimestamp;
+00083: 
+00084:                 return true;
+00085:             } catch (e) {
+00086:                 console.error("無法同步伺服器安全套件:", e);
+00087:                 return false;
+00088:             }
+00089:         }
+00090: 
+00091:         let db;
+00092:         let allApplications = [];
+00093:         let allAdmins = [];
+00094:         let allPosts = [];
+00095:         let allNotifications = [];
+00096:         let allPasswordResetRequests = [];
+00097:         let allAccountRequests = [];
+00098:         let allEmailFailures = [];
+00099:         let currentAdminId = null;
+00100:         let currentAdminSource = null;
+00101:         let userIdToDelete = null; 
+00102: 
+00103:         async function initAdmin() {
+00104:             if (emailjsConfig.publicKey && emailjsConfig.publicKey !== "YOUR_EMAILJS_PUBLIC_KEY") {
+00105:                 emailjs.init({ publicKey: emailjsConfig.publicKey, blockHeadless: false });
+00106:             }
+00107: 
+00108:             const firebaseLoaded = await loadFirebaseSDKs();
+00109:             const statusEl = document.getElementById('connection-status');
+00110: 
+00111:             if (firebaseLoaded) {
+00112:                 try {
+00113:                     const app = initializeApp(firebaseConfig);
+00114:                     db = getFirestore(app);
+00115:                     statusEl.className = "self-start px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 flex items-center gap-2";
+00116:                     statusEl.innerHTML = '<i class="fa-solid fa-circle text-[8px] animate-pulse"></i> 安全連線已建立 ✓';
+00117:                     
+00118:                     initAdminGate();
+00119:                 } catch (error) {
+00120:                     console.error("資料庫通訊協定錯誤:", error);
+00121:                     statusEl.className = "self-start px-4 py-2 rounded-full bg-red-500/10 border border-red-500/20 text-xs text-red-400 flex items-center gap-2";
+00122:                     statusEl.innerHTML = '<i class="fa-solid fa-circle text-[8px]"></i> 連線超時';
+00123:                     showMockDataInfo();
+00124:                 }
+00125:             } else {
+00126:                 statusEl.className = "self-start px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 flex items-center gap-2";
+00127:                 statusEl.innerHTML = '<i class="fa-solid fa-circle text-[8px]"></i> 離線安全沙盒環境';
+00128:                 showMockDataInfo();
+00129:             }
+00130:         }
+00131: 
+00132:         function isAdminAccount(data) {
+00133:             return !!data && data.enabled !== false && (data.role === 'admin' || data.isAdmin === true || data.canAdmin === true || data.adminApproved === true);
+00134:         }
+00135: 
+00136:         function showAdminLoginError(message) {
+00137:             const box = document.getElementById('admin-login-error');
+00138:             if (box) {
+00139:                 box.textContent = message;
+00140:                 box.classList.remove('hidden');
+00141:             }
+00142:             showToast(message, 'error');
+00143:         }
+00144: 
+00145:         async function sha256Hex(text) {
+00146:             const bytes = new TextEncoder().encode(text);
+00147:             const hashBuffer = await crypto.subtle.digest('SHA-256', bytes);
+00148:             return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+00149:         }
+00150: 
+00151:         async function verifyAdminSession(adminId, password) {
+00152:             const adminRef = doc(db, 'secretg_apps', appId, 'admins', adminId);
+00153:             const adminSnap = await getDoc(adminRef);
+00154:             if (!adminSnap.exists()) throw new Error('查無此管理員帳號。請在 admins/' + adminId + ' 建立並啟用管理員文件。');
+00155:             const data = adminSnap.data();
+00156:             const source = 'admins';
+00157: 
+00158:             if (data.enabled === false) throw new Error('此管理員帳號已停用');
+00159:             if (!password) throw new Error('請重新輸入管理員密碼');
+00160:             if (data.passwordHash) {
+00161:                 const inputHash = await sha256Hex(password);
+00162:                 if (inputHash !== data.passwordHash) throw new Error('密碼不正確');
+00163:             } else if (data.password !== password) {
+00164:                 throw new Error('密碼不正確');
+00165:             }
+00166:             if (!isAdminAccount(data)) throw new Error('此帳號沒有後台權限');
+00167:             currentAdminId = adminId;
+00168:             currentAdminSource = source;
+00169:             return data;
+00170:         }
+00171: 
+00172:         function showAdminApp() {
+00173:             const login = document.getElementById('admin-login-modal');
+00174:             const main = document.getElementById('admin-main');
+00175:             if (login) login.classList.add('hidden');
+00176:             if (main) main.classList.remove('hidden');
+00177:             listenToApplications();
+00178:             listenToAdmins();
+00179:             listenToPosts();
+00180:             listenToNotifications();
+00181:             listenToPasswordResetRequests();
+00182:             listenToAccountRequests();
+00183:             listenToEmailFailures();
+00184:         }
+00185: 
+00186:         function initAdminGate() {
+00187:             localStorage.removeItem('sr_admin_id');
+00188:             const btn = document.getElementById('admin-login-submit');
+00189:             if (!btn) return;
+00190:             btn.onclick = async () => {
+00191:                 const adminId = document.getElementById('admin-login-id').value.trim();
+00192:                 const password = document.getElementById('admin-login-password').value;
+00193:                 if (!adminId || !password) { showAdminLoginError('請輸入管理員帳號與密碼'); return; }
+00194:                 btn.disabled = true;
+00195:                 btn.textContent = '驗證中...';
+00196:                 try {
+00197:                     await verifyAdminSession(adminId, password);
+00198:                     await writeAdminLog('admin_login', adminId, { targetType: 'admin' });
+00199:                     showToast('管理員驗證成功', 'success');
+00200:                     showAdminApp();
+00201:                 } catch (err) {
+00202:                     showAdminLoginError(err.message || '管理員驗證失敗');
+00203:                 } finally {
+00204:                     btn.disabled = false;
+00205:                     btn.textContent = '登入後台';
+00206:                 }
+00207:             };
+00208:         }
+00209: 
+00210:         async function writeAdminLog(action, targetId = '', details = {}) {
+00211:             if (!db) return;
+00212:             try {
+00213:                 const logRef = doc(collection(db, 'secretg_apps', appId, 'admin_logs'));
+00214:                 await setDoc(logRef, {
+00215:                     action,
+00216:                     targetId,
+00217:                     details,
+00218:                     adminId: currentAdminId || localStorage.getItem('sr_admin_id') || 'unknown',
+00219:                     adminSource: currentAdminSource || 'unknown',
+00220:                     createdAt: serverTimestamp(),
+00221:                     createdAtMs: Date.now()
+
+===== admin.js:301-440 =====
+00301:         function updateAdminCount() {
+00302:             const ids = new Set();
+00303:             allAdmins.filter(admin => isAdminAccount(admin)).forEach(admin => ids.add(admin.id));
+00304:             const el = document.getElementById('count-admins');
+00305:             if (el) {
+00306:                 el.textContent = ids.size;
+00307:                 el.title = ids.size ? `admins 名單內目前啟用：${[...ids].sort().join(', ')}` : 'admins 名單內目前沒有啟用的管理員';
+00308:             }
+00309:         }
+00310: 
+00311:         function isTimeToday(value) {
+00312:             const t = parseTime(value);
+00313:             if (!t) return false;
+00314:             const d = new Date(t);
+00315:             const n = new Date();
+00316:             return d.getFullYear() === n.getFullYear() && d.getMonth() === n.getMonth() && d.getDate() === n.getDate();
+00317:         }
+00318: 
+00319:         function isTimeWithinDays(value, days) {
+00320:             const t = parseTime(value);
+00321:             if (!t) return false;
+00322:             return Date.now() - t <= days * 24 * 60 * 60 * 1000;
+00323:         }
+00324: 
+00325:         function isGoldSpecApproved(user) {
+00326:             if (!user) return false;
+00327:             const status = String(user.specEliteStatus || '').toLowerCase();
+00328:             return user.isSpecElite === true || status === 'approved' || status === 'active' || status === 'passed';
+00329:         }
+00330: 
+00331:         function setText(id, value) {
+00332:             const el = document.getElementById(id);
+00333:             if (el) el.textContent = value;
+00334:         }
+00335: 
+00336:         function updateOperationalStats() {
+00337:             const createdTime = (item) => item.createdAt || item.createdAtMs || item.submittedAt || item.updatedAt;
+00338:             setText('count-today-users', allApplications.filter(a => isTimeToday(createdTime(a))).length);
+00339:             setText('count-week-users', allApplications.filter(a => isTimeWithinDays(createdTime(a), 7)).length);
+00340:             setText('count-spec-users', allApplications.filter(isGoldSpecApproved).length);
+00341:             setText('count-ssg-users', allApplications.filter(isGoldSpecApproved).length);
+00342:             setText('count-today-posts', allPosts.filter(p => isTimeToday(p.createdAt || p.createdAtMs)).length);
+00343:             setText('count-account-requests', allAccountRequests.filter(r => String(r.status || 'pending') === 'pending').length);
+00344:             setText('count-password-reset', allPasswordResetRequests.filter(isValidForgotPasswordRequest).length);
+00345:         }
+00346: 
+00347:         function listenToAdmins() {
+00348:             const q = collection(db, 'secretg_apps', appId, 'admins');
+00349:             onSnapshot(q, (querySnapshot) => {
+00350:                 allAdmins = [];
+00351:                 querySnapshot.forEach((docSnap) => allAdmins.push({ id: docSnap.id, ...docSnap.data() }));
+00352:                 updateAdminCount();
+00353:             }, (error) => {
+00354:                 console.warn('管理員名錄同步失敗:', error);
+00355:                 updateAdminCount();
+00356:             });
+00357:         }
+00358: 
+00359:         function listenToApplications() {
+00360:             const q = collection(db, 'secretg_apps', appId, 'applications');
+00361:             onSnapshot(q, (querySnapshot) => {
+00362:                 allApplications = [];
+00363:                 let pendingCount = 0;
+00364:                 let avatarPendingCount = 0;
+00365: 
+00366:                 querySnapshot.forEach((docSnap) => {
+00367:                     const data = docSnap.data();
+00368:                     allApplications.push({ id: docSnap.id, ...data });
+00369: 
+00370:                     if (data.status === 'pending') pendingCount++;
+00371:                     if (data.avatarStatus === 'pending' || data.specEliteStatus === 'pending') avatarPendingCount++;
+00372:                 });
+00373: 
+00374:                 document.getElementById('count-pending').textContent = pendingCount;
+00375:                 document.getElementById('count-avatar-pending').textContent = avatarPendingCount;
+00376:                 updateAdminCount();
+00377:                 document.getElementById('count-total').textContent = allApplications.length;
+00378:                 updateOperationalStats();
+00379: 
+00380:                 renderApplications();
+00381:             }, (error) => {
+00382:                 console.error("監聽名單同步失敗:", error);
+00383:                 showToast("同步資料失敗，請檢查權限通道", "error");
+00384:             });
+00385:         }
+00386: 
+00387:         function listenToPosts() {
+00388:             const q = collection(db, 'secretg_apps', appId, 'posts');
+00389:             onSnapshot(q, (querySnapshot) => {
+00390:                 allPosts = [];
+00391:                 let reportedCount = 0;
+00392:                 let reportedCommentCount = 0;
+00393: 
+00394:                 querySnapshot.forEach((docSnap) => {
+00395:                     const data = docSnap.data();
+00396:                     allPosts.push({ id: docSnap.id, ...data });
+00397:                     if (data.reportCount && data.reportCount > 0) {
+00398:                         reportedCount++;
+00399:                     }
+00400:                     const comments = data.comments || {};
+00401:                     Object.values(comments).forEach(comment => {
+00402:                         if (comment && comment.reportCount && comment.reportCount > 0) reportedCommentCount++;
+00403:                     });
+00404:                 });
+00405: 
+00406:                 document.getElementById('count-reports').textContent = reportedCount + reportedCommentCount;
+00407:                 updateOperationalStats();
+00408:                 renderApplications(); 
+00409:             });
+00410:         }
+00411: 
+00412:         function listenToPasswordResetRequests() {
+00413:             const q = collection(db, 'secretg_apps', appId, 'password_reset_requests');
+00414:             onSnapshot(q, (querySnapshot) => {
+00415:                 allPasswordResetRequests = [];
+00416:                 querySnapshot.forEach((docSnap) => allPasswordResetRequests.push({ id: docSnap.id, ...docSnap.data() }));
+00417:                 updateOperationalStats();
+00418:                 renderApplications();
+00419:             }, (err) => console.warn('忘記密碼申請同步失敗:', err));
+00420:         }
+00421: 
+00422:         function listenToAccountRequests() {
+00423:             const q = collection(db, 'secretg_apps', appId, 'account_requests');
+00424:             onSnapshot(q, (querySnapshot) => {
+00425:                 allAccountRequests = [];
+00426:                 querySnapshot.forEach((docSnap) => allAccountRequests.push({ id: docSnap.id, ...docSnap.data() }));
+00427:                 updateOperationalStats();
+00428:                 renderApplications();
+00429:             }, (err) => console.warn('帳號申請同步失敗:', err));
+00430:         }
+00431: 
+00432:         function showMockDataInfo() {
+00433:             const listContainer = document.getElementById('admin-list');
+00434:             listContainer.innerHTML = `
+00435:                 <div class="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 text-center flex flex-col items-center justify-center gap-4">
+00436:                     <div class="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-500 text-xl">
+00437:                         <i class="fa-solid fa-circle-info"></i>
+00438:                     </div>
+00439:                     <div>
+00440:                         <h4 class="font-bold text-slate-200">安全網路診斷：本機加密沙盒已啟用</h4>
+
+===== admin.js:453-598 =====
+00453:             const modal = document.getElementById('zoom-modal');
+00454:             const img = document.getElementById('zoom-modal-img');
+00455:             if (modal && img) {
+00456:                 img.src = src;
+00457:                 modal.classList.remove('hidden');
+00458:                 setTimeout(() => modal.classList.remove('opacity-0'), 50);
+00459:             }
+00460:         }
+00461: 
+00462:         window.closeZoomModal = function() {
+00463:             const modal = document.getElementById('zoom-modal');
+00464:             if (modal) {
+00465:                 modal.classList.add('opacity-0');
+00466:                 setTimeout(() => modal.classList.add('hidden'), 300);
+00467:             }
+00468:         }
+00469: 
+00470:         function renderRequestTime(item) {
+00471:             return formatTime(item.createdAt || item.createdAtMs || item.updatedAt || item.updatedAtMs);
+00472:         }
+00473: 
+00474:         function requestStatusLabel(status) {
+00475:             const value = String(status || 'pending');
+00476:             if (value === 'completed') return '已完成';
+00477:             if (value === 'rejected') return '已拒絕';
+00478:             if (value === 'approved') return '已核准';
+00479:             return '待處理';
+00480:         }
+00481: 
+00482:         function normalizeEmail(value) {
+00483:             return String(value || '').trim().toLowerCase();
+00484:         }
+00485: 
+00486:         function getApplicationById(userId) {
+00487:             const id = String(userId || '').trim();
+00488:             if (!id) return null;
+00489:             return allApplications.find(app => String(app.id || '').trim() === id) || null;
+00490:         }
+00491: 
+00492:         function getBoundEmailFromMember(member) {
+00493:             return normalizeEmail(member && (member.email || member.boundEmail || member.notificationEmail));
+00494:         }
+00495: 
+00496:         function isActiveMemberForForgotPassword(member) {
+00497:             if (!member) return false;
+00498:             const status = String(member.status || '').toLowerCase();
+00499:             return !status || status === 'approved' || status === 'active';
+00500:         }
+00501: 
+00502:         function isValidForgotPasswordRequest(req) {
+00503:             if (!req || String(req.status || 'pending') !== 'pending') return false;
+00504:             const member = getApplicationById(req.userId);
+00505:             if (!isActiveMemberForForgotPassword(member)) return false;
+00506:             const requestEmail = normalizeEmail(req.email);
+00507:             const memberEmail = getBoundEmailFromMember(member);
+00508:             return !!requestEmail && !!memberEmail && requestEmail === memberEmail;
+00509:         }
+00510: 
+00511:         function getVisibleForgotPasswordRequests() {
+00512:             return allPasswordResetRequests.filter(req => {
+00513:                 const status = String(req.status || 'pending');
+00514:                 if (status !== 'pending') return true;
+00515:                 return isValidForgotPasswordRequest(req);
+00516:             });
+00517:         }
+00518: 
+00519:         function renderPasswordResetRequests(listContainer) {
+00520:             const searchTerm = (document.getElementById('admin-search')?.value || '').trim().toLowerCase();
+00521:             const list = getVisibleForgotPasswordRequests()
+00522:                 .filter(r => !searchTerm || `${r.userId || ''} ${r.email || ''} ${r.status || ''}`.toLowerCase().includes(searchTerm))
+00523:                 .sort((a,b) => parseTime(b.createdAt || b.createdAtMs) - parseTime(a.createdAt || a.createdAtMs));
+00524:             listContainer.innerHTML = '';
+00525:             if (list.length === 0) {
+00526:                 listContainer.innerHTML = '<div class="text-center py-12 text-slate-500 flex flex-col items-center gap-2"><i class="fa-solid fa-key text-2xl"></i><span>目前沒有忘記密碼申請</span></div>';
+00527:                 return;
+00528:             }
+00529:             list.forEach(req => {
+00530:                 const pending = String(req.status || 'pending') === 'pending';
+00531:                 const card = document.createElement('div');
+00532:                 card.className = `admin-muted-card p-5 rounded-2xl border ${pending ? 'border-amber-500/20' : 'border-slate-800/80 opacity-75'} flex flex-col md:flex-row md:items-center justify-between gap-4`;
+00533:                 card.innerHTML = `
+00534:                     <div class="space-y-1.5">
+00535:                         <div class="text-sm font-black text-slate-200">忘記密碼：@${escapeHtml(req.userId || '未填帳號')}</div>
+00536:                         <div class="text-xs text-slate-400"><i class="fa-regular fa-envelope"></i> ${escapeHtml(req.email || '未填信箱')}</div>
+00537:                         <div class="text-[10px] text-slate-500">${renderRequestTime(req)} · ${requestStatusLabel(req.status)}</div>
+00538:                     </div>
+00539:                     <div class="flex gap-2 flex-wrap">
+00540:                         ${pending ? `
+00541:                             <button onclick="completePasswordResetRequest('${req.id}')" class="bg-emerald-600/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/20 text-xs px-4 py-2.5 rounded-xl font-bold">設定新密碼</button>
+00542:                             <button onclick="rejectPasswordResetRequest('${req.id}')" class="bg-slate-800 hover:bg-red-950/40 text-slate-400 hover:text-red-300 border border-slate-700 text-xs px-4 py-2.5 rounded-xl font-bold">拒絕</button>
+00543:                         ` : '<span class="text-xs text-slate-500 px-3 py-2">已處理</span>'}
+00544:                     </div>`;
+00545:                 listContainer.appendChild(card);
+00546:             });
+00547:         }
+00548: 
+00549:         function renderAccountDeletionRequests(listContainer) {
+00550:             const searchTerm = (document.getElementById('admin-search')?.value || '').trim().toLowerCase();
+00551:             const list = [...allAccountRequests]
+00552:                 .filter(r => String(r.type || '') === 'account_delete')
+00553:                 .filter(r => !searchTerm || `${r.userId || ''} ${r.email || ''} ${r.nickname || ''} ${r.reason || ''} ${r.status || ''}`.toLowerCase().includes(searchTerm))
+00554:                 .sort((a,b) => parseTime(b.createdAt || b.createdAtMs) - parseTime(a.createdAt || a.createdAtMs));
+00555:             listContainer.innerHTML = '';
+00556:             if (list.length === 0) {
+00557:                 listContainer.innerHTML = '<div class="text-center py-12 text-slate-500 flex flex-col items-center gap-2"><i class="fa-solid fa-user-slash text-2xl"></i><span>目前沒有帳號刪除申請</span></div>';
+00558:                 return;
+00559:             }
+00560:             list.forEach(req => {
+00561:                 const pending = String(req.status || 'pending') === 'pending';
+00562:                 const card = document.createElement('div');
+00563:                 card.className = `admin-muted-card p-5 rounded-2xl border ${pending ? 'border-rose-500/25' : 'border-slate-800/80 opacity-75'} flex flex-col md:flex-row md:items-start justify-between gap-4`;
+00564:                 card.innerHTML = `
+00565:                     <div class="space-y-2 flex-1">
+00566:                         <div class="text-sm font-black text-slate-200">刪除帳號申請：${escapeHtml(req.nickname || '')} <span class="font-mono text-slate-500">@${escapeHtml(req.userId || '')}</span></div>
+00567:                         <div class="text-xs text-slate-400"><i class="fa-regular fa-envelope"></i> ${escapeHtml(req.email || '未填信箱')}</div>
+00568:                         <div class="text-xs text-slate-300 bg-slate-950/45 border border-slate-800 rounded-xl p-3">${escapeHtml(req.reason || '未填寫原因')}</div>
+00569:                         <div class="text-[10px] text-slate-500">${renderRequestTime(req)} · ${requestStatusLabel(req.status)}</div>
+00570:                     </div>
+00571:                     <div class="flex gap-2 flex-wrap">
+00572:                         ${pending ? `
+00573:                             <button onclick="approveAccountDeletionRequest('${req.id}')" class="bg-red-600/80 hover:bg-red-500 text-white text-xs px-4 py-2.5 rounded-xl font-bold">核准並刪除</button>
+00574:                             <button onclick="rejectAccountDeletionRequest('${req.id}')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs px-4 py-2.5 rounded-xl font-bold">拒絕</button>
+00575:                         ` : '<span class="text-xs text-slate-500 px-3 py-2">已處理</span>'}
+00576:                     </div>`;
+00577:                 listContainer.appendChild(card);
+00578:             });
+00579:         }
+00580: 
+00581:         function emailFailureStatusLabel(status) {
+00582:             const value = String(status || 'failed');
+00583:             if (value === 'sent') return '補寄成功';
+00584:             if (value === 'handled') return '已手動處理';
+00585:             return '發送失敗';
+00586:         }
+00587: 
+00588:         function buildEmailFailureText(item) {
+00589:             return [
+00590:                 `To: ${item.toName || item.memberId || 'SecretRoom Member'} <${item.toEmail || ''}>`,
+00591:                 `Subject: ${item.title || 'SecretRoom 通知'}`,
+00592:                 '',
+00593:                 item.message || ''
+00594:             ].join('\n');
+00595:         }
+00596: 
+00597:         function renderEmailFailures(listContainer) {
+00598:             const searchTerm = (document.getElementById('admin-search')?.value || '').trim().toLowerCase();
+
+===== admin.js:610-659 =====
+00610:                 const card = document.createElement('div');
+00611:                 card.className = `admin-muted-card p-5 rounded-2xl border ${status === 'sent' ? 'border-emerald-500/20 opacity-75' : 'border-rose-500/25'} flex flex-col md:flex-row md:items-start justify-between gap-4`;
+00612:                 card.innerHTML = `
+00613:                     <div class="space-y-2 flex-1 min-w-0">
+00614:                         <div class="text-sm font-black text-slate-200">Email 發送失敗：${escapeHtml(item.title || 'SecretRoom 通知')}</div>
+00615:                         <div class="text-xs text-slate-400"><i class="fa-regular fa-envelope"></i> ${escapeHtml(item.toEmail || '未記錄信箱')}</div>
+00616:                         <div class="text-xs text-slate-500">會員：@${escapeHtml(item.memberId || '')} · 類型：${escapeHtml(item.templateKey || 'notice')} · ${emailFailureStatusLabel(status)}</div>
+00617:                         <div class="text-xs text-rose-300 bg-rose-950/20 border border-rose-500/10 rounded-xl p-3 leading-relaxed break-words">${escapeHtml(item.errorMessage || item.lastError || '未記錄錯誤訊息')}</div>
+00618:                         <div class="text-xs text-slate-300 bg-slate-950/45 border border-slate-800 rounded-xl p-3 leading-relaxed whitespace-pre-wrap">${escapeHtml(item.message || '')}</div>
+00619:                         <div class="text-[10px] text-slate-500">${formatTime(item.createdAt || item.createdAtMs || item.lastFailedAtMs)} · 重試 ${Number(item.retryCount || 0)} 次</div>
+00620:                     </div>
+00621:                     <div class="flex gap-2 flex-wrap shrink-0">
+00622:                         ${canRetry ? `<button onclick="retryEmailFailure('${item.id}')" class="bg-emerald-600/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/20 text-xs px-4 py-2.5 rounded-xl font-bold">重新寄送</button>` : ''}
+00623:                         <button onclick="copyEmailFailureMessage('${item.id}')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs px-4 py-2.5 rounded-xl font-bold">複製內容</button>
+00624:                         ${status !== 'handled' ? `<button onclick="markEmailFailureHandled('${item.id}')" class="bg-slate-800 hover:bg-amber-950/40 text-slate-400 hover:text-amber-300 border border-slate-700 text-xs px-4 py-2.5 rounded-xl font-bold">標記已處理</button>` : ''}
+00625:                     </div>`;
+00626:                 listContainer.appendChild(card);
+00627:             });
+00628:         }
+00629: 
+00630:         window.renderApplications = function() {
+00631:             const listContainer = document.getElementById('admin-list');
+00632:             const filterValue = document.getElementById('filter-status').value;
+00633: 
+00634:             if (filterValue === 'password_reset_requests') {
+00635:                 renderPasswordResetRequests(listContainer);
+00636:                 return;
+00637:             }
+00638: 
+00639:             if (filterValue === 'account_delete_requests') {
+00640:                 renderAccountDeletionRequests(listContainer);
+00641:                 return;
+00642:             }
+00643: 
+00644:             if (filterValue === 'email_failures') {
+00645:                 renderEmailFailures(listContainer);
+00646:                 return;
+00647:             }
+00648: 
+00649:             if (filterValue === 'reported_comments') {
+00650:                 const reportedComments = [];
+00651:                 allPosts.forEach(post => {
+00652:                     const comments = post.comments || {};
+00653:                     Object.entries(comments).forEach(([commentId, comment]) => {
+00654:                         if (comment && comment.reportCount && comment.reportCount > 0) reportedComments.push({ post, comment: { id: comment.id || commentId, ...comment } });
+00655:                     });
+00656:                 });
+00657:                 listContainer.innerHTML = '';
+00658:                 if (reportedComments.length === 0) {
+00659:                     listContainer.innerHTML = `<div class="text-center py-12 text-slate-500 flex flex-col items-center gap-2"><i class="fa-solid fa-circle-check text-2xl text-emerald-500"></i><span>目前沒有任何被檢舉留言</span></div>`;
+
+===== admin.js:716-927 =====
+00716:                             <img src="${post.image}" class="w-24 h-auto rounded-xl border border-slate-800 max-h-36 object-cover cursor-zoom-in hover:scale-105 transition" onclick="zoomImage('${post.image}')">
+00717:                             
+00718:                             <div class="mt-2">
+00719:                                 <div class="text-[10px] text-slate-500 font-bold mb-1.5 uppercase"><i class="fa-solid fa-flag text-rose-500"></i> 檢舉清單 (共 ${post.reportCount} 次檢舉)</div>
+00720:                                 ${reportReasonsHtml}
+00721:                             </div>
+00722:                         </div>
+00723: 
+00724:                         <div class="flex gap-2 shrink-0 flex-wrap">
+00725:                             <button onclick="dismissReports('${post.id}')" class="bg-emerald-600/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/20 text-xs px-4 py-2.5 rounded-xl transition font-semibold flex items-center gap-1.5 shadow-lg shadow-emerald-950/10">
+00726:                                 <i class="fa-solid fa-shield-heart"></i> 反駁檢舉 / 駁回
+00727:                             </button>
+00728:                             <button onclick="deleteSinglePost('${post.id}')" class="bg-red-650 hover:bg-red-500 text-white text-xs px-4 py-2.5 rounded-xl transition font-semibold shadow-lg shadow-red-950/20 flex items-center gap-1.5">
+00729:                                 <i class="fa-solid fa-trash-can"></i> 下架並刪除貼文
+00730:                             </button>
+00731:                         </div>
+00732:                     `;
+00733:                     listContainer.appendChild(card);
+00734:                 });
+00735:                 return;
+00736:             }
+00737: 
+00738:             const searchTerm = (document.getElementById('admin-search')?.value || '').trim().toLowerCase();
+00739:             const filteredApps = allApplications.filter(app => {
+00740:                 const haystack = [app.id, app.nickname, app.email, app.telegramInfo?.username, app.telegramInfo?.id].filter(Boolean).join(' ').toLowerCase();
+00741:                 if (searchTerm && !haystack.includes(searchTerm)) return false;
+00742:                 if (filterValue === 'all') return true;
+00743:                 if (filterValue === 'avatar_pending') return app.avatarStatus === 'pending';
+00744:                 if (filterValue === 'spec_pending') return app.specEliteStatus === 'pending';
+00745:                 return app.status === filterValue;
+00746:             });
+00747: 
+00748:             listContainer.innerHTML = '';
+00749: 
+00750:             if (filteredApps.length === 0) {
+00751:                 listContainer.innerHTML = `
+00752:                     <div class="text-center py-12 text-slate-500 flex flex-col items-center gap-2">
+00753:                         <i class="fa-solid fa-folder-open text-2xl"></i>
+00754:                         <span>無符合條件的申請資料</span>
+00755:                     </div>
+00756:                 `;
+00757:                 return;
+00758:             }
+00759: 
+00760:             filteredApps.forEach((appData) => {
+00761:                 const card = document.createElement('div');
+00762:                 card.className = 'bg-slate-900/60 p-5 rounded-2xl border border-slate-800/80 hover:border-slate-700/60 transition flex flex-col md:flex-row md:items-center justify-between gap-4';
+00763:                 
+00764:                 let kinksStr = appData.kinks && appData.kinks.length > 0 ? appData.kinks.join(', ') : '無';
+00765:                 if (appData.otherKink) kinksStr += ` (其他: ${appData.otherKink})`;
+00766: 
+00767:                 const statusColors = {
+00768:                     pending: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+00769:                     approved: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+00770:                     active: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+00771:                     rejected: 'bg-red-500/10 text-red-400 border-red-500/20'
+00772:                 };
+00773:                 const currentStatusColor = statusColors[appData.status] || 'bg-slate-800 text-slate-400 border-slate-700';
+00774: 
+00775:                 let tgInfoHtml = '';
+00776:                 if (appData.telegramInfo) {
+00777:                     tgInfoHtml = `
+00778:                         <div class="mt-2 pt-2 border-t border-slate-800/60 text-xs text-blue-400 flex items-center gap-1.5">
+00779:                             <i class="fa-brands fa-telegram text-sm"></i>
+00780:                             <span>已成功綁定：@${appData.telegramInfo.username || appData.telegramInfo.first_name} (ID: ${appData.telegramInfo.id})</span>
+00781:                         </div>
+00782:                     `;
+00783:                 }
+00784: 
+00785:                 let avatarReviewHtml = '';
+00786:                 if (appData.avatarStatus === 'pending' && appData.avatarPending) {
+00787:                     avatarReviewHtml = `
+00788:                         <div class="mt-4 p-3 bg-purple-950/20 border border-purple-500/20 rounded-xl space-y-2">
+00789:                             <span class="text-xs text-purple-400 font-bold block"><i class="fa-solid fa-camera"></i> 變更頭像審查 (點擊可放大)：</span>
+00790:                             <div class="flex items-center gap-4">
+00791:                                 <div class="text-center cursor-zoom-in" onclick="zoomImage('${appData.avatar}')">
+00792:                                     <img src="${appData.avatar}" class="w-14 h-14 rounded-full object-cover border border-slate-700 hover:opacity-80 transition">
+00793:                                     <span class="text-[9px] text-slate-500 block mt-1">目前原頭像</span>
+00794:                                 </div>
+00795:                                 <i class="fa-solid fa-arrow-right text-slate-600"></i>
+00796:                                 <div class="text-center cursor-zoom-in" onclick="zoomImage('${appData.avatarPending}')">
+00797:                                     <img src="${appData.avatarPending}" class="w-14 h-14 rounded-full object-cover border-2 border-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.3)] hover:opacity-80 transition">
+00798:                                     <span class="text-[9px] text-purple-400 font-bold block mt-1">申請新頭像</span>
+00799:                                 </div>
+00800:                             </div>
+00801:                             <div class="flex gap-2 mt-2 pt-1">
+00802:                                 <button onclick="approveAvatarChange('${appData.id}')" class="bg-purple-600 hover:bg-purple-500 text-white text-[10px] px-3 py-1.5 rounded-lg transition font-semibold">核准新頭像</button>
+00803:                                 <button onclick="rejectAvatarChange('${appData.id}')" class="bg-slate-800 hover:bg-slate-750 text-slate-400 text-[10px] px-3 py-1.5 rounded-lg border border-slate-700 transition font-semibold">拒絕</button>
+00804:                             </div>
+00805:                         </div>
+00806:                     `;
+00807:                 } else {
+00808:                     avatarReviewHtml = `
+00809:                         <div class="flex items-center gap-3">
+00810:                             <div class="cursor-zoom-in" onclick="zoomImage('${appData.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}')">
+00811:                                 <img src="${appData.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-12 h-12 rounded-full object-cover border-2 border-indigo-500/20 shadow hover:opacity-80 transition">
+00812:                             </div>
+00813:                             <span class="text-xs text-slate-500 font-medium">個人大頭照 (點擊可放大)</span>
+00814:                         </div>
+00815:                     `;
+00816:                 }
+00817: 
+00818:                 let specReviewHtml = '';
+00819:                 if (appData.specEliteStatus === 'pending' && appData.specImage) {
+00820:                     specReviewHtml = `
+00821:                         <div class="mt-4 p-4 bg-amber-950/20 border border-amber-500/20 rounded-xl space-y-3 text-left">
+00822:                             <span class="text-xs text-amber-400 font-bold block"><i class="fa-solid fa-lock"></i> 收到黃金 Spec Elite 徽章申請 (獨立審核區)：</span>
+00823:                             <p class="text-[11px] text-slate-400">申報規格：長度 <strong class="text-slate-200">${appData.length}cm</strong> / 粗度 <strong class="text-slate-200">${appData.girth}cm</strong></p>
+00824:                             
+00825:                             <div class="relative w-32 h-32 rounded-lg overflow-hidden border border-slate-800 bg-slate-950 group cursor-zoom-in" onclick="zoomImage('${appData.specImage}')">
+00826:                                 <img src="${appData.specImage}" class="w-full h-full object-cover group-hover:scale-105 transition">
+00827:                                 <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-[10px] text-white gap-1">
+00828:                                     <i class="fa-solid fa-magnifying-glass-plus"></i> 點擊放大驗證
+00829:                                 </div>
+00830:                             </div>
+00831: 
+00832:                             <div class="flex gap-2 mt-1">
+00833:                                 <button onclick="approveSpecElite('${appData.id}')" class="bg-amber-600 hover:bg-amber-500 text-slate-950 text-[10px] px-3 py-1.5 rounded-lg transition font-bold shadow-md">核發黃金 Spec 徽章</button>
+00834:                                 <button onclick="rejectSpecElite('${appData.id}')" class="bg-slate-800 hover:bg-slate-750 text-slate-400 text-[10px] px-3 py-1.5 rounded-lg border border-slate-700 transition font-semibold">拒絕</button>
+00835:                             </div>
+00836:                         </div>
+00837:                     `;
+00838:                 } else if (appData.isSpecElite) {
+00839:                     specReviewHtml = `
+00840:                         <div class="mt-4 p-3 bg-slate-950/40 border border-slate-800/80 rounded-xl text-left flex justify-between items-center">
+00841:                             <div class="flex items-center gap-2">
+00842:                                 <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600 text-slate-950 shadow-yellow-500/25 animate-pulse">
+00843:                                     <i class="fa-solid fa-medal text-[10px]"></i>
+00844:                                 </span>
+00845:                                 <span class="text-xs text-slate-300 font-semibold">已取得黃金 Spec 認證 🔒</span>
+00846:                             </div>
+00847:                             <button onclick="toggleManualBadge('${appData.id}', 'isSpecElite', false)" class="text-[10px] text-red-400 hover:text-red-300 border border-red-500/10 hover:border-red-500/30 bg-red-500/5 px-2.5 py-1 rounded-lg transition font-semibold">
+00848:                                 收回認證
+00849:                             </button>
+00850:                         </div>
+00851:                     `;
+00852:                 }
+00853: 
+00854:                 let badgeManagementHtml = `
+00855:                     <div class="mt-4 pt-3 border-t border-slate-800/50 flex flex-wrap gap-4 items-center justify-between">
+00856:                         <span class="text-[10px] text-slate-500 font-bold uppercase"><i class="fa-solid fa-ribbon"></i> 特權徽章手動授予：</span>
+00857:                         <div class="flex items-center gap-4">
+00858:                             <label class="flex items-center gap-1.5 cursor-pointer">
+00859:                                 <input type="checkbox" onchange="toggleManualBadge('${appData.id}', 'isAdmin', this.checked)" ${appData.role === 'admin' || appData.isAdmin ? 'checked' : ''} class="rounded border-slate-700 bg-slate-900 text-amber-500 focus:ring-amber-500">
+00860:                                 <span class="text-[11px] text-slate-300">管理員 👑</span>
+00861:                             </label>
+00862:                             <label class="flex items-center gap-1.5 cursor-pointer">
+00863:                                 <input type="checkbox" onchange="toggleManualBadge('${appData.id}', 'isPioneer', this.checked)" ${appData.isPioneer ? 'checked' : ''} class="rounded border-slate-700 bg-slate-900 text-amber-500 focus:ring-amber-500">
+00864:                                 <span class="text-[11px] text-slate-300">創始會員 🛡️</span>
+00865:                             </label>
+00866:                         </div>
+00867:                     </div>
+00868:                 `;
+00869: 
+00870:                 let actionButtons = '';
+00871:                 if (appData.status === 'pending') {
+00872:                     actionButtons = `
+00873:                         <div class="flex gap-2 shrink-0 flex-wrap">
+00874:                             <button onclick="updateStatus('${appData.id}', 'approved')" class="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-slate-950 font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-lg shadow-emerald-950/20">
+00875:                                 <i class="fa-solid fa-check mr-1"></i> 核准加入
+00876:                             </button>
+00877:                             <button onclick="openRejectReasonModal('${appData.id}')" class="bg-red-650 hover:bg-red-500 active:scale-95 text-red-400 border border-red-500/20 text-xs px-4 py-2.5 rounded-xl transition font-semibold">
+00878:                                 <i class="fa-solid fa-xmark mr-1"></i> 拒絕
+00879:                             </button>
+00880:                             <button onclick="openDeleteModal('${appData.id}')" class="bg-slate-800 hover:bg-red-950/40 text-slate-400 hover:text-red-400 border border-slate-700/80 hover:border-red-500/20 text-xs px-3 py-2.5 rounded-xl transition font-semibold">
+00881:                                 <i class="fa-regular fa-trash-can"></i>
+00882:                             </button>
+00883:                         </div>
+00884:                     `;
+00885:                 } else {
+00886:                     actionButtons = `
+00887:                         <div class="flex items-center gap-3 shrink-0 flex-wrap">
+00888:                             <div class="text-xs text-slate-500 font-medium bg-slate-950/40 px-3 py-2.5 rounded-xl border border-slate-900">
+00889:                                 已於 ${appData.createdAt ? new Date(appData.createdAt.seconds * 1000).toLocaleDateString() : '未知時間'} 處理
+00890:                             </div>
+00891:                             <button onclick="openDeleteModal('${appData.id}')" class="bg-slate-800 hover:bg-red-950/40 text-slate-400 hover:text-red-400 border border-slate-700/80 hover:border-red-500/20 text-xs px-3 py-2.5 rounded-xl transition font-semibold" title="刪除帳號">
+00892:                                 <i class="fa-regular fa-trash-can"></i> 刪除帳號
+00893:                             </button>
+00894:                         </div>
+00895:                     `;
+00896:                 }
+00897: 
+00898:                 card.innerHTML = `
+00899:                     <div class="space-y-1.5 flex-1 text-left">
+00900:                         <div class="flex items-center gap-3 flex-wrap">
+00901:                             <h4 class="font-bold text-base text-slate-200">${appData.nickname || '未填'} <span class="text-xs text-slate-500 font-normal">(@${appData.id})</span></h4>
+00902:                             <span class="px-2.5 py-0.5 text-xs font-medium rounded-full border ${currentStatusColor}">
+00903:                                 ${appData.status === 'pending' ? '待審核' : appData.status === 'approved' ? '已核准' : appData.status === 'active' ? '已啟用' : '已拒絕'}
+00904:                             </span>
+00905:                         </div>
+00906:                         <p class="text-xs text-slate-400 flex items-center gap-1"><i class="fa-regular fa-envelope"></i> 通知信箱：<span class="text-slate-300 font-mono">${appData.email}</span></p>
+00907:                         <div class="grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-slate-400 mt-2 pb-2">
+00908:                             <div><span class="text-slate-500">身高體重：</span>${appData.height} cm / ${appData.weight} kg</div>
+00909:                             <div><span class="text-slate-500">身體密碼：</span>長 ${appData.length} cm / 粗 ${appData.girth} cm</div>
+00910:                             <div class="col-span-2 mt-1"><span class="text-slate-500">主題偏好：</span><span class="text-slate-300">${kinksStr}</span></div>
+00911:                         </div>
+00912:                         ${avatarReviewHtml}
+00913:                         ${specReviewHtml}
+00914:                         ${badgeManagementHtml}
+00915:                         ${tgInfoHtml}
+00916:                     </div>
+00917:                     ${actionButtons}
+00918:                 `;
+00919:                 listContainer.appendChild(card);
+00920:             });
+00921:         }
+00922: 
+00923:         window.sendPlatformBroadcast = async function() {
+00924:             if (!db) {
+00925:                 showToast("資料庫尚未完成連線，無法發送通知", "error");
+00926:                 return;
+00927:             }
+
+===== admin.js:962-1181 =====
+00962:         }
+00963: 
+00964:         window.filterApplications = function() {
+00965:             renderApplications();
+00966:         }
+00967: 
+00968:         window.updateStatus = async function(userId, status) {
+00969:             if (!db) {
+00970:                 showToast("目前處於本機加密沙盒，無法儲存狀態", "error");
+00971:                 return;
+00972:             }
+00973: 
+00974:             try {
+00975:                 const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+00976:                 const docSnap = await getDoc(docRef);
+00977:                 
+00978:                 if (!docSnap.exists()) {
+00979:                     showToast("找不到該筆申請資料", "error");
+00980:                     return;
+00981:                 }
+00982:                 
+00983:                 const userData = docSnap.data();
+00984:                 await updateDoc(docRef, { status: status, reviewedAt: serverTimestamp(), reviewedAtMs: Date.now(), reviewedBy: currentAdminId });
+00985:                 await writeAdminLog('update_status', userId, { status });
+00986:                 showToast('已將狀態更新為 ' + (status === 'approved' ? '已核准' : '已拒絕'), 'success');
+00987:                 
+00988:                 await sendEmailNotification(userData, status, status === 'approved' ? '會籍申請審核通過' : '會籍申請審核更新', null, status === 'approved' ? 'registrationApproved' : 'registrationRejected');
+00989:             } catch (e) {
+00990:                 console.error("更新狀態失敗:", e);
+00991:                 showToast('更新失敗: ' + e.message, 'error');
+00992:             }
+00993:         };
+00994: 
+00995:         window.toggleManualBadge = async function(userId, badgeField, isChecked) {
+00996:             if (!db) return;
+00997:             try {
+00998:                 const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+00999:                 const updates = {};
+01000:                 updates[badgeField] = isChecked;
+01001:                 updates.updatedAt = serverTimestamp();
+01002:                 updates.updatedAtMs = Date.now();
+01003:                 updates.updatedBy = currentAdminId;
+01004:                 await updateDoc(docRef, updates);
+01005:                 await writeAdminLog('toggle_badge', userId, { badgeField, isChecked });
+01006:                 showToast(`已成功${isChecked ? '發放' : '收回'}該項手動社群徽章！`, "success");
+01007:             } catch (err) {
+01008:                 console.error("手動徽章異動失敗:", err);
+01009:                 showToast("變更失敗", "error");
+01010:             }
+01011:         }
+01012: 
+01013:         window.approveSpecElite = async function(userId) {
+01014:             if (!db) return;
+01015:             try {
+01016:                 const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+01017:                 const docSnap = await getDoc(docRef);
+01018:                 if (docSnap.exists()) {
+01019:                     const data = docSnap.data();
+01020:                     await updateDoc(docRef, {
+01021:                         isSpecElite: true,
+01022:                         specEliteStatus: 'approved',
+01023:                         specReviewedAt: serverTimestamp(),
+01024:                         specApprovedAt: serverTimestamp(),
+01025:                         specUpdatedAt: serverTimestamp(),
+01026:                         specReviewedAtMs: Date.now(),
+01027:                         specReviewedBy: currentAdminId
+01028:                     });
+01029:                     await writeAdminLog('approve_spec', userId, { length: data.length, girth: data.girth });
+01030:                     showToast("Spec Elite 徽章核准完成！", "success");
+01031:                     await sendEmailNotification(data, 'approved', "黃金 Spec 審核通過", "您的 SecretRoom 黃金 Spec Elite 勳章申請已正式核准", 'specApproved');
+01032:                 }
+01033:             } catch (err) {
+01034:                 console.error("核發失敗:", err);
+01035:             }
+01036:         }
+01037: 
+01038:         window.rejectSpecElite = async function(userId) {
+01039:             if (!db) return;
+01040:             try {
+01041:                 const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+01042:                 const docSnap = await getDoc(docRef);
+01043:                 if (docSnap.exists()) {
+01044:                     const data = docSnap.data();
+01045:                     await updateDoc(docRef, {
+01046:                         specEliteStatus: 'rejected',
+01047:                         specImage: '',
+01048:                         specReviewedAt: serverTimestamp(),
+01049:                         specRejectedAt: serverTimestamp(),
+01050:                         specUpdatedAt: serverTimestamp(),
+01051:                         specReviewedAtMs: Date.now(),
+01052:                         specReviewedBy: currentAdminId,
+01053:                         specRejectionReason: prompt('請輸入黃金 Spec 拒絕原因：') || '照片或規格未通過官方核查'
+01054:                     });
+01055:                     await writeAdminLog('reject_spec', userId, { reason: 'spec_rejected' });
+01056:                     showToast("Spec Elite 申請已被退回。", "info");
+01057:                     await sendEmailNotification(data, 'rejected', "黃金 Spec 審核退回", "您申請的 SecretRoom 黃金 Spec Elite 勳章經管理員檢視照片或其他因素未通過。", 'specRejected');
+01058:                 }
+01059:             } catch (err) {
+01060:                 console.error("拒絕出錯:", err);
+01061:             }
+01062:         }
+01063: 
+01064:         let userIdToReject = null;
+01065:         window.openRejectReasonModal = function(userId) {
+01066:             userIdToReject = userId;
+01067:             const modal = document.getElementById('reject-reason-modal');
+01068:             const content = document.getElementById('reject-reason-content');
+01069:             modal.classList.remove('hidden');
+01070:             setTimeout(() => {
+01071:                 modal.classList.remove('opacity-0');
+01072:                 content.classList.remove('scale-95');
+01073:             }, 50);
+01074: 
+01075:             document.getElementById('confirm-reject-btn').onclick = async function() {
+01076:                 const checkedRadio = document.querySelector('input[name="rejection-reason"]:checked');
+01077:                 if (!checkedRadio) {
+01078:                     showToast("請選擇拒絕原因", "error");
+01079:                     return;
+01080:                 }
+01081:                 const reason = checkedRadio.value;
+01082:                 await updateStatusWithReason(userIdToReject, 'rejected', reason);
+01083:                 closeRejectReasonModal();
+01084:             };
+01085:         }
+01086: 
+01087:         window.closeRejectReasonModal = function() {
+01088:             const modal = document.getElementById('reject-reason-modal');
+01089:             const content = document.getElementById('reject-reason-content');
+01090:             modal.classList.add('opacity-0');
+01091:             content.classList.add('scale-95');
+01092:             setTimeout(() => {
+01093:                 modal.classList.add('hidden');
+01094:                 userIdToReject = null;
+01095:             }, 300);
+01096:         }
+01097: 
+01098:         async function updateStatusWithReason(userId, status, reason) {
+01099:             if (!db) {
+01100:                 showToast("目前處於本機加密沙盒，無法儲存狀態", "error");
+01101:                 return;
+01102:             }
+01103: 
+01104:             try {
+01105:                 const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+01106:                 const docSnap = await getDoc(docRef);
+01107:                 
+01108:                 if (!docSnap.exists()) {
+01109:                     showToast("找不到該筆申請資料", "error");
+01110:                     return;
+01111:                 }
+01112:                 
+01113:                 const userData = docSnap.data();
+01114:                 await updateDoc(docRef, { 
+01115:                     status: status,
+01116:                     rejectionReason: reason,
+01117:                     reviewedAt: serverTimestamp(),
+01118:                     reviewedAtMs: Date.now(),
+01119:                     reviewedBy: currentAdminId 
+01120:                 });
+01121:                 await writeAdminLog('reject_application', userId, { reason });
+01122:                 showToast('已退回會籍申請', 'success');
+01123:                 
+01124:                 await sendEmailNotification(userData, status, "會籍申請退回通知", `很抱歉，您的 SecretRoom 會籍申請未通過審核。退件理由：${reason}`, 'registrationRejected');
+01125:             } catch (e) {
+01126:                 console.error("更新狀態失敗:", e);
+01127:                 showToast('更新失敗: ' + e.message, 'error');
+01128:             }
+01129:         }
+01130: 
+01131:         function inferEmailTemplateKey(status, title, explicitKey = null) {
+01132:             if (explicitKey) return explicitKey;
+01133:             const text = `${title || ''} ${status || ''}`.toLowerCase();
+01134:             if (text.includes('黃金') || text.includes('spec')) return String(status).toLowerCase() === 'rejected' ? 'specRejected' : 'specApproved';
+01135:             if (text.includes('頭像')) return String(status).toLowerCase() === 'rejected' ? 'avatarRejected' : 'avatarApproved';
+01136:             if (text.includes('檢舉') || text.includes('貼文') || text.includes('留言')) return text.includes('駁回') || text.includes('未成立') || text.includes('dismiss') ? 'reportDismissed' : 'reportAccepted';
+01137:             if (text.includes('密碼')) return 'passwordReset';
+01138:             if (text.includes('刪除') || text.includes('帳號')) return 'accountRequest';
+01139:             return String(status).toLowerCase() === 'rejected' ? 'registrationRejected' : 'registrationApproved';
+01140:         }
+01141: 
+01142:         function getEmailTemplateId(templateKey) {
+01143:             const templates = emailjsConfig.templates || {};
+01144:             return templates[templateKey] || emailjsConfig.templateId || emailjsConfig.defaultTemplateId;
+01145:         }
+01146: 
+01147:         function getEmailTypeLabel(templateKey) {
+01148:             const labels = {
+01149:                 registrationApproved: '會籍審核通過',
+01150:                 registrationRejected: '會籍申請退回',
+01151:                 specApproved: '黃金 Spec 認證通過',
+01152:                 specRejected: '黃金 Spec 認證退回',
+01153:                 avatarApproved: '大頭照更換通過',
+01154:                 avatarRejected: '大頭照更換退回',
+01155:                 reportAccepted: '內容審查處理',
+01156:                 reportDismissed: '檢舉審查結果',
+01157:                 passwordReset: '忘記密碼',
+01158:                 accountRequest: '帳號異動'
+01159:             };
+01160:             return labels[templateKey] || '會員通知';
+01161:         }
+01162: 
+01163:         function formatEmailError(error) {
+01164:             if (!error) return '未知錯誤';
+01165:             if (typeof error === 'string') return error;
+01166:             const status = error.status || error.code || '';
+01167:             const text = error.text || error.message || error.name || '';
+01168:             const combined = `${status} ${text}`.trim();
+01169:             if (combined) return combined;
+01170:             try {
+01171:                 return JSON.stringify(error).slice(0, 600);
+01172:             } catch (err) {
+01173:                 return String(error).slice(0, 600);
+01174:             }
+01175:         }
+01176: 
+01177:         async function writeEmailFailure(error, context = {}) {
+01178:             if (!db) return;
+01179:             try {
+01180:                 const userData = context.userData || {};
+01181:                 const failureRef = doc(collection(db, 'secretg_apps', appId, 'email_failures'));
+
+===== admin.js:1193-1304 =====
+01193:                     errorRaw: (() => { try { return JSON.stringify(error).slice(0, 1200); } catch (err) { return String(error).slice(0, 1200); } })(),
+01194:                     retryCount: 0,
+01195:                     createdAt: serverTimestamp(),
+01196:                     createdAtMs: Date.now(),
+01197:                     createdBy: currentAdminId || 'admin'
+01198:                 });
+01199:                 await writeAdminLog('email_failure_recorded', userData.id || userData.userId || context.memberId || failureRef.id, { failureId: failureRef.id, templateKey: context.templateKey || '', error: formatEmailError(error) });
+01200:             } catch (err) {
+01201:                 console.warn('寫入 Email 失敗紀錄失敗:', err);
+01202:             }
+01203:         }
+01204: 
+01205:         async function sendEmailNotification(userData, status, title = "審核通知", customMsg = null, templateKey = null) {
+01206:             const targetEmail = String(userData && userData.email ? userData.email : '').trim();
+01207:             if (!targetEmail) {
+01208:                 console.info('[Email 略過] 會員未綁定通知信箱');
+01209:                 return;
+01210:             }
+01211:             if (!emailjsConfig.publicKey || emailjsConfig.publicKey === "YOUR_EMAILJS_PUBLIC_KEY") {
+01212:                 console.info(`[Email 模擬] 發送郵件給 ${targetEmail}`);
+01213:                 showToast(`[模擬信件] 已寄送通知至 ${targetEmail}`, "info");
+01214:                 return;
+01215:             }
+01216: 
+01217:             const messageText = customMsg || (status === 'approved' 
+01218:                 ? `恭喜您！您的 SecretRoom 加入申請已通過審核。\n\n請您點擊下方連結重新進入平台，輸入您的帳號密碼進行登入：\nhttps://5j1u35k6.github.io/SecretRoom/`
+01219:                 : `很抱歉，您的加入申請未通過審核。感謝您的關注。`);
+01220:             const resolvedTemplateKey = inferEmailTemplateKey(status, title, templateKey);
+01221:             const resolvedTemplateId = getEmailTemplateId(resolvedTemplateKey);
+01222: 
+01223:             try {
+01224:                 await emailjs.send(emailjsConfig.serviceId, resolvedTemplateId, {
+01225:                     to_email: targetEmail,
+01226:                     to_name: userData.nickname || userData.userId || 'SecretRoom Member',
+01227:                     status_text: title,
+01228:                     message: messageText,
+01229:                     email_type: getEmailTypeLabel(resolvedTemplateKey),
+01230:                     member_id: userData.id || userData.userId || ''
+01231:                 }, { publicKey: emailjsConfig.publicKey });
+01232:                 showToast(`Email 通知已寄送至 ${targetEmail}`, "success");
+01233:             } catch (error) {
+01234:                 console.error("Email 發送失敗:", error);
+01235:                 await writeEmailFailure(error, {
+01236:                     userData,
+01237:                     status,
+01238:                     title,
+01239:                     messageText,
+01240:                     templateKey: resolvedTemplateKey,
+01241:                     templateId: resolvedTemplateId,
+01242:                     targetEmail
+01243:                 });
+01244:                 showToast("通知信發送失敗，已記錄於 Email 失敗清單", "error");
+01245:             }
+01246:         }
+01247: 
+01248:         async function getApplicationDataById(userId) {
+01249:             if (!db || !userId) return null;
+01250:             try {
+01251:                 const userRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+01252:                 const userSnap = await getDoc(userRef);
+01253:                 return userSnap.exists() ? { id: userSnap.id, ...userSnap.data() } : null;
+01254:             } catch (err) {
+01255:                 console.warn('讀取會員信箱資料失敗:', err);
+01256:                 return null;
+01257:             }
+01258:         }
+01259: 
+01260:         async function sendEmailToUserId(userId, status, title, message, templateKey) {
+01261:             const userData = await getApplicationDataById(userId);
+01262:             if (!userData) return;
+01263:             await sendEmailNotification(userData, status, title, message, templateKey);
+01264:         }
+01265: 
+01266:         async function sendReportEmailsToReporters(reports, title, message, templateKey) {
+01267:             const ids = Array.from(new Set((reports || []).map(r => r && r.reporterId).filter(Boolean)));
+01268:             for (const reporterId of ids) {
+01269:                 await sendEmailToUserId(reporterId, 'approved', title, message, templateKey);
+01270:             }
+01271:         }
+01272: 
+01273:         window.retryEmailFailure = async function(failureId) {
+01274:             const item = allEmailFailures.find(f => f.id === failureId);
+01275:             if (!item) { showToast('找不到該筆 Email 失敗紀錄', 'error'); return; }
+01276:             if (!emailjsConfig.publicKey || emailjsConfig.publicKey === "YOUR_EMAILJS_PUBLIC_KEY") { showToast('EmailJS 尚未設定完成', 'error'); return; }
+01277:             const templateKey = item.templateKey || 'registrationApproved';
+01278:             const templateId = item.templateId || getEmailTemplateId(templateKey);
+01279:             try {
+01280:                 await emailjs.send(emailjsConfig.serviceId, templateId, {
+01281:                     to_email: item.toEmail,
+01282:                     to_name: item.toName || item.memberId || 'SecretRoom Member',
+01283:                     status_text: item.title || 'SecretRoom 通知',
+01284:                     message: item.message || '',
+01285:                     email_type: item.emailType || getEmailTypeLabel(templateKey),
+01286:                     member_id: item.memberId || ''
+01287:                 }, { publicKey: emailjsConfig.publicKey });
+01288:                 await updateDoc(doc(db, 'secretg_apps', appId, 'email_failures', failureId), {
+01289:                     status: 'sent',
+01290:                     sentAt: serverTimestamp(),
+01291:                     sentAtMs: Date.now(),
+01292:                     retriedAt: serverTimestamp(),
+01293:                     retriedAtMs: Date.now(),
+01294:                     retriedBy: currentAdminId || 'admin',
+01295:                     retryCount: Number(item.retryCount || 0) + 1,
+01296:                     lastError: ''
+01297:                 });
+01298:                 await writeAdminLog('retry_email_success', failureId, { memberId: item.memberId || '', toEmail: item.toEmail || '', templateKey });
+01299:                 showToast('Email 已重新寄送成功', 'success');
+01300:             } catch (error) {
+01301:                 const message = formatEmailError(error);
+01302:                 await updateDoc(doc(db, 'secretg_apps', appId, 'email_failures', failureId), {
+01303:                     status: 'failed',
+01304:                     lastError: message,
+
+===== admin.js:1318-1413 =====
+01318:                     status: 'handled',
+01319:                     handledAt: serverTimestamp(),
+01320:                     handledAtMs: Date.now(),
+01321:                     handledBy: currentAdminId || 'admin'
+01322:                 });
+01323:                 await writeAdminLog('mark_email_failure_handled', failureId, {});
+01324:                 showToast('已標記為手動處理', 'success');
+01325:             } catch (error) {
+01326:                 showToast('更新失敗: ' + error.message, 'error');
+01327:             }
+01328:         };
+01329: 
+01330:         window.copyEmailFailureMessage = async function(failureId) {
+01331:             const item = allEmailFailures.find(f => f.id === failureId);
+01332:             if (!item) { showToast('找不到該筆 Email 失敗紀錄', 'error'); return; }
+01333:             const text = buildEmailFailureText(item);
+01334:             try {
+01335:                 await navigator.clipboard.writeText(text);
+01336:                 showToast('已複製信件內容', 'success');
+01337:             } catch (error) {
+01338:                 prompt('請手動複製以下信件內容：', text);
+01339:             }
+01340:         };
+01341: 
+01342:         window.approveAvatarChange = async function(userId) {
+01343:             if (!db) return;
+01344:             try {
+01345:                 const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+01346:                 const docSnap = await getDoc(docRef);
+01347:                 if (docSnap.exists()) {
+01348:                     const data = docSnap.data();
+01349:                     const newAvatar = data.avatarPending;
+01350:                     await updateDoc(docRef, {
+01351:                         avatar: newAvatar,
+01352:                         avatarPending: '',
+01353:                         avatarStatus: 'approved',
+01354:                         avatarReviewedAt: serverTimestamp(),
+01355:                         avatarApprovedAt: serverTimestamp(),
+01356:                         avatarUpdatedAt: serverTimestamp(),
+01357:                         avatarReviewedAtMs: Date.now(),
+01358:                         avatarReviewedBy: currentAdminId
+01359:                     });
+01360:                     await writeAdminLog('approve_avatar', userId, {});
+01361:                     showToast("頭像變更已通過！", "success");
+01362:                     await sendEmailNotification(data, 'approved', "頭像變更審核通過", "您的 SecretRoom 新頭像更換申請已通過管理員審核，已更新！", 'avatarApproved');
+01363:                 }
+01364:             } catch (err) {
+01365:                 console.error("核准頭像出錯:", err);
+01366:                 showToast("操作失敗", "error");
+01367:             }
+01368:         }
+01369: 
+01370:         window.rejectAvatarChange = async function(userId) {
+01371:             if (!db) return;
+01372:             try {
+01373:                 const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+01374:                 const docSnap = await getDoc(docRef);
+01375:                 if (docSnap.exists()) {
+01376:                     const data = docSnap.data();
+01377:                     await updateDoc(docRef, {
+01378:                         avatarPending: '',
+01379:                         avatarStatus: 'rejected',
+01380:                         avatarReviewedAt: serverTimestamp(),
+01381:                         avatarRejectedAt: serverTimestamp(),
+01382:                         avatarUpdatedAt: serverTimestamp(),
+01383:                         avatarReviewedAtMs: Date.now(),
+01384:                         avatarReviewedBy: currentAdminId,
+01385:                         avatarRejectionReason: prompt('請輸入頭像拒絕原因：') || '頭像未通過官方審核'
+01386:                     });
+01387:                     await writeAdminLog('reject_avatar', userId, {});
+01388:                     showToast("頭像變更申請已拒絕。", "info");
+01389:                     await sendEmailNotification(data, 'rejected', "頭像變更審核未通過", "您在 SecretRoom 申請更換的新大頭照，未通過管理員審核，已回復原頭像。", 'avatarRejected');
+01390:                 }
+01391:             } catch (err) {
+01392:                 console.error("拒絕頭像出錯:", err);
+01393:                 showToast("操作失敗", "error");
+01394:             }
+01395:         }
+01396: 
+01397:         window.openDeleteModal = function(userId) {
+01398:             userIdToDelete = userId;
+01399:             const modal = document.getElementById('delete-modal');
+01400:             const content = document.getElementById('delete-modal-content');
+01401:             
+01402:             modal.classList.remove('hidden');
+01403:             setTimeout(() => {
+01404:                 modal.classList.remove('opacity-0');
+01405:                 content.classList.remove('scale-95');
+01406:             }, 50);
+01407: 
+01408:             document.getElementById('confirm-delete-btn').onclick = async function() {
+01409:                 await executeDelete(userIdToDelete);
+01410:                 closeDeleteModal();
+01411:             };
+01412:         }
+01413: 
+
+===== admin.js:1468-1653 =====
+01468:                     reportReviewStatus: 'dismissed',
+01469:                     reportReviewReason: reason,
+01470:                     reportReviewedAt: serverTimestamp(),
+01471:                     reportReviewedAtMs: Date.now(),
+01472:                     reportReviewedBy: currentAdminId
+01473:                 });
+01474:                 await writeAdminLog('dismiss_post_reports', postId, { reason });
+01475:                 await sendReportEmailsToReporters(reportList, '貼文檢舉審查結果', `您提交的貼文檢舉已完成審查。處理結果：檢舉未成立。原因：${reason}`, 'reportDismissed');
+01476:                 showToast("已成功反駁該貼文的所有檢舉！", "success");
+01477:             } catch (err) {
+01478:                 console.error("反駁失敗:", err);
+01479:                 showToast("操作失敗", "error");
+01480:             }
+01481:         }
+01482: 
+01483:         window.deleteSinglePost = async function(postId) {
+01484:             if (!db) return;
+01485:             try {
+01486:                 const postRef = doc(db, 'secretg_apps', appId, 'posts', postId);
+01487:                 const reason = prompt('請輸入刪除貼文原因：') || '貼文違反社群規範';
+01488:                 const snap = await getDoc(postRef);
+01489:                 const postData = snap.exists() ? snap.data() : {};
+01490:                 await deleteDoc(postRef);
+01491:                 await writeAdminLog('delete_post', postId, { reason });
+01492:                 if (postData.userId) await sendEmailToUserId(postData.userId, 'rejected', '貼文審查處理通知', `您的貼文經審查後已由管理員下架。處理原因：${reason}`, 'reportAccepted');
+01493:                 await sendReportEmailsToReporters(postData.reports || [], '貼文檢舉審查結果', `您提交的貼文檢舉已完成審查。處理結果：檢舉成立，該貼文已下架。`, 'reportAccepted');
+01494:                 showToast("貼文已成功安全下架銷毀！", "success");
+01495:             } catch (err) {
+01496:                 console.error("刪除失敗:", err);
+01497:                 showToast("操作失敗", "error");
+01498:             }
+01499:         }
+01500: 
+01501:         window.dismissCommentReports = async function(postId, commentId) {
+01502:             if (!db) return;
+01503:             const reason = prompt('請輸入駁回留言檢舉原因：') || '經審查未違反社群規範';
+01504:             try {
+01505:                 const postRef = doc(db, 'secretg_apps', appId, 'posts', postId);
+01506:                 const snap = await getDoc(postRef);
+01507:                 if (!snap.exists()) return;
+01508:                 const data = snap.data();
+01509:                 const comments = data.comments || {};
+01510:                 const originalComment = comments[commentId] ? { ...comments[commentId] } : null;
+01511:                 if (comments[commentId]) {
+01512:                     comments[commentId].reports = [];
+01513:                     comments[commentId].reportCount = 0;
+01514:                     comments[commentId].reportReviewStatus = 'dismissed';
+01515:                     comments[commentId].reportReviewReason = reason;
+01516:                     comments[commentId].reportReviewedAtMs = Date.now();
+01517:                 }
+01518:                 await updateDoc(postRef, { comments });
+01519:                 await writeAdminLog('dismiss_comment_reports', commentId, { postId, reason });
+01520:                 if (originalComment) await sendReportEmailsToReporters(originalComment.reports || [], '留言檢舉審查結果', `您提交的留言檢舉已完成審查。處理結果：檢舉未成立。原因：${reason}`, 'reportDismissed');
+01521:                 showToast('已駁回留言檢舉', 'success');
+01522:             } catch (err) {
+01523:                 showToast('操作失敗: ' + err.message, 'error');
+01524:             }
+01525:         };
+01526: 
+01527:         window.deleteSingleComment = async function(postId, commentId) {
+01528:             if (!db) return;
+01529:             const reason = prompt('請輸入刪除留言原因：') || '留言違反社群規範';
+01530:             if (!confirm('確認刪除此留言？')) return;
+01531:             try {
+01532:                 const postRef = doc(db, 'secretg_apps', appId, 'posts', postId);
+01533:                 const snap = await getDoc(postRef);
+01534:                 if (!snap.exists()) return;
+01535:                 const data = snap.data();
+01536:                 const comments = data.comments || {};
+01537:                 const originalComment = comments[commentId] ? { ...comments[commentId] } : null;
+01538:                 delete comments[commentId];
+01539:                 await updateDoc(postRef, { comments });
+01540:                 await writeAdminLog('delete_comment', commentId, { postId, reason });
+01541:                 if (originalComment && originalComment.userId) await sendEmailToUserId(originalComment.userId, 'rejected', '留言審查處理通知', `您的留言經審查後已由管理員刪除。處理原因：${reason}`, 'reportAccepted');
+01542:                 if (originalComment) await sendReportEmailsToReporters(originalComment.reports || [], '留言檢舉審查結果', `您提交的留言檢舉已完成審查。處理結果：檢舉成立，該留言已刪除。`, 'reportAccepted');
+01543:                 showToast('留言已刪除', 'success');
+01544:             } catch (err) {
+01545:                 showToast('刪除失敗: ' + err.message, 'error');
+01546:             }
+01547:         };
+01548: 
+01549:         window.completePasswordResetRequest = async function(requestId) {
+01550:             if (!db) return;
+01551:             try {
+01552:                 const reqRef = doc(db, 'secretg_apps', appId, 'password_reset_requests', requestId);
+01553:                 const reqSnap = await getDoc(reqRef);
+01554:                 if (!reqSnap.exists()) { showToast('找不到申請紀錄', 'error'); return; }
+01555:                 const req = { id: reqSnap.id, ...reqSnap.data() };
+01556:                 const userId = req.userId;
+01557:                 if (!userId) { showToast('申請缺少會員帳號', 'error'); return; }
+01558:                 const userRef = doc(db, 'secretg_apps', appId, 'applications', userId);
+01559:                 const userSnap = await getDoc(userRef);
+01560:                 if (!userSnap.exists()) { showToast('找不到會員帳號，已略過此筆申請', 'error'); return; }
+01561:                 const userData = userSnap.data() || {};
+01562:                 const requestEmail = normalizeEmail(req.email);
+01563:                 const memberEmail = getBoundEmailFromMember(userData);
+01564:                 if (!requestEmail || !memberEmail || requestEmail !== memberEmail || !isActiveMemberForForgotPassword(userData)) {
+01565:                     await updateDoc(reqRef, { status: 'invalid', invalidReason: '會員帳號或綁定信箱不符', reviewedAt: serverTimestamp(), reviewedAtMs: Date.now(), reviewedBy: currentAdminId });
+01566:                     await writeAdminLog('invalid_forgot_password_request', userId, { requestId, requestEmail });
+01567:                     showToast('會員帳號或綁定信箱不符，已標記為無效申請', 'error');
+01568:                     return;
+01569:                 }
+01570:                 const newPassword = prompt('請輸入要設定給會員的新臨時密碼（至少 8 碼）：');
+01571:                 if (!newPassword || newPassword.length < 8) { showToast('新臨時密碼至少需要 8 碼', 'error'); return; }
+01572:                 await updateDoc(userRef, { password: newPassword, passwordUpdatedAt: serverTimestamp(), passwordUpdatedAtMs: Date.now(), passwordUpdatedBy: currentAdminId });
+01573:                 await updateDoc(reqRef, { status: 'completed', completedAt: serverTimestamp(), completedAtMs: Date.now(), reviewedBy: currentAdminId });
+01574:                 await writeAdminLog('complete_forgot_password', userId, { requestId });
+01575:                 await sendEmailNotification({ ...userData, id: userId, userId, email: requestEmail }, 'approved', 'SecretRoom 忘記密碼處理完成', `已為您的 SecretRoom 帳號設定新的臨時登入密碼：${newPassword}。登入後請儘快修改為您自己的密碼。`, 'passwordReset');
+01576:                 showToast('新臨時密碼已設定並寄送通知', 'success');
+01577:             } catch (err) {
+01578:                 console.error('忘記密碼處理失敗:', err);
+01579:                 showToast('操作失敗: ' + err.message, 'error');
+01580:             }
+01581:         };
+01582: 
+01583:         window.rejectPasswordResetRequest = async function(requestId) {
+01584:             if (!db) return;
+01585:             const reason = prompt('請輸入拒絕原因：') || '資料不符，無法受理忘記密碼申請';
+01586:             try {
+01587:                 const reqRef = doc(db, 'secretg_apps', appId, 'password_reset_requests', requestId);
+01588:                 await updateDoc(reqRef, { status: 'rejected', rejectionReason: reason, reviewedAt: serverTimestamp(), reviewedAtMs: Date.now(), reviewedBy: currentAdminId });
+01589:                 await writeAdminLog('reject_forgot_password', requestId, { reason });
+01590:                 showToast('已拒絕忘記密碼申請', 'success');
+01591:             } catch (err) {
+01592:                 showToast('操作失敗: ' + err.message, 'error');
+01593:             }
+01594:         };
+01595: 
+01596:         window.approveAccountDeletionRequest = async function(requestId) {
+01597:             if (!db) return;
+01598:             if (!confirm('這會刪除會員帳號及其貼文，確認繼續？')) return;
+01599:             const reason = prompt('請輸入核准刪除原因：') || '依使用者申請刪除帳號';
+01600:             try {
+01601:                 const reqRef = doc(db, 'secretg_apps', appId, 'account_requests', requestId);
+01602:                 const reqSnap = await getDoc(reqRef);
+01603:                 if (!reqSnap.exists()) { showToast('找不到申請紀錄', 'error'); return; }
+01604:                 const req = reqSnap.data();
+01605:                 await updateDoc(reqRef, { status: 'approved', approvedAt: serverTimestamp(), approvedAtMs: Date.now(), reviewedBy: currentAdminId, reviewReason: reason });
+01606:                 await executeDelete(req.userId, reason);
+01607:                 await updateDoc(reqRef, { status: 'completed', completedAt: serverTimestamp(), completedAtMs: Date.now() });
+01608:                 await writeAdminLog('approve_account_deletion_request', req.userId, { requestId, reason });
+01609:                 showToast('帳號刪除申請已完成', 'success');
+01610:             } catch (err) {
+01611:                 console.error('帳號刪除申請處理失敗:', err);
+01612:                 showToast('操作失敗: ' + err.message, 'error');
+01613:             }
+01614:         };
+01615: 
+01616:         window.rejectAccountDeletionRequest = async function(requestId) {
+01617:             if (!db) return;
+01618:             const reason = prompt('請輸入拒絕原因：') || '本次刪除申請未通過審核';
+01619:             try {
+01620:                 const reqRef = doc(db, 'secretg_apps', appId, 'account_requests', requestId);
+01621:                 const reqSnap = await getDoc(reqRef);
+01622:                 if (!reqSnap.exists()) { showToast('找不到申請紀錄', 'error'); return; }
+01623:                 const req = reqSnap.data();
+01624:                 await updateDoc(reqRef, { status: 'rejected', rejectionReason: reason, reviewedAt: serverTimestamp(), reviewedAtMs: Date.now(), reviewedBy: currentAdminId });
+01625:                 if (req.userId) {
+01626:                     const userRef = doc(db, 'secretg_apps', appId, 'applications', req.userId);
+01627:                     await updateDoc(userRef, { accountDeletionStatus: 'rejected', accountDeletionRejectedAt: serverTimestamp(), accountDeletionRejectedAtMs: Date.now(), accountDeletionRejectionReason: reason });
+01628:                 }
+01629:                 await writeAdminLog('reject_account_deletion_request', req.userId || requestId, { requestId, reason });
+01630:                 showToast('已拒絕帳號刪除申請', 'success');
+01631:             } catch (err) {
+01632:                 showToast('操作失敗: ' + err.message, 'error');
+01633:             }
+01634:         };
+01635: 
+01636:         window.showToast = function(message, type = 'info') {
+01637:             const container = document.getElementById('toast-container');
+01638:             const toast = document.createElement('div');
+01639:             const bgColors = {
+01640:                 error: 'bg-red-500/95 border-red-400',
+01641:                 success: 'bg-emerald-500/95 border-emerald-400',
+01642:                 info: 'bg-indigo-600/95 border-indigo-500/40'
+01643:             };
+01644:             toast.className = `${bgColors[type]} text-white px-5 py-3.5 rounded-xl shadow-lg border text-sm font-medium transition-all duration-300 opacity-0 transform -translate-y-4 backdrop-blur-xl flex items-center gap-3`;
+01645:             const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+01646:             toast.innerHTML = `<i class="fa-solid ${icon} text-lg"></i> <span>${message}</span>`;
+01647:             
+01648:             container.appendChild(toast);
+01649:             requestAnimationFrame(() => toast.classList.remove('opacity-0', '-translate-y-4'));
+01650:             setTimeout(() => {
+01651:                 toast.classList.add('opacity-0', '-translate-y-4');
+01652:                 setTimeout(() => toast.remove(), 300);
+01653:             }, 3000);
+
+===== admin.js:1660-1781 =====
+01660: /* ===== Consolidated source: sr_admin_tools.js ===== */
+01661: ;(() => {
+01662: // SecretRoom admin helpers and phase-one dashboard UX improvements.
+01663: const AID = 'secretg-production-node-tw';
+01664: const MAIL = { publicKey: 'XggJY7iHQcZYYhNY7', serviceId: 'service_1ou10mi', templateId: 'template_sr_security' };
+01665: let DB, FS;
+01666: async function T() {
+01667:   if (DB && FS) return { db: DB, fs: FS };
+01668:   const appMod = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js');
+01669:   const firestoreMod = await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js');
+01670:   const apps = appMod.getApps();
+01671:   if (!apps.length) throw new Error('Firebase 尚未初始化');
+01672:   DB = firestoreMod.getFirestore(apps[0]);
+01673:   FS = firestoreMod;
+01674:   return { db: DB, fs: FS };
+01675: }
+01676: function C() { return 'SR-' + Math.random().toString(36).slice(2, 6).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase() + '!'; }
+01677: function fmtTime(ms) { return new Date(ms).toLocaleString('zh-TW', { hour12: false }); }
+01678: function buildRecoveryMessage(code, expiresAtMs) {
+01679:   return [`你的 SecretRoom 臨時密碼：${code}`, '', '10 分鐘內有效。', `到期時間：${fmtTime(expiresAtMs)}`, '', '請用帳號和這組臨時密碼登入。', '登入後記得立刻換成自己的密碼。', '', '不是你申請的話，請聯絡管理員。'].join('\n');
+01680: }
+01681: async function sendRecoveryMail(user, uid, code, expiresAtMs) {
+01682:   if (!window.emailjs) throw new Error('Email 功能還沒準備好');
+01683:   if (!user.email) throw new Error('這個帳號沒有綁定 Email');
+01684:   await emailjs.send(MAIL.serviceId, MAIL.templateId, { to_email: user.email, to_name: user.nickname || uid || 'SecretRoom Account', status_text: 'SecretRoom 臨時密碼', message: buildRecoveryMessage(code, expiresAtMs), email_type: '帳號安全提醒', member_id: uid || '' }, { publicKey: MAIL.publicKey });
+01685: }
+01686: async function restoreUserCredential(userRef, fs, previous) {
+01687:   try { await fs.updateDoc(userRef, previous); }
+01688:   catch (restoreErr) { console.error('臨時密碼寄送失敗後還原密碼狀態失敗:', restoreErr); }
+01689: }
+01690: window.completePasswordResetRequest = async function completePasswordResetRequest(id) {
+01691:   let userRef = null;
+01692:   let previousCredentialState = null;
+01693:   try {
+01694:     const { db, fs } = await T();
+01695:     const reqRef = fs.doc(db, 'secretg_apps', AID, 'password_reset_requests', id);
+01696:     const reqSnap = await fs.getDoc(reqRef);
+01697:     if (!reqSnap.exists()) throw new Error('找不到這筆忘記密碼申請');
+01698:     const req = reqSnap.data() || {};
+01699:     const uid = req.userId;
+01700:     if (!uid) throw new Error('這筆申請缺少帳號 ID');
+01701:     userRef = fs.doc(db, 'secretg_apps', AID, 'applications', uid);
+01702:     const userSnap = await fs.getDoc(userRef);
+01703:     if (!userSnap.exists()) throw new Error('找不到帳號資料');
+01704:     const user = userSnap.data() || {};
+01705:     if (!user.email) throw new Error('這個帳號沒有綁定 Email，無法寄出臨時密碼');
+01706:     previousCredentialState = { password: user.password || '', mustChangePassword: !!user.mustChangePassword, forcePasswordChange: !!user.forcePasswordChange, tempPasswordActive: !!user.tempPasswordActive, passwordChangeRequired: !!user.passwordChangeRequired, tempPasswordIssuedAtMs: user.tempPasswordIssuedAtMs || null, tempPasswordExpiresAtMs: user.tempPasswordExpiresAtMs || null, temporaryCredentialExpiresAtMs: user.temporaryCredentialExpiresAtMs || null, lastPasswordChangeMethod: user.lastPasswordChangeMethod || null };
+01707:     const code = C();
+01708:     const now = Date.now();
+01709:     const expiresAtMs = now + 10 * 60 * 1000;
+01710:     await fs.updateDoc(userRef, { password: code, mustChangePassword: true, forcePasswordChange: true, tempPasswordActive: true, passwordChangeRequired: true, tempPasswordIssuedAtMs: now, tempPasswordExpiresAtMs: expiresAtMs, temporaryCredentialExpiresAtMs: expiresAtMs, passwordChangedAt: fs.serverTimestamp(), passwordChangedAtMs: now, passwordChangedBy: 'admin', lastPasswordChangeMethod: 'admin_temporary_email' });
+01711:     try { await sendRecoveryMail(user, uid, code, expiresAtMs); }
+01712:     catch (mailErr) {
+01713:       await restoreUserCredential(userRef, fs, previousCredentialState);
+01714:       await fs.updateDoc(reqRef, { status: 'email_failed', emailSent: false, emailError: mailErr.message || String(mailErr), emailFailedAt: fs.serverTimestamp(), emailFailedAtMs: Date.now() });
+01715:       throw mailErr;
+01716:     }
+01717:     await fs.updateDoc(reqRef, { status: 'completed', completedAt: fs.serverTimestamp(), completedAtMs: Date.now(), temporaryCredentialIssued: true, temporaryCredentialExpiresAtMs: expiresAtMs, emailSent: true, emailSentAt: fs.serverTimestamp(), emailSentAtMs: Date.now() });
+01718:     window.showToast?.(`帳號 @${uid} 的臨時密碼已寄出，10 分鐘內有效。`, 'success');
+01719:   } catch (err) {
+01720:     console.error(err);
+01721:     window.showToast?.('臨時密碼沒寄成功：' + err.message, 'error');
+01722:   }
+01723: };
+01724: window.rejectPasswordResetRequest = async function rejectPasswordResetRequest(id) {
+01725:   try {
+01726:     const { db, fs } = await T();
+01727:     const ref = fs.doc(db, 'secretg_apps', AID, 'password_reset_requests', id);
+01728:     const snap = await fs.getDoc(ref);
+01729:     const uid = snap.exists() ? String(snap.data()?.userId || '') : '';
+01730:     await fs.updateDoc(ref, { status: 'rejected', rejectedAt: fs.serverTimestamp(), rejectedAtMs: Date.now() });
+01731:     window.showToast?.(uid ? `已拒絕帳號 @${uid} 的忘記密碼申請。` : '已拒絕這筆忘記密碼申請。', 'info');
+01732:   } catch (err) {
+01733:     console.error(err);
+01734:     window.showToast?.('操作失敗：' + err.message, 'error');
+01735:   }
+01736: };
+01737: 
+01738: (() => {
+01739:   const VERSION = '20260711-admin-phase1-v1';
+01740:   const FILTER_KEY = 'sr_admin_filter';
+01741:   const SEARCH_KEY = 'sr_admin_search';
+01742:   const SORT_KEY = 'sr_admin_sort';
+01743:   const groups = { member: ['pending','avatar_pending','spec_pending','approved','active','rejected','all'], safety: ['reported_posts','reported_comments'], security: ['password_reset_requests','account_delete_requests','email_failures'], system: ['all'] };
+01744:   const labels = { all:'全部', pending:'待審核', avatar_pending:'頭像待審', spec_pending:'Spec 待審', reported_posts:'貼文檢舉', reported_comments:'留言檢舉', account_delete_requests:'刪除帳號', password_reset_requests:'忘記密碼', email_failures:'寄信失敗', approved:'已通過', active:'使用中', rejected:'已拒絕' };
+01745:   const statFilters = {
+01746:     'count-pending': 'pending',
+01747:     'count-avatar-pending': 'avatar_pending',
+01748:     'count-reports': 'reported_posts',
+01749:     'count-total': 'all',
+01750:     'count-account-requests': 'account_delete_requests',
+01751:     'count-password-reset': 'password_reset_requests'
+01752:   };
+01753:   const qs = id => document.getElementById(id);
+01754:   const tx = value => String(value || '').replace(/\s+/g, ' ').trim();
+01755:   const current = () => qs('filter-status')?.value || 'pending';
+01756:   const groupOf = value => groups.safety.includes(value) ? 'safety' : groups.security.includes(value) ? 'security' : 'member';
+01757:   const isExplicitAdmin = data => !!data && data.enabled !== false && (data.role === 'admin' || data.isAdmin === true || data.canAdmin === true || data.adminApproved === true);
+01758:   let scheduled = false;
+01759:   let lastMetricAt = 0;
+01760:   let lastActionContext = '';
+01761:   let actionContextTimer = null;
+01762: 
+01763:   function esc(value) { return String(value ?? '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char])); }
+01764:   function sync(value = current()) {
+01765:     document.querySelectorAll('[data-sr-admin-group]').forEach(button => button.classList.toggle('sr-admin-group-active', button.dataset.srAdminGroup === groupOf(value)));
+01766:     document.querySelectorAll('[data-sr-stat-filter]').forEach(card => card.classList.toggle('sr-admin-stat-active', card.dataset.srStatFilter === value));
+01767:   }
+01768:   function setFilter(value) {
+01769:     const select = qs('filter-status');
+01770:     if (!select) return;
+01771:     select.value = value;
+01772:     localStorage.setItem(FILTER_KEY, value);
+01773:     typeof window.filterApplications === 'function' ? window.filterApplications() : select.dispatchEvent(new Event('change', { bubbles:true }));
+01774:     sync(value);
+01775:     scheduleApply();
+01776:   }
+01777: 
+01778:   async function refreshAdminMetric(force = false) {
+01779:     const element = qs('count-admins');
+01780:     if (!element || element.dataset.srCounting === '1') return;
+01781:     if (!force && Date.now() - lastMetricAt < 30000) return;
+
+===== admin.js:1887-1935 =====
+01887:     if (!box) return;
+01888:     const renderKey = `${group}:${active}`;
+01889:     if (box.dataset.srRenderKey === renderKey) return;
+01890:     box.dataset.srRenderKey = renderKey;
+01891:     box.innerHTML = (groups[group] || groups.member).map(value => `<button type="button" data-filter-value="${value}" class="sr-admin-subfilter ${active === value ? 'sr-admin-subfilter-active' : ''}">${labels[value] || value}</button>`).join('');
+01892:     box.querySelectorAll('[data-filter-value]').forEach(button => button.onclick = () => { renderSubs(group, button.dataset.filterValue); setFilter(button.dataset.filterValue); });
+01893:   }
+01894: 
+01895:   function addGroups() {
+01896:     const select = qs('filter-status');
+01897:     const search = qs('admin-search');
+01898:     if (!select) return;
+01899:     if (search) search.placeholder = '搜尋帳號、暱稱、Email、檢舉原因或貼文';
+01900:     Array.from(select.options).forEach(option => { if (labels[option.value]) option.textContent = labels[option.value]; });
+01901:     if (!qs('sr-admin-task-groups')) {
+01902:       const wrap = document.createElement('div');
+01903:       wrap.id = 'sr-admin-task-groups';
+01904:       wrap.className = 'mb-4 p-3 rounded-3xl border border-amber-500/10 bg-slate-950/35';
+01905:       wrap.innerHTML = '<div class="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-3"><button data-sr-admin-group="member" class="sr-admin-group-btn" type="button"><i class="fa-solid fa-user-check"></i> 帳號審核</button><button data-sr-admin-group="safety" class="sr-admin-group-btn" type="button"><i class="fa-solid fa-shield-halved"></i> 內容檢舉</button><button data-sr-admin-group="security" class="sr-admin-group-btn" type="button"><i class="fa-solid fa-key"></i> 帳號處理</button><button data-sr-admin-group="system" class="sr-admin-group-btn" type="button"><i class="fa-solid fa-bullhorn"></i> 平台通知</button></div><div id="sr-admin-subfilters" class="flex gap-2 overflow-x-auto pb-1"></div>';
+01906:       const panel = qs('admin-list')?.parentElement;
+01907:       const row = panel?.querySelector('.flex.items-center.justify-between.mb-6');
+01908:       row ? row.insertAdjacentElement('afterend', wrap) : select.parentElement?.parentElement?.insertAdjacentElement('afterend', wrap);
+01909:       wrap.querySelectorAll('[data-sr-admin-group]').forEach(button => button.onclick = () => {
+01910:         const group = button.dataset.srAdminGroup;
+01911:         const first = group === 'member' ? 'pending' : group === 'safety' ? 'reported_posts' : group === 'security' ? 'password_reset_requests' : 'all';
+01912:         renderSubs(group, first);
+01913:         setFilter(first);
+01914:       });
+01915:     }
+01916:     renderSubs(groupOf(current()), current());
+01917:     sync();
+01918:   }
+01919: 
+01920:   function restoreFilters() {
+01921:     const select = qs('filter-status');
+01922:     const search = qs('admin-search');
+01923:     if (!select || select.dataset.srRestored === '1') return;
+01924:     select.dataset.srRestored = '1';
+01925:     const savedFilter = localStorage.getItem(FILTER_KEY);
+01926:     const savedSearch = localStorage.getItem(SEARCH_KEY);
+01927:     if (savedFilter && Array.from(select.options).some(option => option.value === savedFilter)) select.value = savedFilter;
+01928:     if (search && savedSearch) search.value = savedSearch;
+01929:     select.addEventListener('change', () => { localStorage.setItem(FILTER_KEY, select.value); sync(select.value); scheduleApply(); });
+01930:     if (search && search.dataset.srPersistBound !== '1') {
+01931:       search.dataset.srPersistBound = '1';
+01932:       search.addEventListener('input', () => { localStorage.setItem(SEARCH_KEY, search.value); scheduleApply(); });
+01933:     }
+01934:     if ((savedFilter || savedSearch) && typeof window.filterApplications === 'function') window.filterApplications();
+01935:   }
+
+===== admin.js:1981-2035 =====
+01981:   }
+01982: 
+01983:   function addToolbar() {
+01984:     const list = qs('admin-list');
+01985:     if (!list) return;
+01986:     if (!qs('sr-admin-list-toolbar')) {
+01987:       const bar = document.createElement('div');
+01988:       bar.id = 'sr-admin-list-toolbar';
+01989:       bar.className = 'mb-3 rounded-2xl border border-slate-800 bg-slate-950/45 p-3 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3';
+01990:       bar.innerHTML = '<div><div id="sr-admin-result-count" class="text-sm font-black text-slate-200">0 筆結果</div><div id="sr-admin-last-updated" class="text-xs text-slate-500 mt-1">資料會即時更新</div></div><div class="flex flex-col sm:flex-row gap-2"><select id="sr-admin-sort" class="min-h-[44px] bg-slate-900 border border-slate-700 rounded-xl px-3 text-xs text-slate-200"><option value="newest">最新優先</option><option value="oldest">最舊優先</option><option value="risk">高風險優先</option><option value="waiting">等待最久優先</option></select><button id="sr-admin-clear-filter" type="button" class="min-h-[44px] px-4 rounded-xl border border-amber-500/20 bg-slate-900 text-amber-300 text-xs font-black">清除篩選</button></div>';
+01991:       list.parentElement.insertBefore(bar, list);
+01992:       const sort = qs('sr-admin-sort');
+01993:       sort.value = localStorage.getItem(SORT_KEY) || 'newest';
+01994:       sort.onchange = () => { localStorage.setItem(SORT_KEY, sort.value); sortAndCountCards(); };
+01995:       qs('sr-admin-clear-filter').onclick = () => {
+01996:         const search = qs('admin-search');
+01997:         if (search) search.value = '';
+01998:         localStorage.removeItem(SEARCH_KEY);
+01999:         localStorage.setItem(FILTER_KEY, 'all');
+02000:         setFilter('all');
+02001:       };
+02002:     }
+02003:   }
+02004: 
+02005:   function improveResetCards() {
+02006:     document.querySelectorAll('button').forEach(button => { if (tx(button) === '設定新密碼') button.textContent = '寄出 10 分鐘臨時密碼'; });
+02007:     document.querySelectorAll('#admin-list > div').forEach(card => {
+02008:       const text = tx(card);
+02009:       if (!text.includes('忘記密碼') || card.querySelector('.sr-reset-flow-note')) return;
+02010:       const note = document.createElement('div');
+02011:       note.className = 'sr-reset-flow-note text-xs text-amber-300/80 mt-2 rounded-xl border border-amber-500/10 bg-amber-500/5 px-3 py-2';
+02012:       note.textContent = text.includes('已處理') ? '這筆已處理，確認帳號能登入並完成換密碼即可。' : '處理方式：寄出臨時密碼（10 分鐘有效），對方登入後會先換成自己的密碼。';
+02013:       card.querySelector('.space-y-1\\.5, .space-y-2, .space-y-3')?.appendChild(note) || card.appendChild(note);
+02014:     });
+02015:   }
+02016: 
+02017:   function enhanceBroadcast() {
+02018:     const title = qs('broadcast-title');
+02019:     const message = qs('broadcast-message');
+02020:     if (title && !title.dataset.srDraft) {
+02021:       title.dataset.srDraft = '1';
+02022:       title.value = localStorage.getItem('sr_broadcast_draft_title') || title.value;
+02023:       title.addEventListener('input', () => localStorage.setItem('sr_broadcast_draft_title', title.value));
+02024:     }
+02025:     if (message && !message.dataset.srDraft) {
+02026:       message.dataset.srDraft = '1';
+02027:       message.value = localStorage.getItem('sr_broadcast_draft_message') || message.value;
+02028:       message.addEventListener('input', () => localStorage.setItem('sr_broadcast_draft_message', message.value));
+02029:     }
+02030:     const sendButton = Array.from(document.querySelectorAll('button')).find(button => tx(button).includes('發送平台通知'));
+02031:     if (sendButton && !qs('sr-broadcast-preview-btn')) {
+02032:       const preview = document.createElement('button');
+02033:       preview.id = 'sr-broadcast-preview-btn';
+02034:       preview.type = 'button';
+02035:       preview.className = 'min-h-[44px] mr-2 px-5 py-3 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold transition';
+
+===== admin.js:2133-2203 =====
+02133:           const extra = document.createElement('div');
+02134:           extra.id = 'sr-delete-extra-confirm';
+02135:           extra.className = 'mt-4 space-y-3 text-left';
+02136:           extra.innerHTML = `<div class="rounded-xl border border-rose-500/20 bg-rose-500/5 p-3 text-xs text-rose-200">這會永久刪除帳號 @${esc(userId)} 與相關貼文，無法復原。</div><input id="sr-delete-account-confirm" class="w-full min-h-[44px] bg-slate-900 border border-rose-500/20 rounded-xl px-3 text-sm text-white" placeholder="輸入 ${esc(userId)}"><textarea id="sr-delete-reason-confirm" class="w-full min-h-[80px] bg-slate-900 border border-rose-500/20 rounded-xl px-3 py-2 text-sm text-white resize-none" placeholder="填寫刪除原因"></textarea>`;
+02137:           const actions = confirmButton.parentElement;
+02138:           content.insertBefore(extra, actions);
+02139:           confirmButton.disabled = true;
+02140:           const accountInput = qs('sr-delete-account-confirm');
+02141:           const reasonInput = qs('sr-delete-reason-confirm');
+02142:           const validate = () => { confirmButton.disabled = accountInput.value.trim() !== String(userId) || !reasonInput.value.trim(); };
+02143:           accountInput.oninput = validate;
+02144:           reasonInput.oninput = validate;
+02145:           confirmButton.onclick = async function() {
+02146:             if (confirmButton.disabled) return;
+02147:             const nativePrompt = window.prompt;
+02148:             window.prompt = () => reasonInput.value.trim();
+02149:             try { await originalConfirm?.call(this); }
+02150:             finally { window.prompt = nativePrompt; }
+02151:           };
+02152:         });
+02153:       };
+02154:       window.openDeleteModal.__srWrapped = true;
+02155:     }
+02156: 
+02157:     if (typeof window.approveAccountDeletionRequest === 'function' && !window.approveAccountDeletionRequest.__srWrapped) {
+02158:       const originalApprove = window.approveAccountDeletionRequest;
+02159:       window.approveAccountDeletionRequest = async function(requestId) {
+02160:         const { db, fs } = await T();
+02161:         const snapshot = await fs.getDoc(fs.doc(db, 'secretg_apps', AID, 'account_requests', requestId));
+02162:         if (!snapshot.exists()) return window.showToast?.('找不到這筆刪除申請。', 'error');
+02163:         const accountId = String(snapshot.data()?.userId || '');
+02164:         if (!accountId) return window.showToast?.('這筆申請缺少帳號 ID。', 'error');
+02165:         showDangerConfirm({
+02166:           accountId,
+02167:           title: `永久刪除帳號 @${accountId}？`,
+02168:           description: '核准後會刪除帳號資料與該帳號發布的貼文。',
+02169:           onConfirm: async reason => {
+02170:             const nativeConfirm = window.confirm;
+02171:             const nativePrompt = window.prompt;
+02172:             window.confirm = () => true;
+02173:             window.prompt = () => reason;
+02174:             try { await originalApprove.call(this, requestId); }
+02175:             finally { window.confirm = nativeConfirm; window.prompt = nativePrompt; }
+02176:           }
+02177:         });
+02178:       };
+02179:       window.approveAccountDeletionRequest.__srWrapped = true;
+02180:     }
+02181:   }
+02182: 
+02183:   function connectionState() {
+02184:     const status = qs('connection-status');
+02185:     if (!status) return;
+02186:     if (!qs('sr-admin-reload')) {
+02187:       const button = document.createElement('button');
+02188:       button.id = 'sr-admin-reload';
+02189:       button.type = 'button';
+02190:       button.className = 'min-h-[44px] px-3 rounded-full border border-slate-700 bg-slate-950 text-slate-300 text-xs font-black';
+02191:       button.innerHTML = '<i class="fa-solid fa-rotate-right mr-1"></i>重新整理';
+02192:       status.insertAdjacentElement('afterend', button);
+02193:       button.onclick = () => location.reload();
+02194:     }
+02195:     if (!navigator.onLine) {
+02196:       status.className = 'self-start px-4 py-2 rounded-full bg-rose-500/10 border border-rose-500/20 text-xs text-rose-300 flex items-center gap-2';
+02197:       status.innerHTML = '<i class="fa-solid fa-wifi"></i> 目前離線，資料可能不是最新';
+02198:       document.documentElement.dataset.srAdminOffline = '1';
+02199:     } else if (document.documentElement.dataset.srAdminOffline === '1') {
+02200:       status.className = 'self-start px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300 flex items-center gap-2';
+02201:       status.innerHTML = '<i class="fa-solid fa-arrows-rotate animate-spin"></i> 網路已恢復，正在同步';
+02202:       document.documentElement.dataset.srAdminOffline = '0';
+02203:       setTimeout(() => { if (navigator.onLine) { status.className = 'self-start px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300 flex items-center gap-2'; status.innerHTML = '<i class="fa-solid fa-circle text-[8px]"></i> 已連線'; } }, 1200);
+
+===== admin.js:2212-2260 =====
+02212:       #admin-main header{position:sticky;top:0;z-index:35;background:linear-gradient(180deg,rgba(2,2,4,.96),rgba(2,2,4,.78));backdrop-filter:blur(16px);padding-top:.5rem;border-radius:0 0 1.25rem 1.25rem}
+02213:       #admin-main button,#admin-main select,#admin-main input{min-height:44px}.sr-admin-group-btn{display:flex;align-items:center;justify-content:center;gap:.45rem;min-height:44px;border-radius:1rem;border:1px solid rgba(245,158,11,.12);background:rgba(2,6,23,.45);color:#94a3b8;font-size:12px;font-weight:900;transition:.2s}.sr-admin-group-btn:hover,.sr-admin-group-active{color:#fcd34d;border-color:rgba(245,158,11,.36);background:rgba(245,158,11,.08)}
+02214:       .sr-admin-subfilter{flex:0 0 auto;border:1px solid rgba(148,163,184,.16);background:rgba(15,23,42,.55);color:#94a3b8;border-radius:.85rem;padding:.55rem .8rem;font-size:12px;font-weight:800;white-space:nowrap}.sr-admin-subfilter-active{color:#020617;background:linear-gradient(90deg,#f8d36a,#d99a23);border-color:#f8d36a}
+02215:       #admin-list{display:grid;gap:1rem}#admin-list>div{scroll-margin-top:6rem}.sr-admin-review-card{border-color:rgba(223,183,108,.16)!important;background:linear-gradient(145deg,rgba(15,23,42,.72),rgba(8,10,16,.62))!important;box-shadow:0 18px 45px rgba(0,0,0,.28)}.sr-admin-risk-card{border-left:4px solid rgba(244,63,94,.72)!important}.sr-admin-security-card{border-left:4px solid rgba(251,191,36,.76)!important}.sr-admin-pending-card{border-left:4px solid rgba(34,211,238,.55)!important}.sr-admin-action-button{min-height:44px!important}
+02216:       .sr-admin-stat-card{cursor:pointer;transition:transform .18s ease,border-color .18s ease,background .18s ease}.sr-admin-stat-card:hover{transform:translateY(-2px);border-color:rgba(245,158,11,.32)!important}.sr-admin-stat-active{border-color:rgba(245,158,11,.55)!important;background:rgba(245,158,11,.08)!important;box-shadow:0 0 24px rgba(245,158,11,.08)}
+02217:       #broadcast-message{line-height:1.55!important}#broadcast-history{scrollbar-width:thin}.glass-panel h2,.glass-panel h3{letter-spacing:.02em}.sr-admin-count-note{font-weight:700;letter-spacing:.02em}.text-\\[10px\\],.text-\\[11px\\]{font-size:12px!important;line-height:1.45!important}
+02218:       @media(max-width:768px){#sr-admin-env-badge{width:100%}#sr-admin-task-groups{position:sticky;top:.5rem;z-index:30;backdrop-filter:blur(14px)}#admin-main header{position:relative}.flex.items-center.justify-between{align-items:flex-start!important}#admin-search,#filter-status{width:100%!important}}
+02219:       @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+02220:     `;
+02221:     document.head.appendChild(style);
+02222:   }
+02223: 
+02224:   function apply() {
+02225:     scheduled = false;
+02226:     installStyles();
+02227:     wrapToast();
+02228:     enforceExplicitAdminLogin();
+02229:     addHeader();
+02230:     addStatsLabel();
+02231:     addGroups();
+02232:     restoreFilters();
+02233:     bindStatCards();
+02234:     enhanceBroadcast();
+02235:     addToolbar();
+02236:     improveResetCards();
+02237:     improveCards();
+02238:     wrapDangerousOperations();
+02239:     connectionState();
+02240:     sortAndCountCards();
+02241:     refreshAdminMetric();
+02242:     sync();
+02243:     document.documentElement.dataset.srAdminUi = VERSION;
+02244:   }
+02245: 
+02246:   function scheduleApply() {
+02247:     if (scheduled) return;
+02248:     scheduled = true;
+02249:     requestAnimationFrame(apply);
+02250:   }
+02251: 
+02252:   document.addEventListener('click', event => {
+02253:     const button = event.target?.closest?.('#admin-list button');
+02254:     if (button) setActionContextFromButton(button);
+02255:   }, true);
+02256:   window.addEventListener('online', () => { connectionState(); scheduleApply(); });
+02257:   window.addEventListener('offline', connectionState);
+02258:   window.SRAdminRuntime?.register(scheduleApply);
+02259:   document.addEventListener('DOMContentLoaded', apply, { once:true });
+02260:   apply();
+
+===== admin.js:2577-2607 =====
+02577:   async function writeNote(key,note){if(!can('note'))throw Error('你的角色不能新增內部備註。');const{db,fs}=await tools(),ref=fs.doc(fs.collection(db,'secretg_apps',APP_ID,'admin_case_notes'));await fs.setDoc(ref,{caseKey:key,note,author:adminId(),createdAt:fs.serverTimestamp(),createdAtMs:Date.now()});}
+02578:   async function saveReview(key,data){if(!can('image_review'))throw Error('你的角色不能儲存圖片審核。');const{db,fs}=await tools();await fs.setDoc(fs.doc(db,'secretg_apps',APP_ID,'admin_case_reviews',hash(key)),{caseKey:key,...data,reviewedBy:adminId(),reviewedAt:fs.serverTimestamp(),reviewedAtMs:Date.now()},{merge:true});}
+02579:   async function open(card){const w=window.SRAdminCaseWorkspace||{},key=card.dataset.srCaseKey||w.caseKey?.(card)||fallbackCaseKey(card),target=w.caseId?.(card)||fallbackCaseId(card),assignment=w.assignments?.get(key),images=[...card.querySelectorAll('img')].map(i=>i.src).filter(Boolean).slice(0,4);activeDrawerUnsubscribe?.();activeDrawerUnsubscribe=null;qs('sr-case-drawer')?.remove();const d=document.createElement('aside');d.id='sr-case-drawer';d.className='fixed inset-y-0 right-0 z-[240] w-full max-w-xl bg-[#05070c] border-l border-amber-500/15 shadow-2xl overflow-y-auto p-5 sm:p-6';d.innerHTML=`<div class="flex items-start justify-between gap-3"><div><div class="text-xs text-amber-300 font-black">案件詳細資料</div><h2 class="text-xl text-white font-black mt-1">${esc(target)}</h2><p class="text-xs text-slate-500 mt-1 font-mono break-all">${esc(key)}</p></div><button id="sr-case-close" class="w-11 h-11 rounded-full border border-slate-700 text-slate-300"><i class="fa-solid fa-xmark"></i></button></div><section class="mt-5 rounded-2xl border border-slate-800 bg-slate-950/55 p-4"><h3 class="text-xs text-slate-400 font-black">原始案件內容</h3><p class="text-sm text-slate-200 whitespace-pre-wrap leading-relaxed mt-3">${esc(tx(card))}</p>${images.length?`<div class="grid grid-cols-2 gap-2 mt-4">${images.map(src=>`<button data-review-image="${esc(src)}" class="rounded-xl overflow-hidden border border-slate-800"><img src="${esc(src)}" class="w-full h-32 object-cover"></button>`).join('')}</div>`:''}</section><section class="mt-4 rounded-2xl border border-cyan-500/15 bg-cyan-500/5 p-4"><div class="flex items-center justify-between gap-3"><div><h3 class="text-sm text-white font-black">案件負責人</h3><p id="sr-case-assignee-text" class="text-xs text-slate-500 mt-1">${esc(assignment?.assignedTo||'尚未指派')}</p></div><button id="sr-case-assign-me" class="min-h-[44px] px-4 rounded-xl border border-cyan-500/20 text-cyan-300 text-xs font-black">指派給我</button></div></section><section class="mt-4 rounded-2xl border border-amber-500/15 bg-amber-500/5 p-4"><h3 class="text-sm text-white font-black">圖片審核檢查</h3><div class="space-y-2 mt-3"><label class="flex gap-3 text-xs text-slate-300"><input id="sr-review-clear" type="checkbox" class="accent-amber-500">圖片清楚可辨識</label><label class="flex gap-3 text-xs text-slate-300"><input id="sr-review-context" type="checkbox" class="accent-amber-500">內容與申請項目一致</label><label class="flex gap-3 text-xs text-slate-300"><input id="sr-review-consent" type="checkbox" class="accent-amber-500">已確認分享／審核同意</label></div><button id="sr-review-save" class="w-full min-h-[44px] mt-4 rounded-xl bg-amber-600 text-slate-950 text-xs font-black">儲存檢查結果</button></section><section class="mt-4 rounded-2xl border border-violet-500/15 bg-violet-500/5 p-4"><h3 class="text-sm text-white font-black">內部備註</h3><textarea id="sr-case-note" class="w-full min-h-[90px] mt-3 rounded-xl bg-slate-950 border border-slate-800 px-3 py-2 text-sm text-white" placeholder="只有管理員可見"></textarea><button id="sr-case-note-save" class="w-full min-h-[44px] mt-3 rounded-xl bg-violet-600 text-white text-xs font-black">新增備註</button><div id="sr-case-notes" class="space-y-2 mt-4"><div class="text-xs text-slate-500">正在讀取備註...</div></div></section><section class="mt-4 rounded-2xl border border-slate-800 bg-slate-950/55 p-4"><h3 class="text-sm text-white font-black">管理紀錄</h3><div id="sr-case-logs" class="space-y-2 mt-3"><div class="text-xs text-slate-500">正在讀取紀錄...</div></div></section>`;document.body.appendChild(d);qs('sr-case-close').onclick=()=>{activeDrawerUnsubscribe?.();activeDrawerUnsubscribe=null;d.remove();};d.querySelectorAll('[data-review-image]').forEach(b=>b.onclick=()=>window.zoomImage?.(b.dataset.reviewImage));qs('sr-case-assign-me').onclick=async()=>{try{if(!w.assign)throw Error('案件指派功能尚未準備好。');await w.assign(key,adminId());qs('sr-case-assignee-text').textContent=adminId();toast('案件已指派給你。','success');}catch(e){toast(e.message,'error');}};qs('sr-review-save').onclick=async()=>{try{await saveReview(key,{imageClear:qs('sr-review-clear').checked,contextMatches:qs('sr-review-context').checked,consentConfirmed:qs('sr-review-consent').checked});toast('圖片審核檢查已儲存。','success');}catch(e){toast(e.message,'error');}};qs('sr-case-note-save').onclick=async()=>{const note=qs('sr-case-note').value.trim();if(!note)return toast('請先輸入備註。','info');try{await writeNote(key,note);qs('sr-case-note').value='';toast('內部備註已新增。','success');}catch(e){toast(e.message,'error');}};try{const{db,fs}=await tools();activeDrawerUnsubscribe=fs.onSnapshot(fs.query(fs.collection(db,'secretg_apps',APP_ID,'admin_case_notes'),fs.where('caseKey','==',key)),s=>{const rows=[];s.forEach(x=>rows.push(x.data()||{}));rows.sort((a,b)=>Number(b.createdAtMs||0)-Number(a.createdAtMs||0));if(qs('sr-case-notes'))qs('sr-case-notes').innerHTML=rows.length?rows.map(n=>`<div class="rounded-xl border border-slate-800 bg-slate-950/70 p-3"><div class="text-xs text-slate-200 whitespace-pre-wrap">${esc(n.note)}</div><div class="text-[11px] text-slate-600 mt-2">${esc(n.author||'admin')} · ${n.createdAtMs?new Date(n.createdAtMs).toLocaleString('zh-TW',{hour12:false}):''}</div></div>`).join(''):'<div class="text-xs text-slate-500">尚無備註</div>';});const logs=await fs.getDocs(fs.query(fs.collection(db,'secretg_apps',APP_ID,'admin_logs'),fs.where('targetId','==',target))),rows=[];logs.forEach(x=>rows.push(x.data()||{}));rows.sort((a,b)=>Number(b.createdAtMs||0)-Number(a.createdAtMs||0));if(qs('sr-case-logs'))qs('sr-case-logs').innerHTML=rows.length?rows.slice(0,30).map(x=>`<div class="rounded-xl border border-slate-800 p-3"><div class="text-xs text-slate-300 font-black">${esc(x.action||'操作')}</div><div class="text-[11px] text-slate-600 mt-1">${esc(x.adminId||'')} · ${x.createdAtMs?new Date(x.createdAtMs).toLocaleString('zh-TW',{hour12:false}):''}</div></div>`).join(''):'<div class="text-xs text-slate-500">查無管理紀錄</div>';}catch(e){console.warn('案件詳細資料讀取失敗',e);}}
+02580:   function style(){if(qs('sr-admin-phase2-drawer-style'))return;const s=document.createElement('style');s.id='sr-admin-phase2-drawer-style';s.textContent='#sr-case-drawer{animation:srDrawerIn .2s ease-out}@keyframes srDrawerIn{from{transform:translateX(24px);opacity:.5}to{transform:none;opacity:1}}';document.head.appendChild(s);}
+02581:   document.addEventListener('click',e=>{const card=e.target?.closest?.('#admin-list>div[data-sr-case-key]');if(card&&!e.target.closest('button,input,select,textarea,label,a'))open(card);},true);style();document.documentElement.dataset.srAdminPhase2CaseDrawer=VERSION;
+02582: })();
+02583: 
+02584: })();
+02585: 
+02586: /* ===== Consolidated source: sr_admin_phase2_notifications.js ===== */
+02587: ;(() => {
+02588: // SecretRoom admin phase two: notification test send and scheduling queue.
+02589: (() => {
+02590:   if(window.__SR_ADMIN_PHASE2_NOTIFICATIONS__)return;
+02591:   window.__SR_ADMIN_PHASE2_NOTIFICATIONS__=true;
+02592:   const APP_ID='secretg-production-node-tw',VERSION='20260711-admin-phase2-notifications-v1';
+02593:   let queued=false,unsub=null;
+02594:   const qs=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),toast=(m,t='info')=>window.showToast?.(m,t);
+02595:   async function tools(){const a=await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js'),fs=await import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js'),app=a.getApps()[0];if(!app)throw Error('Firebase 尚未初始化');return{db:fs.getFirestore(app),fs};}
+02596:   const admin=()=>window.SRAdminPhase2?.adminId||sessionStorage.getItem('sr_admin_session_id_v2')||'';
+02597:   const data=()=>window.SRAdminPhase2?.adminData||{};
+02598:   const can=a=>window.SRAdminPhase2?.can?window.SRAdminPhase2.can(a):a==='view';
+02599:   async function create(payload){if(!can('send'))throw Error('你的角色不能建立通知排程。');const{db,fs}=await tools(),ref=fs.doc(fs.collection(db,'secretg_apps',APP_ID,'scheduled_notifications'));await fs.setDoc(ref,{...payload,status:'pending',createdBy:admin(),createdAt:fs.serverTimestamp(),createdAtMs:Date.now()});}
+02600:   async function send(item){if(!can('send'))throw Error('你的角色不能發送通知。');const{db,fs}=await tools(),ref=fs.doc(fs.collection(db,'secretg_apps',APP_ID,'notifications'));await fs.setDoc(ref,{type:'platform',category:'platform',tone:'platform',title:item.title,message:item.message,target:item.target||'all',status:'已發送',revoked:false,createdBy:admin(),createdAt:fs.serverTimestamp(),createdAtMs:Date.now(),scheduledSourceId:item.id||''});if(item.id)await fs.updateDoc(fs.doc(db,'secretg_apps',APP_ID,'scheduled_notifications',item.id),{status:'sent',sentAt:fs.serverTimestamp(),sentAtMs:Date.now(),sentBy:admin()});}
+02601:   async function render(){const target=qs('broadcast-target'),title=qs('broadcast-title'),message=qs('broadcast-message');if(!target||!title||!message||qs('sr-notification-scheduler-v2'))return;const panel=target.closest('.glass-panel')||target.parentElement?.parentElement;if(!panel)return;const box=document.createElement('section');box.id='sr-notification-scheduler-v2';box.className='mt-5 rounded-2xl border border-cyan-500/15 bg-cyan-500/5 p-4';box.innerHTML='<div><h3 class="text-sm text-white font-black">通知測試與排程</h3><p class="text-xs text-slate-500 mt-1">排程會寫入佇列，可手動立即送出；正式無人值守排程仍需 Cloud Function。</p></div><div class="grid grid-cols-1 md:grid-cols-[1fr_auto_auto] gap-2 mt-4"><input id="sr-notification-time" type="datetime-local" class="min-h-[44px] rounded-xl bg-slate-900 border border-slate-700 px-3 text-xs text-slate-200"><button id="sr-notification-test" class="min-h-[44px] px-4 rounded-xl border border-sky-500/20 text-sky-300 text-xs font-black">寄測試信給我</button><button id="sr-notification-schedule" class="min-h-[44px] px-4 rounded-xl bg-cyan-600 text-white text-xs font-black">儲存排程</button></div><div id="sr-scheduled-list" class="space-y-2 mt-4"></div>';panel.appendChild(box);qs('sr-notification-schedule').onclick=async()=>{const ms=new Date(qs('sr-notification-time').value).getTime();if(!title.value.trim()||!message.value.trim())return toast('請先填寫通知標題與內容。','info');if(!ms||ms<=Date.now())return toast('請選擇未來的排程時間。','info');try{await create({title:title.value.trim(),message:message.value.trim(),target:target.value,scheduledAtMs:ms,scheduledAt:new Date(ms).toISOString()});toast('通知已加入排程佇列。','success');}catch(e){toast(e.message,'error');}};qs('sr-notification-test').onclick=async()=>{const email=data().email;if(!email)return toast('管理員帳號沒有設定測試信箱。','info');if(!window.emailjs)return toast('Email 功能尚未準備好。','error');try{await emailjs.send('service_1ou10mi','template_sr_notice',{to_email:email,to_name:admin(),status_text:`[測試] ${title.value||'SecretRoom 通知'}`,message:message.value||'這是一封測試通知。',email_type:'平台通知測試',member_id:admin()},{publicKey:'XggJY7iHQcZYYhNY7'});toast(`測試信已寄到 ${email}。`,'success');}catch(e){toast('測試信寄送失敗：'+e.message,'error');}};try{const{db,fs}=await tools();unsub=fs.onSnapshot(fs.collection(db,'secretg_apps',APP_ID,'scheduled_notifications'),s=>{const rows=[];s.forEach(d=>rows.push({id:d.id,...d.data()}));rows.sort((a,b)=>Number(a.scheduledAtMs||0)-Number(b.scheduledAtMs||0));const list=qs('sr-scheduled-list');if(!list)return;const pending=rows.filter(x=>x.status==='pending').slice(0,20);list.innerHTML=pending.length?pending.map(x=>`<div class="rounded-xl border border-slate-800 bg-slate-950/55 p-3 flex items-start justify-between gap-3"><div><div class="text-xs text-slate-200 font-black">${esc(x.title||'未命名通知')}</div><div class="text-[11px] text-slate-500 mt-1">${x.scheduledAtMs?new Date(x.scheduledAtMs).toLocaleString('zh-TW',{hour12:false}):'未設定時間'} · ${esc(x.target||'all')}</div></div><button data-send-scheduled="${esc(x.id)}" class="min-h-[40px] px-3 rounded-xl border border-cyan-500/20 text-cyan-300 text-xs font-black">立即送出</button></div>`).join(''):'<div class="text-xs text-slate-500">目前沒有待發送排程</div>';list.querySelectorAll('[data-send-scheduled]').forEach(b=>b.onclick=async()=>{const item=rows.find(x=>x.id===b.dataset.sendScheduled);if(!item)return;try{await send(item);toast('排程通知已立即送出。','success');}catch(e){toast(e.message,'error');}});},e=>console.warn('通知排程同步失敗',e));}catch(e){console.warn(e);}}
+02602:   function apply(){queued=false;render();document.documentElement.dataset.srAdminPhase2Notifications=VERSION;}
+02603:   function schedule(){if(queued)return;queued=true;requestAnimationFrame(apply);}
+02604:   window.SRAdminRuntime?.register(schedule);apply();
+02605: })();
+02606: 
+02607: })();
