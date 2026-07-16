@@ -1,10 +1,132 @@
-name: Completed six-file consolidation
+name: Complete consolidated runtime cleanup
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - optimize/six-file-architecture
+
+permissions:
+  contents: write
 
 jobs:
-  completed:
+  cleanup:
+    if: ${{ !contains(github.event.head_commit.message, '[runtime-cleanup-generated]') }}
     runs-on: ubuntu-latest
     steps:
-      - run: echo "The one-time consolidation has already completed on this branch."
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Inline rank policy and remove obsolete shared patches
+        shell: bash
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          app_path = Path('app.js')
+          admin_path = Path('admin.js')
+          rank_path = Path('sr_rank_policy.js')
+          if not rank_path.exists():
+              raise SystemExit('sr_rank_policy.js was not found')
+
+          app = app_path.read_text(encoding='utf-8')
+          admin = admin_path.read_text(encoding='utf-8')
+          rank = rank_path.read_text(encoding='utf-8').replace('\r\n', '\n')
+
+          frontend_preflight = r'''/* ===== Consolidated frontend preflight ===== */
+;(() => {
+  if (window.__SR_FRONTEND_PREFLIGHT__) return;
+  window.__SR_FRONTEND_PREFLIGHT__ = true;
+  function guardSetter(prototype, property) {
+    if (!prototype) return;
+    const descriptor = Object.getOwnPropertyDescriptor(prototype, property);
+    if (!descriptor?.get || !descriptor?.set || descriptor.set.__srGuarded) return;
+    const guardedSetter = function(value) {
+      const next = value == null ? '' : String(value);
+      let current = '';
+      try { current = descriptor.get.call(this); } catch (_) {}
+      if (current === next) return;
+      return descriptor.set.call(this, value);
+    };
+    guardedSetter.__srGuarded = true;
+    Object.defineProperty(prototype, property, { configurable: descriptor.configurable, enumerable: descriptor.enumerable, get: descriptor.get, set: guardedSetter });
+  }
+  guardSetter(window.Node?.prototype, 'textContent');
+  guardSetter(window.Element?.prototype, 'innerHTML');
+  document.addEventListener('click', event => {
+    const button = event.target?.closest?.('#sr-feed-load-more');
+    if (!button || !window.state) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    window.state.visiblePostsCount = Number(window.state.visiblePostsCount || 5) + 5;
+    window.setGlobalFilter?.(window.state.currentFilter || 'recommended');
+  }, true);
+})();
+
+'''
+
+          admin_preflight = r'''/* ===== Consolidated admin preflight ===== */
+;(() => {
+  if (window.__SR_ADMIN_PREFLIGHT__) return;
+  window.__SR_ADMIN_PREFLIGHT__ = true;
+  function guardSetter(prototype, property) {
+    if (!prototype) return;
+    const descriptor = Object.getOwnPropertyDescriptor(prototype, property);
+    if (!descriptor?.get || !descriptor?.set || descriptor.set.__srGuarded) return;
+    const guardedSetter = function(value) {
+      const next = value == null ? '' : String(value);
+      let current = '';
+      try { current = descriptor.get.call(this); } catch (_) {}
+      if (current === next) return;
+      return descriptor.set.call(this, value);
+    };
+    guardedSetter.__srGuarded = true;
+    Object.defineProperty(prototype, property, { configurable: descriptor.configurable, enumerable: descriptor.enumerable, get: descriptor.get, set: guardedSetter });
+  }
+  guardSetter(window.Node?.prototype, 'textContent');
+  guardSetter(window.Element?.prototype, 'innerHTML');
+})();
+
+'''
+
+          def replace_section(text, start_marker, end_marker, replacement):
+              start = text.find(start_marker)
+              end = text.find(end_marker)
+              if start < 0 or end < 0 or end <= start:
+                  raise SystemExit(f'Unable to find section {start_marker}')
+              return text[:start] + replacement + text[end:]
+
+          app = replace_section(app, '/* ===== Consolidated source: sr_dom_stability.js ===== */', '/* ===== Consolidated source: sr_audio_control.js ===== */', frontend_preflight)
+          admin = replace_section(admin, '/* ===== Consolidated source: sr_dom_stability.js ===== */', '/* ===== Consolidated source: admin.js ===== */', admin_preflight)
+          app = re.sub(r"\n?import\(['\"]\./sr_rank_policy\.js[^\n]*\n?", '\n', app)
+          marker = '/* ===== Consolidated source: sr_rank_layout_v2.js ===== */'
+          if marker not in app:
+              raise SystemExit('Rank layout marker was not found')
+          rank_section = f"\n/* ===== Consolidated source: sr_rank_policy.js ===== */\n;(() => {{\n{rank}\n}})();\n\n"
+          app = app.replace(marker, rank_section + marker, 1)
+
+          app_path.write_text(app, encoding='utf-8')
+          admin_path.write_text(admin, encoding='utf-8')
+          rank_path.unlink()
+          PY
+
+      - name: Static verification
+        shell: bash
+        run: |
+          node --check app.js
+          node --check admin.js
+          test ! -e sr_rank_policy.js
+          ! grep -q "import('./sr_rank_policy.js" app.js
+          ! grep -q 'Weekly Grade System' admin.js
+          ! grep -q 'FRONTEND_RANK_VERSION' admin.js
+
+      - name: Commit generated cleanup
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Remove obsolete runtime patches [runtime-cleanup-generated]"
+          git push origin HEAD:optimize/six-file-architecture
