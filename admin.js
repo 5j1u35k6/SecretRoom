@@ -1862,7 +1862,7 @@ window.rejectPasswordResetRequest = async function rejectPasswordResetRequest(id
   function bindStatCards() {
     Object.entries(statFilters).forEach(([countId, filter]) => {
       const count = qs(countId);
-      const card = count?.closest('.rounded-2xl, .bg-slate-950\/60, .admin-stat-mini') || count?.parentElement;
+      const card = count?.closest('.rounded-2xl, .admin-stat-mini') || count?.parentElement;
       if (!card || card.dataset.srStatBound === '1') return;
       card.dataset.srStatBound = '1';
       card.dataset.srStatFilter = filter;
