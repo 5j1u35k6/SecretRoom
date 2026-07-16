@@ -2731,85 +2731,7 @@ let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
         }
 
         function renderRankTab(container) {
-            const { start, end, weeklyPosts, members } = getWeeklyRankData();
-            const currentIndex = members.findIndex(item => item.userId === window.state.applicationId);
-            const current = currentIndex >= 0 ? members[currentIndex] : null;
-            const currentScore = current ? current.score : 0;
-            const currentTier = getRankTier(currentScore);
-            const periodText = `${start.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' })}－${end.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' })}`;
-            const thresholds = [
-                ['D.G', '50'], ['C.G', '100'], ['B.G', '150'], ['A.G', '250'], ['S.G', '500'], ['S+.G', '750'], ['SSR.G', '1350'], ['Z.G', '> 1350']
-            ];
-            container.innerHTML = `
-                <div class="space-y-5">
-                    <div class="glass-panel crystal-border rounded-3xl p-5 md:p-7 relative overflow-hidden">
-                        <div class="absolute -top-16 -right-16 w-40 h-40 bg-amber-500/10 blur-3xl rounded-full"></div>
-                        <div class="relative z-10 flex flex-col md:flex-row md:items-end md:justify-between gap-5">
-                            <div>
-                                <div class="text-[10px] text-amber-400/75 font-black tracking-[0.24em] font-luxury">Weekly Grade System</div>
-                                <h2 class="text-2xl md:text-3xl font-black text-white font-luxury tracking-wider mt-1">位階</h2>
-                                <p class="text-xs text-slate-400 mt-2 leading-relaxed max-w-2xl">每週一 00:00 至週日 23:59 結算。計分依單週貼文互動計算，公式採你提供的範例：按讚數 × 30% + 評星人數 ÷ 平均星數，分數無條件捨去至小數點後一位。</p>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-[10px] text-slate-500 font-black tracking-wider">本週週期</div>
-                                <div class="text-lg text-amber-300 font-black font-luxury">${periodText}</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-[1fr_1.25fr] gap-4">
-                        <div class="glass-panel crystal-border rounded-3xl p-5 relative overflow-hidden">
-                            <div class="text-xs text-slate-500 font-black tracking-wider mb-2">你的本週位階</div>
-                            <div class="flex items-center gap-4">
-                                <div class="w-20 h-20 rounded-3xl bg-gradient-to-br ${currentTier.tone} text-slate-950 flex items-center justify-center shadow-xl font-black font-luxury text-xl">${currentTier.code}</div>
-                                <div>
-                                    <div class="text-3xl font-black text-white font-luxury">${currentScore.toFixed(1)}</div>
-                                    <div class="text-xs text-slate-400 mt-1">${current ? `第 ${currentIndex + 1} 名 · ${current.posts.length} 篇貼文納入計算` : '本週尚無可計分貼文'}</div>
-                                    <div class="text-[10px] text-amber-300/80 mt-2 font-black">${currentTier.name}</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="glass-panel crystal-border rounded-3xl p-5">
-                            <div class="text-xs text-slate-500 font-black tracking-wider mb-3">牌位門檻</div>
-                            <div class="grid grid-cols-4 gap-2">
-                                ${thresholds.map(([code, score]) => `<div class="rounded-2xl border border-amber-500/10 bg-slate-950/45 p-3 text-center"><div class="text-sm font-black text-amber-300 font-luxury">${code}</div><div class="text-[10px] text-slate-500 mt-1">${score}</div></div>`).join('')}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="glass-panel crystal-border rounded-3xl p-5 md:p-6">
-                        <div class="flex items-center justify-between gap-3 mb-4">
-                            <div>
-                                <h3 class="text-lg font-black text-white font-luxury tracking-wider">本週位階榜</h3>
-                                <p class="text-xs text-slate-500 mt-1">共 ${weeklyPosts.length} 篇貼文納入本週結算。</p>
-                            </div>
-                        </div>
-                        <div class="space-y-3">
-                            ${members.length === 0 ? `
-                                <div class="text-center py-12 text-slate-500">
-                                    <i class="fa-solid fa-ranking-star text-3xl text-amber-500/40 mb-3"></i>
-                                    <div class="font-black text-slate-300">本週尚無位階資料</div>
-                                    <div class="text-xs mt-1">發布貼文並累積按讚、評星後會自動進入週榜。</div>
-                                </div>
-                            ` : members.map((entry, index) => `
-                                <div class="rounded-3xl border border-amber-500/10 bg-slate-950/35 p-4 flex items-center gap-3 hover-breath click-press cursor-pointer" onclick="viewUserProfile('${escapeJsString(entry.userId)}')">
-                                    <div class="w-9 text-center font-black text-amber-300 font-luxury">#${index + 1}</div>
-                                    <img src="${entry.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-12 h-12 rounded-2xl object-cover border border-amber-500/20 shrink-0">
-                                    <div class="min-w-0 flex-1">
-                                        <div class="flex items-center gap-2 flex-wrap"><span class="font-black text-slate-100 truncate">${escapeHtml(entry.nickname)}</span><span class="text-[10px] text-slate-500 font-mono">@${escapeHtml(entry.userId)}</span></div>
-                                        <div class="text-[10px] text-slate-500 mt-1">${entry.posts.length} 篇 · ${entry.likes} 讚 · ${entry.ratingCount} 位評星 · 均星 ${entry.avgRating.toFixed(1)}</div>
-                                    </div>
-                                    <div class="text-right shrink-0">
-                                        <div class="inline-flex items-center justify-center min-w-[4rem] px-3 py-2 rounded-2xl bg-gradient-to-br ${entry.tier.tone} text-slate-950 font-black font-luxury">${entry.tier.code}</div>
-                                        <div class="text-sm font-black text-white mt-1">${entry.score.toFixed(1)}</div>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                </div>
-            `;
+            window.SRRankPolicy?.render?.();
         }
 
         function renderFeedTab(container) {
@@ -4999,7 +4921,7 @@ let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
     requestAnimationFrame(apply);
   }
 
-  new MutationObserver(scheduleApply).observe(document.documentElement, { childList: true, subtree: true });
+  window.SRRuntime?.register(scheduleApply);
   document.addEventListener('DOMContentLoaded', apply, { once: true });
   apply();
 })();
@@ -5198,97 +5120,12 @@ let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
   const FILTER_KEY = 'sr_feed_filter';
   const SCROLL_KEY = 'sr_feed_scroll_top';
   const DRAFT_KEY = 'sr_post_draft_v1';
-  const tiers = [
-    { code: 'D.G', promote: 0, keep: 0, tone: 'from-stone-300 via-amber-200 to-stone-500' },
-    { code: 'C.G', promote: 120, keep: 60, tone: 'from-slate-200 via-slate-300 to-amber-100' },
-    { code: 'B.G', promote: 250, keep: 130, tone: 'from-emerald-200 via-teal-300 to-slate-200' },
-    { code: 'A.G', promote: 450, keep: 240, tone: 'from-blue-200 via-cyan-300 to-amber-200' },
-    { code: 'S.G', promote: 700, keep: 380, tone: 'from-yellow-200 via-amber-400 to-orange-500' },
-    { code: 'S+.G', promote: 1000, keep: 560, tone: 'from-amber-200 via-yellow-300 to-amber-500' },
-    { code: 'SSR.G', promote: 1450, keep: 850, tone: 'from-violet-300 via-amber-200 to-rose-200' },
-    { code: 'Z.G', promote: 2000, keep: 1200, tone: 'from-fuchsia-300 via-amber-200 to-cyan-200' }
-  ];
 
   const qs = id => document.getElementById(id);
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
   function esc(value) { return String(value ?? '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char])); }
   function js(value) { return String(value ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/\r/g, '\\r'); }
   function textOf(element) { return String(element?.innerText || element?.textContent || '').replace(/\s+/g, ' ').trim(); }
-  function timeValue(value) {
-    if (value && value.seconds) return value.seconds * 1000;
-    if (value && typeof value.toDate === 'function') return value.toDate().getTime() || 0;
-    if (typeof value === 'number') return value;
-    if (typeof value === 'string') { const time = new Date(value).getTime(); return Number.isNaN(time) ? 0 : time; }
-    return 0;
-  }
-  function weekWindow(base = new Date()) {
-    const date = new Date(base);
-    const day = date.getDay();
-    const diff = day === 0 ? -6 : 1 - day;
-    const start = new Date(date.getFullYear(), date.getMonth(), date.getDate() + diff, 0, 0, 0, 0);
-    const end = new Date(start);
-    end.setDate(start.getDate() + 7);
-    end.setMilliseconds(-1);
-    return { start, end };
-  }
-  function floor1(value) { return Math.floor((Number(value) || 0) * 10) / 10; }
-  function tierIndex(code) { return Math.max(0, tiers.findIndex(tier => tier.code === code)); }
-  function tierByScore(score) { let result = tiers[0]; for (const tier of tiers) if (score >= tier.promote) result = tier; return result; }
-
-  function getWeeklyRankData() {
-    const { start, end } = weekWindow();
-    const startMs = start.getTime();
-    const endMs = end.getTime();
-    const posts = (window.state?.posts || []).filter(post => {
-      const created = timeValue(post.createdAt || post.createdAtMs || post.timestamp);
-      return created >= startMs && created <= endMs;
-    });
-    const map = new Map();
-    posts.forEach(post => {
-      const userId = post.userId || 'unknown';
-      const profile = (window.state?.activeUsers || []).find(user => user.id === userId) || {};
-      if (!map.has(userId)) map.set(userId, {
-        userId,
-        nickname: post.authorName || profile.nickname || userId,
-        avatar: post.authorAvatar || profile.avatar || '',
-        likes: 0,
-        ratingCount: 0,
-        ratingSum: 0,
-        postCount: 0
-      });
-      const entry = map.get(userId);
-      const ratingValues = Object.values(post.ratings || {}).map(Number).filter(value => Number.isFinite(value) && value > 0);
-      entry.likes += Number(post.likeCount || Object.keys(post.likes || {}).length || 0);
-      entry.ratingCount += ratingValues.length;
-      entry.ratingSum += ratingValues.reduce((sum, value) => sum + value, 0);
-      entry.postCount += 1;
-    });
-    const members = Array.from(map.values()).map(entry => {
-      const avgRating = entry.ratingCount ? entry.ratingSum / entry.ratingCount : 0;
-      const score = floor1(entry.likes * 0.3 + entry.ratingCount * avgRating * 0.7 + entry.postCount * 10);
-      const savedTier = (window.state?.activeUsers || []).find(user => user.id === entry.userId)?.rankTier;
-      const currentTier = tiers.find(tier => tier.code === savedTier) || tierByScore(score);
-      return { ...entry, avgRating, score, currentTier };
-    }).sort((a, b) => b.score - a.score || b.likes - a.likes || b.ratingCount - a.ratingCount);
-    return { start, end, posts, members };
-  }
-
-  function nearbyTierCards(currentTier) {
-    const index = tierIndex(currentTier.code);
-    const visibleIndexes = [...new Set([Math.max(0, index - 1), index, Math.min(tiers.length - 1, index + 1)])];
-    return visibleIndexes.map(position => {
-      const tier = tiers[position];
-      const stateClass = tier.code === currentTier.code ? 'sr-rank-tier-current' : '';
-      return `<div class="sr-rank-tier-card ${stateClass}"><div class="text-sm font-black text-amber-300 font-luxury">${tier.code}</div><div class="text-xs text-slate-400 mt-1">升階 ${tier.promote}</div><div class="text-xs text-slate-500">保級 ${tier.keep}</div></div>`;
-    }).join('');
-  }
-
-  function rankMemberCard(entry, index, pinned = false) {
-    return `<button type="button" class="sr-rank-member ${pinned ? 'sr-rank-member-pinned' : ''}" onclick="viewUserProfile('${js(entry.userId)}')"><span class="w-9 text-center font-black text-amber-300 font-luxury">#${index + 1}</span><img src="${entry.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-12 h-12 rounded-2xl object-cover border border-amber-500/20 shrink-0"><span class="min-w-0 flex-1 text-left"><span class="flex items-center gap-2 flex-wrap"><strong class="text-slate-100 truncate">${esc(entry.nickname)}</strong><span class="text-xs text-slate-500 font-mono">@${esc(entry.userId)}</span></span><span class="block text-xs text-slate-500 mt-1">${entry.postCount} 篇 · ${entry.likes} 讚 · ${entry.ratingCount} 人評星 · 平均 ${entry.avgRating.toFixed(1)} 星</span></span><span class="text-right shrink-0"><span class="inline-flex items-center justify-center min-w-[4rem] px-3 py-2 rounded-2xl bg-gradient-to-br ${entry.currentTier.tone} text-slate-950 font-black font-luxury">${entry.currentTier.code}</span><strong class="block text-sm text-white mt-1">${entry.score.toFixed(1)}</strong></span></button>`;
-  }
-
-  function renderRankRules() { /* Integrated rank policy owns this page. */ }
-
   function normalizeBrandAndNav() {
     const specTab = qs('aside-tab-spec-vault');
     if (specTab) {
@@ -5814,7 +5651,6 @@ let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
   function applyUI() {
     scheduled = false;
     installStyles();
-    renderRankRules();
     normalizeBrandAndNav();
     enhanceFeedLoading();
     enhanceFeedHierarchy();
@@ -5842,7 +5678,7 @@ let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
     openShareModal();
   }, true);
 
-  new MutationObserver(scheduleApply).observe(document.documentElement, { childList: true, subtree: true });
+  window.SRRuntime?.register(scheduleApply);
   document.addEventListener('DOMContentLoaded', applyUI, { once: true });
   applyUI();
 })();
@@ -6062,7 +5898,7 @@ schedule();
     });
   }
 
-  window.SRRankPolicy = Object.freeze({ version:'v4', maxPosts:TOP_POSTS, maxRatingsPerReviewerAuthor:REVIEW_CAP, tiers, data:rankData });
+  window.SRRankPolicy = Object.freeze({ version:'v4', maxPosts:TOP_POSTS, maxRatingsPerReviewerAuthor:REVIEW_CAP, tiers, data:rankData, render });
   window.SRRuntime?.register(schedule);
   schedule();
 })();

@@ -2255,7 +2255,7 @@ window.rejectPasswordResetRequest = async function rejectPasswordResetRequest(id
   }, true);
   window.addEventListener('online', () => { connectionState(); scheduleApply(); });
   window.addEventListener('offline', connectionState);
-  new MutationObserver(scheduleApply).observe(document.documentElement, { childList:true, subtree:true });
+  window.SRAdminRuntime?.register(scheduleApply);
   document.addEventListener('DOMContentLoaded', apply, { once:true });
   apply();
 })();
