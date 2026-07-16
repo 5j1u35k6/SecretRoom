@@ -3,194 +3,29 @@
  * Admin login is fail-closed when the explicit admins collection cannot be verified.
  */
 
-/* ===== Consolidated source: sr_dom_stability.js ===== */
+/* ===== Integrated admin runtime coordinator ===== */
 ;(() => {
-// SecretRoom DOM stability and phase-one runtime alignment.
-(() => {
-  if (window.__SR_DOM_STABILITY__) return;
-  window.__SR_DOM_STABILITY__ = true;
-
-  const FRONTEND_RANK_VERSION = '20260711-phase1-frontend-v1';
-  const thresholds = [
-    { code: 'N.G', min: 0 },
-    { code: 'D.G', min: 50 },
-    { code: 'C.G', min: 100 },
-    { code: 'B.G', min: 150 },
-    { code: 'A.G', min: 250 },
-    { code: 'S.G', min: 500 },
-    { code: 'S+.G', min: 750 },
-    { code: 'SSR.G', min: 1350 },
-    { code: 'Z.G', min: 1350.000001 }
-  ];
-
-  function guardSetter(prototype, property) {
-    if (!prototype) return;
-    const descriptor = Object.getOwnPropertyDescriptor(prototype, property);
-    if (!descriptor?.get || !descriptor?.set || descriptor.set.__srGuarded) return;
-    const guardedSetter = function(value) {
-      const next = value == null ? '' : String(value);
-      let current = '';
-      try { current = descriptor.get.call(this); } catch (_) {}
-      if (current === next) return;
-      return descriptor.set.call(this, value);
-    };
-    guardedSetter.__srGuarded = true;
-    Object.defineProperty(prototype, property, {
-      configurable: descriptor.configurable,
-      enumerable: descriptor.enumerable,
-      get: descriptor.get,
-      set: guardedSetter
+  if (window.__SR_ADMIN_RUNTIME__) return;
+  const tasks = new Set();
+  let queued = false;
+  const run = () => {
+    queued = false;
+    tasks.forEach(task => {
+      try { task(); } catch (error) { console.error('Admin runtime task failed:', error); }
     });
-  }
-
-  guardSetter(window.Node?.prototype, 'textContent');
-  guardSetter(window.Element?.prototype, 'innerHTML');
-
-  function tierIndex(code) {
-    const index = thresholds.findIndex(item => item.code === code);
-    return index < 0 ? 0 : index;
-  }
-
-  function installRankStyles() {
-    if (document.getElementById('sr-core-rank-style')) return;
-    const style = document.createElement('style');
-    style.id = 'sr-core-rank-style';
-    style.textContent = `
-      .sr-core-rank-progress{height:.58rem;border-radius:999px;overflow:hidden;background:rgba(15,23,42,.9);border:1px solid rgba(245,158,11,.12)}
-      .sr-core-rank-progress>span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#b7791f,#fcd34d);transition:width .25s ease}
-      .sr-core-rank-actions{display:flex;align-items:center;justify-content:flex-end;margin-top:.75rem}
-      .sr-core-rank-button{min-height:44px;padding:.55rem .85rem;border-radius:.85rem;border:1px solid rgba(245,158,11,.18);background:rgba(15,23,42,.62);color:#fcd34d;font-size:12px;font-weight:900}
-      .sr-core-current-row{border-color:rgba(245,158,11,.4)!important;background:rgba(245,158,11,.07)!important}
-      .sr-core-current-label{font-size:12px;font-weight:900;color:#fcd34d;padding-top:.5rem;border-top:1px solid rgba(245,158,11,.12)}
-    `;
-    document.head.appendChild(style);
-  }
-
-  function simplifyCoreRank(container) {
-    if (!container || window.state?.currentTab !== 'rank') return;
-    container.dataset.srRankVersion = FRONTEND_RANK_VERSION;
-    if (container.dataset.srCoreRankSimplified === '1' && document.getElementById('sr-core-rank-progress')) return;
-    if (!container.textContent.includes('Weekly Grade System')) return;
-
-    const root = container.firstElementChild;
-    const sections = root ? Array.from(root.children) : [];
-    const header = sections[0];
-    const overview = sections[1];
-    const leaderboard = sections[2];
-    if (!header || !overview || !leaderboard) return;
-
-    container.dataset.srCoreRankSimplified = '1';
-    installRankStyles();
-
-    const description = header.querySelector('p');
-    if (description) description.textContent = '每週一開始、週日結算；分數依本週貼文的按讚與評星計算。';
-
-    const overviewCards = Array.from(overview.children);
-    const scoreCard = overviewCards[0];
-    const thresholdCard = overviewCards[1];
-    const tierCode = scoreCard?.querySelector('.w-20.h-20')?.textContent?.trim() || 'N.G';
-    const score = Number.parseFloat(scoreCard?.querySelector('.text-3xl')?.textContent || '0') || 0;
-    const currentIndex = tierIndex(tierCode);
-    const nextTier = thresholds[currentIndex + 1] || null;
-    const currentMin = thresholds[currentIndex]?.min || 0;
-    let progress = 100;
-    let progressText = '已到最高位階';
-    if (nextTier) {
-      if (tierCode === 'SSR.G') {
-        progress = 99;
-        progressText = '分數再增加即可升到 Z.G';
-      } else {
-        const range = Math.max(.1, nextTier.min - currentMin);
-        progress = Math.max(0, Math.min(100, ((score - currentMin) / range) * 100));
-        progressText = `距離 ${nextTier.code} 還差 ${Math.max(0, nextTier.min - score).toFixed(1)} 分`;
-      }
-    }
-    if (scoreCard && !document.getElementById('sr-core-rank-progress')) {
-      const progressBox = document.createElement('div');
-      progressBox.id = 'sr-core-rank-progress';
-      progressBox.className = 'mt-4';
-      progressBox.innerHTML = `<div class="flex items-center justify-between gap-3 text-xs"><span class="text-slate-300">${progressText}</span><span class="text-amber-300 font-black">${Math.round(progress)}%</span></div><div class="sr-core-rank-progress mt-2"><span style="width:${progress}%"></span></div>`;
-      scoreCard.appendChild(progressBox);
-    }
-
-    const thresholdGrid = thresholdCard?.querySelector('.grid.grid-cols-4');
-    const thresholdItems = thresholdGrid ? Array.from(thresholdGrid.children) : [];
-    if (thresholdItems.length && !document.getElementById('sr-rank-threshold-toggle')) {
-      const coreCodes = thresholds.slice(1).map(item => item.code);
-      const coreIndex = Math.max(0, coreCodes.indexOf(tierCode));
-      const keepIndexes = new Set([Math.max(0, coreIndex - 1), coreIndex, Math.min(coreCodes.length - 1, coreIndex + 1)]);
-      if (tierCode === 'N.G') keepIndexes.clear(), keepIndexes.add(0), keepIndexes.add(1);
-      thresholdItems.forEach((item, index) => item.classList.toggle('hidden', !keepIndexes.has(index)));
-      thresholdGrid.classList.remove('grid-cols-4');
-      thresholdGrid.classList.add('grid-cols-3');
-      const actions = document.createElement('div');
-      actions.className = 'sr-core-rank-actions';
-      actions.innerHTML = '<button id="sr-rank-threshold-toggle" type="button" class="sr-core-rank-button">查看全部門檻</button>';
-      thresholdCard.appendChild(actions);
-      document.getElementById('sr-rank-threshold-toggle').onclick = event => {
-        const opening = thresholdItems.some(item => item.classList.contains('hidden'));
-        thresholdItems.forEach(item => item.classList.toggle('hidden', !opening && !keepIndexes.has(thresholdItems.indexOf(item))));
-        thresholdGrid.classList.toggle('grid-cols-3', !opening);
-        thresholdGrid.classList.toggle('grid-cols-4', opening);
-        event.currentTarget.textContent = opening ? '只看相關門檻' : '查看全部門檻';
-      };
-    }
-
-    const list = leaderboard.querySelector('.space-y-3');
-    const rows = list ? Array.from(list.children).filter(item => item.matches('div[onclick*="viewUserProfile"]')) : [];
-    if (rows.length > 10 && !document.getElementById('sr-rank-list-toggle')) {
-      const accountId = String(window.state?.applicationId || '');
-      const currentRow = rows.find(row => row.textContent.includes(`@${accountId}`));
-      rows.forEach((row, index) => row.classList.toggle('hidden', index >= 10 && row !== currentRow));
-      if (currentRow && rows.indexOf(currentRow) >= 10) {
-        currentRow.classList.add('sr-core-current-row');
-        const label = document.createElement('div');
-        label.id = 'sr-core-current-label';
-        label.className = 'sr-core-current-label';
-        label.textContent = '你的名次';
-        list.insertBefore(label, currentRow);
-      }
-      const actions = document.createElement('div');
-      actions.className = 'sr-core-rank-actions';
-      actions.innerHTML = '<button id="sr-rank-list-toggle" type="button" class="sr-core-rank-button">顯示完整排行榜</button>';
-      leaderboard.appendChild(actions);
-      document.getElementById('sr-rank-list-toggle').onclick = event => {
-        const opening = rows.some((row, index) => index >= 10 && row.classList.contains('hidden'));
-        rows.forEach((row, index) => row.classList.toggle('hidden', !opening && index >= 10 && row !== currentRow));
-        const label = document.getElementById('sr-core-current-label');
-        if (label) label.classList.toggle('hidden', opening);
-        event.currentTarget.textContent = opening ? '只看前 10 名' : '顯示完整排行榜';
-      };
-    }
-  }
-
-  document.addEventListener('click', event => {
-    const loadMore = event.target?.closest?.('#sr-feed-load-more');
-    if (!loadMore) return;
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
-    if (!window.state) return;
-    window.state.visiblePostsCount = Number(window.state.visiblePostsCount || 5) + 5;
-    window.setGlobalFilter?.(window.state.currentFilter || 'recommended');
-  }, true);
-
-  let scheduled = false;
-  function apply() {
-    scheduled = false;
-    simplifyCoreRank(document.getElementById('dashboard-tab-content'));
-  }
-  function schedule() {
-    const container = document.getElementById('dashboard-tab-content');
-    if (container && window.state?.currentTab === 'rank') container.dataset.srRankVersion = FRONTEND_RANK_VERSION;
-    if (scheduled) return;
-    scheduled = true;
-    requestAnimationFrame(apply);
-  }
-
-  new MutationObserver(schedule).observe(document.documentElement, { childList:true, subtree:true });
-  document.addEventListener('DOMContentLoaded', apply, { once:true });
-})();
+  };
+  const schedule = () => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(run);
+  };
+  window.__SR_ADMIN_RUNTIME__ = true;
+  window.SRAdminRuntime = Object.freeze({
+    register(task) { if (typeof task === 'function') tasks.add(task); schedule(); return () => tasks.delete(task); },
+    schedule
+  });
+  window.SRAdminRuntime?.register(schedule);
+  document.addEventListener('DOMContentLoaded', schedule, { once: true });
 })();
 
 /* ===== Consolidated source: admin.js ===== */
@@ -316,18 +151,9 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
         async function verifyAdminSession(adminId, password) {
             const adminRef = doc(db, 'secretg_apps', appId, 'admins', adminId);
             const adminSnap = await getDoc(adminRef);
-            let data = null;
-            let source = 'admins';
-
-            if (adminSnap.exists()) {
-                data = adminSnap.data();
-            } else {
-                const appRef = doc(db, 'secretg_apps', appId, 'applications', adminId);
-                const appSnap = await getDoc(appRef);
-                if (!appSnap.exists()) throw new Error('查無此管理員帳號。請先透過其他管理員建立 admins/' + adminId + '，或在 applications/' + adminId + ' 授予管理員權限。');
-                data = appSnap.data();
-                source = 'applications';
-            }
+            if (!adminSnap.exists()) throw new Error('查無此管理員帳號。請在 admins/' + adminId + ' 建立並啟用管理員文件。');
+            const data = adminSnap.data();
+            const source = 'admins';
 
             if (data.enabled === false) throw new Error('此管理員帳號已停用');
             if (!password) throw new Error('請重新輸入管理員密碼');
@@ -475,9 +301,11 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
         function updateAdminCount() {
             const ids = new Set();
             allAdmins.filter(admin => isAdminAccount(admin)).forEach(admin => ids.add(admin.id));
-            allApplications.filter(app => isAdminAccount(app)).forEach(app => ids.add(app.id));
             const el = document.getElementById('count-admins');
-            if (el) el.textContent = ids.size;
+            if (el) {
+                el.textContent = ids.size;
+                el.title = ids.size ? `admins 名單內目前啟用：${[...ids].sort().join(', ')}` : 'admins 名單內目前沒有啟用的管理員';
+            }
         }
 
         function isTimeToday(value) {
@@ -2698,7 +2526,7 @@ window.rejectPasswordResetRequest = async function rejectPasswordResetRequest(id
     }
   }, true);
 
-  new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true });
+  window.SRAdminRuntime?.register(schedule);
   apply();
 })();
 })();
@@ -2727,7 +2555,7 @@ window.rejectPasswordResetRequest = async function rejectPasswordResetRequest(id
   function style(){if(qs('sr-admin-phase2-case-list-style'))return;const s=document.createElement('style');s.id='sr-admin-phase2-case-list-style';s.textContent='.sr-case-checkbox{opacity:.72}.sr-case-checkbox:hover{opacity:1}@media(max-width:640px){.sr-case-assignee{position:static!important;display:inline-flex;margin-bottom:.5rem}}';document.head.appendChild(s);}
   function apply(){queued=false;style();sync();toolbar();document.querySelectorAll('#admin-list>div').forEach(decorate);update();window.SRAdminCaseWorkspace={...(window.SRAdminCaseWorkspace||{}),assignments,selected,caseId,caseKey,assign,hash,tools};document.documentElement.dataset.srAdminPhase2CaseList=VERSION;}
   function schedule(){if(queued)return;queued=true;requestAnimationFrame(apply);}
-  new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true});apply();
+  window.SRAdminRuntime?.register(schedule);apply();
 })();
 
 })();
@@ -2738,7 +2566,7 @@ window.rejectPasswordResetRequest = async function rejectPasswordResetRequest(id
 (() => {
   if(window.__SR_ADMIN_PHASE2_CASE_DRAWER__)return;
   window.__SR_ADMIN_PHASE2_CASE_DRAWER__=true;
-  const APP_ID='secretg-production-node-tw',VERSION='20260711-admin-phase2-case-drawer-v1',SESSION='sr_admin_session_id_v2';
+  const APP_ID='secretg-production-node-tw',VERSION='20260716-admin-cases-v2',SESSION='sr_admin_session_id_v2';let activeDrawerUnsubscribe=null;
   const qs=id=>document.getElementById(id),tx=v=>String(v||'').replace(/\s+/g,' ').trim(),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),toast=(m,t='info')=>window.showToast?.(m,t);
   const adminId=()=>window.SRAdminPhase2?.adminId||sessionStorage.getItem(SESSION)||'';
   const can=a=>window.SRAdminPhase2?.can?window.SRAdminPhase2.can(a):a==='view';
@@ -2748,7 +2576,7 @@ window.rejectPasswordResetRequest = async function rejectPasswordResetRequest(id
   function hash(v){let h=5381;for(let i=0;i<v.length;i++)h=((h<<5)+h)^v.charCodeAt(i);return`case_${(h>>>0).toString(36)}`;}
   async function writeNote(key,note){if(!can('note'))throw Error('你的角色不能新增內部備註。');const{db,fs}=await tools(),ref=fs.doc(fs.collection(db,'secretg_apps',APP_ID,'admin_case_notes'));await fs.setDoc(ref,{caseKey:key,note,author:adminId(),createdAt:fs.serverTimestamp(),createdAtMs:Date.now()});}
   async function saveReview(key,data){if(!can('image_review'))throw Error('你的角色不能儲存圖片審核。');const{db,fs}=await tools();await fs.setDoc(fs.doc(db,'secretg_apps',APP_ID,'admin_case_reviews',hash(key)),{caseKey:key,...data,reviewedBy:adminId(),reviewedAt:fs.serverTimestamp(),reviewedAtMs:Date.now()},{merge:true});}
-  async function open(card){const w=window.SRAdminCaseWorkspace||{},key=card.dataset.srCaseKey||w.caseKey?.(card)||fallbackCaseKey(card),target=w.caseId?.(card)||fallbackCaseId(card),assignment=w.assignments?.get(key),images=[...card.querySelectorAll('img')].map(i=>i.src).filter(Boolean).slice(0,4);qs('sr-case-drawer')?.remove();const d=document.createElement('aside');d.id='sr-case-drawer';d.className='fixed inset-y-0 right-0 z-[240] w-full max-w-xl bg-[#05070c] border-l border-amber-500/15 shadow-2xl overflow-y-auto p-5 sm:p-6';d.innerHTML=`<div class="flex items-start justify-between gap-3"><div><div class="text-xs text-amber-300 font-black">案件詳細資料</div><h2 class="text-xl text-white font-black mt-1">${esc(target)}</h2><p class="text-xs text-slate-500 mt-1 font-mono break-all">${esc(key)}</p></div><button id="sr-case-close" class="w-11 h-11 rounded-full border border-slate-700 text-slate-300"><i class="fa-solid fa-xmark"></i></button></div><section class="mt-5 rounded-2xl border border-slate-800 bg-slate-950/55 p-4"><h3 class="text-xs text-slate-400 font-black">原始案件內容</h3><p class="text-sm text-slate-200 whitespace-pre-wrap leading-relaxed mt-3">${esc(tx(card))}</p>${images.length?`<div class="grid grid-cols-2 gap-2 mt-4">${images.map(src=>`<button data-review-image="${esc(src)}" class="rounded-xl overflow-hidden border border-slate-800"><img src="${esc(src)}" class="w-full h-32 object-cover"></button>`).join('')}</div>`:''}</section><section class="mt-4 rounded-2xl border border-cyan-500/15 bg-cyan-500/5 p-4"><div class="flex items-center justify-between gap-3"><div><h3 class="text-sm text-white font-black">案件負責人</h3><p id="sr-case-assignee-text" class="text-xs text-slate-500 mt-1">${esc(assignment?.assignedTo||'尚未指派')}</p></div><button id="sr-case-assign-me" class="min-h-[44px] px-4 rounded-xl border border-cyan-500/20 text-cyan-300 text-xs font-black">指派給我</button></div></section><section class="mt-4 rounded-2xl border border-amber-500/15 bg-amber-500/5 p-4"><h3 class="text-sm text-white font-black">圖片審核檢查</h3><div class="space-y-2 mt-3"><label class="flex gap-3 text-xs text-slate-300"><input id="sr-review-clear" type="checkbox" class="accent-amber-500">圖片清楚可辨識</label><label class="flex gap-3 text-xs text-slate-300"><input id="sr-review-context" type="checkbox" class="accent-amber-500">內容與申請項目一致</label><label class="flex gap-3 text-xs text-slate-300"><input id="sr-review-consent" type="checkbox" class="accent-amber-500">已確認分享／審核同意</label></div><button id="sr-review-save" class="w-full min-h-[44px] mt-4 rounded-xl bg-amber-600 text-slate-950 text-xs font-black">儲存檢查結果</button></section><section class="mt-4 rounded-2xl border border-violet-500/15 bg-violet-500/5 p-4"><h3 class="text-sm text-white font-black">內部備註</h3><textarea id="sr-case-note" class="w-full min-h-[90px] mt-3 rounded-xl bg-slate-950 border border-slate-800 px-3 py-2 text-sm text-white" placeholder="只有管理員可見"></textarea><button id="sr-case-note-save" class="w-full min-h-[44px] mt-3 rounded-xl bg-violet-600 text-white text-xs font-black">新增備註</button><div id="sr-case-notes" class="space-y-2 mt-4"><div class="text-xs text-slate-500">正在讀取備註...</div></div></section><section class="mt-4 rounded-2xl border border-slate-800 bg-slate-950/55 p-4"><h3 class="text-sm text-white font-black">管理紀錄</h3><div id="sr-case-logs" class="space-y-2 mt-3"><div class="text-xs text-slate-500">正在讀取紀錄...</div></div></section>`;document.body.appendChild(d);qs('sr-case-close').onclick=()=>d.remove();d.querySelectorAll('[data-review-image]').forEach(b=>b.onclick=()=>window.zoomImage?.(b.dataset.reviewImage));qs('sr-case-assign-me').onclick=async()=>{try{if(!w.assign)throw Error('案件指派功能尚未準備好。');await w.assign(key,adminId());qs('sr-case-assignee-text').textContent=adminId();toast('案件已指派給你。','success');}catch(e){toast(e.message,'error');}};qs('sr-review-save').onclick=async()=>{try{await saveReview(key,{imageClear:qs('sr-review-clear').checked,contextMatches:qs('sr-review-context').checked,consentConfirmed:qs('sr-review-consent').checked});toast('圖片審核檢查已儲存。','success');}catch(e){toast(e.message,'error');}};qs('sr-case-note-save').onclick=async()=>{const note=qs('sr-case-note').value.trim();if(!note)return toast('請先輸入備註。','info');try{await writeNote(key,note);qs('sr-case-note').value='';toast('內部備註已新增。','success');}catch(e){toast(e.message,'error');}};try{const{db,fs}=await tools();fs.onSnapshot(fs.query(fs.collection(db,'secretg_apps',APP_ID,'admin_case_notes'),fs.where('caseKey','==',key)),s=>{const rows=[];s.forEach(x=>rows.push(x.data()||{}));rows.sort((a,b)=>Number(b.createdAtMs||0)-Number(a.createdAtMs||0));if(qs('sr-case-notes'))qs('sr-case-notes').innerHTML=rows.length?rows.map(n=>`<div class="rounded-xl border border-slate-800 bg-slate-950/70 p-3"><div class="text-xs text-slate-200 whitespace-pre-wrap">${esc(n.note)}</div><div class="text-[11px] text-slate-600 mt-2">${esc(n.author||'admin')} · ${n.createdAtMs?new Date(n.createdAtMs).toLocaleString('zh-TW',{hour12:false}):''}</div></div>`).join(''):'<div class="text-xs text-slate-500">尚無備註</div>';});const logs=await fs.getDocs(fs.query(fs.collection(db,'secretg_apps',APP_ID,'admin_logs'),fs.where('targetId','==',target))),rows=[];logs.forEach(x=>rows.push(x.data()||{}));rows.sort((a,b)=>Number(b.createdAtMs||0)-Number(a.createdAtMs||0));if(qs('sr-case-logs'))qs('sr-case-logs').innerHTML=rows.length?rows.slice(0,30).map(x=>`<div class="rounded-xl border border-slate-800 p-3"><div class="text-xs text-slate-300 font-black">${esc(x.action||'操作')}</div><div class="text-[11px] text-slate-600 mt-1">${esc(x.adminId||'')} · ${x.createdAtMs?new Date(x.createdAtMs).toLocaleString('zh-TW',{hour12:false}):''}</div></div>`).join(''):'<div class="text-xs text-slate-500">查無管理紀錄</div>';}catch(e){console.warn('案件詳細資料讀取失敗',e);}}
+  async function open(card){const w=window.SRAdminCaseWorkspace||{},key=card.dataset.srCaseKey||w.caseKey?.(card)||fallbackCaseKey(card),target=w.caseId?.(card)||fallbackCaseId(card),assignment=w.assignments?.get(key),images=[...card.querySelectorAll('img')].map(i=>i.src).filter(Boolean).slice(0,4);activeDrawerUnsubscribe?.();activeDrawerUnsubscribe=null;qs('sr-case-drawer')?.remove();const d=document.createElement('aside');d.id='sr-case-drawer';d.className='fixed inset-y-0 right-0 z-[240] w-full max-w-xl bg-[#05070c] border-l border-amber-500/15 shadow-2xl overflow-y-auto p-5 sm:p-6';d.innerHTML=`<div class="flex items-start justify-between gap-3"><div><div class="text-xs text-amber-300 font-black">案件詳細資料</div><h2 class="text-xl text-white font-black mt-1">${esc(target)}</h2><p class="text-xs text-slate-500 mt-1 font-mono break-all">${esc(key)}</p></div><button id="sr-case-close" class="w-11 h-11 rounded-full border border-slate-700 text-slate-300"><i class="fa-solid fa-xmark"></i></button></div><section class="mt-5 rounded-2xl border border-slate-800 bg-slate-950/55 p-4"><h3 class="text-xs text-slate-400 font-black">原始案件內容</h3><p class="text-sm text-slate-200 whitespace-pre-wrap leading-relaxed mt-3">${esc(tx(card))}</p>${images.length?`<div class="grid grid-cols-2 gap-2 mt-4">${images.map(src=>`<button data-review-image="${esc(src)}" class="rounded-xl overflow-hidden border border-slate-800"><img src="${esc(src)}" class="w-full h-32 object-cover"></button>`).join('')}</div>`:''}</section><section class="mt-4 rounded-2xl border border-cyan-500/15 bg-cyan-500/5 p-4"><div class="flex items-center justify-between gap-3"><div><h3 class="text-sm text-white font-black">案件負責人</h3><p id="sr-case-assignee-text" class="text-xs text-slate-500 mt-1">${esc(assignment?.assignedTo||'尚未指派')}</p></div><button id="sr-case-assign-me" class="min-h-[44px] px-4 rounded-xl border border-cyan-500/20 text-cyan-300 text-xs font-black">指派給我</button></div></section><section class="mt-4 rounded-2xl border border-amber-500/15 bg-amber-500/5 p-4"><h3 class="text-sm text-white font-black">圖片審核檢查</h3><div class="space-y-2 mt-3"><label class="flex gap-3 text-xs text-slate-300"><input id="sr-review-clear" type="checkbox" class="accent-amber-500">圖片清楚可辨識</label><label class="flex gap-3 text-xs text-slate-300"><input id="sr-review-context" type="checkbox" class="accent-amber-500">內容與申請項目一致</label><label class="flex gap-3 text-xs text-slate-300"><input id="sr-review-consent" type="checkbox" class="accent-amber-500">已確認分享／審核同意</label></div><button id="sr-review-save" class="w-full min-h-[44px] mt-4 rounded-xl bg-amber-600 text-slate-950 text-xs font-black">儲存檢查結果</button></section><section class="mt-4 rounded-2xl border border-violet-500/15 bg-violet-500/5 p-4"><h3 class="text-sm text-white font-black">內部備註</h3><textarea id="sr-case-note" class="w-full min-h-[90px] mt-3 rounded-xl bg-slate-950 border border-slate-800 px-3 py-2 text-sm text-white" placeholder="只有管理員可見"></textarea><button id="sr-case-note-save" class="w-full min-h-[44px] mt-3 rounded-xl bg-violet-600 text-white text-xs font-black">新增備註</button><div id="sr-case-notes" class="space-y-2 mt-4"><div class="text-xs text-slate-500">正在讀取備註...</div></div></section><section class="mt-4 rounded-2xl border border-slate-800 bg-slate-950/55 p-4"><h3 class="text-sm text-white font-black">管理紀錄</h3><div id="sr-case-logs" class="space-y-2 mt-3"><div class="text-xs text-slate-500">正在讀取紀錄...</div></div></section>`;document.body.appendChild(d);qs('sr-case-close').onclick=()=>{activeDrawerUnsubscribe?.();activeDrawerUnsubscribe=null;d.remove();};d.querySelectorAll('[data-review-image]').forEach(b=>b.onclick=()=>window.zoomImage?.(b.dataset.reviewImage));qs('sr-case-assign-me').onclick=async()=>{try{if(!w.assign)throw Error('案件指派功能尚未準備好。');await w.assign(key,adminId());qs('sr-case-assignee-text').textContent=adminId();toast('案件已指派給你。','success');}catch(e){toast(e.message,'error');}};qs('sr-review-save').onclick=async()=>{try{await saveReview(key,{imageClear:qs('sr-review-clear').checked,contextMatches:qs('sr-review-context').checked,consentConfirmed:qs('sr-review-consent').checked});toast('圖片審核檢查已儲存。','success');}catch(e){toast(e.message,'error');}};qs('sr-case-note-save').onclick=async()=>{const note=qs('sr-case-note').value.trim();if(!note)return toast('請先輸入備註。','info');try{await writeNote(key,note);qs('sr-case-note').value='';toast('內部備註已新增。','success');}catch(e){toast(e.message,'error');}};try{const{db,fs}=await tools();activeDrawerUnsubscribe=fs.onSnapshot(fs.query(fs.collection(db,'secretg_apps',APP_ID,'admin_case_notes'),fs.where('caseKey','==',key)),s=>{const rows=[];s.forEach(x=>rows.push(x.data()||{}));rows.sort((a,b)=>Number(b.createdAtMs||0)-Number(a.createdAtMs||0));if(qs('sr-case-notes'))qs('sr-case-notes').innerHTML=rows.length?rows.map(n=>`<div class="rounded-xl border border-slate-800 bg-slate-950/70 p-3"><div class="text-xs text-slate-200 whitespace-pre-wrap">${esc(n.note)}</div><div class="text-[11px] text-slate-600 mt-2">${esc(n.author||'admin')} · ${n.createdAtMs?new Date(n.createdAtMs).toLocaleString('zh-TW',{hour12:false}):''}</div></div>`).join(''):'<div class="text-xs text-slate-500">尚無備註</div>';});const logs=await fs.getDocs(fs.query(fs.collection(db,'secretg_apps',APP_ID,'admin_logs'),fs.where('targetId','==',target))),rows=[];logs.forEach(x=>rows.push(x.data()||{}));rows.sort((a,b)=>Number(b.createdAtMs||0)-Number(a.createdAtMs||0));if(qs('sr-case-logs'))qs('sr-case-logs').innerHTML=rows.length?rows.slice(0,30).map(x=>`<div class="rounded-xl border border-slate-800 p-3"><div class="text-xs text-slate-300 font-black">${esc(x.action||'操作')}</div><div class="text-[11px] text-slate-600 mt-1">${esc(x.adminId||'')} · ${x.createdAtMs?new Date(x.createdAtMs).toLocaleString('zh-TW',{hour12:false}):''}</div></div>`).join(''):'<div class="text-xs text-slate-500">查無管理紀錄</div>';}catch(e){console.warn('案件詳細資料讀取失敗',e);}}
   function style(){if(qs('sr-admin-phase2-drawer-style'))return;const s=document.createElement('style');s.id='sr-admin-phase2-drawer-style';s.textContent='#sr-case-drawer{animation:srDrawerIn .2s ease-out}@keyframes srDrawerIn{from{transform:translateX(24px);opacity:.5}to{transform:none;opacity:1}}';document.head.appendChild(s);}
   document.addEventListener('click',e=>{const card=e.target?.closest?.('#admin-list>div[data-sr-case-key]');if(card&&!e.target.closest('button,input,select,textarea,label,a'))open(card);},true);style();document.documentElement.dataset.srAdminPhase2CaseDrawer=VERSION;
 })();
@@ -2773,7 +2601,7 @@ window.rejectPasswordResetRequest = async function rejectPasswordResetRequest(id
   async function render(){const target=qs('broadcast-target'),title=qs('broadcast-title'),message=qs('broadcast-message');if(!target||!title||!message||qs('sr-notification-scheduler-v2'))return;const panel=target.closest('.glass-panel')||target.parentElement?.parentElement;if(!panel)return;const box=document.createElement('section');box.id='sr-notification-scheduler-v2';box.className='mt-5 rounded-2xl border border-cyan-500/15 bg-cyan-500/5 p-4';box.innerHTML='<div><h3 class="text-sm text-white font-black">通知測試與排程</h3><p class="text-xs text-slate-500 mt-1">排程會寫入佇列，可手動立即送出；正式無人值守排程仍需 Cloud Function。</p></div><div class="grid grid-cols-1 md:grid-cols-[1fr_auto_auto] gap-2 mt-4"><input id="sr-notification-time" type="datetime-local" class="min-h-[44px] rounded-xl bg-slate-900 border border-slate-700 px-3 text-xs text-slate-200"><button id="sr-notification-test" class="min-h-[44px] px-4 rounded-xl border border-sky-500/20 text-sky-300 text-xs font-black">寄測試信給我</button><button id="sr-notification-schedule" class="min-h-[44px] px-4 rounded-xl bg-cyan-600 text-white text-xs font-black">儲存排程</button></div><div id="sr-scheduled-list" class="space-y-2 mt-4"></div>';panel.appendChild(box);qs('sr-notification-schedule').onclick=async()=>{const ms=new Date(qs('sr-notification-time').value).getTime();if(!title.value.trim()||!message.value.trim())return toast('請先填寫通知標題與內容。','info');if(!ms||ms<=Date.now())return toast('請選擇未來的排程時間。','info');try{await create({title:title.value.trim(),message:message.value.trim(),target:target.value,scheduledAtMs:ms,scheduledAt:new Date(ms).toISOString()});toast('通知已加入排程佇列。','success');}catch(e){toast(e.message,'error');}};qs('sr-notification-test').onclick=async()=>{const email=data().email;if(!email)return toast('管理員帳號沒有設定測試信箱。','info');if(!window.emailjs)return toast('Email 功能尚未準備好。','error');try{await emailjs.send('service_1ou10mi','template_sr_notice',{to_email:email,to_name:admin(),status_text:`[測試] ${title.value||'SecretRoom 通知'}`,message:message.value||'這是一封測試通知。',email_type:'平台通知測試',member_id:admin()},{publicKey:'XggJY7iHQcZYYhNY7'});toast(`測試信已寄到 ${email}。`,'success');}catch(e){toast('測試信寄送失敗：'+e.message,'error');}};try{const{db,fs}=await tools();unsub=fs.onSnapshot(fs.collection(db,'secretg_apps',APP_ID,'scheduled_notifications'),s=>{const rows=[];s.forEach(d=>rows.push({id:d.id,...d.data()}));rows.sort((a,b)=>Number(a.scheduledAtMs||0)-Number(b.scheduledAtMs||0));const list=qs('sr-scheduled-list');if(!list)return;const pending=rows.filter(x=>x.status==='pending').slice(0,20);list.innerHTML=pending.length?pending.map(x=>`<div class="rounded-xl border border-slate-800 bg-slate-950/55 p-3 flex items-start justify-between gap-3"><div><div class="text-xs text-slate-200 font-black">${esc(x.title||'未命名通知')}</div><div class="text-[11px] text-slate-500 mt-1">${x.scheduledAtMs?new Date(x.scheduledAtMs).toLocaleString('zh-TW',{hour12:false}):'未設定時間'} · ${esc(x.target||'all')}</div></div><button data-send-scheduled="${esc(x.id)}" class="min-h-[40px] px-3 rounded-xl border border-cyan-500/20 text-cyan-300 text-xs font-black">立即送出</button></div>`).join(''):'<div class="text-xs text-slate-500">目前沒有待發送排程</div>';list.querySelectorAll('[data-send-scheduled]').forEach(b=>b.onclick=async()=>{const item=rows.find(x=>x.id===b.dataset.sendScheduled);if(!item)return;try{await send(item);toast('排程通知已立即送出。','success');}catch(e){toast(e.message,'error');}});},e=>console.warn('通知排程同步失敗',e));}catch(e){console.warn(e);}}
   function apply(){queued=false;render();document.documentElement.dataset.srAdminPhase2Notifications=VERSION;}
   function schedule(){if(queued)return;queued=true;requestAnimationFrame(apply);}
-  new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true});apply();
+  window.SRAdminRuntime?.register(schedule);apply();
 })();
 
 })();

@@ -3,194 +3,39 @@
  * Keep feature sections isolated with IIFEs to preserve their former module scopes.
  */
 
-/* ===== Consolidated source: sr_dom_stability.js ===== */
+/* ===== Integrated frontend runtime coordinator ===== */
 ;(() => {
-// SecretRoom DOM stability and phase-one runtime alignment.
-(() => {
-  if (window.__SR_DOM_STABILITY__) return;
-  window.__SR_DOM_STABILITY__ = true;
-
-  const FRONTEND_RANK_VERSION = '20260711-phase1-frontend-v1';
-  const thresholds = [
-    { code: 'N.G', min: 0 },
-    { code: 'D.G', min: 50 },
-    { code: 'C.G', min: 100 },
-    { code: 'B.G', min: 150 },
-    { code: 'A.G', min: 250 },
-    { code: 'S.G', min: 500 },
-    { code: 'S+.G', min: 750 },
-    { code: 'SSR.G', min: 1350 },
-    { code: 'Z.G', min: 1350.000001 }
-  ];
-
-  function guardSetter(prototype, property) {
-    if (!prototype) return;
-    const descriptor = Object.getOwnPropertyDescriptor(prototype, property);
-    if (!descriptor?.get || !descriptor?.set || descriptor.set.__srGuarded) return;
-    const guardedSetter = function(value) {
-      const next = value == null ? '' : String(value);
-      let current = '';
-      try { current = descriptor.get.call(this); } catch (_) {}
-      if (current === next) return;
-      return descriptor.set.call(this, value);
-    };
-    guardedSetter.__srGuarded = true;
-    Object.defineProperty(prototype, property, {
-      configurable: descriptor.configurable,
-      enumerable: descriptor.enumerable,
-      get: descriptor.get,
-      set: guardedSetter
+  if (window.__SR_RUNTIME__) return;
+  const tasks = new Set();
+  let queued = false;
+  const run = () => {
+    queued = false;
+    tasks.forEach(task => {
+      try { task(); } catch (error) { console.error('Frontend runtime task failed:', error); }
     });
-  }
-
-  guardSetter(window.Node?.prototype, 'textContent');
-  guardSetter(window.Element?.prototype, 'innerHTML');
-
-  function tierIndex(code) {
-    const index = thresholds.findIndex(item => item.code === code);
-    return index < 0 ? 0 : index;
-  }
-
-  function installRankStyles() {
-    if (document.getElementById('sr-core-rank-style')) return;
-    const style = document.createElement('style');
-    style.id = 'sr-core-rank-style';
-    style.textContent = `
-      .sr-core-rank-progress{height:.58rem;border-radius:999px;overflow:hidden;background:rgba(15,23,42,.9);border:1px solid rgba(245,158,11,.12)}
-      .sr-core-rank-progress>span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#b7791f,#fcd34d);transition:width .25s ease}
-      .sr-core-rank-actions{display:flex;align-items:center;justify-content:flex-end;margin-top:.75rem}
-      .sr-core-rank-button{min-height:44px;padding:.55rem .85rem;border-radius:.85rem;border:1px solid rgba(245,158,11,.18);background:rgba(15,23,42,.62);color:#fcd34d;font-size:12px;font-weight:900}
-      .sr-core-current-row{border-color:rgba(245,158,11,.4)!important;background:rgba(245,158,11,.07)!important}
-      .sr-core-current-label{font-size:12px;font-weight:900;color:#fcd34d;padding-top:.5rem;border-top:1px solid rgba(245,158,11,.12)}
-    `;
-    document.head.appendChild(style);
-  }
-
-  function simplifyCoreRank(container) {
-    if (!container || window.state?.currentTab !== 'rank') return;
-    container.dataset.srRankVersion = FRONTEND_RANK_VERSION;
-    if (container.dataset.srCoreRankSimplified === '1' && document.getElementById('sr-core-rank-progress')) return;
-    if (!container.textContent.includes('Weekly Grade System')) return;
-
-    const root = container.firstElementChild;
-    const sections = root ? Array.from(root.children) : [];
-    const header = sections[0];
-    const overview = sections[1];
-    const leaderboard = sections[2];
-    if (!header || !overview || !leaderboard) return;
-
-    container.dataset.srCoreRankSimplified = '1';
-    installRankStyles();
-
-    const description = header.querySelector('p');
-    if (description) description.textContent = '每週一開始、週日結算；分數依本週貼文的按讚與評星計算。';
-
-    const overviewCards = Array.from(overview.children);
-    const scoreCard = overviewCards[0];
-    const thresholdCard = overviewCards[1];
-    const tierCode = scoreCard?.querySelector('.w-20.h-20')?.textContent?.trim() || 'N.G';
-    const score = Number.parseFloat(scoreCard?.querySelector('.text-3xl')?.textContent || '0') || 0;
-    const currentIndex = tierIndex(tierCode);
-    const nextTier = thresholds[currentIndex + 1] || null;
-    const currentMin = thresholds[currentIndex]?.min || 0;
-    let progress = 100;
-    let progressText = '已到最高位階';
-    if (nextTier) {
-      if (tierCode === 'SSR.G') {
-        progress = 99;
-        progressText = '分數再增加即可升到 Z.G';
-      } else {
-        const range = Math.max(.1, nextTier.min - currentMin);
-        progress = Math.max(0, Math.min(100, ((score - currentMin) / range) * 100));
-        progressText = `距離 ${nextTier.code} 還差 ${Math.max(0, nextTier.min - score).toFixed(1)} 分`;
-      }
-    }
-    if (scoreCard && !document.getElementById('sr-core-rank-progress')) {
-      const progressBox = document.createElement('div');
-      progressBox.id = 'sr-core-rank-progress';
-      progressBox.className = 'mt-4';
-      progressBox.innerHTML = `<div class="flex items-center justify-between gap-3 text-xs"><span class="text-slate-300">${progressText}</span><span class="text-amber-300 font-black">${Math.round(progress)}%</span></div><div class="sr-core-rank-progress mt-2"><span style="width:${progress}%"></span></div>`;
-      scoreCard.appendChild(progressBox);
-    }
-
-    const thresholdGrid = thresholdCard?.querySelector('.grid.grid-cols-4');
-    const thresholdItems = thresholdGrid ? Array.from(thresholdGrid.children) : [];
-    if (thresholdItems.length && !document.getElementById('sr-rank-threshold-toggle')) {
-      const coreCodes = thresholds.slice(1).map(item => item.code);
-      const coreIndex = Math.max(0, coreCodes.indexOf(tierCode));
-      const keepIndexes = new Set([Math.max(0, coreIndex - 1), coreIndex, Math.min(coreCodes.length - 1, coreIndex + 1)]);
-      if (tierCode === 'N.G') keepIndexes.clear(), keepIndexes.add(0), keepIndexes.add(1);
-      thresholdItems.forEach((item, index) => item.classList.toggle('hidden', !keepIndexes.has(index)));
-      thresholdGrid.classList.remove('grid-cols-4');
-      thresholdGrid.classList.add('grid-cols-3');
-      const actions = document.createElement('div');
-      actions.className = 'sr-core-rank-actions';
-      actions.innerHTML = '<button id="sr-rank-threshold-toggle" type="button" class="sr-core-rank-button">查看全部門檻</button>';
-      thresholdCard.appendChild(actions);
-      document.getElementById('sr-rank-threshold-toggle').onclick = event => {
-        const opening = thresholdItems.some(item => item.classList.contains('hidden'));
-        thresholdItems.forEach(item => item.classList.toggle('hidden', !opening && !keepIndexes.has(thresholdItems.indexOf(item))));
-        thresholdGrid.classList.toggle('grid-cols-3', !opening);
-        thresholdGrid.classList.toggle('grid-cols-4', opening);
-        event.currentTarget.textContent = opening ? '只看相關門檻' : '查看全部門檻';
-      };
-    }
-
-    const list = leaderboard.querySelector('.space-y-3');
-    const rows = list ? Array.from(list.children).filter(item => item.matches('div[onclick*="viewUserProfile"]')) : [];
-    if (rows.length > 10 && !document.getElementById('sr-rank-list-toggle')) {
-      const accountId = String(window.state?.applicationId || '');
-      const currentRow = rows.find(row => row.textContent.includes(`@${accountId}`));
-      rows.forEach((row, index) => row.classList.toggle('hidden', index >= 10 && row !== currentRow));
-      if (currentRow && rows.indexOf(currentRow) >= 10) {
-        currentRow.classList.add('sr-core-current-row');
-        const label = document.createElement('div');
-        label.id = 'sr-core-current-label';
-        label.className = 'sr-core-current-label';
-        label.textContent = '你的名次';
-        list.insertBefore(label, currentRow);
-      }
-      const actions = document.createElement('div');
-      actions.className = 'sr-core-rank-actions';
-      actions.innerHTML = '<button id="sr-rank-list-toggle" type="button" class="sr-core-rank-button">顯示完整排行榜</button>';
-      leaderboard.appendChild(actions);
-      document.getElementById('sr-rank-list-toggle').onclick = event => {
-        const opening = rows.some((row, index) => index >= 10 && row.classList.contains('hidden'));
-        rows.forEach((row, index) => row.classList.toggle('hidden', !opening && index >= 10 && row !== currentRow));
-        const label = document.getElementById('sr-core-current-label');
-        if (label) label.classList.toggle('hidden', opening);
-        event.currentTarget.textContent = opening ? '只看前 10 名' : '顯示完整排行榜';
-      };
-    }
-  }
+  };
+  const schedule = () => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(run);
+  };
+  window.__SR_RUNTIME__ = true;
+  window.SRRuntime = Object.freeze({
+    register(task) { if (typeof task === 'function') tasks.add(task); schedule(); return () => tasks.delete(task); },
+    schedule
+  });
+  window.SRRuntime?.register(schedule);
+  document.addEventListener('DOMContentLoaded', schedule, { once: true });
 
   document.addEventListener('click', event => {
-    const loadMore = event.target?.closest?.('#sr-feed-load-more');
-    if (!loadMore) return;
+    const button = event.target?.closest?.('#sr-feed-load-more');
+    if (!button || !window.state) return;
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation();
-    if (!window.state) return;
     window.state.visiblePostsCount = Number(window.state.visiblePostsCount || 5) + 5;
     window.setGlobalFilter?.(window.state.currentFilter || 'recommended');
   }, true);
-
-  let scheduled = false;
-  function apply() {
-    scheduled = false;
-    simplifyCoreRank(document.getElementById('dashboard-tab-content'));
-  }
-  function schedule() {
-    const container = document.getElementById('dashboard-tab-content');
-    if (container && window.state?.currentTab === 'rank') container.dataset.srRankVersion = FRONTEND_RANK_VERSION;
-    if (scheduled) return;
-    scheduled = true;
-    requestAnimationFrame(apply);
-  }
-
-  new MutationObserver(schedule).observe(document.documentElement, { childList:true, subtree:true });
-  document.addEventListener('DOMContentLoaded', apply, { once:true });
-})();
 })();
 
 /* ===== Consolidated source: sr_audio_control.js ===== */
@@ -5336,125 +5181,13 @@ let initializeApp, getAuth, signInAnonymously, onAuthStateChanged;
 
   document.addEventListener('scroll', syncBackToTop, true);
   window.addEventListener('scroll', syncBackToTop, { passive: true });
-  new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true });
+  window.SRRuntime?.register(schedule);
   apply();
 })();
 
-import('./sr_rank_policy.js?v=20260712-v1').catch(error => console.error('位階規則模組載入失敗', error));
 })();
 
-/* ===== Consolidated source: sr_rank_layout_v2.js ===== */
-;(() => {
-// SecretRoom rank page layout v2.
-(() => {
-  if (window.__SR_RANK_LAYOUT_V2__) return;
-  window.__SR_RANK_LAYOUT_V2__ = true;
 
-  const VERSION = '20260712-rank-layout-v2';
-  let queued = false;
-  const q = id => document.getElementById(id);
-
-  function render() {
-    const root = document.querySelector('#dashboard-tab-content [data-rank-v3]');
-    const policy = window.SRRankPolicy;
-    if (!root || !policy || window.state?.currentTab !== 'rank') return;
-    if (root.dataset.rankLayoutVersion === VERSION) return;
-
-    const currentData = policy.data();
-    const accountId = String(window.state?.applicationId || localStorage.getItem('sr_username') || '');
-    const member = currentData.members.find(item => String(item.id) === accountId) || null;
-    const tiers = policy.tiers || [];
-    const currentTier = member?.tier || tiers[0];
-    const currentIndex = Math.max(0, tiers.indexOf(currentTier));
-    const nextTier = tiers[currentIndex + 1] || null;
-    const score = Number(member?.score || 0);
-    const progress = nextTier
-      ? Math.max(0, Math.min(100, ((score - Number(currentTier[2] || 0)) / Math.max(1, Number(nextTier[2] || 0) - Number(currentTier[2] || 0))) * 100))
-      : 100;
-    const period = `${currentData.s.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' })}－${currentData.e.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' })}`;
-    const distance = nextTier
-      ? `距離 ${nextTier[0]} 還差 ${Math.max(0, Math.floor((Number(nextTier[2]) - score) * 10) / 10).toFixed(1)} 分`
-      : '已到最高位階';
-
-    const sections = Array.from(root.children).filter(node => node.tagName === 'SECTION');
-    const overview = sections[0];
-    const thresholds = sections[1];
-
-    if (overview) {
-      overview.className = 'glass-panel crystal-border rounded-3xl overflow-hidden';
-      overview.innerHTML = `
-        <div class="p-5 md:p-6">
-          <div class="text-xs text-amber-400 font-black">本週位階</div>
-          <div class="mt-2 flex items-end justify-between gap-4">
-            <div>
-              <h2 class="text-3xl font-black text-white">${currentTier?.[0] || 'N.G'}</h2>
-              <p class="text-xs text-slate-400 mt-2">${period} · 每週一重新計算</p>
-            </div>
-            <div class="text-right text-xs text-slate-500">位階依本週貼文互動計算</div>
-          </div>
-        </div>
-        <div class="border-t border-amber-500/10 p-5 md:p-6 bg-slate-950/20">
-          <div class="flex items-end justify-between gap-4">
-            <div>
-              <div class="text-xs text-slate-500">目前分數</div>
-              <div class="text-3xl font-black text-white mt-1">${score.toFixed(1)}</div>
-            </div>
-            <div class="text-right text-sm text-slate-200">${distance}</div>
-          </div>
-          <div class="mt-4 flex justify-end text-xs text-amber-300 font-black">${Math.round(progress)}%</div>
-          <div class="sr-rank-progress mt-2"><span style="width:${progress}%"></span></div>
-        </div>
-      `;
-    }
-
-    if (thresholds) {
-      const visible = new Set([currentIndex, currentIndex + 1, currentIndex + 2].filter(index => index < tiers.length));
-      thresholds.innerHTML = `
-        <div class="flex items-center justify-between gap-3 mb-3">
-          <h3 class="font-black text-white">位階門檻</h3>
-          <button id="rank-layout-toggle" class="sr-secondary-button">查看全部</button>
-        </div>
-        <div id="rank-layout-tiers" class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          ${tiers.map((tier, index) => `
-            <div data-rank-layout-tier="${index}" class="sr-rank-tier-card ${visible.has(index) ? '' : 'hidden'}">
-              <b>${tier[0]}</b>
-              <div class="text-xs mt-1">${Number(tier[2]).toLocaleString()} 分</div>
-            </div>
-          `).join('')}
-        </div>
-      `;
-      q('rank-layout-toggle').onclick = event => {
-        const cards = Array.from(q('rank-layout-tiers')?.children || []);
-        const opening = cards.some(card => card.classList.contains('hidden'));
-        cards.forEach((card, index) => card.classList.toggle('hidden', !opening && !visible.has(index)));
-        q('rank-layout-tiers').className = opening
-          ? 'grid grid-cols-2 md:grid-cols-3 gap-2'
-          : 'grid grid-cols-1 sm:grid-cols-3 gap-2';
-        event.currentTarget.textContent = opening ? '只看目前附近' : '查看全部';
-      };
-    }
-
-    Array.from(root.children).forEach(section => {
-      if (section.tagName === 'SECTION' && String(section.textContent || '').includes('防灌水：')) section.remove();
-    });
-
-    root.dataset.rankLayoutVersion = VERSION;
-  }
-
-  function schedule() {
-    if (queued) return;
-    queued = true;
-    requestAnimationFrame(() => {
-      queued = false;
-      render();
-    });
-  }
-
-  new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true });
-  schedule();
-})();
-
-})();
 
 /* ===== Consolidated source: sr_frontend_entry.js ===== */
 ;(() => {
@@ -5554,35 +5287,7 @@ import('./sr_rank_policy.js?v=20260712-v1').catch(error => console.error('位階
     return `<button type="button" class="sr-rank-member ${pinned ? 'sr-rank-member-pinned' : ''}" onclick="viewUserProfile('${js(entry.userId)}')"><span class="w-9 text-center font-black text-amber-300 font-luxury">#${index + 1}</span><img src="${entry.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-12 h-12 rounded-2xl object-cover border border-amber-500/20 shrink-0"><span class="min-w-0 flex-1 text-left"><span class="flex items-center gap-2 flex-wrap"><strong class="text-slate-100 truncate">${esc(entry.nickname)}</strong><span class="text-xs text-slate-500 font-mono">@${esc(entry.userId)}</span></span><span class="block text-xs text-slate-500 mt-1">${entry.postCount} 篇 · ${entry.likes} 讚 · ${entry.ratingCount} 人評星 · 平均 ${entry.avgRating.toFixed(1)} 星</span></span><span class="text-right shrink-0"><span class="inline-flex items-center justify-center min-w-[4rem] px-3 py-2 rounded-2xl bg-gradient-to-br ${entry.currentTier.tone} text-slate-950 font-black font-luxury">${entry.currentTier.code}</span><strong class="block text-sm text-white mt-1">${entry.score.toFixed(1)}</strong></span></button>`;
   }
 
-  function renderRankRules() {
-    const container = qs('dashboard-tab-content');
-    if (!container || window.state?.currentTab !== 'rank') return;
-    if (container.dataset.srRankVersion === VERSION) return;
-    const { start, end, posts, members } = getWeeklyRankData();
-    const currentIndex = members.findIndex(member => member.userId === window.state?.applicationId);
-    const current = currentIndex >= 0 ? members[currentIndex] : null;
-    const currentTier = current?.currentTier || tiers[0];
-    const currentScore = current?.score || 0;
-    const index = tierIndex(currentTier.code);
-    const nextTier = tiers[Math.min(tiers.length - 1, index + 1)];
-    const atTop = index === tiers.length - 1;
-    const range = Math.max(1, nextTier.promote - currentTier.promote);
-    const progress = atTop ? 100 : clamp(((currentScore - currentTier.promote) / range) * 100, 0, 100);
-    const pointsNeeded = atTop ? 0 : Math.max(0, floor1(nextTier.promote - currentScore));
-    const hasPost = (current?.postCount || 0) > 0;
-    const periodText = `${start.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' })}－${end.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' })}`;
-    const topTen = members.slice(0, 10);
-    const pinnedCurrent = currentIndex >= 10 ? current : null;
-    container.dataset.srRankVersion = VERSION;
-    container.innerHTML = `<div class="space-y-4"><section class="glass-panel crystal-border rounded-3xl p-5 md:p-6"><div class="flex items-start justify-between gap-4"><div><div class="text-xs text-amber-400/80 font-black tracking-wider">本週位階</div><h2 class="text-2xl font-black text-white mt-1">${currentTier.code}</h2><p class="text-xs text-slate-400 mt-1">${periodText} · 每週日結算</p></div><div class="text-right"><div class="text-3xl font-black text-white">${currentScore.toFixed(1)}</div><div class="text-xs text-slate-500">目前分數</div></div></div><div class="mt-5"><div class="flex items-center justify-between gap-3 text-xs"><span class="text-slate-300">${atTop ? '已到最高位階' : `距離 ${nextTier.code} 還差 ${pointsNeeded.toFixed(1)} 分`}</span><span class="text-amber-300 font-black">${Math.round(progress)}%</span></div><div class="sr-rank-progress mt-2"><span style="width:${progress}%"></span></div><div class="mt-3 flex flex-wrap gap-2"><span class="sr-status-pill ${hasPost ? 'sr-status-good' : 'sr-status-warn'}"><i class="fa-solid ${hasPost ? 'fa-circle-check' : 'fa-circle-exclamation'}"></i>${hasPost ? '本週已符合發文條件' : '本週至少要發 1 篇才能升階'}</span>${current ? `<span class="sr-status-pill">目前第 ${currentIndex + 1} 名</span>` : '<span class="sr-status-pill">發文後開始計分</span>'}</div></div></section><section class="glass-panel crystal-border rounded-3xl p-5"><div class="flex items-center justify-between gap-3 mb-3"><div><h3 class="font-black text-white">位階門檻</h3><p class="text-xs text-slate-500 mt-1">先看上一階、目前和下一階。</p></div><button id="sr-rank-rules-toggle" type="button" class="sr-secondary-button">查看全部</button></div><div class="grid grid-cols-3 gap-2">${nearbyTierCards(currentTier)}</div><div id="sr-rank-all-rules" class="hidden grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">${tiers.map(tier => `<div class="sr-rank-tier-card"><div class="text-sm font-black text-amber-300 font-luxury">${tier.code}</div><div class="text-xs text-slate-400 mt-1">升階 ${tier.promote}</div><div class="text-xs text-slate-500">保級 ${tier.keep}</div></div>`).join('')}</div></section><section class="glass-panel crystal-border rounded-3xl p-5 md:p-6"><div class="flex items-center justify-between gap-3 mb-4"><div><h3 class="text-lg font-black text-white">本週排行榜</h3><p class="text-xs text-slate-500 mt-1">${posts.length} 篇貼文列入計分，先顯示前 10 名。</p></div></div><div class="space-y-3">${topTen.length ? topTen.map((entry, position) => rankMemberCard(entry, position)).join('') : '<div class="text-center py-10 text-slate-500"><i class="fa-solid fa-ranking-star text-3xl text-amber-500/40 mb-3"></i><div class="font-black text-slate-300">這週還沒有人上榜</div><div class="text-xs mt-1">發一篇貼文，拿到讚或評星後就會出現在這裡。</div></div>'}${pinnedCurrent ? `<div class="pt-2 border-t border-amber-500/10"><div class="text-xs text-amber-300 font-black mb-2">你的名次</div>${rankMemberCard(pinnedCurrent, currentIndex, true)}</div>` : ''}</div></section></div>`;
-    qs('sr-rank-rules-toggle')?.addEventListener('click', event => {
-      const rules = qs('sr-rank-all-rules');
-      if (!rules) return;
-      const opening = rules.classList.contains('hidden');
-      rules.classList.toggle('hidden', !opening);
-      event.currentTarget.textContent = opening ? '收起規則' : '查看全部';
-    });
-  }
+  function renderRankRules() { /* Integrated rank policy owns this page. */ }
 
   function normalizeBrandAndNav() {
     const specTab = qs('aside-tab-spec-vault');
@@ -6143,6 +5848,225 @@ import('./sr_rank_policy.js?v=20260712-v1').catch(error => console.error('位階
 })();
 })();
 
+/* ===== Integrated rank policy and renderer ===== */
+;(() => {
+  if (window.__SR_RANK_POLICY_V4__) return;
+  window.__SR_RANK_POLICY_V4__ = true;
+
+  const APP_ID = 'secretg-production-node-tw';
+  const VERSION = '20260716-rank-v4';
+  const TOP_POSTS = 3;
+  const REVIEW_CAP = 3;
+  const tiers = [
+    ['N.G', 0, 'from-slate-500 via-slate-400 to-slate-600'],
+    ['D.G', 50, 'from-stone-300 via-amber-200 to-stone-500'],
+    ['C.G', 120, 'from-slate-200 via-slate-300 to-amber-100'],
+    ['B.G', 250, 'from-emerald-200 via-teal-300 to-slate-200'],
+    ['A.G', 450, 'from-blue-200 via-cyan-300 to-amber-200'],
+    ['S.G', 700, 'from-yellow-200 via-amber-400 to-orange-500'],
+    ['S+.G', 1000, 'from-amber-200 via-yellow-300 to-amber-500'],
+    ['SSR.G', 1450, 'from-violet-300 via-amber-200 to-rose-200'],
+    ['Z.G', 2000, 'from-fuchsia-300 via-amber-200 to-cyan-200']
+  ];
+
+  const byId = id => document.getElementById(id);
+  const floor1 = value => Math.floor((Number(value) || 0) * 10) / 10;
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char]));
+  const js = value => String(value ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/\r/g, '\\r');
+  const currentId = () => String(window.state?.applicationId || localStorage.getItem('sr_username') || '');
+  const sourcePosts = () => window.SRPhase2RawPosts?.() || window.state?.posts || [];
+  const toast = (message, type = 'info') => window.showToast?.(message, type);
+  const timeValue = value => value?.toDate ? value.toDate().getTime() : (value?.seconds ? Number(value.seconds) * 1000 : (Number.isFinite(Number(value)) ? Number(value) : (new Date(value || 0).getTime() || 0)));
+  const weekWindow = (date = new Date()) => {
+    const day = date.getDay();
+    const start = new Date(date.getFullYear(), date.getMonth(), date.getDate() + (day === 0 ? -6 : 1 - day), 0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 7);
+    end.setMilliseconds(-1);
+    return { start, end };
+  };
+  const tierFor = score => tiers.reduce((result, tier) => score >= tier[1] ? tier : result, tiers[0]);
+  const validRatings = post => Object.entries(post.ratings || {}).flatMap(([reviewerId, raw]) => {
+    const value = Number(raw);
+    return reviewerId && reviewerId !== String(post.userId || '') && Number.isInteger(value) && value >= 1 && value <= 5
+      ? [{ reviewerId: String(reviewerId), value }]
+      : [];
+  });
+  const uniqueLikes = post => [...new Set(Object.entries(post.likes || {})
+    .filter(([, active]) => !!active)
+    .map(([id]) => String(id))
+    .filter(id => id && id !== String(post.userId || '')))];
+
+  function rankData(now = new Date()) {
+    const { start, end } = weekWindow(now);
+    const weeklyPosts = sourcePosts().filter(post => {
+      const created = timeValue(post.createdAt || post.createdAtMs || post.timestamp);
+      return created >= start.getTime() && created <= end.getTime();
+    });
+
+    const reviewerAuthorGroups = new Map();
+    const allowedRatings = new Set();
+    weeklyPosts.forEach(post => validRatings(post).forEach(rating => {
+      const key = `${rating.reviewerId}\0${post.userId}`;
+      const rows = reviewerAuthorGroups.get(key) || [];
+      rows.push({ postId: String(post.id), reviewerId: rating.reviewerId, value: rating.value, time: timeValue(post.createdAt || post.createdAtMs || post.timestamp) });
+      reviewerAuthorGroups.set(key, rows);
+    }));
+    reviewerAuthorGroups.forEach(rows => rows
+      .sort((a, b) => b.value - a.value || a.time - b.time)
+      .slice(0, REVIEW_CAP)
+      .forEach(row => allowedRatings.add(`${row.postId}\0${row.reviewerId}`)));
+
+    const profiles = new Map((window.state?.activeUsers || []).map(user => [String(user.id), user]));
+    profiles.set(currentId(), { id: currentId(), ...(window.state?.userData || {}) });
+    const authors = new Map();
+
+    weeklyPosts.forEach(post => {
+      const userId = String(post.userId || 'unknown');
+      const profile = profiles.get(userId) || {};
+      const ratings = validRatings(post).filter(rating => allowedRatings.has(`${String(post.id)}\0${rating.reviewerId}`));
+      const ratingSum = ratings.reduce((sum, rating) => sum + rating.value, 0);
+      const likes = uniqueLikes(post);
+      const postScore = floor1(likes.length * 0.3 + ratingSum * 0.7 + 10);
+      const author = authors.get(userId) || {
+        id: userId,
+        name: post.authorName || profile.nickname || userId,
+        avatar: post.authorAvatar || profile.avatar || '',
+        published: 0,
+        items: []
+      };
+      author.published += 1;
+      author.items.push({ score: postScore, likes: likes.length, ratingCount: ratings.length, ratingSum });
+      authors.set(userId, author);
+    });
+
+    const members = [...authors.values()].map(author => {
+      const chosen = [...author.items].sort((a, b) => b.score - a.score).slice(0, TOP_POSTS);
+      const score = floor1(chosen.reduce((sum, post) => sum + post.score, 0));
+      const likes = chosen.reduce((sum, post) => sum + post.likes, 0);
+      const ratingCount = chosen.reduce((sum, post) => sum + post.ratingCount, 0);
+      const ratingSum = chosen.reduce((sum, post) => sum + post.ratingSum, 0);
+      return {
+        ...author,
+        chosen: chosen.length,
+        score,
+        likes,
+        ratingCount,
+        ratingSum,
+        average: ratingCount ? ratingSum / ratingCount : 0,
+        tier: tierFor(score)
+      };
+    }).sort((a, b) => b.score - a.score || b.likes - a.likes || b.ratingCount - a.ratingCount || a.id.localeCompare(b.id));
+
+    return { start, end, weeklyPosts, members };
+  }
+
+  function memberCard(member, index, pinned = false) {
+    return `<button type="button" class="sr-rank-member ${pinned ? 'sr-rank-member-pinned' : ''}" onclick="viewUserProfile('${js(member.id)}')"><span class="w-9 text-center font-black text-amber-300 font-luxury">#${index + 1}</span><img src="${member.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2'}" class="w-12 h-12 rounded-2xl object-cover border border-amber-500/20 shrink-0"><span class="min-w-0 flex-1 text-left"><span class="flex items-center gap-2 flex-wrap"><strong class="text-slate-100 truncate">${esc(member.name)}</strong><span class="text-xs text-slate-500 font-mono">@${esc(member.id)}</span></span><span class="block text-xs text-slate-500 mt-1">本週 ${member.published} 篇 · 取最高 ${member.chosen} 篇 · ${member.likes} 讚 · ${member.ratingCount} 人評星 · 平均 ${member.average.toFixed(1)} 星</span></span><span class="text-right shrink-0"><span class="inline-flex min-w-[4rem] justify-center px-3 py-2 rounded-2xl bg-gradient-to-br ${member.tier[2]} text-slate-950 font-black">${member.tier[0]}</span><strong class="block text-sm text-white mt-1">${member.score.toFixed(1)}</strong></span></button>`;
+  }
+
+  function render() {
+    if (window.state?.currentTab !== 'rank') return;
+    const container = byId('dashboard-tab-content');
+    if (!container) return;
+    if (container.dataset.srRankPolicy === VERSION && container.querySelector('[data-rank-v4]')) return;
+
+    const data = rankData();
+    const currentIndex = data.members.findIndex(member => member.id === currentId());
+    const current = currentIndex < 0 ? null : data.members[currentIndex];
+    const currentTier = current?.tier || tiers[0];
+    const tierIndex = Math.max(0, tiers.indexOf(currentTier));
+    const nextTier = tiers[tierIndex + 1] || null;
+    const score = current?.score || 0;
+    const progress = nextTier ? Math.max(0, Math.min(100, (score - currentTier[1]) / (nextTier[1] - currentTier[1]) * 100)) : 100;
+    const nearby = tiers.slice(tierIndex, tierIndex + 3);
+    const topTen = data.members.slice(0, 10);
+    const pinned = currentIndex >= 10 ? current : null;
+    const period = `${data.start.toLocaleDateString('zh-TW', { month:'2-digit', day:'2-digit' })}－${data.end.toLocaleDateString('zh-TW', { month:'2-digit', day:'2-digit' })}`;
+
+    container.dataset.srRankVersion = VERSION;
+    container.dataset.srRankPolicy = VERSION;
+    container.innerHTML = `<div data-rank-v4 class="space-y-4"><section class="glass-panel crystal-border rounded-3xl overflow-hidden"><div class="p-5 md:p-6 border-b border-white/10"><div class="text-xs text-amber-400/80 font-black tracking-wider">本週位階</div><div class="flex items-end justify-between gap-4 mt-1"><div><h2 class="text-3xl font-black text-white">${currentTier[0]}</h2><p class="text-xs text-slate-400 mt-1">${period} · 每週一重新計算</p></div><div class="text-xs text-slate-500 text-right">依本週互動與貼文品質計算</div></div></div><div class="p-5 md:p-6"><div class="flex items-end justify-between gap-4"><div><div class="text-xs text-slate-500">目前分數</div><div class="text-4xl font-black text-white mt-1">${score.toFixed(1)}</div></div><div class="text-right text-xs"><div class="text-slate-300">${nextTier ? `距離 ${nextTier[0]} 還差 ${Math.max(0, floor1(nextTier[1] - score)).toFixed(1)} 分` : '已到最高位階'}</div><div class="text-amber-300 font-black mt-1">${Math.round(progress)}%</div></div></div><div class="sr-rank-progress mt-4"><span style="width:${progress}%"></span></div></div></section><section class="glass-panel crystal-border rounded-3xl p-5"><div class="flex items-center justify-between gap-3 mb-3"><h3 class="font-black text-white">位階門檻</h3><button id="sr-rank-all-toggle" type="button" class="sr-secondary-button">查看全部</button></div><div id="sr-rank-nearby" class="grid grid-cols-1 sm:grid-cols-3 gap-2">${nearby.map(tier => `<div class="sr-rank-tier-card ${tier === currentTier ? 'sr-rank-tier-current' : ''}"><div class="text-base font-black">${tier[0]}</div><div class="text-xs mt-1">${tier[1].toLocaleString()} 分</div></div>`).join('')}</div><div id="sr-rank-all" class="hidden grid grid-cols-2 sm:grid-cols-3 gap-2 mt-3">${tiers.map(tier => `<div class="sr-rank-tier-card ${tier === currentTier ? 'sr-rank-tier-current' : ''}"><div class="text-base font-black">${tier[0]}</div><div class="text-xs mt-1">${tier[1].toLocaleString()} 分</div></div>`).join('')}</div></section><section class="glass-panel crystal-border rounded-3xl p-5 md:p-6"><div class="mb-4"><h3 class="text-lg font-black text-white">本週排行榜</h3><p class="text-xs text-slate-500 mt-1">${data.weeklyPosts.length} 篇貼文列入計算，每位會員最多取 3 篇。</p></div><div class="space-y-3">${topTen.length ? topTen.map((member, index) => memberCard(member, index)).join('') : '<div class="text-center py-10 text-slate-500">這週還沒有人上榜</div>'}${pinned ? `<div class="pt-3 border-t border-amber-500/10"><div class="text-xs text-amber-300 mb-2">你的名次</div>${memberCard(pinned, currentIndex, true)}</div>` : ''}</div></section></div>`;
+
+    byId('sr-rank-all-toggle')?.addEventListener('click', event => {
+      const nearbyBox = byId('sr-rank-nearby');
+      const allBox = byId('sr-rank-all');
+      const opening = allBox?.classList.contains('hidden');
+      nearbyBox?.classList.toggle('hidden', opening);
+      allBox?.classList.toggle('hidden', !opening);
+      event.currentTarget.textContent = opening ? '只看目前附近' : '查看全部';
+    });
+  }
+
+  async function tools() {
+    for (let attempt = 0; attempt < 60; attempt += 1) {
+      try { if (window.SRP?.tools) return await window.SRP.tools(); }
+      catch (error) { if (!/Firebase 尚未初始化|no Firebase App/i.test(String(error?.message || error))) throw error; }
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    throw new Error('資料庫尚未連線');
+  }
+
+  function installInteractionGuards() {
+    if (typeof window.ratePost === 'function' && !window.ratePost.__rankV4) {
+      const rate = async (postId, rawValue) => {
+        const value = Number(rawValue);
+        const post = sourcePosts().find(item => String(item.id) === String(postId));
+        const userId = currentId();
+        if (!post) return;
+        if (!Number.isInteger(value) || value < 1 || value > 5) return toast('評星只接受 1～5 星。', 'error');
+        if (String(post.userId) === userId) return toast('不能替自己的貼文評星。', 'info');
+        try {
+const { db, fs } = await tools();
+const ratings = { ...(post.ratings || {}), [userId]: value };
+await fs.updateDoc(fs.doc(db, 'secretg_apps', APP_ID, 'posts', String(postId)), { ratings, ratingsUpdatedAtMs: Date.now() });
+post.ratings = ratings;
+toast(`已評為 ${value} 星。`, 'success');
+schedule();
+        } catch (error) { toast('評星失敗：' + error.message, 'error'); }
+      };
+      rate.__rankV4 = true;
+      window.ratePost = rate;
+    }
+
+    if (typeof window.toggleLikePost === 'function' && !window.toggleLikePost.__rankV4) {
+      const toggle = async postId => {
+        const post = sourcePosts().find(item => String(item.id) === String(postId));
+        const userId = currentId();
+        if (!post) return;
+        if (String(post.userId) === userId) return toast('自己的貼文不列入自我按讚。', 'info');
+        try {
+const { db, fs } = await tools();
+const likes = { ...(post.likes || {}) };
+likes[userId] ? delete likes[userId] : likes[userId] = true;
+const likeCount = uniqueLikes({ ...post, likes }).length;
+await fs.updateDoc(fs.doc(db, 'secretg_apps', APP_ID, 'posts', String(postId)), { likes, likeCount, likesUpdatedAtMs: Date.now() });
+post.likes = likes;
+post.likeCount = likeCount;
+schedule();
+        } catch (error) { toast('按讚失敗：' + error.message, 'error'); }
+      };
+      toggle.__rankV4 = true;
+      window.toggleLikePost = toggle;
+    }
+  }
+
+  let queued = false;
+  function schedule() {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => {
+      queued = false;
+      installInteractionGuards();
+      render();
+    });
+  }
+
+  window.SRRankPolicy = Object.freeze({ version:'v4', maxPosts:TOP_POSTS, maxRatingsPerReviewerAuthor:REVIEW_CAP, tiers, data:rankData });
+  window.SRRuntime?.register(schedule);
+  schedule();
+})();
+
 /* ===== Consolidated source: sr_phase2_directory_telegram.js ===== */
 ;(() => {
 // SecretRoom phase two: complete member directory search and Telegram binding.
@@ -6366,7 +6290,7 @@ import('./sr_rank_policy.js?v=20260712-v1').catch(error => console.error('位階
   document.addEventListener('input', event => {
     if (event.target?.id === 'feed-search-input') setTimeout(schedule, 170);
   }, true);
-  new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true });
+  window.SRRuntime?.register(schedule);
   apply();
 })();
 
@@ -6629,7 +6553,7 @@ import('./sr_rank_policy.js?v=20260712-v1').catch(error => console.error('位階
     requestAnimationFrame(apply);
   }
 
-  new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true });
+  window.SRRuntime?.register(schedule);
   apply();
 })();
 
@@ -6762,7 +6686,7 @@ import('./sr_rank_policy.js?v=20260712-v1').catch(error => console.error('位階
     requestAnimationFrame(apply);
   }
 
-  new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true });
+  window.SRRuntime?.register(schedule);
   apply();
 })();
 
