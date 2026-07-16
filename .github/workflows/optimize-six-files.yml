@@ -4,17 +4,21 @@ on:
   push:
     branches:
       - optimize/six-file-architecture
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
 
 jobs:
   cleanup:
-    if: ${{ !contains(github.event.head_commit.message, '[runtime-cleanup-generated]') }}
+    if: ${{ !contains(github.event.head_commit.message || github.event.pull_request.title, '[runtime-cleanup-generated]') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: optimize/six-file-architecture
           fetch-depth: 0
 
       - name: Inline rank policy and remove obsolete shared patches
