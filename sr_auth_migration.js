@@ -1,7 +1,7 @@
 /* SecretRoom Firebase custom-auth migration.
- * The legacy UI remains, but registration/login/password recovery are routed
- * through the privileged Cloudflare backend. Firebase receives a custom token
- * with SecretRoom member claims.
+ * The secure overrides are installed only after a Cloudflare backend URL has
+ * been configured. Until then the existing production login and registration
+ * remain untouched.
  */
 ;(() => {
   const cfg = () => window.SecretRoomBackendConfig || {};
@@ -9,12 +9,20 @@
   const originalLoginHandlers = new WeakMap();
   const boundForms = new WeakSet();
 
-  function backendUrl() {
-    const value = String(
+  function configuredBackendUrl() {
+    return String(
       cfg().backendUrl ||
       localStorage.getItem('sr_backend_url') ||
       ''
     ).replace(/\/+$/, '');
+  }
+
+  function migrationEnabled() {
+    return Boolean(configuredBackendUrl()) || cfg().strictAuth === true;
+  }
+
+  function backendUrl() {
+    const value = configuredBackendUrl();
     if (!value) throw new Error('尚未設定 SecretRoom 後端網址。請先在 sr_backend_config.js 填入 Cloudflare Worker URL。');
     return value;
   }
@@ -155,6 +163,7 @@
   }
 
   function installLoginOverride() {
+    if (!migrationEnabled()) return;
     const button = document.getElementById('btn-login-submit');
     if (!button || button.dataset.srSecureAuth === '1') return;
     button.dataset.srSecureAuth = '1';
@@ -164,6 +173,7 @@
   }
 
   function installRegisterOverride() {
+    if (!migrationEnabled()) return;
     const form = document.getElementById('apply-form');
     if (!form || boundForms.has(form)) return;
     boundForms.add(form);
@@ -189,6 +199,7 @@
   }
 
   function installForgotPasswordOverride() {
+    if (!migrationEnabled()) return;
     const button = document.getElementById('btn-forgot-password');
     if (!button || button.dataset.srSecureReset === '1') return;
     button.dataset.srSecureReset = '1';
@@ -217,5 +228,5 @@
   document.addEventListener('DOMContentLoaded', apply, { once: true });
   apply();
 
-  window.SRSecureAuth = Object.freeze({ api, signIn, backendUrl });
+  window.SRSecureAuth = Object.freeze({ api, signIn, backendUrl, migrationEnabled });
 })();
