@@ -10,8 +10,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-    <link rel="stylesheet" href="admin.css?v=20260716-telegram-phase2-v1">
+    <link rel="stylesheet" href="admin.css?v=20260717-telegram-phase6-v1">
 </head>
 <body class="min-h-screen bg-[#020204] p-4 md:p-8">
     <div id="admin-login-modal" class="fixed inset-0 z-[200] bg-black/95 backdrop-blur-md flex items-center justify-center p-4">
@@ -31,9 +30,9 @@
         <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8 pb-6 border-b border-slate-900">
             <div>
                 <h1 class="text-3xl font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-amber-300 flex items-center gap-3 font-serif">
-                    <i class="fa-solid fa-user-shield text-amber-500"></i> SecretRoom 管理後台 (v3.0.0)
+                    <i class="fa-solid fa-user-shield text-amber-500"></i> SecretRoom 管理後台 (v3.1.0)
                 </h1>
-                <p class="text-slate-500 text-sm mt-1">會員審核、內容檢舉與帳號管理</p>
+                <p class="text-slate-500 text-sm mt-1">會員審核、內容檢舉、帳號管理與 Telegram 通知</p>
             </div>
             <div id="connection-status" class="self-start px-4 py-2 rounded-full bg-slate-900 border border-slate-800 text-xs text-slate-500 flex items-center gap-2">
                 <i class="fa-solid fa-circle-notch animate-spin text-amber-500"></i> 正在連線...
@@ -59,7 +58,7 @@
         </div>
 
         <div class="bg-slate-950/40 border border-amber-500/15 rounded-3xl p-6 glass-panel mb-8">
-            <div class="flex items-center justify-between gap-4 mb-5"><div><h2 class="text-lg font-bold text-white flex items-center gap-2"><div class="w-1.5 h-5 bg-amber-500 rounded-full"></div> 平台通知</h2><p class="text-xs text-slate-500 mt-1">可以發給所有會員，或只發給通過黃金 Spec 的 S+ . S . G 會員。</p></div></div>
+            <div class="flex items-center justify-between gap-4 mb-5"><div><h2 class="text-lg font-bold text-white flex items-center gap-2"><div class="w-1.5 h-5 bg-amber-500 rounded-full"></div> 平台通知</h2><p class="text-xs text-slate-500 mt-1">只顯示在 SecretRoom 平台內；不會自動同步成 Telegram 通知。</p></div></div>
             <div class="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-3 mb-3"><select id="broadcast-target" class="bg-slate-900 border border-slate-800 rounded-xl px-3 py-3 text-xs text-amber-500 focus:outline-none"><option value="all">全體會員</option><option value="sg">S+ . S . G</option></select><input id="broadcast-title" class="bg-slate-900 border border-slate-800 rounded-xl px-3 py-3 text-sm text-slate-200 focus:outline-none focus:border-amber-500" placeholder="通知標題，例如：這週的社群公告"></div>
             <textarea id="broadcast-message" class="w-full min-h-[110px] bg-slate-900 border border-slate-800 rounded-2xl px-3 py-3 text-sm text-slate-200 focus:outline-none focus:border-amber-500 resize-none" placeholder="輸入通知內容"></textarea>
             <div class="flex justify-end mt-4"><button onclick="sendPlatformBroadcast()" class="px-5 py-3 bg-amber-600 hover:bg-amber-500 text-slate-950 rounded-xl text-xs font-bold transition shadow-lg shadow-amber-950/20"><i class="fa-solid fa-paper-plane mr-1.5"></i> 發送平台通知</button></div>
@@ -67,7 +66,7 @@
         </div>
 
         <div class="bg-slate-950/40 border border-slate-900 rounded-3xl p-6 glass-panel">
-            <div class="flex items-center justify-between mb-6"><h2 class="text-lg font-bold text-white flex items-center gap-2"><div class="w-1.5 h-5 bg-amber-500 rounded-full"></div> 會員與內容管理</h2><div class="flex gap-2 flex-wrap justify-end"><input id="admin-search" oninput="filterApplications()" class="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500" placeholder="搜尋帳號、暱稱或 Email"><select id="filter-status" onchange="filterApplications()" class="bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-amber-500 focus:outline-none"><option value="all">全部</option><option value="pending" selected>待審核</option><option value="avatar_pending">頭像待審</option><option value="spec_pending">Spec 待審</option><option value="reported_posts">貼文檢舉</option><option value="reported_comments">留言檢舉</option><option value="account_delete_requests">刪除帳號</option><option value="password_reset_requests">忘記密碼</option><option value="email_failures">寄信失敗</option><option value="approved">已通過</option><option value="active">使用中</option><option value="rejected">已拒絕</option></select></div></div>
+            <div class="flex items-center justify-between mb-6"><h2 class="text-lg font-bold text-white flex items-center gap-2"><div class="w-1.5 h-5 bg-amber-500 rounded-full"></div> 會員與內容管理</h2><div class="flex gap-2 flex-wrap justify-end"><input id="admin-search" oninput="filterApplications()" class="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500" placeholder="搜尋帳號、暱稱、Telegram 或申請"><select id="filter-status" onchange="filterApplications()" class="bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-amber-500 focus:outline-none"><option value="all">全部</option><option value="pending" selected>待審核</option><option value="avatar_pending">頭像待審</option><option value="spec_pending">Spec 待審</option><option value="reported_posts">貼文檢舉</option><option value="reported_comments">留言檢舉</option><option value="account_delete_requests">刪除帳號</option><option value="password_reset_requests">忘記密碼</option><option value="email_failures">舊 Email 失敗紀錄</option><option value="approved">已通過</option><option value="active">使用中</option><option value="rejected">已拒絕</option></select></div></div>
             <div id="admin-list" class="space-y-4"><div class="flex flex-col items-center justify-center py-12 text-slate-500 gap-3"><i class="fa-solid fa-circle-notch animate-spin text-2xl text-amber-500"></i><span>正在讀取資料...</span></div></div>
         </div>
     </div>
@@ -98,6 +97,8 @@
 
     <div id="toast-container" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col gap-2 w-full max-w-xs px-4"></div>
 
-<script type="module" src="admin.js?v=20260716-telegram-phase2-v1"></script>
+<script src="sr_emailjs_telegram_bridge.js?v=20260717-telegram-phase6-v1"></script>
+<script type="module" src="admin.js?v=20260717-telegram-phase6-v1"></script>
+<script type="module" src="sr_admin_telegram_phase6.js?v=20260717-telegram-phase6-v1"></script>
 </body>
 </html>
