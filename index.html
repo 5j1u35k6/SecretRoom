@@ -17,7 +17,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;650;750;800&family=Cinzel:wght@600;700;900&family=Noto+Serif+TC:wght@400;600;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="style.css?v=20260716-telegram-phase2-v1">
-<script src="sr_backend_config.js?v=20260717-member-auth-v8"></script>
+<script src="sr_backend_config.js?v=20260717-member-auth-v10"></script>
 </head>
 <body class="min-h-screen w-full flex flex-col p-0 m-0 overflow-hidden club-groove-bg">
 <div id="app" class="w-full h-[100dvh] md:h-screen overflow-hidden relative flex flex-col bg-transparent transition-all duration-300">
@@ -60,7 +60,7 @@
 </div>
 <script>
 (async () => {
-  const fallbackBuild = '20260717-member-auth-v8';
+  const fallbackBuild = '20260717-member-auth-v10';
   let build = fallbackBuild;
 
   try {
@@ -92,7 +92,7 @@
 
   const script = document.createElement('script');
   script.type = 'module';
-  script.src = `app_bootstrap.js?v=${encodeURIComponent(build)}`;
+  script.src = `app_bootstrap_v10.js?v=${encodeURIComponent(build)}`;
   script.onerror = () => {
     const loading = document.getElementById('loading-screen');
     if (loading) {
