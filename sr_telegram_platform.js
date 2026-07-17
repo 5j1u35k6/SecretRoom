@@ -5,6 +5,10 @@
   const BOT_NAME = 'SecretRoomtwBot';
   let authPromise = null;
 
+  function backendEnabled() {
+    return window.SRSecureAuth?.migrationEnabled?.() === true;
+  }
+
   async function firebaseAuth() {
     if (authPromise) return authPromise;
     authPromise = Promise.all([
@@ -25,7 +29,7 @@
   }
 
   async function api(path, body = {}) {
-    if (!window.SRSecureAuth) throw new Error('安全登入模組尚未準備完成');
+    if (!window.SRSecureAuth || !backendEnabled()) throw new Error('Telegram 會員服務尚未完成後端啟用');
     return window.SRSecureAuth.api(path, body, await idToken());
   }
 
@@ -55,6 +59,7 @@
   }
 
   function openModal() {
+    if (!backendEnabled()) return toast('Telegram 會員服務尚未完成後端啟用。', 'info');
     closeModal();
     const wrap = document.createElement('div');
     wrap.id = 'sr-telegram-service-modal';
@@ -103,7 +108,7 @@
   }
 
   function installEntryButton() {
-    if (document.getElementById('sr-telegram-service-entry')) return;
+    if (!backendEnabled() || document.getElementById('sr-telegram-service-entry')) return;
     const button = document.createElement('button');
     button.id = 'sr-telegram-service-entry';
     button.type = 'button';
