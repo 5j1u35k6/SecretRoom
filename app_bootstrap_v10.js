@@ -1,5 +1,8 @@
-/* SecretRoom public runtime bootstrap v10. */
-const build = String(window.__SR_BUILD__ || '20260717-member-auth-v10');
+/* SecretRoom public runtime bootstrap v11.
+ * Fixes late dynamic-module startup: app.js used window.onload, but the module
+ * is imported after the load event has already fired on GitHub Pages.
+ */
+const build = String(window.__SR_BUILD__ || '20260717-member-auth-v11');
 
 function deadline(promise, milliseconds, message) {
   return Promise.race([
@@ -14,14 +17,18 @@ function showLoadFailure(error) {
   console.error('SecretRoom load failed', error);
   const loading = document.getElementById('loading-screen');
   if (!loading) return;
+
   loading.classList.remove('hidden');
   loading.innerHTML = `
     <div class="max-w-sm px-6 text-center">
       <p class="text-rose-300 text-base font-black mb-3">網站載入未完成</p>
-      <p class="text-slate-400 text-xs leading-relaxed mb-5">請重新載入頁面；若持續發生，請回報畫面。</p>
+      <p class="text-slate-400 text-xs leading-relaxed mb-5">${String(error?.message || '請重新載入頁面。')}</p>
       <button id="sr-retry-load" class="rounded-xl border border-amber-500/30 bg-amber-500/10 px-5 py-3 text-sm font-black text-amber-300">重新載入</button>
     </div>`;
-  document.getElementById('sr-retry-load')?.addEventListener('click', () => location.reload());
+
+  document.getElementById('sr-retry-load')?.addEventListener('click', () => {
+    location.reload();
+  });
 }
 
 window.SecretRoomPublicAuth = Object.freeze({
@@ -30,6 +37,7 @@ window.SecretRoomPublicAuth = Object.freeze({
       await deadline(auth.authStateReady(), 8000, '公開連線初始化逾時');
     }
     if (auth.currentUser?.isAnonymous) return auth.currentUser;
+
     const credential = await deadline(
       signInAnonymously(auth),
       12000,
@@ -46,11 +54,21 @@ const watchdog = setTimeout(() => {
   }
 }, 20000);
 
+const readinessMonitor = setInterval(() => {
+  const loading = document.getElementById('loading-screen');
+  if (!loading || loading.classList.contains('hidden')) {
+    clearTimeout(watchdog);
+    clearInterval(readinessMonitor);
+  }
+}, 250);
+
 try {
   const response = await fetch(`app.js?v=${encodeURIComponent(build)}`, {
     cache: 'no-store'
   });
-  if (!response.ok) throw new Error(`app.js 載入失敗：${response.status}`);
+  if (!response.ok) {
+    throw new Error(`app.js 載入失敗：${response.status}`);
+  }
 
   let source = await response.text();
 
@@ -79,6 +97,30 @@ try {
     "showToast(error?.message || '伺服器連線異常，請稍後重試。', 'error'); hideLoading(); navigate('landing');"
   );
 
+  const lateLoadPattern = /window\.onload\s*=\s*function\(\)\s*\{\s*initApp\(\);\s*if\s*\(typeof\s+initBGMController\s*===\s*'function'\)\s*\{\s*initBGMController\(\);\s*\}\s*\};/;
+
+  if (!lateLoadPattern.test(source)) {
+    throw new Error('找不到 SecretRoom 啟動程序，已停止載入以避免永久卡住。');
+  }
+
+  source = source.replace(
+    lateLoadPattern,
+    `const startSecretRoomApp = () => {
+            if (window.__SR_PUBLIC_APP_STARTED__) return;
+            window.__SR_PUBLIC_APP_STARTED__ = true;
+            initApp();
+            if (typeof initBGMController === 'function') {
+                initBGMController();
+            }
+        };
+
+        if (document.readyState === 'loading') {
+            window.addEventListener('load', startSecretRoomApp, { once: true });
+        } else {
+            queueMicrotask(startSecretRoomApp);
+        }`
+  );
+
   source = source.replaceAll(
     "localStorage.removeItem('sr_username');",
     "localStorage.removeItem('sr_username'); window.SRSecureAuth?.signOutMember?.();"
@@ -91,7 +133,10 @@ try {
     }
   });
 
-  const blobUrl = URL.createObjectURL(new Blob([source], { type: 'text/javascript' }));
+  const blobUrl = URL.createObjectURL(
+    new Blob([source], { type: 'text/javascript' })
+  );
+
   try {
     await import(blobUrl);
   } finally {
@@ -101,7 +146,7 @@ try {
   await import(`./sr_auth_migration.js?v=${encodeURIComponent(build)}`);
   await import(`./sr_telegram_platform.js?v=${encodeURIComponent(build)}`);
 } catch (error) {
-  showLoadFailure(error);
-} finally {
   clearTimeout(watchdog);
+  clearInterval(readinessMonitor);
+  showLoadFailure(error);
 }
