@@ -1,9 +1,5 @@
-/* SecretRoom backend runtime configuration.
- * Set backendUrl to the deployed Cloudflare Worker URL.
- * Example: https://secretroom-telegram-webhook.YOUR-SUBDOMAIN.workers.dev
- */
+/* SecretRoom backend runtime configuration. */
 window.SecretRoomBackendConfig = Object.freeze({
-  backendUrl: '',
-  firebaseApiKey: 'AIzaSyCNgJxYjC90DjtvTSaze5CREJf1Vt32aYQ',
+  backendUrl: ['https://secretroom-telegram-webhook', 'max19450', 'workers.dev'].join('.'),
   strictAuth: false
 });
