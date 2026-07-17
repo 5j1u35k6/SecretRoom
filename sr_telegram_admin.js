@@ -3,6 +3,14 @@
  * routed to the privileged backend and remain separate from platform notices.
  */
 ;(() => {
+  function backendEnabled() {
+    return Boolean(
+      window.SecretRoomBackendConfig?.backendUrl ||
+      localStorage.getItem('sr_backend_url') ||
+      window.SecretRoomBackendConfig?.strictAuth === true
+    );
+  }
+
   async function idToken() {
     const [appMod, authMod] = await Promise.all([
       import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js'),
@@ -21,6 +29,7 @@
   }
 
   async function api(path, body = {}) {
+    if (!backendEnabled()) throw new Error('Telegram 後端尚未啟用');
     const response = await fetch(`${backendUrl()}${path}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${await idToken()}` },
@@ -78,6 +87,11 @@
   }
 
   function installAdminNotice() {
+    /*
+     * Worker 尚未設定時不改動既有正式後台，避免在切換期間停用舊流程。
+     */
+    if (!backendEnabled()) return;
+
     disableLegacyPasswordReset();
     const main = document.getElementById('admin-main');
     if (!main || document.getElementById('sr-telegram-admin-notice')) return;
@@ -109,6 +123,6 @@
 
   window.SRTelegramAdmin = Object.freeze({
     queueTelegramNotification, notifyReviewResult, notifySecurityEvent,
-    processQueue, migrateCredentials
+    processQueue, migrateCredentials, backendEnabled
   });
 })();
