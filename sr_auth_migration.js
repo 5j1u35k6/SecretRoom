@@ -1,7 +1,6 @@
 /* SecretRoom Firebase custom-auth migration.
- * The secure overrides are installed only after a Cloudflare backend URL has
- * been configured. Until then the existing production login and registration
- * remain untouched.
+ * Secure member login is authoritative whenever the Cloudflare backend is
+ * configured. Legacy login is used only when no backend URL exists.
  */
 ;(() => {
   const cfg = () => window.SecretRoomBackendConfig || {};
@@ -23,7 +22,9 @@
 
   function backendUrl() {
     const value = configuredBackendUrl();
-    if (!value) throw new Error('尚未設定 SecretRoom 後端網址。請先在 sr_backend_config.js 填入 Cloudflare Worker URL。');
+    if (!value) {
+      throw new Error('尚未設定 SecretRoom 後端網址。請先在 sr_backend_config.js 填入 Cloudflare Worker URL。');
+    }
     return value;
   }
 
@@ -37,7 +38,8 @@
       if (!app) throw new Error('Firebase 尚未初始化');
       return {
         auth: authMod.getAuth(app),
-        signInWithCustomToken: authMod.signInWithCustomToken
+        signInWithCustomToken: authMod.signInWithCustomToken,
+        getIdTokenResult: authMod.getIdTokenResult
       };
     });
     return sdkPromise;
@@ -54,14 +56,42 @@
       cache: 'no-store'
     });
     const data = await response.json().catch(() => ({}));
-    if (!response.ok || data.ok === false) throw new Error(data.error || `後端錯誤：${response.status}`);
+    if (!response.ok || data.ok === false) {
+      throw new Error(data.error || `後端錯誤：${response.status}`);
+    }
     return data;
   }
 
-  async function signIn(customToken) {
-    const { auth, signInWithCustomToken } = await authSdk();
+  async function signIn(customToken, expectedUserId = '') {
+    const { auth, signInWithCustomToken, getIdTokenResult } = await authSdk();
     const credential = await signInWithCustomToken(auth, customToken);
+    const tokenResult = await getIdTokenResult(credential.user, true);
+    const claims = tokenResult.claims || {};
+    const claimUserId = String(claims.secretroomUserId || '');
+
+    if (claims.secretroomMember !== true || !claimUserId) {
+      throw new Error('會員安全身分建立失敗，請重新登入');
+    }
+    if (expectedUserId && claimUserId !== String(expectedUserId)) {
+      throw new Error('會員安全身分與登入帳號不一致');
+    }
+
     return credential.user;
+  }
+
+  async function currentMemberIdentity(forceRefresh = false) {
+    const { auth, getIdTokenResult } = await authSdk();
+    const user = auth.currentUser;
+    if (!user || user.isAnonymous) return null;
+    const tokenResult = await getIdTokenResult(user, forceRefresh);
+    const claims = tokenResult.claims || {};
+    if (claims.secretroomMember !== true || !claims.secretroomUserId) return null;
+    return {
+      user,
+      userId: String(claims.secretroomUserId),
+      claims,
+      tokenResult
+    };
   }
 
   function showError(message) {
@@ -88,7 +118,7 @@
   }
 
   async function forcePasswordChange(loginResult, user) {
-    if (!loginResult.mustChangePassword) return;
+    if (!loginResult.mustChangePassword) return user;
     let first = '';
     let second = '';
     while (true) {
@@ -100,8 +130,9 @@
     }
     const idToken = await user.getIdToken();
     const changed = await api('/api/member/change-password', { newPassword: first }, idToken);
-    await signIn(changed.customToken);
+    const refreshedUser = await signIn(changed.customToken, loginResult.userId);
     window.showToast?.('新密碼設定完成', 'success');
+    return refreshedUser;
   }
 
   async function secureLogin() {
@@ -112,15 +143,24 @@
 
     setBusy(button, true);
     try {
-      const result = await api('/api/auth/member-login', { userId: username, password });
-      const user = await signIn(result.customToken);
-      await forcePasswordChange(result, user);
+      const result = await api('/api/auth/member-login', {
+        userId: username,
+        password
+      });
+      let user = await signIn(result.customToken, result.userId);
+      user = await forcePasswordChange(result, user);
+      const identity = await currentMemberIdentity(true);
+      if (!identity || identity.userId !== String(result.userId)) {
+        throw new Error('會員安全登入尚未完成，請重新操作');
+      }
       localStorage.setItem('sr_username', result.userId);
+      sessionStorage.setItem('sr_secure_member_id', result.userId);
       window.showToast?.('安全登入成功，正在載入俱樂部…', 'success');
       location.reload();
     } catch (error) {
       console.error('Secure login failed', error);
-      if (!cfg().strictAuth && originalLoginHandlers.has(button)) {
+      const noBackendConfigured = !configuredBackendUrl();
+      if (noBackendConfigured && cfg().strictAuth !== true && originalLoginHandlers.has(button)) {
         return originalLoginHandlers.get(button)?.();
       }
       showError(error.message || String(error));
@@ -151,8 +191,9 @@
     setBusy(button, true, '建立安全帳號中…');
     try {
       const result = await api('/api/auth/register', payload);
-      await signIn(result.customToken);
+      await signIn(result.customToken, result.userId);
       localStorage.setItem('sr_username', result.userId);
+      sessionStorage.setItem('sr_secure_member_id', result.userId);
       window.showToast?.('申請資料提交成功！請靜待審核。', 'success');
       location.reload();
     } catch (error) {
@@ -192,10 +233,12 @@
       secureRegister(form);
     }, true);
     const button = document.getElementById('apply-submit');
-    if (button) button.onclick = event => {
-      event.preventDefault();
-      secureRegister(form);
-    };
+    if (button) {
+      button.onclick = event => {
+        event.preventDefault();
+        secureRegister(form);
+      };
+    }
   }
 
   function installForgotPasswordOverride() {
@@ -224,9 +267,19 @@
     installForgotPasswordOverride();
   }
 
-  new MutationObserver(apply).observe(document.documentElement, { childList: true, subtree: true });
+  new MutationObserver(apply).observe(document.documentElement, {
+    childList: true,
+    subtree: true
+  });
   document.addEventListener('DOMContentLoaded', apply, { once: true });
   apply();
 
-  window.SRSecureAuth = Object.freeze({ api, signIn, backendUrl, migrationEnabled });
+  window.SRSecureAuth = Object.freeze({
+    api,
+    signIn,
+    authSdk,
+    backendUrl,
+    migrationEnabled,
+    currentMemberIdentity
+  });
 })();
