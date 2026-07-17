@@ -9,7 +9,8 @@ service cloud.firestore {
     function isMember() {
       return signedIn()
         && request.auth.token.secretroomMember == true
-        && request.auth.token.secretroomUserId is string;
+        && request.auth.token.secretroomUserId is string
+        && request.auth.token.passwordChangeRequired != true;
     }
 
     function memberId() {
@@ -88,6 +89,10 @@ service cloud.firestore {
       }
 
       match /telegram_bindings/{telegramUserId} {
+        allow read, write: if false;
+      }
+
+      match /telegram_updates/{updateId} {
         allow read, write: if false;
       }
 
