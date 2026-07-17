@@ -1,0 +1,73 @@
+name: Telegram Phase 1-6 validation
+
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'portal_sr_x892.html'
+      - 'sr_*telegram*.js'
+      - 'cloudflare-worker.js'
+      - 'apps-script/**'
+      - 'firestore.rules'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in \
+            sr_emailjs_telegram_bridge.js \
+            sr_telegram_phase6.js \
+            sr_telegram_recovery_completion.js \
+            sr_admin_telegram_phase6.js \
+            cloudflare-worker.js; do
+            node --check "$file"
+          done
+
+      - name: Check Apps Script syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          temp_file="$(mktemp --suffix=.js)"
+          for file in apps-script/*.gs; do
+            cp "$file" "$temp_file"
+            node --check "$temp_file"
+          done
+          rm -f "$temp_file"
+
+      - name: Validate HTML and Apps Script manifest
+        shell: python
+        run: |
+          from html.parser import HTMLParser
+          from pathlib import Path
+          import json
+
+          for filename in ('index.html', 'portal_sr_x892.html'):
+              HTMLParser().feed(Path(filename).read_text(encoding='utf-8'))
+              print(f'HTML OK: {filename}')
+
+          json.loads(Path('apps-script/appsscript.json').read_text(encoding='utf-8'))
+          print('JSON OK: apps-script/appsscript.json')
+
+      - name: Confirm EmailJS CDN is removed
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -R "cdn.jsdelivr.net/npm/@emailjs" index.html portal_sr_x892.html
+
+      - name: Confirm recovery tokens cannot be listed
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "match /secretg_apps/{appId}/telegram_recovery_tokens/{tokenId}" firestore.rules
+          grep -q "allow list, create, delete: if false" firestore.rules
