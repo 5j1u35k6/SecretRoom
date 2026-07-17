@@ -12,13 +12,19 @@
   if (!recoveryToken) return;
 
   async function firebaseTools() {
-    const [appModule, fs] = await Promise.all([
+    const [appModule, authModule, fs] = await Promise.all([
       import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js'),
+      import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js'),
       import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js')
     ]);
+
     for (let attempt = 0; attempt < 60; attempt += 1) {
       const app = appModule.getApps()[0];
-      if (app) return { db: fs.getFirestore(app), fs };
+      if (app) {
+        const auth = authModule.getAuth(app);
+        if (!auth.currentUser) await authModule.signInAnonymously(auth);
+        return { db: fs.getFirestore(app), fs };
+      }
       await new Promise(resolve => setTimeout(resolve, 250));
     }
     throw new Error('Firebase 尚未完成初始化。');
@@ -82,34 +88,52 @@
         submit.disabled = true;
         submit.textContent = '正在更新…';
         try {
-          const latest = (await fs.getDoc(tokenRef)).data() || {};
-          if (String(latest.status || '') !== 'active' || Number(latest.expiresAtMs || 0) < Date.now()) throw new Error('一次性連結已失效。');
-
           const memberRef = fs.doc(db, 'secretg_apps', APP_ID, 'applications', String(record.accountId));
+          const requestRef = fs.doc(db, 'secretg_apps', APP_ID, 'password_reset_requests', String(record.requestId));
           const credentialKey = ['pass', 'word'].join('');
-          await fs.setDoc(memberRef, {
-            [credentialKey]: secret,
-            mustChangePassword: false,
-            forcePasswordChange: false,
-            tempPasswordActive: false,
-            passwordChangeRequired: false,
-            tempPasswordIssuedAtMs: null,
-            tempPasswordExpiresAtMs: null,
-            temporaryCredentialExpiresAtMs: null,
-            passwordChangedAt: fs.serverTimestamp(),
-            passwordChangedAtMs: Date.now(),
-            passwordChangedBy: 'telegram_recovery_link',
-            lastPasswordChangeMethod: 'telegram_recovery_link'
-          }, { merge: true });
+          const now = Date.now();
 
-          await fs.setDoc(tokenRef, { status: 'used', usedAt: fs.serverTimestamp(), usedAtMs: Date.now() }, { merge: true });
-          await fs.setDoc(fs.doc(db, 'secretg_apps', APP_ID, 'password_reset_requests', String(record.requestId)), {
-            status: 'completed',
-            completedAt: fs.serverTimestamp(),
-            completedAtMs: Date.now(),
-            completedVia: 'telegram_recovery_link',
-            resetTokenId: null
-          }, { merge: true });
+          await fs.runTransaction(db, async transaction => {
+            const [latestToken, memberSnapshot] = await Promise.all([
+              transaction.get(tokenRef),
+              transaction.get(memberRef)
+            ]);
+            if (!latestToken.exists()) throw new Error('一次性連結不存在。');
+            const latest = latestToken.data() || {};
+            if (String(latest.status || '') !== 'active' || Number(latest.expiresAtMs || 0) < now) {
+              throw new Error('一次性連結已失效。');
+            }
+            if (!memberSnapshot.exists()) throw new Error('找不到會員帳號。');
+
+            transaction.set(memberRef, {
+              [credentialKey]: secret,
+              mustChangePassword: false,
+              forcePasswordChange: false,
+              tempPasswordActive: false,
+              passwordChangeRequired: false,
+              tempPasswordIssuedAtMs: null,
+              tempPasswordExpiresAtMs: null,
+              temporaryCredentialExpiresAtMs: null,
+              passwordChangedAt: fs.serverTimestamp(),
+              passwordChangedAtMs: now,
+              passwordChangedBy: 'telegram_recovery_link',
+              lastPasswordChangeMethod: 'telegram_recovery_link'
+            }, { merge: true });
+
+            transaction.set(tokenRef, {
+              status: 'used',
+              usedAt: fs.serverTimestamp(),
+              usedAtMs: now
+            }, { merge: true });
+
+            transaction.set(requestRef, {
+              status: 'completed',
+              completedAt: fs.serverTimestamp(),
+              completedAtMs: now,
+              completedVia: 'telegram_recovery_link',
+              resetTokenId: null
+            }, { merge: true });
+          });
 
           clearToken();
           form.classList.add('hidden');
