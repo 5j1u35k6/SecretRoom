@@ -1,10 +1,13 @@
 /* SecretRoom Firebase custom-auth migration.
  * Secure member login is authoritative whenever the Cloudflare backend is
- * configured. Legacy login is used only when no backend URL exists.
+ * configured. Capture-phase interceptors prevent the legacy Firestore password
+ * handler from running after credentials have been migrated.
  */
 ;(() => {
   const cfg = () => window.SecretRoomBackendConfig || {};
   let sdkPromise = null;
+  let loginInFlight = false;
+  let loginInterceptorsInstalled = false;
   const originalLoginHandlers = new WeakMap();
   const boundForms = new WeakSet();
 
@@ -106,14 +109,19 @@
   function setBusy(button, busy, text = '驗證中...') {
     if (!button) return;
     if (busy) {
-      button.dataset.srOriginalText = button.innerHTML;
+      if (!button.dataset.srOriginalText) {
+        button.dataset.srOriginalText = button.innerHTML;
+      }
       button.disabled = true;
       button.classList.add('opacity-60', 'cursor-not-allowed');
       button.innerHTML = text;
     } else {
       button.disabled = false;
       button.classList.remove('opacity-60', 'cursor-not-allowed');
-      if (button.dataset.srOriginalText) button.innerHTML = button.dataset.srOriginalText;
+      if (button.dataset.srOriginalText) {
+        button.innerHTML = button.dataset.srOriginalText;
+        delete button.dataset.srOriginalText;
+      }
     }
   }
 
@@ -135,13 +143,19 @@
     return refreshedUser;
   }
 
-  async function secureLogin() {
+  async function secureLogin(event = null) {
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+    event?.stopImmediatePropagation?.();
+    if (loginInFlight) return;
+
     const username = document.getElementById('login-username')?.value?.trim() || '';
     const password = document.getElementById('login-password')?.value || '';
     const button = document.getElementById('btn-login-submit');
     if (!username || !password) return showError('請填寫完整登入資訊！');
 
-    setBusy(button, true);
+    loginInFlight = true;
+    setBusy(button, true, '安全驗證中…');
     try {
       const result = await api('/api/auth/member-login', {
         userId: username,
@@ -149,6 +163,7 @@
       });
       let user = await signIn(result.customToken, result.userId);
       user = await forcePasswordChange(result, user);
+      await user.getIdToken(true);
       const identity = await currentMemberIdentity(true);
       if (!identity || identity.userId !== String(result.userId)) {
         throw new Error('會員安全登入尚未完成，請重新操作');
@@ -161,10 +176,11 @@
       console.error('Secure login failed', error);
       const noBackendConfigured = !configuredBackendUrl();
       if (noBackendConfigured && cfg().strictAuth !== true && originalLoginHandlers.has(button)) {
-        return originalLoginHandlers.get(button)?.();
+        return originalLoginHandlers.get(button)?.call(button, event);
       }
       showError(error.message || String(error));
     } finally {
+      loginInFlight = false;
       setBusy(button, false);
     }
   }
@@ -201,6 +217,30 @@
     } finally {
       setBusy(button, false);
     }
+  }
+
+  function installLoginInterceptors() {
+    if (!migrationEnabled() || loginInterceptorsInstalled) return;
+    loginInterceptorsInstalled = true;
+
+    document.addEventListener('click', event => {
+      const button = event.target?.closest?.('#btn-login-submit');
+      if (!button) return;
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      secureLogin(event);
+    }, true);
+
+    document.addEventListener('keydown', event => {
+      if (event.key !== 'Enter') return;
+      const target = event.target;
+      if (!target || !['login-username', 'login-password'].includes(target.id)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      secureLogin(event);
+    }, true);
   }
 
   function installLoginOverride() {
@@ -262,6 +302,7 @@
   }
 
   function apply() {
+    installLoginInterceptors();
     installLoginOverride();
     installRegisterOverride();
     installForgotPasswordOverride();
@@ -280,6 +321,7 @@
     authSdk,
     backendUrl,
     migrationEnabled,
-    currentMemberIdentity
+    currentMemberIdentity,
+    secureLogin
   });
 })();
