@@ -14,7 +14,7 @@
   window.__SR_ADMIN_TELEGRAM_PHASE6__ = true;
 
   const APP_ID = 'secretg-production-node-tw';
-  const VERSION = '20260717-telegram-phase6-admin-v1';
+  const VERSION = '20260717-telegram-phase6-admin-v2';
   let toolsPromise = null;
   let queued = false;
 
@@ -129,7 +129,7 @@
       const label = String(button.textContent || '').trim();
       if (label === '設定新密碼' || label === '寄出 10 分鐘臨時密碼') {
         button.textContent = '轉交 Telegram 自助處理';
-        button.title = '系統不再由管理員手動設定臨時密碼。';
+        button.title = '系統不再由管理員手動設定密碼；會員會在 Telegram 驗證後取得一次性重設連結。';
       }
       if (/寄測試信給我/.test(label)) {
         button.textContent = 'Telegram 測試已停用';
@@ -165,7 +165,7 @@
         <div>
           <div class="text-xs font-black text-cyan-300"><i class="fa-brands fa-telegram mr-1.5"></i>Telegram 通知系統</div>
           <h2 class="mt-1 text-lg font-black text-white">EmailJS 已切換為 Telegram 相容橋接</h2>
-          <p class="mt-1 text-xs leading-relaxed text-slate-500">平台通知仍寫入 notifications；外部通知寫入 telegram_outbox；臨時密碼只由 Bot 直接傳送，不進入佇列。</p>
+          <p class="mt-1 text-xs leading-relaxed text-slate-500">平台通知仍寫入 notifications；外部通知寫入 telegram_outbox；忘記密碼由 Bot 發送一次性重設連結，新密碼不進入佇列。</p>
         </div>
         <button id="sr-open-telegram-delivery" class="min-h-[44px] rounded-xl border border-cyan-500/20 px-4 text-xs font-black text-cyan-300">查看 Telegram 發送中心</button>
       </div>`;
