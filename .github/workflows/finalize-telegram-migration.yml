@@ -1,0 +1,60 @@
+name: Finalize Telegram migration
+
+on:
+  push:
+    paths:
+      - '.github/workflows/finalize-telegram-migration.yml'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          fetch-depth: 0
+
+      - name: Finalize consolidated sources and backend
+        run: python3 scripts/finalize_migration.py
+
+      - name: Verify EmailJS secrets are gone
+        run: |
+          ! grep -R "XggJY7iHQcZYYhNY7\|service_1ou10mi\|cdn.jsdelivr.net/npm/@emailjs" \
+            index.html portal_sr_x892.html app.js admin.js
+
+      - name: Validate JavaScript syntax
+        run: |
+          set -e
+          node --check sr_backend_config.js
+          node --check sr_auth_migration.js
+          node --check sr_admin_auth.js
+          node --check sr_telegram_platform.js
+          node --check sr_telegram_admin.js
+          node --check sr_emailjs_telegram_bridge.js
+          node --check portal_shell.js
+          cp app_bootstrap.js /tmp/app_bootstrap.mjs
+          cp admin_bootstrap.js /tmp/admin_bootstrap.mjs
+          cp telegram/cloudflare-worker.js /tmp/cloudflare-worker.mjs
+          node --check /tmp/app_bootstrap.mjs
+          node --check /tmp/admin_bootstrap.mjs
+          node --check /tmp/cloudflare-worker.mjs
+
+      - name: Commit finalized sources
+        shell: bash
+        run: |
+          if git diff --quiet -- app.js admin.js telegram/cloudflare-worker.js; then
+            echo "No source finalization changes required."
+            exit 0
+          fi
+          BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+          git config user.name "SecretRoom Migration Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add app.js admin.js telegram/cloudflare-worker.js
+          git commit -m "Finalize secure auth and Telegram migration"
+          git push origin "HEAD:${BRANCH}"

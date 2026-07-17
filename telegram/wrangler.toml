@@ -1,0 +1,19 @@
+name = "secretroom-telegram-webhook"
+main = "cloudflare-worker.js"
+compatibility_date = "2026-07-17"
+workers_dev = true
+
+[triggers]
+crons = ["*/5 * * * *"]
+
+[vars]
+FIREBASE_PROJECT_ID = "secretroom-ef728"
+SECRETROOM_URL = "https://5j1u35k6.github.io/SecretRoom/"
+BOT_USERNAME = "SecretRoomtwBot"
+ALLOWED_ORIGINS = "https://5j1u35k6.github.io"
+
+# Configure in Cloudflare instead of committing values:
+# TELEGRAM_BOT_TOKEN
+# TELEGRAM_WEBHOOK_SECRET
+# FIREBASE_WEB_API_KEY
+# FIREBASE_SERVICE_ACCOUNT_JSON

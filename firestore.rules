@@ -1,0 +1,157 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isMember() {
+      return signedIn()
+        && request.auth.token.secretroomMember == true
+        && request.auth.token.secretroomUserId is string
+        && request.auth.token.passwordChangeRequired != true;
+    }
+
+    function memberId() {
+      return request.auth.token.secretroomUserId;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && request.auth.token.secretroomAdmin == true
+        && request.auth.token.secretroomAdminId is string;
+    }
+
+    function isOwner(userId) {
+      return isMember() && memberId() == userId;
+    }
+
+    function protectedMemberFieldsChanged() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasAny([
+        'password',
+        'credentialMigrated',
+        'credentialMigratedAtMs',
+        'telegramBinding',
+        'telegramBound',
+        'telegramUserId',
+        'telegramInfo',
+        'status',
+        'role',
+        'isAdmin',
+        'canAdmin',
+        'adminApproved',
+        'mustChangePassword',
+        'forcePasswordChange',
+        'tempPasswordActive',
+        'passwordChangeRequired',
+        'tempPasswordIssuedAtMs',
+        'tempPasswordExpiresAtMs',
+        'temporaryCredentialExpiresAtMs',
+        'lastPasswordChangeMethod'
+      ]);
+    }
+
+    match /secretg_apps/{appId} {
+      allow read: if isMember() || isAdmin();
+      allow write: if false;
+
+      match /applications/{userId} {
+        /* Run the credential migration before deploying these rules. */
+        allow read: if isMember() || isAdmin();
+        allow create, delete: if isAdmin();
+        allow update: if isAdmin()
+          || (isOwner(userId)
+              && !protectedMemberFieldsChanged()
+              && !('password' in request.resource.data));
+      }
+
+      match /public_profiles/{userId} {
+        allow read: if isMember() || isAdmin();
+        allow write: if isAdmin()
+          || (isOwner(userId) && request.resource.data.userId == userId);
+      }
+
+      match /admins/{adminId} {
+        allow read, write: if isAdmin();
+      }
+
+      match /credentials/{userId} {
+        allow read, write: if false;
+      }
+
+      match /admin_credentials/{adminId} {
+        allow read, write: if false;
+      }
+
+      match /telegram_binding_tokens/{tokenId} {
+        allow read, write: if false;
+      }
+
+      match /telegram_bindings/{telegramUserId} {
+        allow read, write: if false;
+      }
+
+      match /telegram_updates/{updateId} {
+        allow read, write: if false;
+      }
+
+      match /telegram_notification_queue/{messageId} {
+        allow read, write: if false;
+      }
+
+      match /telegram_delivery_logs/{logId} {
+        allow read: if isAdmin();
+        allow write: if false;
+      }
+
+      match /auth_rate_limits/{rateId} {
+        allow read, write: if false;
+      }
+
+      match /password_reset_requests/{requestId} {
+        allow read: if isAdmin()
+          || (isMember() && resource.data.userId == memberId());
+        allow write: if false;
+      }
+
+      match /account_requests/{requestId} {
+        allow read: if isAdmin()
+          || (isMember() && resource.data.userId == memberId());
+        allow create: if isMember()
+          && request.resource.data.userId == memberId();
+        allow update, delete: if isAdmin();
+      }
+
+      match /notifications/{notificationId} {
+        allow read: if isMember() || isAdmin();
+        allow write: if isAdmin();
+      }
+
+      match /notification_reads/{userId} {
+        allow read, write: if isAdmin() || isOwner(userId);
+      }
+
+      match /posts/{postId} {
+        allow read, write: if isMember() || isAdmin();
+      }
+
+      match /visitors/{visitorId} {
+        allow read, write: if isMember() || isAdmin();
+      }
+
+      match /admin_logs/{logId} {
+        allow read, write: if isAdmin();
+      }
+
+      match /email_failures/{failureId} {
+        allow read: if isAdmin();
+        allow write: if false;
+      }
+
+      match /{document=**} {
+        allow read, write: if isAdmin();
+      }
+    }
+  }
+}
