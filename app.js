@@ -101,7 +101,7 @@ window.SecretRoomBackendConfig = Object.freeze({
     widget?.classList.toggle('sr-bgm-muted', isMuted);
     widget?.classList.toggle('bgm-active', !isMuted);
     const icon = document.getElementById('bgm-icon');
-    if (icon) icon.className = `fa-solid ${isMuted ? 'fa-volume-xmark' : 'fa-play'} text-[9px]`;
+    if (icon) icon.className = `fa-solid ${isMuted ? 'fa-volume-xmark' : 'fa-play'} text-sm`;
     const status = document.getElementById('bgm-status-text');
     if (status) status.textContent = isMuted ? '音樂已關閉' : '背景音樂播放中';
     const toggle = document.getElementById('bgm-toggle-btn');
@@ -7073,6 +7073,12 @@ schedule();
       return;
     }
 
+    const bound = hasActiveBinding(snapshot);
+    if (bound && isHome) {
+      existing?.remove();
+      return;
+    }
+
     const host = isHome
       ? (document.getElementById('dashboard-tab-content') || document.querySelector('#app .overflow-y-auto'))
       : (document.querySelector('#app .overflow-y-auto') || document.querySelector('#app > div'));
@@ -7083,11 +7089,6 @@ schedule();
       card.id = 'sr-telegram-member-card';
       card.className = 'sr-tg-member-card relative';
       host.prepend(card);
-    }
-    const bound = hasActiveBinding(snapshot);
-    if (bound && isHome) {
-      card.remove();
-      return;
     }
     const serviceState = telegramServiceState(snapshot);
     const identityVerified = serviceState === 'identity_verified';
@@ -7816,7 +7817,8 @@ schedule();
 
   function closeDialog(dialog) {
     const close = dialog.querySelector('#confirm-modal-cancel,[data-modal-close],[aria-label*="關閉"],button[id*="close"],button[onclick*="close"]');
-    close?.click();
+    if (close) close.click();
+    else dialog.click();
     requestAnimationFrame(() => previousFocus?.focus?.({ preventScroll: true }));
   }
 
