@@ -1,0 +1,121 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    /*
+     * SecretRoom 目前仍使用匿名 Firebase Auth 搭配平台自訂帳密。
+     * 這版先移除「任何未登入訪客皆可讀寫」的 allow true，
+     * 並將後端專用紀錄改為唯讀或完全禁止瀏覽器寫入。
+     *
+     * 注意：匿名 Auth 尚不能證明平台帳號歸屬。
+     * 下一輪若要做到真正逐帳號隔離，必須把平台登入遷移到
+     * Firebase Auth / Custom Token，再以 request.auth.uid 綁定會員文件。
+     */
+
+    match /secretg_apps/{appId}/applications/{accountId} {
+      allow read, create, update, delete: if signedIn();
+    }
+
+    match /secretg_apps/{appId}/posts/{postId} {
+      allow read, create, update, delete: if signedIn();
+    }
+
+    match /secretg_apps/{appId}/notifications/{notificationId} {
+      allow read, create, update, delete: if signedIn();
+    }
+
+    match /secretg_apps/{appId}/notification_reads/{accountId} {
+      allow read, create, update: if signedIn();
+      allow delete: if false;
+    }
+
+    match /secretg_apps/{appId}/admins/{adminId} {
+      allow read, create, update, delete: if signedIn();
+    }
+
+    match /secretg_apps/{appId}/admin_logs/{logId} {
+      allow read, create: if signedIn();
+      allow update, delete: if false;
+    }
+
+    match /secretg_apps/{appId}/admin_case_assignments/{caseId} {
+      allow read, create, update: if signedIn();
+      allow delete: if false;
+    }
+
+    match /secretg_apps/{appId}/admin_case_notes/{noteId} {
+      allow read, create: if signedIn();
+      allow update, delete: if false;
+    }
+
+    match /secretg_apps/{appId}/admin_case_reviews/{reviewId} {
+      allow read, create, update: if signedIn();
+      allow delete: if false;
+    }
+
+    match /secretg_apps/{appId}/password_reset_requests/{requestId} {
+      allow read, create, update: if signedIn();
+      allow delete: if false;
+    }
+
+    match /secretg_apps/{appId}/account_requests/{requestId} {
+      allow read, create, update: if signedIn();
+      allow delete: if false;
+    }
+
+    match /secretg_apps/{appId}/telegram_link_tokens/{tokenId} {
+      allow read, create, update: if signedIn();
+      allow delete: if false;
+    }
+
+    match /secretg_apps/{appId}/telegram_bindings/{accountId} {
+      allow read, create, update: if signedIn();
+      allow delete: if false;
+    }
+
+    match /secretg_apps/{appId}/telegram_users/{telegramUserId} {
+      allow read, create, update: if signedIn();
+      allow delete: if false;
+    }
+
+    match /secretg_apps/{appId}/telegram_preferences/{accountId} {
+      allow read, create, update: if signedIn();
+      allow delete: if false;
+    }
+
+    match /secretg_apps/{appId}/telegram_outbox/{outboxId} {
+      allow read, create, update: if signedIn();
+      allow delete: if false;
+    }
+
+    match /secretg_apps/{appId}/telegram_admin_outbox/{outboxId} {
+      allow read, create, update: if signedIn();
+      allow delete: if false;
+    }
+
+    match /secretg_apps/{appId}/telegram_delivery_logs/{logId} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    match /secretg_apps/{appId}/scheduled_notifications/{scheduleId} {
+      allow read, create, update: if signedIn();
+      allow delete: if false;
+    }
+
+    match /secretg_apps/{appId}/email_failures/{failureId} {
+      /* 舊資料只保留讀取，停止新增 Email 失敗紀錄。 */
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    match /secretg_apps/{appId}/{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
