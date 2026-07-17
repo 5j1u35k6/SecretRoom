@@ -1,0 +1,79 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    /*
+     * 既有平台仍使用瀏覽器端匿名登入與舊資料模型。
+     * 第一輪遷移先維持既有集合相容性，但把 Telegram、Token、密碼救援、
+     * 發送佇列與稽核紀錄全部改為後端專用。
+     * Cloudflare Worker 使用 Google Service Account，會略過 Rules。
+     */
+    match /secretg_apps/{appId}/applications/{memberId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn();
+      allow delete: if false;
+    }
+
+    match /secretg_apps/{appId}/posts/{document=**} {
+      allow read, write: if signedIn();
+    }
+
+    match /secretg_apps/{appId}/notifications/{document=**} {
+      allow read: if signedIn();
+      allow write: if signedIn();
+    }
+
+    match /secretg_apps/{appId}/notification_reads/{document=**} {
+      allow read, write: if signedIn();
+    }
+
+    /* 管理員名單不允許一般前台新增或改寫。 */
+    match /secretg_apps/{appId}/admins/{adminId} {
+      allow read: if signedIn();
+      allow write: if false;
+    }
+
+    /* 以下敏感集合只能由 Cloudflare Service Account／後端處理。 */
+    match /secretg_apps/{appId}/telegram_binding_tokens/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /secretg_apps/{appId}/password_reset_requests/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /secretg_apps/{appId}/telegram_notification_queue/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /secretg_apps/{appId}/telegram_delivery_logs/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /secretg_apps/{appId}/telegram_security_logs/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /secretg_apps/{appId}/admin_logs/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /secretg_apps/{appId}/email_failures/{document=**} {
+      allow read, write: if false;
+    }
+
+    match /secretg_apps/{appId}/account_requests/{document=**} {
+      allow read, write: if signedIn();
+    }
+
+    /* 未明確列出的資料一律拒絕。 */
+    match /secretg_apps/{appId}/{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
