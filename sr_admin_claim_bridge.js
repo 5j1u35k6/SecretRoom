@@ -1,3 +1,4 @@
+/* SecretRoom Firebase admin claim bridge. */
 const APP_ID = 'secretg-production-node-tw';
 
 async function verify(adminId) {
@@ -13,18 +14,25 @@ async function verify(adminId) {
   const user = authMod.getAuth(app).currentUser;
   if (!user) return null;
 
-  const token = await authMod.getIdTokenResult(user, true);
-  if (token.claims.secretroomAdmin !== true) return null;
-  if (String(token.claims.secretroomAdminId || '') !== String(adminId || '')) return null;
+  const tokenResult = await authMod.getIdTokenResult(user, true);
+  if (tokenResult.claims.secretroomAdmin !== true) return null;
+  if (String(tokenResult.claims.secretroomAdminId || '') !== String(adminId || '')) return null;
 
+  const db = firestoreMod.getFirestore(app);
   const snapshot = await firestoreMod.getDoc(
-    firestoreMod.doc(firestoreMod.getFirestore(app), 'secretg_apps', APP_ID, 'admins', adminId)
+    firestoreMod.doc(db, 'secretg_apps', APP_ID, 'admins', adminId)
   );
   if (!snapshot.exists()) return null;
 
   const data = snapshot.data();
   if (data.enabled === false) return null;
-  const allowed = data.role === 'admin' || data.isAdmin === true || data.canAdmin === true || data.adminApproved === true;
+
+  const allowed =
+    data.role === 'admin' ||
+    data.isAdmin === true ||
+    data.canAdmin === true ||
+    data.adminApproved === true;
+
   return allowed ? data : null;
 }
 
