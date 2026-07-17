@@ -129,6 +129,53 @@ async function repairTelegramWebhook(identity, env, url) {
   source = source.replace(helperMarker, helpers + helperMarker);
 }
 
+if (!source.includes('decodeVerifiedIdTokenClaims(idToken)')) {
+  const originalVerifier = `async function verifyFirebaseIdToken(request, env) {
+  const authorization = request.headers.get('Authorization') || '';
+  if (!authorization.startsWith('Bearer ')) throw httpError(401, '請重新登入');
+  const idToken = authorization.slice(7).trim();
+  const response = await fetch(\`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=\${encodeURIComponent(env.FIREBASE_WEB_API_KEY || '')}\`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken }) });
+  const data = await response.json();
+  if (!response.ok || !data.users?.[0]) throw httpError(401, '登入驗證已失效');
+  const user = data.users[0];
+  let claims = {};
+  try { claims = JSON.parse(user.customAttributes || '{}'); } catch {}
+  return { uid: user.localId, claims, idToken };
+}`;
+
+  const replacementVerifier = `function decodeVerifiedIdTokenClaims(idToken) {
+  const payload = String(idToken || '').split('.')[1] || '';
+  if (!payload) throw httpError(401, '登入驗證已失效');
+  const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = normalized + '='.repeat((4 - normalized.length % 4) % 4);
+  try {
+    const binary = atob(padded);
+    const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
+    return JSON.parse(new TextDecoder().decode(bytes));
+  } catch {
+    throw httpError(401, '登入驗證已失效');
+  }
+}
+
+async function verifyFirebaseIdToken(request, env) {
+  const authorization = request.headers.get('Authorization') || '';
+  if (!authorization.startsWith('Bearer ')) throw httpError(401, '請重新登入');
+  const idToken = authorization.slice(7).trim();
+  const response = await fetch(\`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=\${encodeURIComponent(env.FIREBASE_WEB_API_KEY || '')}\`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken }) });
+  const data = await response.json();
+  if (!response.ok || !data.users?.[0]) throw httpError(401, '登入驗證已失效');
+  const user = data.users[0];
+  let persistentClaims = {};
+  try { persistentClaims = JSON.parse(user.customAttributes || '{}'); } catch {}
+  const tokenClaims = decodeVerifiedIdTokenClaims(idToken);
+  const claims = { ...persistentClaims, ...tokenClaims };
+  return { uid: tokenClaims.user_id || tokenClaims.sub || user.localId, claims, idToken };
+}`;
+
+  if (!source.includes(originalVerifier)) throw new Error('Firebase ID token verifier was not found');
+  source = source.replace(originalVerifier, replacementVerifier);
+}
+
 if (!source.includes('claimTelegramUpdate(update, env)')) {
   const handler = `async function handleTelegramUpdate(update, env) {
   if (update.callback_query)`;
