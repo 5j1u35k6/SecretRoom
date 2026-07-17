@@ -1,7 +1,10 @@
 name = "secretroom-telegram-webhook"
-main = "cloudflare-worker.js"
+main = ".generated-worker.js"
 compatibility_date = "2026-07-17"
 workers_dev = true
+
+[build]
+command = "node build-worker.mjs"
 
 [triggers]
 crons = ["*/5 * * * *"]
