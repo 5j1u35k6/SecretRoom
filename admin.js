@@ -1,3 +1,52 @@
+/* SecretRoom consolidated admin runtime. */
+;(() => {
+/* SecretRoom backend runtime configuration. */
+window.SecretRoomBackendConfig = Object.freeze({
+  backendUrl: ['https://secretroom-telegram-webhook', 'max19450', 'workers.dev'].join('.'),
+  strictAuth: false
+});
+})();
+/* EmailJS compatibility bridge.
+ * The external EmailJS SDK is not loaded. Existing admin notification calls
+ * are translated into authenticated Telegram backend deliveries.
+ */
+;(() => {
+  async function currentIdToken() {
+    const [appMod, authMod] = await Promise.all([
+      import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js'),
+      import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js')
+    ]);
+    const app = appMod.getApps()[0];
+    if (!app) throw new Error('Firebase 尚未初始化');
+    const user = authMod.getAuth(app).currentUser;
+    if (!user || user.isAnonymous) throw new Error('管理員尚未完成安全登入');
+    return user.getIdToken();
+  }
+
+  async function send(_serviceId, _templateId, parameters = {}) {
+    const backend = window.SRSecureAdminAuth?.backendUrl?.() ||
+      String(window.SecretRoomBackendConfig?.backendUrl || localStorage.getItem('sr_backend_url') || '').replace(/\/+$/, '');
+    if (!backend) throw new Error('尚未設定 SecretRoom 後端網址');
+    const token = await currentIdToken();
+    const response = await fetch(`${backend}/api/admin/telegram-notify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        userId: parameters.member_id || '',
+        toEmail: parameters.to_email || '',
+        category: /安全|密碼|帳號/.test(`${parameters.email_type || ''} ${parameters.status_text || ''}`) ? 'security' : 'review',
+        title: parameters.status_text || 'SecretRoom 通知',
+        message: parameters.message || '',
+        required: /安全|密碼|帳號/.test(`${parameters.email_type || ''} ${parameters.status_text || ''}`)
+      })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || data.ok === false) throw new Error(data.error || `Telegram 通知失敗：${response.status}`);
+    return { status: 200, text: data.sent ? 'telegram_sent' : 'telegram_queued' };
+  }
+
+  window.emailjs = Object.freeze({ init() {}, send });
+})();
 /* SecretRoom admin consolidated runtime.
  * Generated from the previously separated runtime modules in their original execution order.
  * Admin login is fail-closed when the explicit admins collection cannot be verified.
@@ -43,21 +92,16 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
         };
 
         const emailjsConfig = {
-    publicKey: "XggJY7iHQcZYYhNY7",
-    serviceId: "service_1ou10mi",
-    defaultTemplateId: "template_sr_notice",
-    templates: {
-        registrationApproved: "template_sr_notice",
-        registrationRejected: "template_sr_notice",
-        specApproved: "template_sr_notice",
-        specRejected: "template_sr_notice",
-        avatarApproved: "template_sr_notice",
-        avatarRejected: "template_sr_notice",
-        reportAccepted: "template_sr_notice",
-        reportDismissed: "template_sr_notice",
-        passwordReset: "template_sr_security",
-        accountRequest: "template_sr_security"
-    }
+  publicKey: "telegram-bridge",
+  serviceId: "telegram-backend",
+  defaultTemplateId: "telegram-notification",
+  templates: {
+    registrationApproved: "telegram-notification", registrationRejected: "telegram-notification",
+    specApproved: "telegram-notification", specRejected: "telegram-notification",
+    avatarApproved: "telegram-notification", avatarRejected: "telegram-notification",
+    reportAccepted: "telegram-notification", reportDismissed: "telegram-notification",
+    passwordReset: "telegram-security", accountRequest: "telegram-security"
+  }
 };
 
         async function loadFirebaseSDKs() {
@@ -149,6 +193,12 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
         }
 
         async function verifyAdminSession(adminId, password) {
+            const secureAdmin = await window.SRAdminClaimBridge?.verify(adminId);
+            if (secureAdmin) {
+                currentAdminId = adminId;
+                currentAdminSource = 'firebase-custom-token';
+                return secureAdmin;
+            }
             const adminRef = doc(db, 'secretg_apps', appId, 'admins', adminId);
             const adminSnap = await getDoc(adminRef);
             if (!adminSnap.exists()) throw new Error('查無此管理員帳號。請在 admins/' + adminId + ' 建立並啟用管理員文件。');
@@ -364,7 +414,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                 let avatarPendingCount = 0;
 
                 querySnapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
+                    const data = { id: docSnap.id, userId: docSnap.id, ...docSnap.data() };
                     allApplications.push({ id: docSnap.id, ...data });
 
                     if (data.status === 'pending') pendingCount++;
@@ -392,7 +442,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                 let reportedCommentCount = 0;
 
                 querySnapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
+                    const data = { id: docSnap.id, userId: docSnap.id, ...docSnap.data() };
                     allPosts.push({ id: docSnap.id, ...data });
                     if (data.reportCount && data.reportCount > 0) {
                         reportedCount++;
@@ -980,7 +1030,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                     return;
                 }
                 
-                const userData = docSnap.data();
+                const userData = { id: docSnap.id, userId: docSnap.id, ...docSnap.data() };
                 await updateDoc(docRef, { status: status, reviewedAt: serverTimestamp(), reviewedAtMs: Date.now(), reviewedBy: currentAdminId });
                 await writeAdminLog('update_status', userId, { status });
                 showToast('已將狀態更新為 ' + (status === 'approved' ? '已核准' : '已拒絕'), 'success');
@@ -1016,7 +1066,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                 const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
-                    const data = docSnap.data();
+                    const data = { id: docSnap.id, userId: docSnap.id, ...docSnap.data() };
                     await updateDoc(docRef, {
                         isSpecElite: true,
                         specEliteStatus: 'approved',
@@ -1041,7 +1091,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                 const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
-                    const data = docSnap.data();
+                    const data = { id: docSnap.id, userId: docSnap.id, ...docSnap.data() };
                     await updateDoc(docRef, {
                         specEliteStatus: 'rejected',
                         specImage: '',
@@ -1110,7 +1160,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                     return;
                 }
                 
-                const userData = docSnap.data();
+                const userData = { id: docSnap.id, userId: docSnap.id, ...docSnap.data() };
                 await updateDoc(docRef, { 
                     status: status,
                     rejectionReason: reason,
@@ -1345,7 +1395,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                 const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
-                    const data = docSnap.data();
+                    const data = { id: docSnap.id, userId: docSnap.id, ...docSnap.data() };
                     const newAvatar = data.avatarPending;
                     await updateDoc(docRef, {
                         avatar: newAvatar,
@@ -1373,7 +1423,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
                 const docRef = doc(db, 'secretg_apps', appId, 'applications', userId);
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
-                    const data = docSnap.data();
+                    const data = { id: docSnap.id, userId: docSnap.id, ...docSnap.data() };
                     await updateDoc(docRef, {
                         avatarPending: '',
                         avatarStatus: 'rejected',
@@ -1661,7 +1711,7 @@ let initializeApp, getFirestore, doc, collection, onSnapshot, updateDoc, getDoc,
 ;(() => {
 // SecretRoom admin helpers and phase-one dashboard UX improvements.
 const AID = 'secretg-production-node-tw';
-const MAIL = { publicKey: 'XggJY7iHQcZYYhNY7', serviceId: 'service_1ou10mi', templateId: 'template_sr_security' };
+const MAIL = { publicKey: 'telegram-bridge', serviceId: 'telegram-backend', templateId: 'telegram-security' };
 let DB, FS;
 async function T() {
   if (DB && FS) return { db: DB, fs: FS };
@@ -2622,4 +2672,280 @@ window.rejectPasswordResetRequest = async function rejectPasswordResetRequest(id
   async function start(){if(started||document.getElementById('admin-main')?.classList.contains('hidden'))return;started=true;const{db,fs}=await T();fs.onSnapshot(fs.collection(db,'secretg_apps',A,'telegram_outbox'),s=>{items=[];s.forEach(x=>items.push({id:x.id,...(x.data()||{})}));render();},e=>console.warn('Telegram outbox listener failed',e));}
   function apply(){if(!document.getElementById('admin-main')?.classList.contains('hidden'))start();if(started)render();}
   window.SRTelegramDeliveryConsole=Object.freeze({retry,retryAll,refresh:render});window.SRAdminRuntime?.register(apply);apply();
+})();
+/* ===== Admin Firebase claim bridge ===== */
+;(() => {
+/* SecretRoom Firebase admin claim bridge. */
+const APP_ID = 'secretg-production-node-tw';
+
+async function verify(adminId) {
+  const [appMod, authMod, firestoreMod] = await Promise.all([
+    import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js'),
+    import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js'),
+    import('https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js')
+  ]);
+
+  const app = appMod.getApps()[0];
+  if (!app) return null;
+
+  const user = authMod.getAuth(app).currentUser;
+  if (!user) return null;
+
+  const tokenResult = await authMod.getIdTokenResult(user, true);
+  if (tokenResult.claims.secretroomAdmin !== true) return null;
+  if (String(tokenResult.claims.secretroomAdminId || '') !== String(adminId || '')) return null;
+
+  const db = firestoreMod.getFirestore(app);
+  const snapshot = await firestoreMod.getDoc(
+    firestoreMod.doc(db, 'secretg_apps', APP_ID, 'admins', adminId)
+  );
+  if (!snapshot.exists()) return null;
+
+  const data = snapshot.data();
+  if (data.enabled === false) return null;
+
+  const allowed =
+    data.role === 'admin' ||
+    data.isAdmin === true ||
+    data.canAdmin === true ||
+    data.adminApproved === true;
+
+  return allowed ? data : null;
+}
+
+window.SRAdminClaimBridge = Object.freeze({ verify });
+})();
+
+/* ===== Secure admin authentication ===== */
+;(() => {
+/* SecretRoom Firebase custom authentication for the admin portal. */
+;(() => {
+  let sdkPromise = null;
+  const capturedHandlers = new WeakMap();
+
+  function backendUrl() {
+    const value = String(
+      window.SecretRoomBackendConfig?.backendUrl ||
+      localStorage.getItem('sr_backend_url') ||
+      ''
+    ).replace(/\/+$/, '');
+    if (!value) throw new Error('尚未在 sr_backend_config.js 設定 Cloudflare Worker URL');
+    return value;
+  }
+
+  async function sdk() {
+    if (sdkPromise) return sdkPromise;
+    sdkPromise = Promise.all([
+      import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js'),
+      import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js')
+    ]).then(([appMod, authMod]) => {
+      const app = appMod.getApps()[0];
+      if (!app) throw new Error('Firebase 尚未初始化');
+      return { auth: authMod.getAuth(app), signInWithCustomToken: authMod.signInWithCustomToken };
+    });
+    return sdkPromise;
+  }
+
+  async function authenticate(adminId, password) {
+    const response = await fetch(`${backendUrl()}/api/auth/admin-login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminId, password }),
+      cache: 'no-store'
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || data.ok === false) throw new Error(data.error || `管理員驗證失敗：${response.status}`);
+    const { auth, signInWithCustomToken } = await sdk();
+    await signInWithCustomToken(auth, data.customToken);
+    return data;
+  }
+
+  function showError(message) {
+    const box = document.getElementById('admin-login-error');
+    if (box) {
+      box.textContent = message;
+      box.classList.remove('hidden');
+    }
+    window.showToast?.(message, 'error');
+  }
+
+  function install() {
+    const button = document.getElementById('admin-login-submit');
+    if (!button || button.dataset.srSecureAdmin === '1' || typeof button.onclick !== 'function') return;
+    button.dataset.srSecureAdmin = '1';
+    capturedHandlers.set(button, button.onclick);
+
+    document.addEventListener('click', async event => {
+      const hit = event.target?.closest?.('#admin-login-submit');
+      if (hit !== button) return;
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+
+      const adminId = document.getElementById('admin-login-id')?.value?.trim() || '';
+      const password = document.getElementById('admin-login-password')?.value || '';
+      if (!adminId || !password) return showError('請輸入管理員帳號與密碼');
+
+      const originalText = button.textContent;
+      button.disabled = true;
+      button.textContent = '安全驗證中…';
+      try {
+        await authenticate(adminId, password);
+        const original = capturedHandlers.get(button);
+        await original?.call(button, event);
+      } catch (error) {
+        console.error('Secure admin login failed', error);
+        const configured = String(window.SecretRoomBackendConfig?.backendUrl || localStorage.getItem('sr_backend_url') || '').trim();
+        if (!configured && window.SecretRoomBackendConfig?.strictAuth !== true) {
+          const original = capturedHandlers.get(button);
+          await original?.call(button, event);
+        } else {
+          showError(error.message || String(error));
+        }
+      } finally {
+        button.disabled = false;
+        button.textContent = originalText;
+      }
+    }, true);
+  }
+
+  const observer = new MutationObserver(install);
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+  document.addEventListener('DOMContentLoaded', install, { once: true });
+  install();
+
+  window.SRSecureAdminAuth = Object.freeze({ backendUrl, authenticate });
+})();
+})();
+
+/* ===== Telegram admin service ===== */
+;(() => {
+/* SecretRoom Telegram admin integration.
+ * Admin actions continue using the existing UI. Notification deliveries are
+ * routed to the privileged backend and remain separate from platform notices.
+ */
+;(() => {
+  function backendEnabled() {
+    return Boolean(
+      window.SecretRoomBackendConfig?.backendUrl ||
+      localStorage.getItem('sr_backend_url') ||
+      window.SecretRoomBackendConfig?.strictAuth === true
+    );
+  }
+
+  async function idToken() {
+    const [appMod, authMod] = await Promise.all([
+      import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js'),
+      import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js')
+    ]);
+    const app = appMod.getApps()[0];
+    if (!app) throw new Error('Firebase 尚未初始化');
+    const user = authMod.getAuth(app).currentUser;
+    if (!user || user.isAnonymous) throw new Error('請先完成管理員安全登入');
+    return user.getIdToken();
+  }
+
+  function backendUrl() {
+    return window.SRSecureAdminAuth?.backendUrl?.() ||
+      String(window.SecretRoomBackendConfig?.backendUrl || localStorage.getItem('sr_backend_url') || '').replace(/\/+$/, '');
+  }
+
+  async function api(path, body = {}) {
+    if (!backendEnabled()) throw new Error('Telegram 後端尚未啟用');
+    const response = await fetch(`${backendUrl()}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${await idToken()}` },
+      body: JSON.stringify(body),
+      cache: 'no-store'
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || data.ok === false) throw new Error(data.error || `後端錯誤：${response.status}`);
+    return data;
+  }
+
+  async function queueTelegramNotification({ userId, category, title, message, required = false }) {
+    return api('/api/admin/telegram-notify', { userId, category, title, message, required });
+  }
+
+  async function notifyReviewResult(userId, title, message, approved) {
+    return queueTelegramNotification({
+      userId, category: 'review', title,
+      message: `${approved ? '✅' : '⚠️'} ${message}`
+    });
+  }
+
+  async function notifySecurityEvent(userId, title, message) {
+    return queueTelegramNotification({ userId, category: 'security', title, message, required: true });
+  }
+
+  async function processQueue() {
+    const result = await api('/api/admin/process-queue');
+    window.showToast?.(`Telegram Queue 已處理 ${result.processed || 0} 筆`, 'success');
+    return result;
+  }
+
+  async function migrateCredentials(limit = 100) {
+    const result = await api('/api/admin/migrate-credentials', { limit });
+    window.showToast?.(`已遷移 ${result.migrated || 0} 組會員憑證`, 'success');
+    return result;
+  }
+
+  function disableLegacyPasswordReset() {
+    /*
+     * 忘記密碼已改為：平台申請 -> Telegram 被動驗證 -> 自動產生臨時密碼。
+     * 管理員不再輸入、查看或傳送會員臨時密碼。
+     */
+    window.completePasswordResetRequest = async function() {
+      window.showToast?.('此申請由會員在 Telegram 自助完成，管理員不需要設定密碼。', 'info');
+    };
+
+    document.querySelectorAll('button[onclick^="completePasswordResetRequest("]').forEach(button => {
+      button.disabled = true;
+      button.removeAttribute('onclick');
+      button.classList.add('opacity-60', 'cursor-not-allowed');
+      button.textContent = '等待會員 Telegram 確認';
+      button.title = '忘記密碼已改為 Telegram 自助流程';
+    });
+  }
+
+  function installAdminNotice() {
+    /*
+     * Worker 尚未設定時不改動既有正式後台，避免在切換期間停用舊流程。
+     */
+    if (!backendEnabled()) return;
+
+    disableLegacyPasswordReset();
+    const main = document.getElementById('admin-main');
+    if (!main || document.getElementById('sr-telegram-admin-notice')) return;
+    const notice = document.createElement('div');
+    notice.id = 'sr-telegram-admin-notice';
+    notice.className = 'mb-6 rounded-2xl border border-sky-500/20 bg-sky-500/10 p-4 text-xs text-sky-100';
+    notice.innerHTML = `
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div><b>Telegram 外部通知已與平台通知分流</b>
+        <div class="mt-1 text-slate-400">平台公告保留於 notifications；外部通知由 Telegram Queue 發送。忘記密碼由會員在 Telegram 自助完成。</div></div>
+        <div class="flex gap-2">
+          <button id="sr-process-telegram-queue" class="px-3 py-2 rounded-xl border border-sky-400/20 bg-sky-500/10 text-sky-200 font-bold">處理待送通知</button>
+          <button id="sr-migrate-credentials" class="px-3 py-2 rounded-xl border border-amber-400/20 bg-amber-500/10 text-amber-200 font-bold">遷移舊密碼</button>
+        </div>
+      </div>`;
+    main.insertBefore(notice, main.children[1] || null);
+    notice.querySelector('#sr-process-telegram-queue').onclick = () => processQueue().catch(error => window.showToast?.(error.message, 'error'));
+    notice.querySelector('#sr-migrate-credentials').onclick = () => {
+      if (confirm('要將最多 100 組舊明文密碼遷移為 PBKDF2 雜湊並從會員文件移除嗎？')) {
+        migrateCredentials(100).catch(error => window.showToast?.(error.message, 'error'));
+      }
+    };
+  }
+
+  const observer = new MutationObserver(installAdminNotice);
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+  document.addEventListener('DOMContentLoaded', () => setTimeout(installAdminNotice, 1000), { once: true });
+  installAdminNotice();
+
+  window.SRTelegramAdmin = Object.freeze({
+    queueTelegramNotification, notifyReviewResult, notifySecurityEvent,
+    processQueue, migrateCredentials, backendEnabled
+  });
+})();
 })();
