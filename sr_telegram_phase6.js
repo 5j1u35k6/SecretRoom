@@ -16,7 +16,7 @@
 
   const APP_ID = 'secretg-production-node-tw';
   const BOT_USERNAME = 'SecretRoomtwBot';
-  const VERSION = '20260717-telegram-phase6-member-v1';
+  const VERSION = '20260717-telegram-phase6-member-v2';
   const REQUEST_COOLDOWN_MS = 2 * 60 * 1000;
   let toolsPromise = null;
   let queued = false;
@@ -153,10 +153,10 @@
 
   function openPasswordResetRequestModal() {
     const body = `
-      <p class="text-sm leading-relaxed text-slate-400">先在這裡建立申請，再到 Telegram Bot 的「忘記密碼」完成驗證。Bot 只有在帳號已綁定時，才會產生 10 分鐘臨時密碼。</p>
+      <p class="text-sm leading-relaxed text-slate-400">先在這裡建立申請，再到 Telegram Bot 的「忘記密碼」完成驗證。Bot 只有在帳號已綁定時，才會建立 10 分鐘一次性重設連結。</p>
       <label class="mt-5 block text-xs font-black text-slate-300">會員帳號</label>
       <input id="sr-reset-account" class="mt-2 w-full min-h-[48px] rounded-xl border border-slate-700 bg-slate-950 px-3 text-sm text-white" placeholder="例如：your_account">
-      <div class="mt-3 rounded-xl border border-amber-500/15 bg-amber-500/5 p-3 text-xs leading-relaxed text-amber-200">不需要輸入 Email，也不會在平台顯示臨時密碼。未綁定 Telegram 的舊會員仍需管理員例外處理。</div>
+      <div class="mt-3 rounded-xl border border-amber-500/15 bg-amber-500/5 p-3 text-xs leading-relaxed text-amber-200">不需要輸入 Email；新密碼只會由你在一次性重設頁設定。未綁定 Telegram 的舊會員仍需管理員例外處理。</div>
       <button id="sr-reset-submit" class="mt-5 w-full min-h-[48px] rounded-xl bg-[#229ED9] text-sm font-black text-white">送出申請並開啟 Bot</button>`;
 
     const modal = modalShell('sr-telegram-password-reset-modal', '忘記密碼', body);
@@ -180,7 +180,7 @@
 
   function formatStatus(value) {
     return ({
-      pending: '等待處理', processing: '處理中', completed: '已完成', approved: '已核准', rejected: '已拒絕', invalid: '無效'
+      pending: '等待處理', processing: '處理中', telegram_verified: 'Telegram 驗證完成，等待設定新密碼', completed: '已完成', approved: '已核准', rejected: '已拒絕', invalid: '無效'
     })[String(value || '').toLowerCase()] || String(value || '未知');
   }
 
