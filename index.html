@@ -7,6 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="application-name" content="SecretRoom">
+<link rel="canonical" href="https://5j1u35k6.github.io/SecretRoom/">
 <link rel="shortcut icon" href="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" type="image/jpeg">
 <link rel="icon" href="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" type="image/jpeg">
 <link rel="apple-touch-icon" href="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2">
@@ -16,7 +17,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;650;750;800&family=Cinzel:wght@600;700;900&family=Noto+Serif+TC:wght@400;600;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="style.css?v=20260716-telegram-phase2-v1">
-<script src="sr_backend_config.js?v=20260717-member-auth-v7"></script>
+<script src="sr_backend_config.js?v=20260717-member-auth-v8"></script>
 </head>
 <body class="min-h-screen w-full flex flex-col p-0 m-0 overflow-hidden club-groove-bg">
 <div id="app" class="w-full h-[100dvh] md:h-screen overflow-hidden relative flex flex-col bg-transparent transition-all duration-300">
@@ -57,6 +58,49 @@
     </div>
   </div>
 </div>
-<script type="module" src="app_bootstrap.js?v=20260717-member-auth-v7"></script>
+<script>
+(async () => {
+  const fallbackBuild = '20260717-member-auth-v8';
+  let build = fallbackBuild;
+
+  try {
+    const response = await fetch(`site-version.json?t=${Date.now()}`, {
+      cache: 'no-store'
+    });
+    if (response.ok) {
+      const data = await response.json();
+      if (/^[A-Za-z0-9._-]+$/.test(String(data.build || ''))) {
+        build = String(data.build);
+      }
+    }
+  } catch (error) {
+    console.warn('SecretRoom version check failed', error);
+  }
+
+  const previousBuild = localStorage.getItem('sr_site_build') || '';
+  if (previousBuild && previousBuild !== build && 'caches' in window) {
+    try {
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map(name => caches.delete(name)));
+    } catch (error) {
+      console.warn('SecretRoom cache cleanup skipped', error);
+    }
+  }
+
+  localStorage.setItem('sr_site_build', build);
+  window.__SR_BUILD__ = build;
+
+  const script = document.createElement('script');
+  script.type = 'module';
+  script.src = `app_bootstrap.js?v=${encodeURIComponent(build)}`;
+  script.onerror = () => {
+    const loading = document.getElementById('loading-screen');
+    if (loading) {
+      loading.innerHTML = '<p class="text-rose-300 text-sm font-bold">網站更新載入失敗，請重新整理頁面。</p>';
+    }
+  };
+  document.body.appendChild(script);
+})();
+</script>
 </body>
 </html>
