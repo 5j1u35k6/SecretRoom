@@ -103,7 +103,14 @@ window.SecretRoomBackendConfig = Object.freeze({
     const icon = document.getElementById('bgm-icon');
     if (icon) icon.className = `fa-solid ${isMuted ? 'fa-volume-xmark' : 'fa-play'} text-[9px]`;
     const status = document.getElementById('bgm-status-text');
-    if (status) status.textContent = isMuted ? '音樂已關閉' : '背景音樂';
+    if (status) status.textContent = isMuted ? '音樂已關閉' : '背景音樂播放中';
+    const toggle = document.getElementById('bgm-toggle-btn');
+    if (toggle) {
+      const label = isMuted ? '播放背景音樂' : '關閉背景音樂';
+      toggle.setAttribute('aria-label', label);
+      toggle.setAttribute('aria-pressed', String(!isMuted));
+      toggle.title = label;
+    }
     const bars = document.getElementById('bgm-bars');
     bars?.classList.toggle('bgm-active', !isMuted);
     const mobileText = document.getElementById('mobile-menu-bgm-text');
@@ -6870,6 +6877,10 @@ schedule();
       document.body.appendChild(modal);
     }
     const bound = hasActiveBinding(snapshot);
+    if (bound && isHome) {
+      card.remove();
+      return;
+    }
     const serviceState = telegramServiceState(snapshot);
     const identityVerified = serviceState === 'identity_verified';
     const preferences = { ...DEFAULT_PREFERENCES, ...(snapshot?.preferences || {}) };
@@ -7758,4 +7769,90 @@ schedule();
 
   installAuthObserver().catch(error => console.warn(error));
 })();
+})();
+
+
+/* ===== Interface accessibility follow-up ===== */
+;(() => {
+  if (window.__SR_DIALOG_A11Y__) return;
+  window.__SR_DIALOG_A11Y__ = true;
+  let previousFocus = null;
+
+  const dialogSelector = '#custom-confirm-modal,[id$="-modal"],[id*="-modal-"]';
+  const focusableSelector = 'button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+  const visible = element => {
+    if (!element || element.hidden || element.classList.contains('hidden')) return false;
+    const style = getComputedStyle(element);
+    return style.display !== 'none' && style.visibility !== 'hidden';
+  };
+
+  function prepare(dialog) {
+    if (!(dialog instanceof HTMLElement)) return;
+    dialog.setAttribute('role', dialog.getAttribute('role') || 'dialog');
+    dialog.setAttribute('aria-modal', 'true');
+    if (!dialog.hasAttribute('tabindex')) dialog.tabIndex = -1;
+    const heading = dialog.querySelector('h1,h2,h3');
+    if (heading && !dialog.hasAttribute('aria-labelledby')) {
+      if (!heading.id) heading.id = `${dialog.id || 'sr-dialog'}-title`;
+      dialog.setAttribute('aria-labelledby', heading.id);
+    }
+    const description = dialog.querySelector('p');
+    if (description && !dialog.hasAttribute('aria-describedby')) {
+      if (!description.id) description.id = `${dialog.id || 'sr-dialog'}-description`;
+      dialog.setAttribute('aria-describedby', description.id);
+    }
+  }
+
+  function activeDialog() {
+    return [...document.querySelectorAll(dialogSelector)].filter(visible).at(-1) || null;
+  }
+
+  function focusDialog(dialog) {
+    if (!dialog || dialog.contains(document.activeElement)) return;
+    previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const target = dialog.querySelector(focusableSelector) || dialog;
+    requestAnimationFrame(() => target.focus({ preventScroll: true }));
+  }
+
+  function closeDialog(dialog) {
+    const close = dialog.querySelector('#confirm-modal-cancel,[data-modal-close],[aria-label*="關閉"],button[id*="close"],button[onclick*="close"]');
+    close?.click();
+    requestAnimationFrame(() => previousFocus?.focus?.({ preventScroll: true }));
+  }
+
+  document.addEventListener('keydown', event => {
+    const dialog = activeDialog();
+    if (!dialog) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeDialog(dialog);
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    const items = [...dialog.querySelectorAll(focusableSelector)].filter(visible);
+    if (!items.length) {
+      event.preventDefault();
+      dialog.focus();
+      return;
+    }
+    const first = items[0];
+    const last = items[items.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }, true);
+
+  const apply = () => {
+    document.querySelectorAll(dialogSelector).forEach(dialog => {
+      prepare(dialog);
+      if (visible(dialog)) focusDialog(dialog);
+    });
+  };
+  new MutationObserver(apply).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'hidden', 'style'] });
+  document.addEventListener('DOMContentLoaded', apply, { once: true });
+  apply();
 })();

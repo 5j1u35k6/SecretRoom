@@ -2788,6 +2788,7 @@ window.SRAdminClaimBridge = Object.freeze({ verify });
 
       const originalText = button.textContent;
       button.disabled = true;
+      button.setAttribute('aria-busy', 'true');
       button.textContent = '安全驗證中…';
       try {
         await authenticate(adminId, password);
@@ -2804,6 +2805,7 @@ window.SRAdminClaimBridge = Object.freeze({ verify });
         }
       } finally {
         button.disabled = false;
+        button.removeAttribute('aria-busy');
         button.textContent = originalText;
       }
     }, true);
@@ -2948,4 +2950,23 @@ window.SRAdminClaimBridge = Object.freeze({ verify });
     processQueue, migrateCredentials, backendEnabled
   });
 })();
+})();
+
+
+/* ===== Admin login form accessibility follow-up ===== */
+;(() => {
+  const form = document.getElementById('admin-login-form');
+  const button = document.getElementById('admin-login-submit');
+  const modal = document.getElementById('admin-login-modal');
+  if (!form || !button || form.dataset.srSubmitBridge === '1') return;
+  form.dataset.srSubmitBridge = '1';
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    if (!button.disabled) button.click();
+  });
+  modal?.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    event.preventDefault();
+    document.getElementById('admin-login-id')?.focus();
+  });
 })();
