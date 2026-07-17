@@ -79,7 +79,7 @@ function completeAccountRecovery_(chatId, from, requestId) {
     if (status && !['approved', 'active'].includes(status)) throw new Error('目前帳號狀態無法重設密碼。');
 
     const now = Date.now();
-    const expiresAtMs = now + TELEGRAM_TEMP_PASSWORD_TTL_MS;
+    const expiresAtMs = now + TELEGRAM_RECOVERY_TOKEN_TTL_MS;
     const resetToken = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '');
 
     firestoreSetDocument_('telegram_recovery_tokens', resetToken, {
