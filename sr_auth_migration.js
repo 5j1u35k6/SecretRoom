@@ -26,10 +26,17 @@
 
   function backendUrl() {
     const value = configuredBackendUrl();
-    if (!value) {
-      throw new Error('尚未設定 SecretRoom 後端網址。');
-    }
+    if (!value) throw new Error('尚未設定 SecretRoom 後端網址。');
     return value;
+  }
+
+  async function waitForDefaultApp(appMod) {
+    for (let attempt = 0; attempt < 100; attempt += 1) {
+      const app = appMod.getApps().find(item => item.name === '[DEFAULT]') || appMod.getApps()[0];
+      if (app) return app;
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+    throw new Error('Firebase 尚未初始化');
   }
 
   async function authSdk() {
@@ -39,9 +46,7 @@
       import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js'),
       import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js')
     ]).then(async ([appMod, authMod]) => {
-      const defaultApp = appMod.getApps().find(item => item.name === '[DEFAULT]') || appMod.getApps()[0];
-      if (!defaultApp) throw new Error('Firebase 尚未初始化');
-
+      const defaultApp = await waitForDefaultApp(appMod);
       let memberApp = appMod.getApps().find(item => item.name === MEMBER_AUTH_APP_NAME);
       if (!memberApp) {
         memberApp = appMod.initializeApp(defaultApp.options, MEMBER_AUTH_APP_NAME);
@@ -109,7 +114,7 @@
     if (claims.secretroomMember !== true || !userId) return null;
 
     const rememberedUserId = String(localStorage.getItem('sr_username') || '').trim();
-    if (rememberedUserId && rememberedUserId !== userId) return null;
+    if (!rememberedUserId || rememberedUserId !== userId) return null;
 
     return { user, userId, claims, tokenResult };
   }
@@ -134,9 +139,7 @@
     if (!button) return;
 
     if (busy) {
-      if (!button.dataset.srOriginalText) {
-        button.dataset.srOriginalText = button.innerHTML;
-      }
+      if (!button.dataset.srOriginalText) button.dataset.srOriginalText = button.innerHTML;
       button.disabled = true;
       button.classList.add('opacity-60', 'cursor-not-allowed');
       button.innerHTML = text;
