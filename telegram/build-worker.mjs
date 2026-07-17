@@ -35,6 +35,100 @@ if (!source.includes('legacyAdminCredentialSupported')) {
   source = source.replace(original, replacement);
 }
 
+if (!source.includes("'/api/admin/change-password'")) {
+  const routeMarker = `  if (url.pathname === '/api/admin/migrate-credentials') return migrateCredentials(identity, body, env);
+  throw httpError(404, 'Unknown API route');`;
+  const routeReplacement = `  if (url.pathname === '/api/admin/migrate-credentials') return migrateCredentials(identity, body, env);
+  if (url.pathname === '/api/admin/change-password') return changeAdminPassword(identity, body, env);
+  if (url.pathname === '/api/admin/telegram-status') return telegramAdminStatus(identity, env);
+  if (url.pathname === '/api/admin/telegram-repair-webhook') return repairTelegramWebhook(identity, env, url);
+  throw httpError(404, 'Unknown API route');`;
+  if (!source.includes(routeMarker)) throw new Error('Admin API route marker was not found');
+  source = source.replace(routeMarker, routeReplacement);
+}
+
+if (!source.includes('async function changeAdminPassword(identity, body, env)')) {
+  const helperMarker = 'async function adminTelegramNotify(identity, body, env) {';
+  const helpers = `async function changeAdminPassword(identity, body, env) {
+  const adminId = requireAdmin(identity);
+  const currentPassword = String(body.currentPassword || '');
+  const newPassword = String(body.newPassword || '');
+  if (!currentPassword) throw httpError(400, '請輸入目前管理員密碼');
+  validatePassword(newPassword);
+  if (constantTimeEqual(currentPassword, newPassword)) throw httpError(400, '新密碼不可與目前密碼相同');
+
+  const credential = await getDocument(env, appPath('admin_credentials', adminId));
+  if (!credential || !(await verifyHash(currentPassword, credential.data))) {
+    throw httpError(401, '目前管理員密碼不正確');
+  }
+
+  const secure = await hashPassword(newPassword);
+  const now = Date.now();
+  await commitWrites(env, [
+    updateWrite(env, credential.path, { ...secure, updatedAtMs: now, passwordChangedAtMs: now }, ['scheme', 'iterations', 'salt', 'hash', 'updatedAtMs', 'passwordChangedAtMs']),
+    updateWrite(env, appPath('admins', adminId), { passwordChangedAtMs: now }, ['passwordChangedAtMs', 'password', 'passwordHash'])
+  ]);
+  return { ok: true, adminId, passwordChangedAtMs: now };
+}
+
+async function telegramAdminStatus(identity, env) {
+  requireAdmin(identity);
+  const [bot, webhook] = await Promise.all([
+    telegramApi(env, 'getMe', {}),
+    telegramApi(env, 'getWebhookInfo', {})
+  ]);
+  return {
+    ok: true,
+    bot: {
+      id: String(bot.id || ''),
+      username: bot.username || '',
+      firstName: bot.first_name || '',
+      canJoinGroups: bot.can_join_groups === true
+    },
+    webhook: {
+      url: webhook.url || '',
+      pendingUpdateCount: Number(webhook.pending_update_count || 0),
+      lastErrorDate: Number(webhook.last_error_date || 0),
+      lastErrorMessage: webhook.last_error_message || '',
+      maxConnections: Number(webhook.max_connections || 0),
+      allowedUpdates: Array.isArray(webhook.allowed_updates) ? webhook.allowed_updates : []
+    }
+  };
+}
+
+async function repairTelegramWebhook(identity, env, url) {
+  const adminId = requireAdmin(identity);
+  if (!env.TELEGRAM_WEBHOOK_SECRET) throw httpError(500, 'TELEGRAM_WEBHOOK_SECRET 未設定');
+  const webhookUrl = String(url.origin || '').replace(/\\/+$/, '') + '/';
+  if (!/^https:\\/\\//.test(webhookUrl)) throw httpError(500, 'Worker 公開網址無效');
+
+  await telegramApi(env, 'setWebhook', {
+    url: webhookUrl,
+    secret_token: env.TELEGRAM_WEBHOOK_SECRET,
+    allowed_updates: ['message', 'edited_message', 'callback_query', 'my_chat_member'],
+    drop_pending_updates: false,
+    max_connections: 40
+  });
+
+  const webhook = await telegramApi(env, 'getWebhookInfo', {});
+  return {
+    ok: true,
+    repairedBy: adminId,
+    webhook: {
+      url: webhook.url || '',
+      pendingUpdateCount: Number(webhook.pending_update_count || 0),
+      lastErrorDate: Number(webhook.last_error_date || 0),
+      lastErrorMessage: webhook.last_error_message || '',
+      allowedUpdates: Array.isArray(webhook.allowed_updates) ? webhook.allowed_updates : []
+    }
+  };
+}
+
+`;
+  if (!source.includes(helperMarker)) throw new Error('Telegram admin helper marker was not found');
+  source = source.replace(helperMarker, helpers + helperMarker);
+}
+
 if (!source.includes('claimTelegramUpdate(update, env)')) {
   const handler = `async function handleTelegramUpdate(update, env) {
   if (update.callback_query)`;
