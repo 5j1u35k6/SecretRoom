@@ -1,9 +1,19 @@
 /* SecretRoom secure frontend bootstrap.
- * Loads the consolidated app after removing legacy EmailJS configuration and
- * preserves an authenticated Firebase member session instead of replacing it
- * with an anonymous session.
+ * Asset versions come from site-version.json, so users keep using the canonical
+ * site URL while the browser automatically loads the newest runtime files.
  */
-const appResponse = await fetch('app.js?v=20260717-member-auth-v7', {
+const build = String(window.__SR_BUILD__ || '20260717-member-auth-v8');
+
+window.SecretRoomPublicAuth = Object.freeze({
+  async ensure(auth, signInAnonymously) {
+    if (typeof auth.authStateReady === 'function') await auth.authStateReady();
+    if (auth.currentUser) return auth.currentUser;
+    const credential = await signInAnonymously(auth);
+    return credential.user;
+  }
+});
+
+const appResponse = await fetch(`app.js?v=${encodeURIComponent(build)}`, {
   cache: 'no-store'
 });
 
@@ -18,10 +28,26 @@ source = source.replace(
   'const emailjsConfig = { publicKey: "", serviceId: "", defaultTemplateId: "", templates: {} };'
 );
 
+let anonymousAuthReplacements = 0;
 source = source.replace(
-  'await signInAnonymously(auth);',
-  `if (typeof auth.authStateReady === 'function') await auth.authStateReady();
-                      if (!auth.currentUser) await signInAnonymously(auth);`
+  /await\s+signInAnonymously\(auth\);/g,
+  () => {
+    anonymousAuthReplacements += 1;
+    return 'await window.SecretRoomPublicAuth.ensure(auth, signInAnonymously);';
+  }
+);
+
+if (!anonymousAuthReplacements) {
+  console.warn('SecretRoom anonymous-auth guard was not applied');
+}
+
+source = source.replaceAll(
+  "localStorage.removeItem('sr_username');",
+  "localStorage.removeItem('sr_username'); window.SRSecureAuth?.signOutMember?.();"
+);
+source = source.replaceAll(
+  'localStorage.removeItem("sr_username");',
+  'localStorage.removeItem("sr_username"); window.SRSecureAuth?.signOutMember?.();'
 );
 
 /* Compatibility only: no request is sent to EmailJS. */
@@ -42,5 +68,5 @@ try {
   URL.revokeObjectURL(blobUrl);
 }
 
-await import('./sr_auth_migration.js?v=20260717-member-auth-v7');
-await import('./sr_telegram_platform.js?v=20260717-member-auth-v7');
+await import(`./sr_auth_migration.js?v=${encodeURIComponent(build)}`);
+await import(`./sr_telegram_platform.js?v=${encodeURIComponent(build)}`);
