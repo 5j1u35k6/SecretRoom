@@ -1,0 +1,109 @@
+name: Finalize Telegram migration
+
+on:
+  push:
+    paths:
+      - '.github/workflows/finalize-telegram-migration.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/telegram-six-phase
+          fetch-depth: 0
+
+      - name: Remove EmailJS credentials from consolidated sources
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          app = Path('app.js')
+          text = app.read_text(encoding='utf-8')
+          text, count = re.subn(
+              r'const emailjsConfig\s*=\s*\{[\s\S]*?\n\};',
+              'const emailjsConfig = { publicKey: "", serviceId: "", defaultTemplateId: "", templates: {} };',
+              text,
+              count=1,
+          )
+          if count != 1:
+              raise SystemExit('app.js emailjsConfig replacement did not match exactly once')
+          app.write_text(text, encoding='utf-8')
+
+          admin = Path('admin.js')
+          text = admin.read_text(encoding='utf-8')
+          replacement = '''const emailjsConfig = {
+              publicKey: "telegram-bridge",
+              serviceId: "telegram-backend",
+              defaultTemplateId: "telegram-notification",
+              templates: {
+                  registrationApproved: "telegram-notification",
+                  registrationRejected: "telegram-notification",
+                  specApproved: "telegram-notification",
+                  specRejected: "telegram-notification",
+                  avatarApproved: "telegram-notification",
+                  avatarRejected: "telegram-notification",
+                  reportAccepted: "telegram-notification",
+                  reportDismissed: "telegram-notification",
+                  passwordReset: "telegram-security",
+                  accountRequest: "telegram-security"
+              }
+          };'''
+          text, count = re.subn(
+              r'const emailjsConfig\s*=\s*\{[\s\S]*?\n\};',
+              replacement,
+              text,
+              count=1,
+          )
+          if count != 1:
+              raise SystemExit('admin.js emailjsConfig replacement did not match exactly once')
+          text, mail_count = re.subn(
+              r"const MAIL\s*=\s*\{[^;]+service_1ou10mi[^;]+\};",
+              "const MAIL = { publicKey: 'telegram-bridge', serviceId: 'telegram-backend', templateId: 'telegram-security' };",
+              text,
+              count=1,
+          )
+          if mail_count != 1:
+              raise SystemExit('admin.js MAIL replacement did not match exactly once')
+          admin.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Verify EmailJS secrets are gone
+        run: |
+          ! grep -R "XggJY7iHQcZYYhNY7\|service_1ou10mi\|cdn.jsdelivr.net/npm/@emailjs" \
+            index.html portal_sr_x892.html app.js admin.js
+
+      - name: Validate JavaScript syntax
+        run: |
+          set -e
+          node --check sr_backend_config.js
+          node --check sr_auth_migration.js
+          node --check sr_admin_auth.js
+          node --check sr_telegram_platform.js
+          node --check sr_telegram_admin.js
+          node --check sr_emailjs_telegram_bridge.js
+          node --check portal_shell.js
+          cp app_bootstrap.js /tmp/app_bootstrap.mjs
+          cp admin_bootstrap.js /tmp/admin_bootstrap.mjs
+          cp telegram/cloudflare-worker.js /tmp/cloudflare-worker.mjs
+          node --check /tmp/app_bootstrap.mjs
+          node --check /tmp/admin_bootstrap.mjs
+          node --check /tmp/cloudflare-worker.mjs
+
+      - name: Commit finalized sources
+        run: |
+          if git diff --quiet -- app.js admin.js; then
+            echo "No source finalization changes required."
+            exit 0
+          fi
+          git config user.name "SecretRoom Migration Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add app.js admin.js
+          git commit -m "Remove EmailJS credentials from consolidated sources"
+          git push origin HEAD:feature/telegram-six-phase
