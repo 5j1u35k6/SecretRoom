@@ -1,0 +1,63 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return signedIn() && request.auth.token.secretroomUserId == userId;
+    }
+
+    function isAdmin() {
+      return signedIn() && request.auth.token.secretroomAdmin == true;
+    }
+
+    match /secretg_apps/{appId}/applications/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if signedIn();
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /secretg_apps/{appId}/telegram_binding_tokens/{tokenId} {
+      allow read, write: if false;
+    }
+
+    match /secretg_apps/{appId}/telegram_notification_queue/{messageId} {
+      allow read, write: if false;
+    }
+
+    match /secretg_apps/{appId}/telegram_delivery_logs/{logId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /secretg_apps/{appId}/password_reset_requests/{requestId} {
+      allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.token.secretroomUserId);
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.token.secretroomUserId
+        && request.resource.data.status == 'pending';
+      allow update, delete: if false;
+    }
+
+    match /secretg_apps/{appId}/notifications/{notificationId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    match /secretg_apps/{appId}/notification_reads/{readId} {
+      allow read, write: if signedIn();
+    }
+
+    match /secretg_apps/{appId}/admins/{adminId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    match /secretg_apps/{appId}/{document=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
