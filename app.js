@@ -101,9 +101,11 @@ window.SecretRoomBackendConfig = Object.freeze({
     widget?.classList.toggle('sr-bgm-muted', isMuted);
     widget?.classList.toggle('bgm-active', !isMuted);
     const icon = document.getElementById('bgm-icon');
-    if (icon) icon.className = `fa-solid ${isMuted ? 'fa-volume-xmark' : 'fa-play'} text-[9px]`;
+    if (icon) icon.className = `fa-solid ${isMuted ? 'fa-volume-xmark' : 'fa-play'} text-sm`;
     const status = document.getElementById('bgm-status-text');
-    if (status) status.textContent = isMuted ? '音樂已關閉' : '背景音樂';
+    if (status) status.textContent = isMuted ? '音樂已關閉' : '背景音樂播放中';
+    const toggle = document.getElementById('bgm-toggle-btn');
+    if (toggle) { const label=isMuted?'播放背景音樂':'關閉背景音樂'; toggle.setAttribute('aria-label',label); toggle.setAttribute('aria-pressed',String(!isMuted)); toggle.title=label; }
     const bars = document.getElementById('bgm-bars');
     bars?.classList.toggle('bgm-active', !isMuted);
     const mobileText = document.getElementById('mobile-menu-bgm-text');
@@ -7066,6 +7068,9 @@ schedule();
       return;
     }
 
+    const bound = hasActiveBinding(snapshot);
+    if (bound && isHome) { existing?.remove(); return; }
+
     const host = isHome
       ? (document.getElementById('dashboard-tab-content') || document.querySelector('#app .overflow-y-auto'))
       : (document.querySelector('#app .overflow-y-auto') || document.querySelector('#app > div'));
@@ -7077,7 +7082,6 @@ schedule();
       card.className = 'sr-tg-member-card relative';
       host.prepend(card);
     }
-    const bound = hasActiveBinding(snapshot);
     const serviceState = telegramServiceState(snapshot);
     const identityVerified = serviceState === 'identity_verified';
     const signature = `${id}|${view}|${tab}|${serviceState}`;
@@ -7978,3 +7982,7 @@ schedule();
   installSubmitGuard();
   apply();
 })();
+
+
+/* ===== Interface accessibility follow-up v2 ===== */
+;(()=>{if(window.__SR_DIALOG_A11Y__)return;window.__SR_DIALOG_A11Y__=true;let previous=null;const sel='#custom-confirm-modal,[id$="-modal"],[id*="-modal-"]',focusSel='button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])',visible=e=>e&&!e.hidden&&!e.classList.contains('hidden')&&getComputedStyle(e).display!=='none'&&getComputedStyle(e).visibility!=='hidden';function prep(d){if(!(d instanceof HTMLElement))return;d.setAttribute('role',d.getAttribute('role')||'dialog');d.setAttribute('aria-modal','true');if(!d.hasAttribute('tabindex'))d.tabIndex=-1;const h=d.querySelector('h1,h2,h3'),p=d.querySelector('p');if(h&&!d.hasAttribute('aria-labelledby')){if(!h.id)h.id=`${d.id||'sr-dialog'}-title`;d.setAttribute('aria-labelledby',h.id)}if(p&&!d.hasAttribute('aria-describedby')){if(!p.id)p.id=`${d.id||'sr-dialog'}-description`;d.setAttribute('aria-describedby',p.id)}}function active(){return[...document.querySelectorAll(sel)].filter(visible).at(-1)||null}function focus(d){if(!d||d.contains(document.activeElement))return;previous=document.activeElement instanceof HTMLElement?document.activeElement:null;requestAnimationFrame(()=>(d.querySelector(focusSel)||d).focus({preventScroll:true}))}function close(d){const b=d.querySelector('#confirm-modal-cancel,[data-modal-close],[aria-label*="關閉"],button[id*="close"],button[onclick*="close"]');if(b)b.click();else d.click();requestAnimationFrame(()=>previous?.focus?.({preventScroll:true}))}document.addEventListener('keydown',e=>{const d=active();if(!d)return;if(e.key==='Escape'){e.preventDefault();close(d);return}if(e.key!=='Tab')return;const a=[...d.querySelectorAll(focusSel)].filter(visible);if(!a.length){e.preventDefault();d.focus();return}const f=a[0],l=a.at(-1);if(e.shiftKey&&document.activeElement===f){e.preventDefault();l.focus()}else if(!e.shiftKey&&document.activeElement===l){e.preventDefault();f.focus()}},true);const apply=()=>document.querySelectorAll(sel).forEach(d=>{prep(d);if(visible(d))focus(d)});new MutationObserver(apply).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['class','hidden','style']});document.addEventListener('DOMContentLoaded',apply,{once:true});apply()})();
