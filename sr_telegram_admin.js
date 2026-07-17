@@ -59,7 +59,26 @@
     return result;
   }
 
+  function disableLegacyPasswordReset() {
+    /*
+     * 忘記密碼已改為：平台申請 -> Telegram 被動驗證 -> 自動產生臨時密碼。
+     * 管理員不再輸入、查看或傳送會員臨時密碼。
+     */
+    window.completePasswordResetRequest = async function() {
+      window.showToast?.('此申請由會員在 Telegram 自助完成，管理員不需要設定密碼。', 'info');
+    };
+
+    document.querySelectorAll('button[onclick^="completePasswordResetRequest("]').forEach(button => {
+      button.disabled = true;
+      button.removeAttribute('onclick');
+      button.classList.add('opacity-60', 'cursor-not-allowed');
+      button.textContent = '等待會員 Telegram 確認';
+      button.title = '忘記密碼已改為 Telegram 自助流程';
+    });
+  }
+
   function installAdminNotice() {
+    disableLegacyPasswordReset();
     const main = document.getElementById('admin-main');
     if (!main || document.getElementById('sr-telegram-admin-notice')) return;
     const notice = document.createElement('div');
@@ -68,7 +87,7 @@
     notice.innerHTML = `
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div><b>Telegram 外部通知已與平台通知分流</b>
-        <div class="mt-1 text-slate-400">平台公告保留於 notifications；外部通知由 Telegram Queue 發送。</div></div>
+        <div class="mt-1 text-slate-400">平台公告保留於 notifications；外部通知由 Telegram Queue 發送。忘記密碼由會員在 Telegram 自助完成。</div></div>
         <div class="flex gap-2">
           <button id="sr-process-telegram-queue" class="px-3 py-2 rounded-xl border border-sky-400/20 bg-sky-500/10 text-sky-200 font-bold">處理待送通知</button>
           <button id="sr-migrate-credentials" class="px-3 py-2 rounded-xl border border-amber-400/20 bg-amber-500/10 text-amber-200 font-bold">遷移舊密碼</button>
@@ -83,8 +102,10 @@
     };
   }
 
-  new MutationObserver(installAdminNotice).observe(document.documentElement, { childList: true, subtree: true });
+  const observer = new MutationObserver(installAdminNotice);
+  observer.observe(document.documentElement, { childList: true, subtree: true });
   document.addEventListener('DOMContentLoaded', () => setTimeout(installAdminNotice, 1000), { once: true });
+  installAdminNotice();
 
   window.SRTelegramAdmin = Object.freeze({
     queueTelegramNotification, notifyReviewResult, notifySecurityEvent,
