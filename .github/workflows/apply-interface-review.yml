@@ -1,0 +1,51 @@
+name: Apply interface review follow-up
+
+on:
+  push:
+    branches: [fix/interface-review-followup]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: ${{ !contains(github.event.head_commit.message, '[interface-reviewed]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/interface-review-followup
+          fetch-depth: 0
+
+      - name: Apply UI review patch
+        run: python3 scripts/apply_interface_review.py
+
+      - name: Validate interface and syntax
+        run: |
+          cp app.js /tmp/app.mjs
+          cp admin.js /tmp/admin.mjs
+          node --check /tmp/app.mjs
+          node --check /tmp/admin.mjs
+          grep -q 'width=device-width,initial-scale=1,viewport-fit=cover' index.html
+          ! grep -q 'user-scalable=no' index.html
+          grep -q 'id="custom-confirm-modal".*role="dialog".*aria-modal="true"' index.html
+          grep -q 'id="bgm-toggle-btn".*aria-pressed=' index.html
+          grep -q 'id="admin-login-form"' portal_sr_x892.html
+          grep -q 'autocomplete="username"' portal_sr_x892.html
+          grep -q 'autocomplete="current-password"' portal_sr_x892.html
+          grep -q 'id="admin-login-error".*aria-live="assertive"' portal_sr_x892.html
+          grep -q '舊 EmailJS 失敗紀錄（唯讀）' portal_sr_x892.html
+          grep -q 'window.__SR_DIALOG_A11Y__' app.js
+          grep -q 'bound && isHome' app.js
+          grep -q "button.setAttribute('aria-busy', 'true')" admin.js
+          ! grep -R 'SecretRomm' index.html portal_sr_x892.html app.js admin.js
+
+      - name: Commit final files
+        run: |
+          rm -f scripts/apply_interface_review.py
+          rm -f .github/workflows/apply-interface-review.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Complete interface review adjustments [interface-reviewed]"
+          git push origin HEAD:fix/interface-review-followup
