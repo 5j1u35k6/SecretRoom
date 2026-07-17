@@ -2788,6 +2788,7 @@ window.SRAdminClaimBridge = Object.freeze({ verify });
 
       const originalText = button.textContent;
       button.disabled = true;
+      button.setAttribute('aria-busy', 'true');
       button.textContent = '安全驗證中…';
       try {
         await authenticate(adminId, password);
@@ -2804,6 +2805,7 @@ window.SRAdminClaimBridge = Object.freeze({ verify });
         }
       } finally {
         button.disabled = false;
+        button.removeAttribute('aria-busy');
         button.textContent = originalText;
       }
     }, true);
@@ -2949,3 +2951,7 @@ window.SRAdminClaimBridge = Object.freeze({ verify });
   });
 })();
 })();
+
+
+/* ===== Admin login form accessibility follow-up v2 ===== */
+;(()=>{const f=document.getElementById('admin-login-form'),b=document.getElementById('admin-login-submit');if(!f||!b||f.dataset.srSubmitBridge==='1')return;f.dataset.srSubmitBridge='1';f.addEventListener('submit',e=>{e.preventDefault();if(!b.disabled)b.click()})})();
