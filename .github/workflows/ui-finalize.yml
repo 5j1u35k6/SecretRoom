@@ -1,0 +1,33 @@
+name: UI finalize
+
+on:
+  pull_request:
+    branches: [main]
+    types: [reopened, synchronize]
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/interface-review-followup
+          fetch-depth: 0
+      - run: python3 scripts/apply_interface_review.py
+      - run: |
+          cp app.js /tmp/app.mjs
+          cp admin.js /tmp/admin.mjs
+          node --check /tmp/app.mjs
+          node --check /tmp/admin.mjs
+      - run: |
+          rm -f scripts/apply_interface_review.py
+          rm -f .github/workflows/apply-interface-review.yml
+          rm -f .github/workflows/ui-finalize.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Complete interface review adjustments"
+          git push origin HEAD:fix/interface-review-followup
