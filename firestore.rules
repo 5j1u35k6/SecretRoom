@@ -6,58 +6,147 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isOwner(userId) {
-      return signedIn() && request.auth.token.secretroomUserId == userId;
+    function isMember() {
+      return signedIn()
+        && request.auth.token.secretroomMember == true
+        && request.auth.token.secretroomUserId is string;
+    }
+
+    function memberId() {
+      return request.auth.token.secretroomUserId;
     }
 
     function isAdmin() {
-      return signedIn() && request.auth.token.secretroomAdmin == true;
+      return signedIn()
+        && request.auth.token.secretroomAdmin == true
+        && request.auth.token.secretroomAdminId is string;
     }
 
-    match /secretg_apps/{appId}/applications/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
-      allow create: if signedIn();
-      allow update: if isOwner(userId) || isAdmin();
-      allow delete: if isAdmin();
+    function isOwner(userId) {
+      return isMember() && memberId() == userId;
     }
 
-    match /secretg_apps/{appId}/telegram_binding_tokens/{tokenId} {
-      allow read, write: if false;
+    function protectedMemberFieldsChanged() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasAny([
+        'password',
+        'credentialMigrated',
+        'credentialMigratedAtMs',
+        'telegramBinding',
+        'telegramBound',
+        'telegramUserId',
+        'telegramInfo',
+        'status',
+        'role',
+        'isAdmin',
+        'canAdmin',
+        'adminApproved',
+        'mustChangePassword',
+        'forcePasswordChange',
+        'tempPasswordActive',
+        'passwordChangeRequired',
+        'tempPasswordIssuedAtMs',
+        'tempPasswordExpiresAtMs',
+        'temporaryCredentialExpiresAtMs',
+        'lastPasswordChangeMethod'
+      ]);
     }
 
-    match /secretg_apps/{appId}/telegram_notification_queue/{messageId} {
-      allow read, write: if false;
-    }
-
-    match /secretg_apps/{appId}/telegram_delivery_logs/{logId} {
-      allow read: if isAdmin();
+    match /secretg_apps/{appId} {
+      allow read: if isMember() || isAdmin();
       allow write: if false;
-    }
 
-    match /secretg_apps/{appId}/password_reset_requests/{requestId} {
-      allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.token.secretroomUserId);
-      allow create: if signedIn()
-        && request.resource.data.userId == request.auth.token.secretroomUserId
-        && request.resource.data.status == 'pending';
-      allow update, delete: if false;
-    }
+      match /applications/{userId} {
+        /* Run the credential migration before deploying these rules. */
+        allow read: if isMember() || isAdmin();
+        allow create, delete: if isAdmin();
+        allow update: if isAdmin()
+          || (isOwner(userId)
+              && !protectedMemberFieldsChanged()
+              && !('password' in request.resource.data));
+      }
 
-    match /secretg_apps/{appId}/notifications/{notificationId} {
-      allow read: if signedIn();
-      allow write: if isAdmin();
-    }
+      match /public_profiles/{userId} {
+        allow read: if isMember() || isAdmin();
+        allow write: if isAdmin()
+          || (isOwner(userId) && request.resource.data.userId == userId);
+      }
 
-    match /secretg_apps/{appId}/notification_reads/{readId} {
-      allow read, write: if signedIn();
-    }
+      match /admins/{adminId} {
+        allow read, write: if isAdmin();
+      }
 
-    match /secretg_apps/{appId}/admins/{adminId} {
-      allow read: if isAdmin();
-      allow write: if false;
-    }
+      match /credentials/{userId} {
+        allow read, write: if false;
+      }
 
-    match /secretg_apps/{appId}/{document=**} {
-      allow read, write: if isAdmin();
+      match /admin_credentials/{adminId} {
+        allow read, write: if false;
+      }
+
+      match /telegram_binding_tokens/{tokenId} {
+        allow read, write: if false;
+      }
+
+      match /telegram_bindings/{telegramUserId} {
+        allow read, write: if false;
+      }
+
+      match /telegram_notification_queue/{messageId} {
+        allow read, write: if false;
+      }
+
+      match /telegram_delivery_logs/{logId} {
+        allow read: if isAdmin();
+        allow write: if false;
+      }
+
+      match /auth_rate_limits/{rateId} {
+        allow read, write: if false;
+      }
+
+      match /password_reset_requests/{requestId} {
+        allow read: if isAdmin()
+          || (isMember() && resource.data.userId == memberId());
+        allow write: if false;
+      }
+
+      match /account_requests/{requestId} {
+        allow read: if isAdmin()
+          || (isMember() && resource.data.userId == memberId());
+        allow create: if isMember()
+          && request.resource.data.userId == memberId();
+        allow update, delete: if isAdmin();
+      }
+
+      match /notifications/{notificationId} {
+        allow read: if isMember() || isAdmin();
+        allow write: if isAdmin();
+      }
+
+      match /notification_reads/{userId} {
+        allow read, write: if isAdmin() || isOwner(userId);
+      }
+
+      match /posts/{postId} {
+        allow read, write: if isMember() || isAdmin();
+      }
+
+      match /visitors/{visitorId} {
+        allow read, write: if isMember() || isAdmin();
+      }
+
+      match /admin_logs/{logId} {
+        allow read, write: if isAdmin();
+      }
+
+      match /email_failures/{failureId} {
+        allow read: if isAdmin();
+        allow write: if false;
+      }
+
+      match /{document=**} {
+        allow read, write: if isAdmin();
+      }
     }
   }
 }
