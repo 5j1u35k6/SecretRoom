@@ -1,0 +1,52 @@
+name: Consolidate platform core files
+
+on:
+  push:
+    branches: [refactor/platform-six-core-files-v2]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  consolidate:
+    if: ${{ !contains(github.event.head_commit.message || github.event.pull_request.title, '[platform-consolidated]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refactor/platform-six-core-files-v2
+          fetch-depth: 0
+
+      - name: Generate final platform files
+        run: |
+          python3 scripts/consolidate_admin.py
+          python3 scripts/consolidate_frontend.py
+          rm -f .github/workflows/finalize-telegram-migration.yml
+          rm -f scripts/finalize_migration.py
+
+      - name: Static validation
+        run: |
+          cp app.js /tmp/app.mjs
+          cp admin.js /tmp/admin.mjs
+          node --check /tmp/app.mjs
+          node --check /tmp/admin.mjs
+          test -f index.html && test -f style.css && test -f app.js
+          test -f portal_sr_x892.html && test -f admin.css && test -f admin.js
+          test "$(grep -c 'src="app.js' index.html)" -eq 1
+          test "$(grep -c 'src="admin.js' portal_sr_x892.html)" -eq 1
+          ! grep -Eq 'app_bootstrap|admin_bootstrap|portal_shell|sr_backend_config|site-version.json' index.html portal_sr_x892.html
+          ! grep -Eq 'URL.createObjectURL\(new Blob|fetch\(`app.js|fetch\(`admin.js' app.js admin.js
+          ! grep -R 'XggJY7iHQcZYYhNY7\|service_1ou10mi\|cdn.jsdelivr.net/npm/@emailjs' index.html portal_sr_x892.html app.js admin.js
+          for file in app_bootstrap.js app_bootstrap_v10.js admin_bootstrap.js admin_bootstrap_v3.js portal_shell.js sr_backend_config.js sr_auth_migration.js sr_telegram_platform.js sr_admin_auth.js sr_admin_claim_bridge.js sr_emailjs_telegram_bridge.js sr_telegram_admin.js site-version.json; do test ! -e "$file"; done
+
+      - name: Commit generated result
+        run: |
+          rm -f scripts/consolidate_frontend.py scripts/consolidate_admin.py
+          rm -f .github/workflows/consolidate-platform.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Consolidate frontend and admin runtimes [platform-consolidated]"
+          git push origin HEAD:refactor/platform-six-core-files-v2
