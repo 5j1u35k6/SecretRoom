@@ -17,15 +17,17 @@
 - [ ] 相同會員不可綁定第二個 Telegram。
 - [ ] 過期 Token 不可使用。
 
-## 忘記密碼
+## 忘記密碼／帳號復原
 
-- [ ] 未在平台申請時，Bot 不產生臨時密碼。
+- [ ] 未在平台申請時，Bot 不建立復原連結。
 - [ ] 平台只要求會員帳號，不要求 Email。
 - [ ] 已綁定會員可在 Bot 找到 pending 申請。
-- [ ] 確認後產生 10 分鐘臨時密碼。
-- [ ] 臨時密碼不出現在 Firestore outbox 或 delivery logs。
-- [ ] 申請完成後不可再次使用。
-- [ ] Telegram 傳送失敗時，原密碼狀態會還原。
+- [ ] Bot 驗證身分後建立 10 分鐘一次性復原 Token。
+- [ ] Telegram 只傳送受保護的復原連結，不傳送新密碼。
+- [ ] 使用者可在 SecretRoom 輸入自己的新密碼。
+- [ ] 完成後 Token 狀態變成 `used`，申請變成 `completed`。
+- [ ] 已使用或過期連結不可再次使用。
+- [ ] 新密碼不出現在 Firestore outbox、管理員提醒或 delivery logs。
 - [ ] 未綁定會員顯示人工例外處理，不顯示成功。
 
 ## 通知分流
@@ -49,12 +51,13 @@
 
 - [ ] 頁面不再載入 EmailJS CDN。
 - [ ] 舊 `emailjs.send()` 呼叫改寫入 Telegram outbox。
-- [ ] 任何包含臨時密碼的舊寄信呼叫被拒絕，不寫入 outbox。
+- [ ] 任何包含敏感登入憑證的舊寄信呼叫被拒絕，不寫入 outbox。
 - [ ] 舊 `email_failures` 只保留唯讀歷史。
 
 ## Rules
 
 - [ ] 未登入請求無法直接讀寫 Firestore。
 - [ ] 匿名 Firebase Auth 登入後平台仍可正常使用。
+- [ ] `telegram_recovery_tokens` 無法列舉，只能用完整 Token ID 單筆取得。
 - [ ] `telegram_delivery_logs` 無法由瀏覽器寫入。
 - [ ] 後端 Service Account 可正常讀寫 Telegram 集合。
