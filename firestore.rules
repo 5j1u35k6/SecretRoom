@@ -73,6 +73,12 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    match /secretg_apps/{appId}/telegram_recovery_tokens/{tokenId} {
+      /* Token ID 為長隨機值；瀏覽器只能用已持有的完整 ID 單筆讀取。 */
+      allow get, update: if signedIn();
+      allow list, create, delete: if false;
+    }
+
     match /secretg_apps/{appId}/telegram_bindings/{accountId} {
       allow read, create, update: if signedIn();
       allow delete: if false;
