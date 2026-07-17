@@ -6877,10 +6877,6 @@ schedule();
       document.body.appendChild(modal);
     }
     const bound = hasActiveBinding(snapshot);
-    if (bound && isHome) {
-      card.remove();
-      return;
-    }
     const serviceState = telegramServiceState(snapshot);
     const identityVerified = serviceState === 'identity_verified';
     const preferences = { ...DEFAULT_PREFERENCES, ...(snapshot?.preferences || {}) };
@@ -7089,6 +7085,10 @@ schedule();
       host.prepend(card);
     }
     const bound = hasActiveBinding(snapshot);
+    if (bound && isHome) {
+      card.remove();
+      return;
+    }
     const serviceState = telegramServiceState(snapshot);
     const identityVerified = serviceState === 'identity_verified';
     const signature = `${id}|${view}|${tab}|${serviceState}`;
