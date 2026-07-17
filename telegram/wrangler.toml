@@ -4,7 +4,7 @@ compatibility_date = "2026-07-17"
 workers_dev = true
 
 [build]
-command = "node build-worker.mjs"
+command = "node build-worker.mjs && node normalize-pbkdf2.mjs"
 
 [triggers]
 crons = ["*/5 * * * *"]
