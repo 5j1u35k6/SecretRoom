@@ -75,7 +75,12 @@ service cloud.firestore {
 
     match /secretg_apps/{appId}/telegram_recovery_tokens/{tokenId} {
       /* Token ID 為長隨機值；瀏覽器只能用已持有的完整 ID 單筆讀取。 */
-      allow get, update: if signedIn();
+      allow get: if signedIn();
+      allow update: if signedIn()
+        && resource.data.status == 'active'
+        && request.resource.data.status == 'used'
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['status', 'usedAt', 'usedAtMs']);
       allow list, create, delete: if false;
     }
 
