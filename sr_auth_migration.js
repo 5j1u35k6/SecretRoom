@@ -1,9 +1,10 @@
 /* SecretRoom Firebase custom-auth migration.
- * Secure member login is authoritative whenever the Cloudflare backend is
- * configured. Capture-phase interceptors prevent the legacy Firestore password
- * handler from running after credentials have been migrated.
+ * Secure member authentication uses an isolated named Firebase app so the
+ * public site, the admin portal, and anonymous Firestore access do not replace
+ * each other's persisted sessions.
  */
 ;(() => {
+  const MEMBER_AUTH_APP_NAME = 'secretroom-member-auth';
   const cfg = () => window.SecretRoomBackendConfig || {};
   let sdkPromise = null;
   let loginInFlight = false;
@@ -26,25 +27,39 @@
   function backendUrl() {
     const value = configuredBackendUrl();
     if (!value) {
-      throw new Error('尚未設定 SecretRoom 後端網址。請先在 sr_backend_config.js 填入 Cloudflare Worker URL。');
+      throw new Error('尚未設定 SecretRoom 後端網址。');
     }
     return value;
   }
 
   async function authSdk() {
     if (sdkPromise) return sdkPromise;
+
     sdkPromise = Promise.all([
       import('https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js'),
       import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js')
-    ]).then(([appMod, authMod]) => {
-      const app = appMod.getApps()[0];
-      if (!app) throw new Error('Firebase 尚未初始化');
+    ]).then(async ([appMod, authMod]) => {
+      const defaultApp = appMod.getApps().find(item => item.name === '[DEFAULT]') || appMod.getApps()[0];
+      if (!defaultApp) throw new Error('Firebase 尚未初始化');
+
+      let memberApp = appMod.getApps().find(item => item.name === MEMBER_AUTH_APP_NAME);
+      if (!memberApp) {
+        memberApp = appMod.initializeApp(defaultApp.options, MEMBER_AUTH_APP_NAME);
+      }
+
+      const auth = authMod.getAuth(memberApp);
+      await authMod.setPersistence(auth, authMod.browserLocalPersistence);
+      if (typeof auth.authStateReady === 'function') await auth.authStateReady();
+
       return {
-        auth: authMod.getAuth(app),
+        auth,
         signInWithCustomToken: authMod.signInWithCustomToken,
-        getIdTokenResult: authMod.getIdTokenResult
+        getIdTokenResult: authMod.getIdTokenResult,
+        onAuthStateChanged: authMod.onAuthStateChanged,
+        signOut: authMod.signOut
       };
     });
+
     return sdkPromise;
   }
 
@@ -58,6 +73,7 @@
       body: JSON.stringify(body || {}),
       cache: 'no-store'
     });
+
     const data = await response.json().catch(() => ({}));
     if (!response.ok || data.ok === false) {
       throw new Error(data.error || `後端錯誤：${response.status}`);
@@ -86,15 +102,23 @@
     const { auth, getIdTokenResult } = await authSdk();
     const user = auth.currentUser;
     if (!user || user.isAnonymous) return null;
+
     const tokenResult = await getIdTokenResult(user, forceRefresh);
     const claims = tokenResult.claims || {};
-    if (claims.secretroomMember !== true || !claims.secretroomUserId) return null;
-    return {
-      user,
-      userId: String(claims.secretroomUserId),
-      claims,
-      tokenResult
-    };
+    const userId = String(claims.secretroomUserId || '');
+    if (claims.secretroomMember !== true || !userId) return null;
+
+    const rememberedUserId = String(localStorage.getItem('sr_username') || '').trim();
+    if (rememberedUserId && rememberedUserId !== userId) return null;
+
+    return { user, userId, claims, tokenResult };
+  }
+
+  async function signOutMember() {
+    const { auth, signOut } = await authSdk();
+    await signOut(auth).catch(() => {});
+    sessionStorage.removeItem('sr_secure_member_id');
+    window.dispatchEvent(new CustomEvent('sr:member-auth-changed'));
   }
 
   function showError(message) {
@@ -108,6 +132,7 @@
 
   function setBusy(button, busy, text = '驗證中...') {
     if (!button) return;
+
     if (busy) {
       if (!button.dataset.srOriginalText) {
         button.dataset.srOriginalText = button.innerHTML;
@@ -115,18 +140,20 @@
       button.disabled = true;
       button.classList.add('opacity-60', 'cursor-not-allowed');
       button.innerHTML = text;
-    } else {
-      button.disabled = false;
-      button.classList.remove('opacity-60', 'cursor-not-allowed');
-      if (button.dataset.srOriginalText) {
-        button.innerHTML = button.dataset.srOriginalText;
-        delete button.dataset.srOriginalText;
-      }
+      return;
+    }
+
+    button.disabled = false;
+    button.classList.remove('opacity-60', 'cursor-not-allowed');
+    if (button.dataset.srOriginalText) {
+      button.innerHTML = button.dataset.srOriginalText;
+      delete button.dataset.srOriginalText;
     }
   }
 
   async function forcePasswordChange(loginResult, user) {
     if (!loginResult.mustChangePassword) return user;
+
     let first = '';
     let second = '';
     while (true) {
@@ -136,6 +163,7 @@
       if (first === second) break;
       alert('兩次輸入的密碼不同，請重新操作。');
     }
+
     const idToken = await user.getIdToken();
     const changed = await api('/api/member/change-password', { newPassword: first }, idToken);
     const refreshedUser = await signIn(changed.customToken, loginResult.userId);
@@ -156,20 +184,26 @@
 
     loginInFlight = true;
     setBusy(button, true, '安全驗證中…');
+
     try {
       const result = await api('/api/auth/member-login', {
         userId: username,
         password
       });
+
       let user = await signIn(result.customToken, result.userId);
       user = await forcePasswordChange(result, user);
       await user.getIdToken(true);
+
+      localStorage.setItem('sr_username', result.userId);
+      sessionStorage.setItem('sr_secure_member_id', result.userId);
+
       const identity = await currentMemberIdentity(true);
       if (!identity || identity.userId !== String(result.userId)) {
         throw new Error('會員安全登入尚未完成，請重新操作');
       }
-      localStorage.setItem('sr_username', result.userId);
-      sessionStorage.setItem('sr_secure_member_id', result.userId);
+
+      window.dispatchEvent(new CustomEvent('sr:member-auth-changed'));
       window.showToast?.('安全登入成功，正在載入俱樂部…', 'success');
       location.reload();
     } catch (error) {
@@ -204,12 +238,14 @@
       kinks,
       avatar: avatar.startsWith('data:image/') ? avatar : ''
     };
+
     setBusy(button, true, '建立安全帳號中…');
     try {
       const result = await api('/api/auth/register', payload);
       await signIn(result.customToken, result.userId);
       localStorage.setItem('sr_username', result.userId);
       sessionStorage.setItem('sr_secure_member_id', result.userId);
+      window.dispatchEvent(new CustomEvent('sr:member-auth-changed'));
       window.showToast?.('申請資料提交成功！請靜待審核。', 'success');
       location.reload();
     } catch (error) {
@@ -247,6 +283,7 @@
     if (!migrationEnabled()) return;
     const button = document.getElementById('btn-login-submit');
     if (!button || button.dataset.srSecureAuth === '1') return;
+
     button.dataset.srSecureAuth = '1';
     originalLoginHandlers.set(button, window.__srHandleLoginSubmit || button.onclick);
     window.__srHandleLoginSubmit = secureLogin;
@@ -257,6 +294,7 @@
     if (!migrationEnabled()) return;
     const form = document.getElementById('apply-form');
     if (!form || boundForms.has(form)) return;
+
     boundForms.add(form);
     const email = document.getElementById('reg-email');
     if (email) {
@@ -267,11 +305,13 @@
       const note = email.closest('div')?.querySelector('p');
       if (note) note.textContent = '外部通知與忘記密碼已改由 Telegram；信箱僅作備用聯絡。';
     }
+
     form.addEventListener('submit', event => {
       event.preventDefault();
       event.stopImmediatePropagation();
       secureRegister(form);
     }, true);
+
     const button = document.getElementById('apply-submit');
     if (button) {
       button.onclick = event => {
@@ -285,12 +325,14 @@
     if (!migrationEnabled()) return;
     const button = document.getElementById('btn-forgot-password');
     if (!button || button.dataset.srSecureReset === '1') return;
+
     button.dataset.srSecureReset = '1';
     button.onclick = async event => {
       event?.preventDefault?.();
       const current = document.getElementById('login-username')?.value?.trim() || '';
       const userId = prompt('請輸入要申請忘記密碼的 SecretRoom 帳號：', current) || '';
       if (!userId.trim()) return;
+
       try {
         await api('/api/auth/request-password-reset', { userId: userId.trim() });
         alert('申請已建立。請開啟 SecretRoom Telegram Bot，點選「忘記密碼」完成驗證。');
@@ -318,6 +360,7 @@
   window.SRSecureAuth = Object.freeze({
     api,
     signIn,
+    signOutMember,
     authSdk,
     backendUrl,
     migrationEnabled,
