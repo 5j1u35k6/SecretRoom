@@ -1,3 +1,4 @@
+# Triggered after merging the Telegram six-phase migration.
 name: Finalize Telegram migration
 
 on:
