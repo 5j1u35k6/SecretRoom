@@ -1,74 +1,62 @@
-/* SecretRoom secure admin bootstrap.
- * Loads the legacy admin UI and lets a verified Firebase Custom Token session
- * enter the existing interface after legacy password fields are migrated away.
+/* SecretRoom secure frontend bootstrap.
+ * Asset versions come from site-version.json, so users keep using the canonical
+ * site URL while the browser automatically loads the newest runtime files.
  */
-await import('./sr_emailjs_telegram_bridge.js?v=20260717-secure-auth-v4');
-await import('./sr_admin_claim_bridge.js?v=20260717-secure-auth-v4');
+const build = String(window.__SR_BUILD__ || '20260717-member-auth-v8');
 
-const response = await fetch('admin.js?v=20260717-secure-auth-v4', { cache: 'no-store' });
-if (!response.ok) throw new Error(`admin.js 載入失敗：${response.status}`);
+window.SecretRoomPublicAuth = Object.freeze({
+  async ensure(auth, signInAnonymously) {
+    if (typeof auth.authStateReady === 'function') await auth.authStateReady();
+    if (auth.currentUser) return auth.currentUser;
+    const credential = await signInAnonymously(auth);
+    return credential.user;
+  }
+});
 
-let source = await response.text();
+const appResponse = await fetch(`app.js?v=${encodeURIComponent(build)}`, {
+  cache: 'no-store'
+});
+
+if (!appResponse.ok) {
+  throw new Error(`app.js 載入失敗：${appResponse.status}`);
+}
+
+let source = await appResponse.text();
 
 source = source.replace(
   /const emailjsConfig\s*=\s*\{[\s\S]*?\n\};/,
-  `const emailjsConfig = {
-    publicKey: "telegram-bridge",
-    serviceId: "telegram-backend",
-    defaultTemplateId: "telegram-notification",
-    templates: {
-      registrationApproved: "telegram-notification",
-      registrationRejected: "telegram-notification",
-      specApproved: "telegram-notification",
-      specRejected: "telegram-notification",
-      avatarApproved: "telegram-notification",
-      avatarRejected: "telegram-notification",
-      reportAccepted: "telegram-notification",
-      reportDismissed: "telegram-notification",
-      passwordReset: "telegram-security",
-      accountRequest: "telegram-security"
-    }
-  };`
+  'const emailjsConfig = { publicKey: "", serviceId: "", defaultTemplateId: "", templates: {} };'
 );
 
+let anonymousAuthReplacements = 0;
 source = source.replace(
-  /const MAIL\s*=\s*\{[^;]+service_1ou10mi[^;]+\};/,
-  `const MAIL = {
-    publicKey: 'telegram-bridge',
-    serviceId: 'telegram-backend',
-    templateId: 'telegram-security'
-  };`
+  /await\s+signInAnonymously\(auth\);/g,
+  () => {
+    anonymousAuthReplacements += 1;
+    return 'await window.SecretRoomPublicAuth.ensure(auth, signInAnonymously);';
+  }
 );
 
-source = source.replaceAll(
-  'const userData = docSnap.data();',
-  'const userData = { id: docSnap.id, userId: docSnap.id, ...docSnap.data() };'
-);
-
-source = source.replaceAll(
-  'const data = docSnap.data();',
-  'const data = { id: docSnap.id, userId: docSnap.id, ...docSnap.data() };'
-);
-
-const verifierPattern =
-  /async function verifyAdminSession\(adminId, password\) \{\s*const adminRef = doc\(db, 'secretg_apps', appId, 'admins', adminId\);/;
-
-if (!verifierPattern.test(source)) {
-  throw new Error('管理員驗證器載入失敗');
+if (!anonymousAuthReplacements) {
+  console.warn('SecretRoom anonymous-auth guard was not applied');
 }
 
-source = source.replace(
-  verifierPattern,
-  `async function verifyAdminSession(adminId, password) {
-            const secureAdmin = await window.SRAdminClaimBridge?.verify(adminId);
-            if (secureAdmin) {
-                currentAdminId = adminId;
-                currentAdminSource = 'firebase-custom-token';
-                return secureAdmin;
-            }
-
-            const adminRef = doc(db, 'secretg_apps', appId, 'admins', adminId);`
+source = source.replaceAll(
+  "localStorage.removeItem('sr_username');",
+  "localStorage.removeItem('sr_username'); window.SRSecureAuth?.signOutMember?.();"
 );
+source = source.replaceAll(
+  'localStorage.removeItem("sr_username");',
+  'localStorage.removeItem("sr_username"); window.SRSecureAuth?.signOutMember?.();'
+);
+
+/* Compatibility only: no request is sent to EmailJS. */
+window.emailjs = Object.freeze({
+  init() {},
+  async send() {
+    return { status: 202, text: 'telegram_migration' };
+  }
+});
 
 const blobUrl = URL.createObjectURL(
   new Blob([source], { type: 'text/javascript' })
@@ -80,5 +68,5 @@ try {
   URL.revokeObjectURL(blobUrl);
 }
 
-await import('./sr_admin_auth.js?v=20260717-secure-auth-v4');
-await import('./sr_telegram_admin.js?v=20260717-secure-auth-v4');
+await import(`./sr_auth_migration.js?v=${encodeURIComponent(build)}`);
+await import(`./sr_telegram_platform.js?v=${encodeURIComponent(build)}`);
