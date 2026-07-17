@@ -1,0 +1,218 @@
+/* ===== SecretRoom conversation interface v1 ===== */
+;(() => {
+  if (window.__SR_CONVERSATION_UI_V1__) return;
+  window.__SR_CONVERSATION_UI_V1__ = true;
+
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+  const currentId = () => String(window.state?.applicationId || '');
+  const postIdOf = box => String(box?.id || '').replace(/^comments-box-/, '');
+
+  function member(userId) {
+    const id = String(userId || '');
+    if (id === currentId()) return { id, ...(window.state?.userData || {}) };
+    return (window.state?.activeUsers || []).find(user => String(user?.id || '') === id) || { id };
+  }
+
+  function formatTime(value) {
+    const date = new Date(Number(value) || value || Date.now());
+    if (Number.isNaN(date.getTime())) return '';
+    const sameDay = date.toDateString() === new Date().toDateString();
+    return new Intl.DateTimeFormat('zh-TW', sameDay
+      ? { hour:'2-digit', minute:'2-digit', hour12:false }
+      : { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', hour12:false }
+    ).format(date);
+  }
+
+  function commentsOf(post) {
+    return Object.values(post?.comments || {}).filter(comment => comment?.id)
+      .sort((a, b) => Number(a.time || 0) - Number(b.time || 0));
+  }
+
+  function messageHtml(post, comment) {
+    const author = member(comment.userId);
+    const own = String(comment.userId || '') === currentId();
+    const canDelete = own || String(post?.userId || '') === currentId();
+    const action = canDelete
+      ? `<button type="button" data-sr-comment-action="delete" data-post-id="${esc(post.id)}" data-comment-id="${esc(comment.id)}" aria-label="刪除留言"><i class="fa-regular fa-trash-can"></i></button>`
+      : `<button type="button" data-sr-comment-action="report" data-post-id="${esc(post.id)}" data-comment-id="${esc(comment.id)}" aria-label="檢舉留言"><i class="fa-regular fa-flag"></i></button>`;
+    return `<article class="sr-conversation-message ${own ? 'is-own' : 'is-other'}">
+      <img class="sr-conversation-avatar" src="${esc(author.avatar || 'Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2')}" alt="" loading="lazy">
+      <div class="sr-conversation-message-body">
+        <div class="sr-conversation-meta"><span class="sr-conversation-author">${esc(author.nickname || comment.userId || '會員')}</span><span class="sr-conversation-account">@${esc(comment.userId)}</span><time>${esc(formatTime(comment.time))}</time><span class="sr-conversation-action">${action}</span></div>
+        <div class="sr-conversation-bubble">${esc(comment.text).replace(/\n/g, '<br>')}</div>
+      </div>
+    </article>`;
+  }
+
+  function resizeInput(input) {
+    if (!input) return;
+    input.style.height = 'auto';
+    input.style.height = `${Math.min(input.scrollHeight, 120)}px`;
+  }
+
+  function scrollLatest(box, smooth = false) {
+    const list = box?.querySelector('[id^="comments-list-"]');
+    if (!list) return;
+    requestAnimationFrame(() => list.scrollTo({ top:list.scrollHeight, behavior:smooth ? 'smooth' : 'auto' }));
+  }
+
+  function enhance(box) {
+    const postId = postIdOf(box);
+    const post = (window.state?.posts || []).find(item => String(item.id) === postId);
+    if (!post) return;
+    const list = box.querySelector(`[id="comments-list-${CSS.escape(postId)}"]`);
+    let composer = box.querySelector(':scope > .flex.gap-2, :scope > .sr-conversation-composer');
+    if (!list || !composer) return;
+
+    box.classList.add('sr-conversation-panel');
+    let header = box.querySelector(':scope > .sr-conversation-header');
+    if (!header) {
+      header = document.createElement('div');
+      header.className = 'sr-conversation-header';
+      box.prepend(header);
+    }
+
+    const rows = commentsOf(post);
+    header.innerHTML = `<div><strong>對話</strong><span>${rows.length} 則留言</span></div><span class="sr-conversation-hint">Enter 傳送 · Shift＋Enter 換行</span>`;
+
+    list.className = 'sr-conversation-list';
+    list.setAttribute('role', 'log');
+    list.setAttribute('aria-live', 'polite');
+    const signature = rows.map(row => `${row.id}:${row.time}:${row.text}`).join('|');
+    const nearBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 72;
+    if (list.dataset.srConversationSignature !== signature) {
+      list.dataset.srConversationSignature = signature;
+      list.innerHTML = rows.length ? rows.map(row => messageHtml(post, row)).join('') : '<div class="sr-conversation-empty"><i class="fa-regular fa-comments"></i><strong>尚未開始對話</strong><span>留下第一則友善留言。</span></div>';
+      if (nearBottom || !list.dataset.srConversationReady) scrollLatest(box);
+      list.dataset.srConversationReady = '1';
+    }
+
+    if (list.nextElementSibling !== composer) list.after(composer);
+    composer.className = 'sr-conversation-composer';
+
+    let input = composer.querySelector(`[id="comment-input-${CSS.escape(postId)}"]`);
+    if (input && input.tagName !== 'TEXTAREA') {
+      const textarea = document.createElement('textarea');
+      textarea.id = input.id;
+      textarea.value = input.value;
+      textarea.placeholder = '輸入留言…';
+      textarea.rows = 1;
+      textarea.maxLength = 500;
+      textarea.autocomplete = 'off';
+      textarea.enterKeyHint = 'send';
+      input.replaceWith(textarea);
+      input = textarea;
+    }
+    if (!input) return;
+    input.className = 'sr-conversation-input';
+    input.maxLength = 500;
+    input.setAttribute('aria-label', '輸入留言');
+    resizeInput(input);
+
+    const send = composer.querySelector('button');
+    if (send) {
+      send.className = 'sr-conversation-send';
+      send.innerHTML = '<i class="fa-solid fa-paper-plane"></i><span>送出</span>';
+      send.setAttribute('aria-label', '送出留言');
+    }
+
+    let count = composer.querySelector('.sr-conversation-count');
+    if (!count) {
+      count = document.createElement('span');
+      count.className = 'sr-conversation-count';
+      composer.appendChild(count);
+    }
+    count.textContent = `${input.value.length}/500`;
+  }
+
+  function apply() {
+    document.querySelectorAll('[id^="comments-box-"]:not(.hidden)').forEach(enhance);
+  }
+
+  function installSubmitGuard() {
+    const original = window.submitComment;
+    if (typeof original !== 'function' || original.__srConversationWrapped) return;
+    const wrapped = async function(postId) {
+      const input = document.getElementById(`comment-input-${postId}`);
+      const text = input?.value.trim() || '';
+      if (!text) return;
+      if (text.length > 500) {
+        window.showToast?.('每則留言最多 500 個字。', 'info');
+        input?.focus();
+        return;
+      }
+      const composer = input?.closest('.sr-conversation-composer');
+      const button = composer?.querySelector('button');
+      if (button?.disabled) return;
+      const oldHtml = button?.innerHTML || '';
+      if (button) {
+        button.disabled = true;
+        button.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i><span>傳送中</span>';
+      }
+      input.disabled = true;
+      const pending = original.call(this, postId);
+      document.getElementById('loading-screen')?.classList.add('hidden');
+      try {
+        await pending;
+        window.state.openComments[postId] = true;
+        setTimeout(() => {
+          apply();
+          scrollLatest(document.getElementById(`comments-box-${postId}`), true);
+        }, 80);
+      } finally {
+        input.disabled = false;
+        if (button) {
+          button.disabled = false;
+          button.innerHTML = oldHtml;
+        }
+        input.focus();
+      }
+    };
+    wrapped.__srConversationWrapped = true;
+    window.submitComment = wrapped;
+  }
+
+  document.addEventListener('input', event => {
+    const input = event.target.closest?.('.sr-conversation-input');
+    if (!input) return;
+    resizeInput(input);
+    const count = input.closest('.sr-conversation-composer')?.querySelector('.sr-conversation-count');
+    if (count) count.textContent = `${input.value.length}/500`;
+  });
+
+  document.addEventListener('keydown', event => {
+    const input = event.target.closest?.('.sr-conversation-input');
+    if (!input || event.isComposing || event.key !== 'Enter' || event.shiftKey) return;
+    event.preventDefault();
+    window.submitComment?.(String(input.id).replace(/^comment-input-/, ''));
+  });
+
+  document.addEventListener('focusin', event => {
+    const input = event.target.closest?.('.sr-conversation-input');
+    if (!input) return;
+    setTimeout(() => input.closest('.sr-conversation-composer')?.scrollIntoView({ block:'nearest', behavior:'smooth' }), 220);
+  });
+
+  document.addEventListener('click', event => {
+    const action = event.target.closest?.('[data-sr-comment-action]');
+    if (action) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (action.dataset.srCommentAction === 'delete') window.deleteComment?.(action.dataset.postId, action.dataset.commentId);
+      else window.openCommentReportModal?.(action.dataset.postId, action.dataset.commentId);
+      return;
+    }
+    const toggle = event.target.closest?.('[onclick^="toggleCommentsSection"]');
+    if (toggle) setTimeout(() => {
+      installSubmitGuard();
+      apply();
+      const id = toggle.getAttribute('onclick')?.match(/toggleCommentsSection\(['"]([^'"]+)/)?.[1];
+      const box = id ? document.getElementById(`comments-box-${id}`) : null;
+      if (box && !box.classList.contains('hidden')) scrollLatest(box, true);
+    }, 0);
+  }, true);
+
+  window.SRRuntime?.register(() => { installSubmitGuard(); apply(); });
+  installSubmitGuard();
+  apply();
+})();
