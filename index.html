@@ -74,13 +74,14 @@
     </div>
   </div>
 </div>
-<script type="module" src="app.js?v=20260719-interface-overhaul-v1"></script>
+<script type="module" src="app.js?v=20260719-profile-actions-fix-v1"></script>
 <script type="module">
 (() => {
   const BOT_URL = 'https://t.me/SecretRoomtwBot';
   const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const notify = (message, tone = 'info') => window.showToast?.(message, tone) || alert(message);
   const validPassword = value => value.length >= 8 && /[A-Z]/.test(value) && /[!@#$%^&*(),.?":{}|<>]/.test(value);
+  const nativeAppendChild = Element.prototype.appendChild;
 
   function closeSurface(node) { node?.remove?.(); }
 
@@ -268,11 +269,68 @@
     document.getElementById('sr-reset-flow')?.remove();
   }
 
+  function removeTelegramRecoveryAction() {
+    document.querySelectorAll('#sr-telegram-service-modal [data-action="reset"]').forEach(button => button.remove());
+  }
+
+  function bindProfileAction(button, name, handler) {
+    if (!button) return;
+    button.type = 'button';
+    button.dataset.srProfileAction = name;
+    button.removeAttribute('onclick');
+    button.onclick = event => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof handler !== 'function') {
+        notify('此功能尚未完成載入，請重新整理後再試。', 'error');
+        return;
+      }
+      handler();
+    };
+  }
+
+  function stabilizeProfileActions() {
+    const grid = document.getElementById('sr-profile-action-grid');
+    if (!grid || grid.dataset.srStableActions === '1') return;
+
+    const buttons = [...grid.querySelectorAll('button')];
+    const edit = buttons.find(button => /修改個人資料/.test(button.textContent || ''));
+    const notifications = buttons.find(button => /通知設定/.test(button.textContent || ''));
+    const exportButton = buttons.find(button => /匯出個人資料/.test(button.textContent || ''));
+    const deleteButton = buttons.find(button => /申請刪除帳號|刪除申請審核中/.test(button.textContent || ''));
+    if (!edit || !notifications || !exportButton || !deleteButton) return;
+
+    const ordered = [edit, notifications, exportButton, deleteButton];
+    ordered.forEach(button => nativeAppendChild.call(grid, button));
+
+    bindProfileAction(edit, 'edit', () => window.showEditProfileModal?.());
+    bindProfileAction(notifications, 'notifications', () => window.SROpenTelegramBinding?.());
+    bindProfileAction(exportButton, 'export', () => window.exportMyData?.());
+    if (!deleteButton.disabled && !/審核中/.test(deleteButton.textContent || '')) {
+      bindProfileAction(deleteButton, 'delete', () => window.showAccountDeletionRequestModal?.());
+    }
+
+    try {
+      Object.defineProperty(grid, 'appendChild', {
+        configurable: true,
+        value(child) {
+          if (child?.parentNode === this) return child;
+          return nativeAppendChild.call(this, child);
+        }
+      });
+    } catch (error) {
+      console.warn('個人資料操作列穩定化失敗：', error);
+    }
+    grid.dataset.srStableActions = '1';
+  }
+
   function applyEnhancements() {
     enhanceLogin();
     enhanceRegistration();
     enhanceSpec();
     enhancePasswordSurface();
+    removeTelegramRecoveryAction();
+    stabilizeProfileActions();
   }
 
   new MutationObserver(applyEnhancements).observe(document.documentElement, { childList: true, subtree: true });
