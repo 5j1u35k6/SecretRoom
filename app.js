@@ -6308,11 +6308,28 @@ schedule();
       if (card.dataset.srPhase3HideAction === '1') return;
       const postId = postIdFromCard(card);
       if (!postId) return;
+
+      const primaryAction = card.querySelector('button[onclick*="deleteMyPost"],button[onclick*="openReportModal"]');
+      if (!primaryAction) return;
+
       card.dataset.srPhase3HideAction = '1';
+      let actionGroup = primaryAction.closest('[data-sr-post-actions]');
+      if (!actionGroup) {
+        actionGroup = document.createElement('div');
+        actionGroup.dataset.srPostActions = '1';
+        actionGroup.className = 'flex items-center gap-3 shrink-0';
+        primaryAction.parentElement?.insertBefore(actionGroup, primaryAction);
+        actionGroup.appendChild(primaryAction);
+      }
+
       const button = document.createElement('button');
-      button.className = 'mt-3 min-h-[40px] px-3 rounded-xl border border-slate-700 text-slate-500 text-xs font-black';
-      button.innerHTML = '<i class="fa-regular fa-eye-slash mr-1.5"></i>隱藏這篇';
+      button.type = 'button';
+      button.className = 'text-slate-550 hover:text-sky-300 transition text-xs sm:text-sm click-press';
+      button.title = '隱藏這篇';
+      button.setAttribute('aria-label', '隱藏這篇');
+      button.innerHTML = '<i class="fa-regular fa-eye-slash"></i>';
       button.onclick = async event => {
+        event.preventDefault();
         event.stopPropagation();
         try {
           await saveList('hiddenPostIds', postId, true);
@@ -6322,7 +6339,7 @@ schedule();
           toast('無法隱藏貼文：' + error.message, 'error');
         }
       };
-      card.appendChild(button);
+      actionGroup.insertBefore(button, primaryAction);
     });
   }
 
@@ -7532,6 +7549,8 @@ schedule();
   let unsubscribeAuth = null;
   let syncTimer = null;
   let syncSequence = 0;
+  let entryUserId = '';
+  let entryRestoring = false;
 
   function backendEnabled() {
     return window.SRSecureAuth?.migrationEnabled?.() === true;
@@ -7663,31 +7682,61 @@ schedule();
     document.body.appendChild(wrap);
   }
 
-  function removeEntryButton() {
+  function profileEntryHost() {
+    if (String(window.state?.currentTab || '') !== 'profile') return null;
+    return document.getElementById('dashboard-tab-content');
+  }
+
+  function renderProfileEntryButton() {
+    // Remove the retired floating entry if an older cached render created it.
     document.getElementById('sr-telegram-service-entry')?.remove();
+
+    const existing = document.getElementById('sr-profile-telegram-service-entry');
+    const host = profileEntryHost();
+    if (!host || !entryUserId) {
+      existing?.remove();
+      return;
+    }
+
+    let button = existing;
+    if (!button) {
+      button = document.createElement('button');
+      button.id = 'sr-profile-telegram-service-entry';
+      button.type = 'button';
+      button.onclick = () => openModal().catch(error => toast(error.message || String(error), 'error'));
+    }
+
+    const signature = `${entryUserId}|${entryRestoring ? 'restoring' : 'verified'}`;
+    if (button.dataset.srProfileServiceSignature !== signature) {
+      button.dataset.srProfileServiceSignature = signature;
+      button.dataset.memberUserId = entryUserId;
+      button.dataset.authState = entryRestoring ? 'restoring' : 'verified';
+      button.disabled = false;
+      button.className = 'w-full rounded-2xl border border-sky-400/25 bg-sky-500/10 px-4 py-3 text-left flex items-center justify-between gap-3 text-sky-100 shadow-lg transition hover:bg-sky-500/15 click-press';
+      button.innerHTML = `<span class="flex items-center gap-3 min-w-0"><span class="w-10 h-10 rounded-full bg-sky-400/15 border border-sky-400/20 flex items-center justify-center shrink-0"><i class="fa-brands fa-telegram text-sky-300"></i></span><span class="min-w-0"><strong class="block text-sm font-black truncate">Telegram 會員服務</strong><span class="block text-xs text-slate-400 mt-0.5 truncate">@${entryUserId}${entryRestoring ? ' · 身分同步中' : ' · 綁定、通知與申請進度'}</span></span></span><i class="fa-solid fa-chevron-right text-sky-300 shrink-0"></i>`;
+    }
+
+    const grid = document.getElementById('sr-profile-action-grid');
+    if (grid?.parentElement) {
+      if (button.parentElement !== grid.parentElement || button.nextElementSibling !== grid) grid.before(button);
+    } else if (button.parentElement !== host) {
+      host.appendChild(button);
+    }
+  }
+
+  function removeEntryButton() {
+    entryUserId = '';
+    entryRestoring = false;
+    document.getElementById('sr-telegram-service-entry')?.remove();
+    document.getElementById('sr-profile-telegram-service-entry')?.remove();
     closeModal();
   }
 
   function createOrUpdateEntryButton(userId, restoring = false) {
-    if (!userId) return;
-
-    let button = document.getElementById('sr-telegram-service-entry');
-    if (!button) {
-      button = document.createElement('button');
-      button.id = 'sr-telegram-service-entry';
-      button.type = 'button';
-      button.className = 'fixed left-4 bottom-20 md:bottom-6 z-[90] rounded-full border border-sky-400/25 bg-sky-500/15 backdrop-blur-xl px-4 py-3 text-xs font-black text-sky-200 shadow-xl transition';
-      button.onclick = () => openModal().catch(error => toast(error.message || String(error), 'error'));
-      document.body.appendChild(button);
-    }
-
-    button.dataset.memberUserId = userId;
-    button.dataset.authState = restoring ? 'restoring' : 'verified';
-    button.disabled = false;
-    button.classList.toggle('opacity-70', restoring);
-    button.textContent = restoring
-      ? `✈ Telegram 會員服務 · @${userId} · 身分同步中`
-      : `✈ Telegram 會員服務 · @${userId}`;
+    if (!userId) return removeEntryButton();
+    entryUserId = String(userId);
+    entryRestoring = Boolean(restoring);
+    renderProfileEntryButton();
   }
 
   async function syncEntryButton(forceRefresh = false) {
@@ -7750,6 +7799,8 @@ schedule();
     memberIdentity,
     syncEntryButton
   });
+
+  window.SRRuntime?.register(renderProfileEntryButton);
 
   window.addEventListener('sr:member-auth-changed', () => scheduleSync(50, true));
   window.addEventListener('pageshow', () => scheduleSync(100, false));
