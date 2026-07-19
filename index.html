@@ -16,7 +16,31 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;650;750;800&family=Cinzel:wght@600;700;900&family=Noto+Serif+TC:wght@400;600;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="style.css?v=20260717-conversation-ui-v2">
+<link rel="stylesheet" href="style.css?v=20260719-interface-overhaul-v1">
+<style id="sr-interface-overhaul">
+  :root{--sr-gold:#d9b76b;--sr-panel:#0c0d12;--sr-muted:#8c93a3}
+  .sr-auth-card{max-width:440px!important;padding:1.5rem!important;border-radius:1.65rem!important}
+  .sr-auth-card input{min-height:48px}
+  .sr-auth-actions{display:grid;gap:.65rem;margin-top:.8rem}
+  .sr-auth-secondary{min-height:44px;border:1px solid rgba(217,183,107,.22);border-radius:.8rem;color:#d7c28f;background:rgba(217,183,107,.06);font-size:.78rem;font-weight:800}
+  .sr-auth-note{display:flex;gap:.65rem;padding:.8rem .9rem;margin:.9rem 0;border:1px solid rgba(56,189,248,.16);border-radius:1rem;background:rgba(14,165,233,.07);color:#a7b2c5;font-size:.72rem;line-height:1.6}
+  .sr-legacy-auth-action{display:none!important}
+  .sr-registration-guide{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.55rem;padding:.65rem;border:1px solid rgba(217,183,107,.14);border-radius:1rem;background:rgba(3,3,4,.55)}
+  .sr-registration-guide span{display:flex;align-items:center;justify-content:center;gap:.4rem;min-height:38px;border-radius:.75rem;color:#aeb4c1;font-size:.68rem;font-weight:800}
+  .sr-registration-guide b{display:grid;place-items:center;width:22px;height:22px;border-radius:999px;background:rgba(217,183,107,.13);color:#e7c879}
+  #apply-form.sr-registration-form>div{scroll-margin-top:1rem}
+  .sr-spec-checklist{display:grid;gap:.45rem;margin:0 0 1rem;padding:.85rem;border-radius:1rem;border:1px solid rgba(217,183,107,.14);background:rgba(217,183,107,.05);font-size:.7rem;color:#b9bfca;line-height:1.5}
+  .sr-spec-checklist strong{color:#e4c875}
+  .sr-flow-shell{width:min(94vw,470px);max-height:min(88dvh,720px);overflow:auto;border:1px solid rgba(217,183,107,.24);border-radius:1.75rem;background:linear-gradient(145deg,rgba(15,16,23,.98),rgba(10,8,8,.98));box-shadow:0 30px 90px rgba(0,0,0,.78)}
+  .sr-flow-step{display:flex;align-items:flex-start;gap:.8rem;padding:.8rem;border-radius:1rem;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.055)}
+  .sr-flow-step-index{display:grid;place-items:center;flex:0 0 28px;height:28px;border-radius:999px;background:rgba(217,183,107,.14);color:#edce84;font-weight:900;font-size:.72rem}
+  .sr-password-rules{display:grid;gap:.35rem;padding:.75rem;border-radius:.9rem;background:#08090d;border:1px solid rgba(255,255,255,.07);font-size:.69rem;color:#8f96a4}
+  @media(max-width:640px){
+    .sr-auth-card{width:94vw!important;padding:1.25rem!important}
+    .sr-registration-guide{grid-template-columns:1fr}
+    #apply-form.sr-registration-form{gap:1rem!important}
+  }
+</style>
 </head>
 <body class="min-h-screen w-full flex flex-col p-0 m-0 overflow-hidden club-groove-bg">
 <div id="app" class="w-full h-[100dvh] md:h-screen overflow-hidden relative flex flex-col bg-transparent transition-all duration-300">
@@ -24,7 +48,7 @@
     <div class="relative flex items-center justify-center mb-8">
       <div class="w-24 h-24 border-2 border-amber-500/10 border-t-amber-500 rounded-full animate-spin"></div>
       <div class="absolute w-14 h-14 rounded-full overflow-hidden bg-black flex items-center justify-center border border-amber-500/20">
-        <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-full h-full object-cover">
+        <img src="Gemini_Generated_Image_e2fxvje2fxvje2fx.jpg?v=2" class="w-full h-full object-cover" alt="SecretRoom">
       </div>
     </div>
     <p class="text-amber-500/80 font-bold tracking-[0.2em] text-sm font-luxury animate-pulse">Establishing Secure Channel...</p>
@@ -41,9 +65,7 @@
 <div id="toast-container" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col gap-2.5 w-full max-w-xs px-4" role="status" aria-live="polite" aria-atomic="true"></div>
 <div id="custom-confirm-modal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[101] flex items-center justify-center p-4 hidden" role="dialog" aria-modal="true" aria-labelledby="custom-confirm-title" aria-describedby="custom-confirm-description" tabindex="-1">
   <div class="bg-[#0c0a08] border border-amber-500/20 rounded-3xl p-6.5 max-w-sm w-[92vw] shadow-[0_0_50px_rgba(0,0,0,0.95)] relative text-center crystal-border">
-    <div class="w-14 h-14 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-500 text-2xl mx-auto mb-4">
-      <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
-    </div>
+    <div class="w-14 h-14 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-500 text-2xl mx-auto mb-4"><i class="fa-solid fa-triangle-exclamation text-amber-500"></i></div>
     <h3 id="custom-confirm-title" class="text-base font-bold text-white mb-2">確認操作？</h3>
     <p id="custom-confirm-description" class="text-sm text-slate-400 mb-6 leading-relaxed">此操作完成後無法復原，請再次確認。</p>
     <div class="grid grid-cols-2 gap-3">
@@ -52,6 +74,211 @@
     </div>
   </div>
 </div>
-<script type="module" src="app.js?v=20260719-profile-service-post-actions-v1"></script>
+<script type="module" src="app.js?v=20260719-interface-overhaul-v1"></script>
+<script type="module">
+(() => {
+  const BOT_URL = 'https://t.me/SecretRoomtwBot';
+  const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+  const notify = (message, tone = 'info') => window.showToast?.(message, tone) || alert(message);
+  const validPassword = value => value.length >= 8 && /[A-Z]/.test(value) && /[!@#$%^&*(),.?":{}|<>]/.test(value);
+
+  function closeSurface(node) { node?.remove?.(); }
+
+  function flowFrame(title, subtitle, body) {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 z-[180] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.innerHTML = `<div class="sr-flow-shell p-5 sm:p-6 relative">
+      <button type="button" data-sr-flow-close class="absolute top-3 right-3 min-w-[44px] min-h-[44px] text-slate-400 hover:text-white" aria-label="關閉"><i class="fa-solid fa-xmark"></i></button>
+      <div class="pr-10"><div class="text-[10px] tracking-[.18em] text-amber-300 font-black">ACCOUNT SECURITY</div><h2 class="text-xl text-white font-black mt-1">${title}</h2><p class="text-xs text-slate-400 mt-2 leading-relaxed">${subtitle}</p></div>
+      <div data-sr-flow-body class="mt-5">${body}</div>
+    </div>`;
+    document.body.appendChild(modal);
+    modal.querySelector('[data-sr-flow-close]').onclick = () => closeSurface(modal);
+    modal.addEventListener('click', event => { if (event.target === modal) closeSurface(modal); });
+    return modal;
+  }
+
+  function openRecovery(prefill = '') {
+    document.getElementById('sr-password-recovery-v2')?.remove();
+    const body = `<div class="grid gap-3">
+      <div class="sr-flow-step"><span class="sr-flow-step-index">1</span><div><b class="text-sm text-white">在平台建立安全申請</b><p class="text-xs text-slate-400 mt-1 leading-relaxed">只需輸入 SecretRoom 帳號；不再寄 Email，也不需要管理員代設密碼。</p></div></div>
+      <div class="sr-flow-step"><span class="sr-flow-step-index">2</span><div><b class="text-sm text-white">到 Telegram 驗證身分</b><p class="text-xs text-slate-400 mt-1 leading-relaxed">使用已綁定的 Telegram 開啟機器人，點選「忘記密碼」。</p></div></div>
+      <div class="sr-flow-step"><span class="sr-flow-step-index">3</span><div><b class="text-sm text-white">開啟一次性連結並設定新密碼</b><p class="text-xs text-slate-400 mt-1 leading-relaxed">新密碼只在 SecretRoom 輸入，不會經過 Telegram 或管理員。</p></div></div>
+      <label class="text-xs font-black text-slate-300 mt-2" for="sr-recovery-account">SecretRoom 帳號</label>
+      <input id="sr-recovery-account" autocomplete="username" value="${escapeHtml(prefill)}" class="min-h-[48px] w-full rounded-xl border border-amber-500/15 bg-slate-950 px-3.5 text-sm text-white outline-none focus:border-amber-400" placeholder="輸入會員帳號">
+      <div id="sr-recovery-error" class="hidden rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-xs text-rose-200" role="alert"></div>
+      <button id="sr-recovery-submit" type="button" class="min-h-[48px] brushed-gold rounded-xl text-sm font-black crystal-border">建立 Telegram 密碼復原申請</button>
+    </div>`;
+    const modal = flowFrame('忘記密碼', '已改為 Telegram 身分驗證流程，平台不再透過管理員或 Email 發送臨時密碼。', body);
+    modal.id = 'sr-password-recovery-v2';
+    const input = modal.querySelector('#sr-recovery-account');
+    input.focus();
+    modal.querySelector('#sr-recovery-submit').onclick = async () => {
+      const button = modal.querySelector('#sr-recovery-submit');
+      const errorBox = modal.querySelector('#sr-recovery-error');
+      const userId = input.value.trim();
+      if (!userId) { errorBox.textContent = '請先輸入會員帳號。'; errorBox.classList.remove('hidden'); return; }
+      button.disabled = true;
+      button.textContent = '正在建立安全申請…';
+      errorBox.classList.add('hidden');
+      try {
+        if (!window.SRSecureAuth?.api) throw new Error('安全登入服務尚未完成載入，請重新整理後再試。');
+        await window.SRSecureAuth.api('/api/auth/request-password-reset', { userId });
+        modal.querySelector('[data-sr-flow-body]').innerHTML = `<div class="text-center py-3">
+          <div class="w-16 h-16 mx-auto rounded-full grid place-items-center border border-emerald-500/25 bg-emerald-500/10 text-emerald-300"><i class="fa-solid fa-shield-halved text-2xl"></i></div>
+          <h3 class="text-lg font-black text-white mt-4">安全申請已建立</h3>
+          <p class="text-xs text-slate-400 leading-relaxed mt-2">請使用帳號已綁定的 Telegram 開啟 SecretRoom Bot，完成身分確認並取得一次性重設連結。</p>
+          <a href="${BOT_URL}" target="_blank" rel="noopener" class="min-h-[48px] mt-5 flex items-center justify-center gap-2 brushed-gold rounded-xl text-sm font-black crystal-border"><i class="fa-brands fa-telegram"></i>開啟 Telegram Bot</a>
+          <button type="button" data-close-success class="min-h-[44px] mt-2 w-full rounded-xl border border-slate-700 text-xs font-bold text-slate-300">完成，回到登入</button>
+        </div>`;
+        modal.querySelector('[data-close-success]').onclick = () => closeSurface(modal);
+      } catch (error) {
+        errorBox.textContent = error.message || '申請建立失敗，請稍後再試。';
+        errorBox.classList.remove('hidden');
+        button.disabled = false;
+        button.textContent = '重新建立申請';
+      }
+    };
+  }
+
+  function askNewPassword() {
+    return new Promise((resolve, reject) => {
+      const modal = flowFrame('設定新密碼', '臨時密碼只用於這次登入。完成後，系統會立即換發新的安全登入憑證。', `<div class="grid gap-3">
+        <label class="text-xs font-black text-slate-300" for="sr-new-password-v2">新密碼</label>
+        <input id="sr-new-password-v2" type="password" autocomplete="new-password" class="min-h-[48px] rounded-xl border border-amber-500/15 bg-slate-950 px-3.5 text-sm text-white outline-none focus:border-amber-400">
+        <label class="text-xs font-black text-slate-300" for="sr-confirm-password-v2">再次輸入新密碼</label>
+        <input id="sr-confirm-password-v2" type="password" autocomplete="new-password" class="min-h-[48px] rounded-xl border border-amber-500/15 bg-slate-950 px-3.5 text-sm text-white outline-none focus:border-amber-400">
+        <div class="sr-password-rules"><span>至少 8 碼</span><span>至少 1 個大寫英文字母</span><span>至少 1 個特殊符號</span></div>
+        <div id="sr-new-password-error" class="hidden rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-xs text-rose-200"></div>
+        <button id="sr-new-password-submit" type="button" class="min-h-[48px] brushed-gold rounded-xl text-sm font-black crystal-border">儲存新密碼並登入</button>
+      </div>`);
+      const closeButton = modal.querySelector('[data-sr-flow-close]');
+      closeButton.onclick = () => { modal.remove(); reject(new Error('必須先完成新密碼設定才能登入。')); };
+      modal.querySelector('#sr-new-password-submit').onclick = () => {
+        const first = modal.querySelector('#sr-new-password-v2').value;
+        const second = modal.querySelector('#sr-confirm-password-v2').value;
+        const error = modal.querySelector('#sr-new-password-error');
+        if (!validPassword(first)) { error.textContent = '密碼格式不符，請確認三項安全條件。'; error.classList.remove('hidden'); return; }
+        if (first !== second) { error.textContent = '兩次輸入的密碼不一致。'; error.classList.remove('hidden'); return; }
+        modal.remove();
+        resolve(first);
+      };
+    });
+  }
+
+  async function loginV2(card) {
+    const userId = card.querySelector('#sr-login-username-v2')?.value.trim() || '';
+    const password = card.querySelector('#sr-login-password-v2')?.value || '';
+    const button = card.querySelector('#sr-login-submit-v2');
+    const errorBox = card.querySelector('#login-error-box');
+    if (!userId || !password) { notify('請填寫完整登入資訊。', 'error'); return; }
+    button.disabled = true;
+    button.textContent = '安全驗證中…';
+    errorBox?.classList.add('hidden');
+    try {
+      const auth = window.SRSecureAuth;
+      if (!auth?.api || !auth?.signIn) throw new Error('安全登入服務尚未完成載入，請重新整理後再試。');
+      const result = await auth.api('/api/auth/member-login', { userId, password });
+      let user = await auth.signIn(result.customToken, result.userId);
+      if (result.mustChangePassword) {
+        const newPassword = await askNewPassword();
+        const idToken = await user.getIdToken();
+        const changed = await auth.api('/api/member/change-password', { newPassword }, idToken);
+        user = await auth.signIn(changed.customToken, result.userId);
+      }
+      await user.getIdToken(true);
+      localStorage.setItem('sr_username', result.userId);
+      sessionStorage.setItem('sr_secure_member_id', result.userId);
+      window.dispatchEvent(new CustomEvent('sr:member-auth-changed'));
+      notify('安全登入成功，正在載入俱樂部…', 'success');
+      location.reload();
+    } catch (error) {
+      if (errorBox) { errorBox.textContent = error.message || '登入失敗'; errorBox.classList.remove('hidden'); }
+      notify(error.message || '登入失敗', 'error');
+      button.disabled = false;
+      button.textContent = '進入俱樂部';
+    }
+  }
+
+  function enhanceLogin() {
+    const legacyButton = document.getElementById('btn-login-submit');
+    if (!legacyButton || legacyButton.dataset.srUxDone === '1') return;
+    legacyButton.dataset.srUxDone = '1';
+    const card = legacyButton.closest('.glass-panel');
+    if (!card) return;
+    card.classList.add('sr-auth-card');
+    const username = document.getElementById('login-username');
+    const password = document.getElementById('login-password');
+    if (username) { username.id = 'sr-login-username-v2'; username.autocomplete = 'username'; }
+    if (password) { password.id = 'sr-login-password-v2'; password.autocomplete = 'current-password'; }
+    legacyButton.classList.add('sr-legacy-auth-action');
+    document.getElementById('btn-forgot-password')?.classList.add('sr-legacy-auth-action');
+    card.querySelector('.sr-auth-note')?.remove();
+    const note = document.createElement('div');
+    note.className = 'sr-auth-note';
+    note.innerHTML = '<i class="fa-solid fa-shield-halved text-sky-300 mt-0.5"></i><span>登入與密碼復原已切換至安全後端；忘記密碼會透過已綁定的 Telegram 驗證，不再由管理員或 Email 處理。</span>';
+    legacyButton.parentElement.insertBefore(note, legacyButton);
+    const actions = document.createElement('div');
+    actions.className = 'sr-auth-actions';
+    actions.innerHTML = `<button id="sr-login-submit-v2" type="button" class="min-h-[48px] brushed-gold font-bold text-sm rounded-xl crystal-border">進入俱樂部</button>
+      <button id="sr-forgot-v2" type="button" class="sr-auth-secondary"><i class="fa-solid fa-key mr-1.5"></i>忘記密碼／重設密碼</button>`;
+    legacyButton.parentElement.appendChild(actions);
+    actions.querySelector('#sr-login-submit-v2').onclick = () => loginV2(card);
+    actions.querySelector('#sr-forgot-v2').onclick = () => openRecovery(username?.value || '');
+    [username, password].filter(Boolean).forEach(input => input.addEventListener('keydown', event => {
+      if (event.key === 'Enter') { event.preventDefault(); actions.querySelector('#sr-login-submit-v2').click(); }
+    }));
+  }
+
+  function enhanceRegistration() {
+    const form = document.getElementById('apply-form');
+    if (!form || form.dataset.srUxDone === '1') return;
+    form.dataset.srUxDone = '1';
+    form.classList.add('sr-registration-form');
+    const guide = document.createElement('div');
+    guide.className = 'sr-registration-guide';
+    guide.innerHTML = '<span><b>1</b>安全帳號與頭像</span><span><b>2</b>公開資料與基本資訊</span><span><b>3</b>偏好確認與送審</span>';
+    form.prepend(guide);
+    const heading = form.parentElement?.querySelector('h2');
+    if (heading) heading.textContent = '申請 SecretRoom 會員';
+    const intro = heading?.nextElementSibling;
+    if (intro) intro.textContent = '資料分為安全帳號、公開資料與偏好三區。外部通知與帳號復原以 Telegram 為主，備用信箱可選填。';
+  }
+
+  function enhanceSpec() {
+    const trigger = document.getElementById('spec-img-trigger');
+    if (!trigger || trigger.dataset.srUxDone === '1') return;
+    trigger.dataset.srUxDone = '1';
+    const card = trigger.closest('.glass-panel');
+    card?.classList.add('sr-spec-surface');
+    const heading = card?.querySelector('h3');
+    if (heading) heading.innerHTML = '<i class="fa-solid fa-medal text-amber-500"></i> 黃金 Spec 認證';
+    const paragraph = heading?.nextElementSibling;
+    if (paragraph) paragraph.textContent = '請上傳清楚包含尺規或可驗證參考物的證明照片。送出前請確認下列三項，審核進度會顯示於個人資料與通知中心。';
+    const checklist = document.createElement('div');
+    checklist.className = 'sr-spec-checklist';
+    checklist.innerHTML = '<span><strong>資格：</strong>目前資料已達申請門檻</span><span><strong>照片：</strong>本人、清晰、尺規完整可辨識</span><span><strong>隱私：</strong>理解浮水印與站內審核照片分享範圍</span>';
+    paragraph?.after(checklist);
+  }
+
+  function enhancePasswordSurface() {
+    document.getElementById('sr-force-change')?.querySelector('.glass-panel')?.classList.add('sr-auth-card');
+    document.getElementById('sr-reset-flow')?.remove();
+  }
+
+  function applyEnhancements() {
+    enhanceLogin();
+    enhanceRegistration();
+    enhanceSpec();
+    enhancePasswordSurface();
+  }
+
+  new MutationObserver(applyEnhancements).observe(document.documentElement, { childList: true, subtree: true });
+  document.addEventListener('DOMContentLoaded', applyEnhancements, { once: true });
+  applyEnhancements();
+})();
+</script>
 </body>
 </html>
