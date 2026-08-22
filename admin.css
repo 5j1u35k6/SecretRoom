@@ -1,33 +1,23 @@
-body {
-            font-family: 'Inter', sans-serif;
-            background-color: #020204;
-            color: #f8fafc;
-        }
-        .glass-panel {
-            background: rgba(6, 6, 12, 0.95);
-            backdrop-filter: blur(24px);
-            border: 1px solid rgba(217, 119, 6, 0.12);
-        }
-
-#admin-login-modal.hidden { display: none !important; }
-.admin-muted-card { background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(148, 163, 184, 0.12); }
-
-:root { --ci-ebony:#050403; --ci-indigo:#102747; --ci-plum:#5f1d37; --ci-champagne:#dfb76c; --ci-brass:#aa771c; --ci-ivory:#f8f3e8; }
-body { background: radial-gradient(circle at 12% 8%, rgba(16,42,78,.55), transparent 44%), radial-gradient(circle at 90% 10%, rgba(95,29,55,.35), transparent 48%), radial-gradient(circle at 50% 118%, rgba(45,30,20,.8), #020204 70%) !important; color: var(--ci-ivory); }
-body::before { content:""; position:fixed; inset:0; pointer-events:none; background-image:repeating-linear-gradient(90deg, transparent 0 8px, rgba(223,183,108,.07) 9px, transparent 20px); opacity:.42; mix-blend-mode:soft-light; }
-.glass-panel { background: linear-gradient(145deg, rgba(12,14,22,.76), rgba(23,15,10,.56)) !important; border: 1px solid rgba(223,183,108,.22) !important; box-shadow: 0 28px 80px -22px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.1); }
-.admin-stat-mini { background: rgba(8,12,20,.58); border: 1px solid rgba(223,183,108,.16); box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 12px 30px rgba(0,0,0,.35); }
-button, input, select, textarea { position: relative; z-index: 2; }
-input, select, textarea { background-color: rgba(6,9,16,.72) !important; border-color: rgba(223,183,108,.16) !important; }
-input:focus, select:focus, textarea:focus { border-color: rgba(255,224,153,.68) !important; box-shadow: 0 0 0 1px rgba(223,183,108,.28); }
-#admin-main, #admin-login-modal > div { position: relative; z-index: 1; }
-
-/* ===== SecretRoom Telegram Phase 2 admin styles ===== */
-.sr-tg-admin-panel{margin:0 0 1rem;padding:1rem;border-radius:1.25rem;border:1px solid rgba(56,189,248,.16);background:linear-gradient(135deg,rgba(8,47,73,.25),rgba(2,6,23,.76));box-shadow:0 16px 42px rgba(2,132,199,.06)}
-.sr-tg-admin-header{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}.sr-tg-admin-header h2{margin:.25rem 0 0;color:white;font-size:1.05rem;font-weight:900}.sr-tg-admin-eyebrow{font-size:.68rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:rgb(103,232,249)}
-.sr-tg-admin-stats{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.9rem}.sr-tg-admin-stats span{padding:.35rem .65rem;border-radius:999px;border:1px solid rgba(100,116,139,.2);background:rgba(15,23,42,.68);font-size:.68rem;font-weight:800;color:rgb(148,163,184)}
-.sr-tg-admin-details{margin-top:.85rem}.sr-tg-admin-details summary{cursor:pointer;color:rgb(203,213,225);font-size:.76rem;font-weight:800}.sr-tg-admin-list{display:grid;gap:.65rem;margin-top:.75rem}
-.sr-tg-log-card{display:flex;align-items:flex-start;justify-content:space-between;gap:.8rem;padding:.85rem;border-radius:1rem;border:1px solid rgba(100,116,139,.18);background:rgba(2,6,23,.55)}.sr-tg-log-main{min-width:0;display:flex;flex-direction:column;gap:.25rem}.sr-tg-log-main strong{font-size:.78rem;color:white}.sr-tg-log-main span,.sr-tg-log-main small{font-size:.66rem;color:rgb(100,116,139)}.sr-tg-log-main p{font-size:.72rem;line-height:1.35;color:rgb(148,163,184);white-space:pre-wrap}.sr-tg-log-main code{font-size:.65rem;color:rgb(253,164,175);white-space:pre-wrap;word-break:break-word}
-.sr-tg-log-sent{border-color:rgba(16,185,129,.2)}.sr-tg-log-failed{border-color:rgba(244,63,94,.25)}.sr-tg-log-pending{border-color:rgba(245,158,11,.22)}.sr-tg-log-skipped{opacity:.72}
-.sr-tg-admin-button{min-height:40px;padding:.55rem .8rem;border-radius:.75rem;border:1px solid rgba(56,189,248,.22);background:rgba(14,116,144,.16);color:rgb(103,232,249);font-size:.7rem;font-weight:900;cursor:pointer}.sr-tg-admin-button:disabled{opacity:.4;cursor:not-allowed}
-@media(max-width:640px){.sr-tg-admin-header,.sr-tg-log-card{flex-direction:column}.sr-tg-admin-button{width:100%}}
+body{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:#f5f6f8;color:#182230}
+.glass-panel{background:#fff;border:1px solid #e4e7ec;box-shadow:0 6px 20px rgba(16,24,40,.06);backdrop-filter:none}
+#admin-login-modal.hidden{display:none!important}.admin-muted-card{background:#f8fafc;border:1px solid #e4e7ec}
+:root{--ci-ebony:#f5f6f8;--ci-indigo:#182230;--ci-plum:#f7f0df;--ci-champagne:#765b24;--ci-brass:#a88a4e;--ci-ivory:#182230}
+body:before{display:none!important}
+.glass-panel{background:#fff!important;border:1px solid #e4e7ec!important;box-shadow:0 6px 20px rgba(16,24,40,.06)!important}
+.admin-stat-mini{background:#f8fafc;border:1px solid #e4e7ec;box-shadow:none}
+button,input,select,textarea{position:relative;z-index:2}input,select,textarea{background:#fff!important;border-color:#d7dce3!important;color:#182230!important}input:focus,select:focus,textarea:focus{border-color:#a88a4e!important;box-shadow:0 0 0 3px rgba(118,91,36,.12)!important}
+#admin-main,#admin-login-modal>div{position:relative;z-index:1}
+.sr-tg-admin-panel{margin:0 0 1rem;padding:1rem;border-radius:1.25rem;border:1px solid #e4e7ec;background:#f8fafc;box-shadow:none}.sr-tg-admin-header{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}.sr-tg-admin-header h2{margin:.25rem 0 0;color:#182230;font-size:1.05rem;font-weight:900}.sr-tg-admin-eyebrow{font-size:.68rem;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#667085}.sr-tg-admin-stats{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.9rem}.sr-tg-admin-stats span{padding:.35rem .65rem;border-radius:999px;border:1px solid #e4e7ec;background:#fff;font-size:.68rem;font-weight:800;color:#667085}.sr-tg-admin-details{margin-top:.85rem}.sr-tg-admin-details summary{cursor:pointer;color:#344054;font-size:.76rem;font-weight:800}.sr-tg-admin-list{display:grid;gap:.65rem;margin-top:.75rem}.sr-tg-log-card{display:flex;align-items:flex-start;justify-content:space-between;gap:.8rem;padding:.85rem;border-radius:1rem;border:1px solid #e4e7ec;background:#fff}.sr-tg-log-main{min-width:0;display:flex;flex-direction:column;gap:.25rem}.sr-tg-log-main strong{font-size:.78rem;color:#182230}.sr-tg-log-main span,.sr-tg-log-main small{font-size:.66rem;color:#667085}.sr-tg-log-main p{font-size:.72rem;line-height:1.35;color:#475467;white-space:pre-wrap}.sr-tg-log-main code{font-size:.65rem;color:#b42318;white-space:pre-wrap;word-break:break-word}.sr-tg-log-sent{border-color:#abefc6}.sr-tg-log-failed{border-color:#fecdca}.sr-tg-log-pending{border-color:#fedf89}.sr-tg-log-skipped{opacity:.72}.sr-tg-admin-button{min-height:40px;padding:.55rem .8rem;border-radius:.75rem;border:1px solid #d7dce3;background:#fff;color:#344054;font-size:.7rem;font-weight:900;cursor:pointer}.sr-tg-admin-button:disabled{opacity:.4;cursor:not-allowed}
+/* SecretRoom UI v5: admin uses the same neutral product system as the member site. */
+html,body{background:#f5f6f8!important;color:#182230!important}body:before,body:after{display:none!important}
+#admin-main{max-width:1280px!important;padding:16px 20px 40px!important}
+.admin-topbar{background:#fff!important;border-bottom:1px solid #e4e7ec!important;box-shadow:none!important;backdrop-filter:none!important;padding:12px 0!important;margin:0 0 14px!important}
+.admin-brand-mark{width:36px!important;height:36px!important;border-radius:10px!important;background:#f7f0df!important;border:1px solid #eadfca!important;color:#765b24!important}.admin-brand h1{color:#182230!important}.admin-brand p{color:#667085!important}
+#connection-status{background:#f8fafc!important;border:1px solid #e4e7ec!important;color:#667085!important}.admin-workspace-nav{background:#fff!important;border:1px solid #e4e7ec!important;border-radius:12px!important;padding:4px!important}.admin-workspace-tab{min-height:42px!important;border-radius:9px!important;color:#667085!important}.admin-workspace-tab[aria-selected=true]{color:#765b24!important;background:#f7f0df!important;box-shadow:none!important}
+.admin-summary-grid{gap:10px!important}.admin-summary-card{min-height:88px!important;padding:14px!important;background:#fff!important;border:1px solid #e4e7ec!important;box-shadow:none!important;border-radius:12px!important}.admin-summary-card strong{color:#182230!important}.admin-summary-card span{color:#667085!important}.admin-queue-grid{gap:10px!important}.admin-queue-button{min-height:68px!important;background:#fff!important;border:1px solid #e4e7ec!important;border-radius:12px!important}.admin-queue-button:hover{border-color:#cfd5dd!important;transform:none!important}.admin-queue-button small{color:#667085!important}.admin-queue-button b{color:#182230!important}
+.admin-section-card{background:#fff!important;border:1px solid #e4e7ec!important;box-shadow:none!important;border-radius:14px!important}.admin-manage-header{margin-bottom:14px!important}.admin-manage-header h2{color:#182230!important}.admin-manage-header p{color:#667085!important}.admin-empty-hint{border-color:#e4e7ec!important;color:#667085!important;background:#f8fafc!important}
+#admin-search,.admin-manage-controls select{background:#fff!important;border:1px solid #d7dce3!important;color:#182230!important}.admin-section-card table{border-color:#e4e7ec!important}.admin-section-card th{background:#f8fafc!important;color:#667085!important}.admin-section-card td{border-color:#e4e7ec!important;color:#344054!important}
+#admin-login-modal{background:rgba(16,24,40,.42)!important;backdrop-filter:blur(3px)!important}.admin-login-card,.glass-panel{background:#fff!important;color:#182230!important;border-color:#e4e7ec!important;box-shadow:0 16px 50px rgba(16,24,40,.12)!important}.admin-login-card h2,#admin-login-title{color:#182230!important}.admin-login-card p,#admin-login-description{color:#667085!important}
+#admin-login-submit{background:#182230!important;color:#fff!important;border:0!important;border-radius:10px!important;min-height:46px!important}
+.fixed.inset-0.bg-black\/95,.fixed.inset-0.bg-black\/90,.fixed.inset-0.bg-black\/80{background:rgba(16,24,40,.42)!important;backdrop-filter:blur(3px)!important}
+@media(max-width:760px){#admin-main{padding:10px 12px 28px!important}.admin-topbar{padding:10px 0!important;margin-bottom:10px!important}.admin-summary-grid,.admin-queue-grid{grid-template-columns:1fr!important}.admin-workspace-nav{overflow-x:auto}.admin-workspace-tab{flex:0 0 auto}.admin-section-card{border-radius:12px!important}.admin-manage-header{grid-template-columns:1fr!important}}
